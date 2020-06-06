@@ -1,0 +1,51 @@
+{
+    "game": {
+        "gameTitle": "Transport the Public",
+        "version": 0.4,
+        "icon": "icon"
+    }, 
+    "graphics": {
+        "minDisplayWidth": 768, 
+        "minDisplayHeight": 432, 
+        "displayWidth": 1024, 
+        "displayHeight": 576, 
+        "antiAliasing": true, 
+        "fullscreen": false
+    }, 
+    "fonts": {
+        "joystix": "joystix monospace.ttf"
+    }, 
+    "images": {
+        "icon": "Icon.png",
+        "person": "Person.png", 
+        "personSelected": "PersonSelected.png", 
+        "node": "Node.png", 
+        "nodeSelected": "NodeSelected.png", 
+        "train": "Train.png", 
+        "trainStation": "TrainStation.png",
+        "bus": "Bus.png",
+        "busStation": "BusStation.png",
+        "river": "river.png", 
+        "layers": "layers.png", 
+        "layersSelected": "layersSelected.png", 
+        "metro": "Metro.png", 
+        "departing": "Departing.png", 
+        "walking": "Walking.png", 
+        "boarding": "Boarding.png", 
+        "waiting": "Waiting.png",
+        "moving": "Moving.png"
+    }, 
+    "sounds": {
+
+    },
+    "controls": {
+        "layer1": "1", 
+        "layer2": "2", 
+        "layer3": "3", 
+        "layer4": "4"
+    }, 
+    "saves": [], 
+    "maps": {
+        "testmap": "map.txt"
+    }
+}
