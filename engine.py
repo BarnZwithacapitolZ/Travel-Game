@@ -121,8 +121,8 @@ class SpriteRenderer():
 
 
         layer1.grid.loadTransport("layer 1")
-        # layer2.grid.loadTransport("layer 2")
-        # layer3.grid.loadTransport("layer 3")
+        layer2.grid.loadTransport("layer 2")
+        layer3.grid.loadTransport("layer 3")
 
         layer2.addPerson()
 

@@ -23,13 +23,9 @@ class Transport(pygame.sprite.Sprite):
         self.width = 30
         self.height = 30
 
-        self.offx, self.offy = -5, -5 #-5 is half the offset of the connector
-
-        self.x = self.currentConnection.getFrom().x + self.offx 
-        self.y = self.currentConnection.getFrom().y + self.offy
-
+        self.offx, self.offy = -5, -5 # -5 is half the offset of the connector
         self.vel = vec(0, 0)
-        self.pos = vec(self.x, self.y)
+        self.pos = vec(self.currentConnection.getFrom().x + self.offx, self.currentConnection.getFrom().y + self.offy)
 
         self.speed = float(decimal.Decimal(random.randrange(40, 60)))
         self.direction = direction #0 forwards, 1 backwards
@@ -163,17 +159,12 @@ class Transport(pygame.sprite.Sprite):
 
     def drawTimer(self):
         scale = self.game.renderer.getScale()
-        offy = 10
-
-        # Bar Indicator
-        #pygame.draw.rect(self.game.renderer.gameDisplay, Color("white"), ((self.x + 5) * scale, (self.y - offy) * scale, (self.currentNode.width - 5) * scale, 8 * scale))
-        #pygame.draw.rect(self.game.renderer.gameDisplay, YELLOW, ((self.x + 5) * scale, (self.y - offy) * scale, ((self.currentNode.width - 5) - (self.timer / (self.timerLength / 20))) * scale, 8 * scale))
 
         # Arc Indicator 
         offx = 0.01
         step = self.timer / (self.timerLength / 2) + 0.02
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.x - 4) * scale, (self.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, 8)
+            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, 8)
             offx += 0.01
 
 
@@ -210,8 +201,8 @@ class Transport(pygame.sprite.Sprite):
             return
 
         for person in self.people:
-            person.x = self.x + person.offx
-            person.y = self.y + person.offy
+            person.x = self.pos.x + person.offx
+            person.y = self.pos.y + person.offy
 
             person.rect.x = person.x * self.game.renderer.getScale()
             person.rect.y = person.y * self.game.renderer.getScale()
@@ -220,27 +211,24 @@ class Transport(pygame.sprite.Sprite):
 
     def update(self):
         if hasattr(self, 'rect'):
-            # print(self.people)
-
-            dx, dy = (((self.currentConnection.getTo().x - self.currentConnection.getTo().offx) - self.x) + self.offx, ((self.currentConnection.getTo().y - self.currentConnection.getTo().offy) - self.y) + self.offy)
+            dx, dy = (((self.currentConnection.getTo().x - self.currentConnection.getTo().offx) - self.pos.x) + self.offx, ((self.currentConnection.getTo().y - self.currentConnection.getTo().offy) - self.pos.y) + self.offy)
             dis = math.sqrt(dx ** 2 + dy ** 2)
 
             self.vel = (0, 0)
 
             if dis > 1 and self.moving: #move towards the node
-                self.x += (dx / dis * float(self.speed)) * self.game.dt
-                self.y += (dy / dis * float(self.speed)) * self.game.dt  
-
-                # self.vel = ((dx / dis * float(self.speed)) * self.game.dt, (dy / dis * float(self.speed)) * self.game.dt  )
-
+                # Slow down when reaching a stop
+                if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                    self.vel = (vec(dx, dy) * (self.speed / 10)) * self.game.dt
+                else:
+                    self.vel = vec(dx, dy) / dis * float(self.speed) * self.game.dt
                 self.movePeople()
 
             else: #its reached the node
                 self.setNextConnection()
 
-            self.rect.x = self.x * self.game.renderer.getScale()
-            self.rect.y = self.y * self.game.renderer.getScale()
-
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
 class Taxi(Transport):
