@@ -64,6 +64,7 @@ class Game:
                 self.optionMenu.resize()
                 self.mainMenu.resize()
                 self.hud.resize()
+               
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open:

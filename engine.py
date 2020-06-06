@@ -119,9 +119,10 @@ class SpriteRenderer():
         layer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4))
         layer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4)) # walking layer at the bottom so nodes are drawn above metro stations
 
+
         layer1.grid.loadTransport("layer 1")
-        # layer2.grid.loadTransport("layer 2")
-        # layer3.grid.loadTransport("layer 3")
+        layer2.grid.loadTransport("layer 2")
+        layer3.grid.loadTransport("layer 3")
 
         layer2.addPerson()
 

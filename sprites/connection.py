@@ -32,7 +32,7 @@ class Connection:
         if self.fromNode is None or self.toNode is None:
             return
 
-        self.length = (self.fromNode.pos - self.toNode.pos).length()
+        self.length = ((self.fromNode.pos - self.fromNode.offset) - (self.toNode.pos - self.toNode.offset))
         
 
     def setFromNode(self, fromNode):

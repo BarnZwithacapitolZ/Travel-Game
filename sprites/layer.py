@@ -26,7 +26,9 @@ class Layer(pygame.sprite.Sprite):
 
 
     def addPerson(self):
-        p = Person(self.spriteRenderer, self.groups, self.nodes[0])
+        # Add the person to a random node on the layer
+        node = random.randint(0, len(self.nodes) - 1)
+        p = Person(self.spriteRenderer, self.groups, self.nodes[node])
         return p
 
     def addComponent(self, component):
