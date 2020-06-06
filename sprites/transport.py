@@ -23,9 +23,9 @@ class Transport(pygame.sprite.Sprite):
         self.width = 30
         self.height = 30
 
-        self.offx, self.offy = -5, -5 # -5 is half the offset of the connector
+        self.offset = vec(-5, -5) # -5 is half the offset of the connector
         self.vel = vec(0, 0)
-        self.pos = vec(self.currentConnection.getFrom().x + self.offx, self.currentConnection.getFrom().y + self.offy)
+        self.pos = self.currentConnection.getFrom().pos + self.offset
 
         self.speed = float(decimal.Decimal(random.randrange(40, 60)))
         self.direction = direction #0 forwards, 1 backwards
@@ -91,9 +91,7 @@ class Transport(pygame.sprite.Sprite):
                 person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
 
                 # Position the person offset to the node
-                person.pos.x = (self.currentNode.x - self.currentNode.offx) + person.offx
-                person.pos.y = (self.currentNode.y - self.currentNode.offy) + person.offy
-
+                person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
                 person.rect.topleft = person.pos * self.game.renderer.getScale()
                 person.moveStatusIndicator()
 
@@ -134,7 +132,6 @@ class Transport(pygame.sprite.Sprite):
     def setConnection(self, nextNode):
         possibleNodes = []
         backwardsNodes = []
-
 
         for connection in nextNode.getConnections():
             if connection.getType() == self.currentConnection.getType():
@@ -199,24 +196,24 @@ class Transport(pygame.sprite.Sprite):
             return
 
         for person in self.people:
-            person.pos = self.pos + vec(person.offx, person.offy)
+            person.pos = self.pos + person.offset
             person.rect.topleft = person.pos * self.game.renderer.getScale()
             person.moveStatusIndicator()
 
 
     def update(self):
         if hasattr(self, 'rect'):
-            dx, dy = (((self.currentConnection.getTo().x - self.currentConnection.getTo().offx) - self.pos.x) + self.offx, ((self.currentConnection.getTo().y - self.currentConnection.getTo().offy) - self.pos.y) + self.offy)
-            dis = math.sqrt(dx ** 2 + dy ** 2)
+            dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
+            dis = dxy.length()
 
             self.vel = (0, 0)
 
             if dis > 1 and self.moving: #move towards the node
                 # Slow down when reaching a stop
                 if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                    self.vel = (vec(dx, dy) * (self.speed / 10)) * self.game.dt
+                    self.vel = (dxy * (self.speed / 10)) * self.game.dt
                 else:
-                    self.vel = vec(dx, dy) / dis * float(self.speed) * self.game.dt
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt
                 self.movePeople()
 
             else: #its reached the node

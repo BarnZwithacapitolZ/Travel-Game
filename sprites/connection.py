@@ -13,6 +13,7 @@ class Connection:
         self.fromNode = fromNode
         self.toNode = toNode
         self.direction = direction #0 forwards, 1 backwards
+        self.sideColor = BLACK
 
         self.setColor()
         self.setLength()
@@ -31,7 +32,7 @@ class Connection:
         if self.fromNode is None or self.toNode is None:
             return
 
-        self.length = math.sqrt((self.fromNode.x - self.toNode.x) ** 2 + (self.fromNode.y - self.toNode.y) ** 2)
+        self.length = (self.fromNode.pos - self.toNode.pos).length()
         
 
     def setFromNode(self, fromNode):
@@ -40,6 +41,14 @@ class Connection:
 
     def setToNode(self, toNode):
         self.toNode = toNode
+
+    
+    def getColor(self):
+        return self.color
+
+
+    def getSideColor(self):
+        return self.sideColor
 
 
     def getFrom(self):

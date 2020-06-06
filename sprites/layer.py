@@ -41,22 +41,23 @@ class Layer(pygame.sprite.Sprite):
     def createConnections(self):
         for connection in self.connections:
             if connection.getDirection() == 0: # From node
-                self.drawConnection(connection.color, connection.fromNode, connection.toNode, 10, 10)
-                self.drawConnection(BLACK, connection.fromNode, connection.toNode, 3, 6)
-                self.drawConnection(BLACK, connection.fromNode, connection.toNode, 3, 14)
+                self.drawConnection(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
+
+                if connection.getSideColor() is not None:
+                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
+                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
 
 
     def drawConnection(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale()
+        dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset)
 
-        dx, dy = (((fromNode.x - fromNode.offx) - (toNode.x - toNode.offx)), ((fromNode.y - fromNode.offy) - (toNode.y - toNode.offy)))
-
-        if dx != 0 and dy != 0:
-            posx = (int(((fromNode.x - fromNode.offx) + offset) * scale), int(((fromNode.y - fromNode.offy) + 10) * scale))
-            posy = (int(((toNode.x - toNode.offx) + offset) * scale), int(((toNode.y - toNode.offy) + 10) * scale))
+        if dxy.x != 0 and dxy.y != 0:
+            posx = ((fromNode.pos - fromNode.offset) + vec(offset, 10)) * scale
+            posy = ((toNode.pos - toNode.offset) + vec(offset, 10)) * scale
         else:
-            posx = (int(((fromNode.x - fromNode.offx) + offset) * scale), int(((fromNode.y - fromNode.offy) + offset) * scale))
-            posy = (int(((toNode.x - toNode.offx) + offset) * scale), int(((toNode.y - toNode.offy) + offset) * scale))
+            posx = ((fromNode.pos - fromNode.offset) + vec(offset, offset)) * scale
+            posy = ((toNode.pos - toNode.offset) + vec(offset, offset)) * scale
         
         pygame.draw.line(self.game.renderer.gameDisplay, color, posx, posy, int(thickness * scale))
 

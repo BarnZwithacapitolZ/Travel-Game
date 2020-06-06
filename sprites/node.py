@@ -15,11 +15,11 @@ class Node(pygame.sprite.Sprite):
         self.game = game
         self.number = number
         self.connectionType = connectionType
-        self.offx, self.offy = 0, 0
         self.width = 20
         self.height = 20
-        self.x = x - self.offx
-        self.y = y - self.offy
+
+        self.offset = vec(0, 0)
+        self.pos = vec(x, y) + self.offset
 
         #all connections to / from this node
         self.connections = []
@@ -43,8 +43,7 @@ class Node(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.game.renderer.getScale()
-        self.rect.y = self.y * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
     def draw(self):
@@ -120,9 +119,8 @@ class BusStop(Node):
         super().__init__(game, groups, number, connectionType, x, y)
         self.width = 25
         self.height = 25
-        self.offx, self.offy = -2.5, -2.5
-        self.x = self.x + self.offx
-        self.y = self.y + self.offy
+        self.offset = vec(-2.5, -2.5)
+        self.pos = self.pos + self.offset
         self.images = ["busStation", "nodeSelected"]
 
 
@@ -132,7 +130,6 @@ class MetroStation(Node):
 
         self.width = 25
         self.height = 25
-        self.offx, self.offy = -2.5, -2.5 #move it back 2.5 pixels in x and y as it is a large surface
-        self.x = self.x + self.offx
-        self.y = self.y + self.offy
+        self.offset = vec(-2.5, -2.5)
+        self.pos = self.pos + self.offset
         self.images = ["metro", "nodeSelected"]

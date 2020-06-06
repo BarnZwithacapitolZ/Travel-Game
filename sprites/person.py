@@ -35,8 +35,8 @@ class Person(pygame.sprite.Sprite):
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
 
-        self.offx, self.offy = -10, -20 # Move it back 10 pixels x, 20 pixels y
-        self.pos = vec((self.currentNode.x + self.offx) - self.currentNode.offx, (self.currentNode.y + self.offy) - self.currentNode.offy)
+        self.offset = vec(-10, -20) #-10, -20 # Move it back 10 pixels x, 20 pixels y
+        self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
         self.vel = vec(0, 0)
 
         self.mouseOver = False
@@ -58,7 +58,7 @@ class Person(pygame.sprite.Sprite):
         if not hasattr(self.statusIndicator, 'rect'):
             return
 
-        self.statusIndicator.pos = self.pos + vec(self.statusIndicator.offx, self.statusIndicator.offy)
+        self.statusIndicator.pos = self.pos + self.statusIndicator.offset
         self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale()
 
 
@@ -159,7 +159,6 @@ class Person(pygame.sprite.Sprite):
             return self.renderer.layer3
 
 
-
     def update(self):
         if hasattr(self, 'rect'):
             self.events()
@@ -168,11 +167,11 @@ class Person(pygame.sprite.Sprite):
             if len(self.path) > 0:
                 path = self.path[0]
 
-                dx, dy = (((path.x - path.offx) - self.pos.x) + self.offx , ((path.y - path.offy) - self.pos.y) + self.offy)
-                dis = math.sqrt(dx ** 2 + dy ** 2)
+                dxy = (path.pos - path.offset) - self.pos + self.offset
+                dis = dxy.length()
 
                 if dis > 1:
-                    self.vel = vec(dx, dy) / dis * float(self.speed) * self.game.dt
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
 
                 else:
@@ -201,8 +200,8 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.width = 10
         self.height = 10
 
-        self.offx, self.offy = -2.5, -10
-        self.pos = self.currentPerson.pos + vec(self.offx, self.offy)
+        self.offset = vec(-2.5, -10)
+        self.pos = self.currentPerson.pos + self.offset
 
         self.dirty = True
 
@@ -221,12 +220,7 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
-
         self.rect.topleft = self.pos * self.game.renderer.getScale()
-
-        # self.rect.x = self.x * self.game.renderer.getScale()
-        # self.rect.y = self.y * self.game.renderer.getScale()
-
 
 
     def draw(self):

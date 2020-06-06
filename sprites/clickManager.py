@@ -30,9 +30,9 @@ class ClickManager:
 
 
         if self.node is not None and self.person is not None:
-            dx, dy = (((self.node.x - self.node.offx) - self.person.pos.x) + self.person.offx, ((self.node.y - self.node.offy ) - self.person.pos.y) + self.person.offy)
+            dxy = (self.node.pos - self.node.offset) - self.person.pos + self.person.offset
 
-            if abs(int(dx)) <= 50 and abs(int(dy)) <= 50:
+            if abs(int(dxy.x)) <= 50 and abs(int(dxy.y)) <= 50:
                 #path finding herererere
                 self.person.addToPath(self.node)
                 self.person.setStatus(Person.Status.WALKING)
