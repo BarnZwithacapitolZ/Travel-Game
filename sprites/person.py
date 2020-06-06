@@ -34,10 +34,10 @@ class Person(pygame.sprite.Sprite):
         self.currentNode = currentNode
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
+
         self.offx, self.offy = -10, -20 # Move it back 10 pixels x, 20 pixels y
-        
-        self.x = (self.currentNode.x + self.offx) - self.currentNode.offx
-        self.y = (self.currentNode.y + self.offy) - self.currentNode.offy
+        self.pos = vec((self.currentNode.x + self.offx) - self.currentNode.offx, (self.currentNode.y + self.offy) - self.currentNode.offy)
+        self.vel = vec(0, 0)
 
         self.mouseOver = False
         self.speed = 30
@@ -58,11 +58,8 @@ class Person(pygame.sprite.Sprite):
         if not hasattr(self.statusIndicator, 'rect'):
             return
 
-        self.statusIndicator.x = self.x + self.statusIndicator.offx
-        self.statusIndicator.y = self.y + self.statusIndicator.offy
-
-        self.statusIndicator.rect.x = self.statusIndicator.x * self.game.renderer.getScale()
-        self.statusIndicator.rect.y = self.statusIndicator.y * self.game.renderer.getScale()
+        self.statusIndicator.pos = self.pos + vec(self.statusIndicator.offx, self.statusIndicator.offy)
+        self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale()
 
 
     def __render(self):
@@ -72,8 +69,7 @@ class Person(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.game.renderer.getScale()
-        self.rect.y = self.y * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
     def draw(self):
@@ -120,10 +116,6 @@ class Person(pygame.sprite.Sprite):
         my -= self.game.renderer.getDifference()[1]
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-            
-
-            
-
             if self.status == Person.Status.UNASSIGNED:
                 if isinstance(self.currentNode, MetroStation) or isinstance(self.currentNode, BusStop):
                     self.status = Person.Status.WAITING
@@ -176,14 +168,11 @@ class Person(pygame.sprite.Sprite):
             if len(self.path) > 0:
                 path = self.path[0]
 
-                dx, dy = (((path.x - path.offx) - self.x) + self.offx , ((path.y - path.offy) - self.y) + self.offy)
+                dx, dy = (((path.x - path.offx) - self.pos.x) + self.offx , ((path.y - path.offy) - self.pos.y) + self.offy)
                 dis = math.sqrt(dx ** 2 + dy ** 2)
 
-
                 if dis > 1:
-                    self.x += (dx / dis * float(self.speed)) * self.game.dt
-                    self.y += (dy / dis * float(self.speed)) * self.game.dt
-
+                    self.vel = vec(dx, dy) / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
 
                 else:
@@ -196,8 +185,8 @@ class Person(pygame.sprite.Sprite):
                     if self.currentConnectionType != self.currentNode.connectionType:
                         self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
                 
-                self.rect.x = self.x * self.game.renderer.getScale()
-                self.rect.y = self.y * self.game.renderer.getScale()
+                self.pos += self.vel
+                self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
 
@@ -213,13 +202,11 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.height = 10
 
         self.offx, self.offy = -2.5, -10
-
-        self.x = self.currentPerson.x + self.offx
-        self.y = self.currentPerson.y + self.offy
+        self.pos = self.currentPerson.pos + vec(self.offx, self.offy)
 
         self.dirty = True
 
-        self.images = [None, "walking", "waiting", "boarding", "moving", "departing"]
+        self.images = [None, "walking", "waiting", "boarding", None, "departing"]
         self.currentState = self.currentPerson.getStatusValue()
 
 
@@ -235,8 +222,10 @@ class StatusIndicator(pygame.sprite.Sprite):
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
 
-        self.rect.x = self.x * self.game.renderer.getScale()
-        self.rect.y = self.y * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale()
+
+        # self.rect.x = self.x * self.game.renderer.getScale()
+        # self.rect.y = self.y * self.game.renderer.getScale()
 
 
 

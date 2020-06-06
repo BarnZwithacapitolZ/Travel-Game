@@ -91,12 +91,10 @@ class Transport(pygame.sprite.Sprite):
                 person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
 
                 # Position the person offset to the node
-                person.x = (self.currentNode.x - self.currentNode.offx) + person.offx
-                person.y = (self.currentNode.y - self.currentNode.offy) + person.offy
+                person.pos.x = (self.currentNode.x - self.currentNode.offx) + person.offx
+                person.pos.y = (self.currentNode.y - self.currentNode.offy) + person.offy
 
-                person.rect.x = person.x * self.game.renderer.getScale()
-                person.rect.y = person.y * self.game.renderer.getScale()
-
+                person.rect.topleft = person.pos * self.game.renderer.getScale()
                 person.moveStatusIndicator()
 
 
@@ -201,11 +199,8 @@ class Transport(pygame.sprite.Sprite):
             return
 
         for person in self.people:
-            person.x = self.pos.x + person.offx
-            person.y = self.pos.y + person.offy
-
-            person.rect.x = person.x * self.game.renderer.getScale()
-            person.rect.y = person.y * self.game.renderer.getScale()
+            person.pos = self.pos + vec(person.offx, person.offy)
+            person.rect.topleft = person.pos * self.game.renderer.getScale()
             person.moveStatusIndicator()
 
 

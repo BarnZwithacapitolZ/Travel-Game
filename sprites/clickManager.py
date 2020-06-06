@@ -30,7 +30,7 @@ class ClickManager:
 
 
         if self.node is not None and self.person is not None:
-            dx, dy = (((self.node.x - self.node.offx) - self.person.x) + self.person.offx, ((self.node.y - self.node.offy ) - self.person.y) + self.person.offy)
+            dx, dy = (((self.node.x - self.node.offx) - self.person.pos.x) + self.person.offx, ((self.node.y - self.node.offy ) - self.person.pos.y) + self.person.offy)
 
             if abs(int(dx)) <= 50 and abs(int(dy)) <= 50:
                 #path finding herererere
