@@ -6,6 +6,7 @@ import os
 from layer import *
 from clickManager import *
 from node import *
+from gridManager import *
 
 vec = pygame.math.Vector2
 
@@ -113,22 +114,30 @@ class SpriteRenderer():
 
     def createLevel(self):
         # ordering matters -> stack
-        
-        self.allLayers = Layer4(self, (self.allSprites, self.layer4))
-        layer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4))
-        layer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4))
-        layer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4)) # walking layer at the bottom so nodes are drawn above metro stations
+        self.allGridLayers = Layer4(self, (self.allSprites, self.layer4))
+        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4))
+        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4))
+        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4)) # walking layer at the bottom so nodes are drawn above metro stations
 
+        self.gridLayer1.grid.loadTransport("layer 1")
+        self.gridLayer2.grid.loadTransport("layer 2")
+        self.gridLayer3.grid.loadTransport("layer 3")
 
-        layer1.grid.loadTransport("layer 1")
-        layer2.grid.loadTransport("layer 2")
-        layer3.grid.loadTransport("layer 3")
-
-        layer1.addPerson()
-        layer2.addPerson()
-        layer3.addPerson()
+        # self.gridLayer1.addPerson()
+        self.gridLayer2.addPerson()
+        # self.gridLayer3.addPerson()
 
         self.removeDuplicates()
+
+
+    def getGridLayer(self, connectionType):
+        if connectionType == "layer 1":
+            return self.gridLayer1
+        if connectionType == "layer 2":
+            return self.gridLayer2
+        if connectionType == "layer 3":
+            return self.gridLayer3
+
 
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(self):
@@ -148,7 +157,6 @@ class SpriteRenderer():
             self.layer4.remove(sprite)
 
 
-
     def update(self):
         self.allSprites.update()
 
@@ -163,7 +171,9 @@ class SpriteRenderer():
 
 
     def resize(self):
-        self.allLayers.resize()
+        # If a layer has any images, they must be resized here
+        self.allGridLayers.resize()
+
         for sprite in self.allSprites:
             sprite.dirty = True
 

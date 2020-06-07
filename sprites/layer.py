@@ -24,6 +24,10 @@ class Layer(pygame.sprite.Sprite):
 
         self.components = []
 
+    
+    def getGrid(self):
+        return self.grid
+
 
     def addPerson(self):
         # Add the person to a random node on the layer

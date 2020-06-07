@@ -32,6 +32,7 @@ class Person(pygame.sprite.Sprite):
         self.height = 20
         
         self.currentNode = currentNode
+        self.startingConnectionType = self.currentNode.connectionType
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
 
@@ -40,7 +41,7 @@ class Person(pygame.sprite.Sprite):
         self.vel = vec(0, 0)
 
         self.mouseOver = False
-        self.speed = 30
+        self.speed = 32
         self.path = []
 
         self.status = Person.Status.UNASSIGNED
@@ -96,6 +97,18 @@ class Person(pygame.sprite.Sprite):
 
     def getStatusValue(self):
         return self.status.value
+
+
+    def getCurrentNode(self):
+        return self.currentNode
+
+
+    def getCurrentConnectionType(self):
+        return self.currentConnectionType
+
+    
+    def getStartingConnectionType(self):
+        return self.startingConnectionType
 
 
     def addToPath(self, node):
@@ -178,6 +191,7 @@ class Person(pygame.sprite.Sprite):
                 dis = dxy.length()
 
                 if dis > 1:
+                    self.status = Person.Status.WALKING
                     self.vel = dxy / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
 

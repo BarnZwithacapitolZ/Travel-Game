@@ -34,7 +34,6 @@ class GridManager:
             self.map = json.load(f)
 
 
-
     def loadGrid(self): #add parameter to change input map?
         with open(config["maps"]["testmap"], "r") as f:
             self.grid = f.read().splitlines()

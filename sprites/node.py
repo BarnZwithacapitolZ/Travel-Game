@@ -36,6 +36,11 @@ class Node(pygame.sprite.Sprite):
         self.images = ["node", "nodeSelected"]
         self.currentImage = 0
 
+        self.parent = None
+        self.g = 0
+        self.h = 0
+        self.f = 0
+
     def __render(self):
         self.dirty = False
 
@@ -69,6 +74,9 @@ class Node(pygame.sprite.Sprite):
     def getConnections(self):
         return self.connections
 
+    def getConnectionType(self):
+        return self.connectionType
+
 
     def getTransports(self):
         return self.transports
@@ -99,11 +107,11 @@ class Node(pygame.sprite.Sprite):
                 self.currentImage = 1
                 self.dirty = True
 
-                # print(self.number)
-                # print(self.people)
+            # print(self.number)
+            # print(self.people)
 
-                # for connection in self.connections:
-                #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getLength()) + ', direction ' + str(connection.getDirection()))
+            # for connection in self.connections:
+            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
         
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False

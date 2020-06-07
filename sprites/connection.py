@@ -33,6 +33,7 @@ class Connection:
             return
 
         self.length = ((self.fromNode.pos - self.fromNode.offset) - (self.toNode.pos - self.toNode.offset))
+        self.distance = self.length.length()
         
 
     def setFromNode(self, fromNode):
@@ -61,6 +62,9 @@ class Connection:
 
     def getLength(self):
         return self.length
+
+    def getDistance(self):
+        return self.distance
 
 
     def getType(self):

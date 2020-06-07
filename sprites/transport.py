@@ -216,7 +216,7 @@ class Transport(pygame.sprite.Sprite):
                 # Speed up when leaving a stop
                 # Change the number taken away from the length of the connection for the length of the smooth starting 
                 # Change the other number to say when the smooth starting should begin (after how many pixels)
-                if dis >= self.currentConnection.getLength().length() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
                     self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
 
                 # Slow down when reaching a stop
