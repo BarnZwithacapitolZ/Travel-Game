@@ -1,4 +1,5 @@
 from person import *
+from node import *
 import copy
 
 class ClickManager:
@@ -61,7 +62,8 @@ class ClickManager:
 
             for node in nodes:
                 if node.getNumber() == B.getNumber():
-                    finalNode = B
+                    if isinstance(B, MetroStation):
+                        finalNode = B
                     B = node
 
         # Within the same layer 
@@ -146,10 +148,12 @@ class ClickManager:
             children = self.getAdjacentNodes(currentNode)
 
             for child in children:
+                c = False
                 # Child is in the closed list
                 for closedNode in closedList:
                     if child.getNumber() == closedNode.getNumber():
-                        continue
+                        c = True
+                if c: continue
 
                 # Get the distance between the child and the current node
                 for connection in child.getConnections():
@@ -163,9 +167,11 @@ class ClickManager:
                 child.f = child.g + child.h
 
                 # Child is already in the open list
+                o = False
                 for openNode in openList:
                     if child.getNumber() == openNode.getNumber() and child.g > openNode.g:
-                        continue
+                        o = True
+                if o: continue
 
                 # Add the child to the open list
                 openList.append(child)

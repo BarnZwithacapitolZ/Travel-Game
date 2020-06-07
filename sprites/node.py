@@ -36,10 +36,6 @@ class Node(pygame.sprite.Sprite):
         self.images = ["node", "nodeSelected"]
         self.currentImage = 0
 
-        self.parent = None
-        self.g = 0
-        self.h = 0
-        self.f = 0
 
     def __render(self):
         self.dirty = False

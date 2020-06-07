@@ -129,7 +129,6 @@ class SpriteRenderer():
 
         self.removeDuplicates()
 
-
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
             return self.gridLayer1
@@ -144,6 +143,7 @@ class SpriteRenderer():
         seen = {}
         dupes = []
         
+        # To Do change this to use the grid layer instead
         for sprite in self.layer4:
             if isinstance(sprite, Node):
                 if sprite.getNumber() not in seen:

@@ -139,6 +139,10 @@ class Person(pygame.sprite.Sprite):
             self.game.clickManager.setPerson(None)
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+
+            # Visualize the players path
+            print(self.path)
+
             self.game.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
