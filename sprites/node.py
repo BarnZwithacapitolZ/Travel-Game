@@ -86,20 +86,24 @@ class Node(pygame.sprite.Sprite):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-            self.game.clickManager.setNode(self)
-            self.game.clickManager.setClicked(False)
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.clickManager.getPerson() is not None:
+            # If the player is moving on a transport, dont allow them to select a node
+            if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
+                self.game.clickManager.setNode(self)
+                self.game.clickManager.setClicked(False)
 
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
-            self.mouseOver = True
-            self.currentImage = 1
-            self.dirty = True
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() is not None:
+            # If the player is moving on a transport, dont show hovering over a node 
+            if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
+                self.mouseOver = True
+                self.currentImage = 1
+                self.dirty = True
 
-            # print(self.number)
-            # print(self.people)
+                # print(self.number)
+                # print(self.people)
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getLength()) + ', direction ' + str(connection.getDirection()))
+                # for connection in self.connections:
+                #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getLength()) + ', direction ' + str(connection.getDirection()))
         
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False

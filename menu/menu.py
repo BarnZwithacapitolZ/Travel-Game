@@ -257,12 +257,17 @@ class Hud(Menu):
         
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         dropdown = Label(self, "Dropdown", 25, Color("white"), (410, 10))
-        layers = Image(self, "layers", Color("white"), (50, 50), (20, 500))
+        home = Image(self, "home", Color("white"), (50, 50), (20, 500))
+        layers = Image(self, "layers", Color("white"), (50, 50), (80, 500))
         
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
         layers.addEvent(changeLayer, 'onMouseClick')
+
+        home.addEvent(showHome, 'onMouseOver')
+        home.addEvent(hideHome, 'onMouseOut')
+        home.addEvent(goHome, 'onMouseClick')
 
         dropdown.addEvent(toggleDropdown, 'onMouseClick')
         dropdown.addEvent(hoverGreen, 'onMouseOver')
@@ -271,9 +276,8 @@ class Hud(Menu):
 
         self.add(topbar)
         self.add(dropdown)
+        self.add(home)
         self.add(layers)
-
-
 
 
     def dropdown(self):

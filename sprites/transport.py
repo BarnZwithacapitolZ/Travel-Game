@@ -76,6 +76,9 @@ class Transport(pygame.sprite.Sprite):
                 self.currentNode.removePerson(person)
                 person.setStatus(Person.Status.MOVING)
 
+                # Make the person unclicked?
+                self.game.clickManager.setPerson(None)
+
 
 
     # Remove multiple people who are departing from the transportation

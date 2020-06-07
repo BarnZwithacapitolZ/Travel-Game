@@ -132,3 +132,18 @@ def changeLayer(obj, menu):
     current = menu.game.spriteRenderer.getLayer()
     current += 1 if current < 4 else -3
     menu.game.spriteRenderer.showLayer(current)
+
+
+
+def showHome(obj, menu):
+    obj.setImageName("homeSelected")
+
+
+def hideHome(obj, menu):
+    obj.setImageName("home")
+
+
+def goHome(obj, menu):
+    menu.game.paused = not menu.game.paused
+    menu.game.hud.open = not menu.game.hud.open
+    menu.game.optionMenu.main()

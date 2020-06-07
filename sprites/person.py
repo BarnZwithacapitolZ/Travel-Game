@@ -28,14 +28,14 @@ class Person(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.renderer = renderer
         self.game = self.renderer.game
-        self.width = 25
-        self.height = 25
+        self.width = 20
+        self.height = 20
         
         self.currentNode = currentNode
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
 
-        self.offset = vec(-10, -20) #-10, -20 # Move it back 10 pixels x, 20 pixels y
+        self.offset = vec(-10, -15) #-10, -20 # Move it back 10 pixels x, 20 pixels y
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
         self.vel = vec(0, 0)
 
@@ -48,7 +48,7 @@ class Person(pygame.sprite.Sprite):
         self.dirty = True
 
         self.mouseOver = False
-        self.images = ["person", "personSelected"]
+        self.images = ["person", "personSelected", "personClicked"]
         self.currentImage = 0
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
@@ -85,8 +85,14 @@ class Person(pygame.sprite.Sprite):
         self.currentNode = node
 
 
+    def setCurrentImage(self, currentImage):
+        self.currentImage = currentImage
+        self.dirty = True # Redraw the image to the new image
+
+
     def getStatus(self):
         return self.status
+
 
     def getStatusValue(self):
         return self.status.value
@@ -115,36 +121,37 @@ class Person(pygame.sprite.Sprite):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
+        # If the mouse is clicked, but not on a person, unset the person from the clickmanager (no one clicked)
+        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            self.game.clickManager.setPerson(None)
+
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            self.game.clickManager.setPerson(self)
+
             if self.status == Person.Status.UNASSIGNED:
                 if isinstance(self.currentNode, MetroStation) or isinstance(self.currentNode, BusStop):
                     self.status = Person.Status.WAITING
-                self.game.clickManager.setPerson(self)
 
             elif self.status == Person.Status.WAITING:
                 self.status = Person.Status.UNASSIGNED
-                self.game.clickManager.setPerson(None)
             
             elif self.status == Person.Status.BOARDING:
                 self.status = Person.Status.UNASSIGNED
-                self.game.clickManager.setPerson(None)
             
             elif self.status == Person.Status.MOVING:
                 self.status = Person.Status.DEPARTING
-                self.game.clickManager.setPerson(None)
 
             elif self.status == Person.Status.DEPARTING:
                 self.status = Person.Status.MOVING
-                self.game.clickManager.setPerson(None)
 
             self.game.clickManager.setClicked(False)
             
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and not self.game.clickManager.getPersonClicked():
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True
         
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and not self.game.clickManager.getPersonClicked():
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True

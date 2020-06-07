@@ -19,7 +19,6 @@ class Game:
         pygame.font.init()
         pygame.event.set_allowed([QUIT, VIDEORESIZE, KEYDOWN, MOUSEBUTTONDOWN])
 
-
         self.playing = True
         self.clock = pygame.time.Clock()
         self.running = True
@@ -40,13 +39,22 @@ class Game:
 
         self.setCaption()
         self.setIcon()
+        self.setCursor()
 
+
+    # Set the games caption (name)
     def setCaption(self):
         pygame.display.set_caption(config["game"]["gameTitle"])
 
+    # Set the games icon
     def setIcon(self):
         icon = self.imageLoader.getImage(config["game"]["icon"])
         pygame.display.set_icon(icon)
+
+    # Set the games cursor (cursor class?)
+    def setCursor(self):
+        pygame.mouse.set_cursor(*pygame.cursors.tri_left)
+
 
 
     def __quit(self):
@@ -69,8 +77,8 @@ class Game:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open:
                     self.paused = not self.paused
-
                     self.hud.open = not self.hud.open
+                    
                     if self.paused: self.optionMenu.main()
                     else: self.optionMenu.close()
 
@@ -118,6 +126,11 @@ class Game:
             self.renderer.prepareSurface(CREAM)
             self.__events()
             self.dt = self.clock.tick(60) / 1000
+
+            # Prevent game from updating if window is being moved?
+            if self.dt >= 0.05:
+                continue
+
             self.__update()
             self.__draw()
 

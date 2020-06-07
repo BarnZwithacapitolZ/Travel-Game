@@ -124,7 +124,9 @@ class SpriteRenderer():
         layer2.grid.loadTransport("layer 2")
         layer3.grid.loadTransport("layer 3")
 
+        layer1.addPerson()
         layer2.addPerson()
+        layer3.addPerson()
 
         self.removeDuplicates()
 
