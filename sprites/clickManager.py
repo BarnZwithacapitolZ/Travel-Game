@@ -54,17 +54,35 @@ class ClickManager:
         A = self.person.getCurrentNode() # Start (where we come from)
         B = self.node # End (Where we are going)
         finalNode = None
+        path = []
 
         # Not of the same connection
         if self.person.getStartingConnectionType() != B.getConnectionType():
-            layer = self.game.spriteRenderer.getGridLayer(A.getConnectionType())
-            nodes = layer.getGrid().getNodes()
+            if A.getConnectionType() != B.getConnectionType():
+                layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
+                nodes = layer.getGrid().getNodes()
 
-            for node in nodes:
-                if node.getNumber() == B.getNumber():
-                    if isinstance(B, MetroStation):
-                        finalNode = B
-                    B = node
+                for node in nodes:
+                    if node.getNumber() == A.getNumber():
+                        A = node
+
+                    if node.getNumber() == B.getNumber():
+                        if isinstance(B, MetroStation):
+                            finalNode = B
+                        B = node
+
+            elif A.getConnectionType() == B.getConnectionType():
+                layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
+                nodes = layer.getGrid().getNodes()
+
+                for node in nodes:
+                    if node.getNumber() == A.getNumber():
+                        A = node
+
+                    if node.getNumber() == B.getNumber():
+                        if isinstance(B, MetroStation):
+                            finalNode = B
+                        B = node                        
 
         # Within the same layer 
         if self.person.getStartingConnectionType() == B.getConnectionType():
@@ -80,9 +98,11 @@ class ClickManager:
                         A = node
 
             path = self.aStarPathFinding(A, B)
-            if finalNode is not None: path.append(finalNode)
-            return path
-        return None
+
+            # Append the final node and switch to the different layer
+            if finalNode is not None and len(path) > 0: path.append(finalNode)
+        
+        return path
 
     # for a given node, return the adjacent nodes
     def getAdjacentNodes(self, n):
@@ -176,6 +196,8 @@ class ClickManager:
                 # Add the child to the open list
                 openList.append(child)
 
+        print("Route is impossible")
+        return [] # Return the empty path if route is impossible
 
     def movePerson(self):
         if self.node and self.person is None:
@@ -186,11 +208,8 @@ class ClickManager:
                 dxy = (self.node.pos - self.node.offset) - self.person.pos + self.person.offset
 
 
-                path = self.pathFinding()
-
-                if path is not None:
-                    for node in path:
-                        self.person.addToPath(node)
+                for node in self.pathFinding():
+                    self.person.addToPath(node)
 
 
                 # if abs(int(dxy.x)) <= 50 and abs(int(dxy.y)) <= 50:
@@ -204,17 +223,3 @@ class ClickManager:
                 #after the click is managed, clear the player and the node to allow for another click management
                 self.person = None
                 self.node = None
-
-
-class AStarNode:
-    def __init__(self, parent = None, pos = None):
-        self.parent = parent
-        self.pos = pos
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.pos == other.pos
-    

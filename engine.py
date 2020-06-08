@@ -163,7 +163,7 @@ class SpriteRenderer():
 
     def showLayer(self, layer):
         self.currentLayer = layer
-        self.resize() #redraw the nodes so that the mouse cant collide with them
+        #self.resize() #redraw the nodes so that the mouse cant collide with them
 
 
     def getLayer(self):

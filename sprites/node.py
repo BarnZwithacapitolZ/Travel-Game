@@ -37,6 +37,10 @@ class Node(pygame.sprite.Sprite):
         self.currentImage = 0
 
 
+    # def __eq__(self, other):
+    #     return self.getNumber() == other.getNumber()
+
+
     def __render(self):
         self.dirty = False
 

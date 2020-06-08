@@ -127,6 +127,16 @@ class Person(pygame.sprite.Sprite):
         self.currentConnectionType = self.currentNode.connectionType
 
 
+    def drawPath(self):
+        if len(self.path) <= 0:
+            return
+
+        start = self.path[0]
+
+        for previous, current in zip(self.path, self.path[1:]):
+            print(previous.getNumber(), current.getNumber())
+
+
     def events(self):
         self.vel = vec(0, 0)
 
@@ -141,7 +151,6 @@ class Person(pygame.sprite.Sprite):
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
 
             # Visualize the players path
-            print(self.path)
 
             self.game.clickManager.setPerson(self)
 
@@ -198,6 +207,8 @@ class Person(pygame.sprite.Sprite):
                     self.status = Person.Status.WALKING
                     self.vel = dxy / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
+
+                    self.drawPath()
 
                 else:
                     self.status = Person.Status.UNASSIGNED

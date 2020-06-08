@@ -274,8 +274,8 @@ class Hud(Menu):
         dropdown.addEvent(hoverWhite, 'onMouseOut')
 
 
-        self.add(topbar)
-        self.add(dropdown)
+        # self.add(topbar)
+        # self.add(dropdown)
         self.add(home)
         self.add(layers)
 
