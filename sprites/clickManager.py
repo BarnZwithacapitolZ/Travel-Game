@@ -205,17 +205,8 @@ class ClickManager:
 
         if self.node is not None and self.person is not None:
             if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING:
-                dxy = (self.node.pos - self.node.offset) - self.person.pos + self.person.offset
-
-
                 for node in self.pathFinding():
                     self.person.addToPath(node)
-
-
-                # if abs(int(dxy.x)) <= 50 and abs(int(dxy.y)) <= 50:
-                #     #path finding herererere
-                #     self.person.addToPath(self.node)
-                #     self.person.setStatus(Person.Status.WALKING)
 
                 self.person.setCurrentImage(0)
                 self.personClicked = False

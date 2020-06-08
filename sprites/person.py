@@ -77,6 +77,9 @@ class Person(pygame.sprite.Sprite):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
 
+        self.drawPath()
+
+
 
     def setStatus(self, status):
         self.status = status
@@ -128,13 +131,22 @@ class Person(pygame.sprite.Sprite):
 
 
     def drawPath(self):
-        if len(self.path) <= 0:
+        if len(self.path) <= 0 or self.currentImage != 2:
             return
 
         start = self.path[0]
+        scale = self.game.renderer.getScale()
 
         for previous, current in zip(self.path, self.path[1:]):
-            print(previous.getNumber(), current.getNumber())
+            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
+            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
+
+            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, 5)
+            
+
+        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
+        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, 5)
 
 
     def events(self):
@@ -208,7 +220,6 @@ class Person(pygame.sprite.Sprite):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
 
-                    self.drawPath()
 
                 else:
                     self.status = Person.Status.UNASSIGNED

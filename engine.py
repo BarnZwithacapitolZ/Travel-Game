@@ -129,6 +129,7 @@ class SpriteRenderer():
 
         self.removeDuplicates()
 
+
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
             return self.gridLayer1
@@ -211,6 +212,3 @@ class ImageLoader:
         return self.images[key]
 
 
-class SoundEnging:
-    pass
-    

@@ -24,7 +24,7 @@ class GridManager:
         self.stops = []
 
 
-        self.setNodePositions()
+        self.nodePositions = GridManager.setNodePositions()
 
         self.testJsonLoader()
 
@@ -45,14 +45,17 @@ class GridManager:
 
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
-    def setNodePositions(self):
-        offx = 1.5
-        offy = 1.5
-        spacing = 50
+    @staticmethod
+    def setNodePositions():
+        offx = 1.5 # Offset on the x coordinate
+        offy = 1.5 # Offset on the y coordinate
+        spacing = 50 #spacing between each node
+        positions = []
 
         for i in range(18):
             for x in range(10):
-                self.nodePositions.append(((i + offx) * spacing, (x + offy) * spacing))
+                positions.append(((i + offx) * spacing, (x + offy) * spacing))
+        return positions
 
 
     def addNode(self, connection, connectionType, currentNodes, direction):

@@ -11,6 +11,7 @@ from engine import *
 from menu import *
 from sprites import *
 from menuComponents import *
+from mapEditor import *
 
 
 class Game:
