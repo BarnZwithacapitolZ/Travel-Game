@@ -136,17 +136,18 @@ class Person(pygame.sprite.Sprite):
 
         start = self.path[0]
         scale = self.game.renderer.getScale()
+        thickness = 3
 
         for previous, current in zip(self.path, self.path[1:]):
             posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
             posy = ((current.pos - current.offset) + vec(10, 10)) * scale
 
-            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, 5)
+            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, int(thickness * scale))
             
 
         startx = ((self.pos - self.offset) + vec(10, 10)) * scale
         starty = ((start.pos - start.offset) + vec(10, 10)) * scale
-        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, 5)
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
     def events(self):
@@ -220,19 +221,23 @@ class Person(pygame.sprite.Sprite):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt
                     self.moveStatusIndicator()
 
-
                 else:
-                    self.status = Person.Status.UNASSIGNED
                     self.currentNode.removePerson(self)
                     self.currentNode = path
                     self.currentNode.addPerson(self)
                     self.path.remove(path)
+
+                    # No more nodes in the path, the person is no longer walking and is unassigned
+                    if len(self.path) <= 0:
+                        self.status = Person.Status.UNASSIGNED
 
                     if self.currentConnectionType != self.currentNode.connectionType:
                         self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
                 
                 self.pos += self.vel
                 self.rect.topleft = self.pos * self.game.renderer.getScale()
+
+
 
 
 

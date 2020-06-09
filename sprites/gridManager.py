@@ -12,9 +12,10 @@ from connection import *
 from transport import *
 
 class GridManager:
-    def __init__(self, game, groups):
+    def __init__(self, game, groups, level):
         self.game = game
         self.groups = groups
+        self.level = level
 
         self.nodes = []
         self.nodePositions = []
@@ -26,22 +27,13 @@ class GridManager:
 
         self.nodePositions = GridManager.setNodePositions()
 
-        self.testJsonLoader()
+        self.loadMap()
 
 
-    def testJsonLoader(self):
-        with open('grid.json') as f:
+    def loadMap(self):
+        with open(self.level) as f:
             self.map = json.load(f)
 
-
-    def loadGrid(self): #add parameter to change input map?
-        with open(config["maps"]["testmap"], "r") as f:
-            self.grid = f.read().splitlines()
-
-
-    def loadStops(self):
-        with open('stops.txt', "r") as f:
-                self.stops = f.read().splitlines()
 
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
@@ -67,6 +59,7 @@ class GridManager:
 
             self.nodes.append(n)
             currentNodes.append(connection[direction])
+
         return currentNodes
 
 

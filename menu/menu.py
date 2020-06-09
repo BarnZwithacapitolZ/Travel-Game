@@ -33,10 +33,10 @@ class Menu:
                 
 
     def display(self):    
-        for component in self.components:
-            component.draw()
-
         if self.open:
+            for component in self.components:
+                component.draw()
+                
             self.events()
             self.animate()
 
@@ -71,8 +71,8 @@ class Menu:
                 if len(component.events) > 0:
                     for event in component.events:
                         if event[1] == 'onMouseClick':
-                            if component.rect.collidepoint((mx, my)) and self.clicked:
-                                self.clicked = False
+                            if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+                                self.game.clickManager.setClicked(False)
                                 event[0](component, self)
                                 component.dirty = True
 
@@ -120,14 +120,17 @@ class MainMenu(Menu):
         title2 = Label(self, "The", 30, Color("white"), (100, 170))
         title3 = Label(self, "Public", 70, Color("white"), (100, 200))
 
-        
-
         cont = Label(self, "Continue", 50,  BLACK, (100, 320))
-        end = Label(self, "Quit", 50, BLACK, (100, 380))
+        editor = Label(self, "Level editor", 50, BLACK, (100, 380))
+        end = Label(self, "Quit", 50, BLACK, (100, 440))
 
-        cont.addEvent(closeMenu, 'onMouseClick')
+        cont.addEvent(continueGame, 'onMouseClick')
         cont.addEvent(hoverOver, 'onMouseOver')
         cont.addEvent(hoverOut, 'onMouseOut')
+
+        editor.addEvent(hoverOver, 'onMouseOver')
+        editor.addEvent(hoverOut, 'onMouseOut')
+        editor.addEvent(openMapEditor, 'onMouseClick')
 
         end.addEvent(closeGame, 'onMouseClick')
         end.addEvent(hoverOver, 'onMouseOver')
@@ -139,6 +142,7 @@ class MainMenu(Menu):
         self.add(title2)
         self.add(title3)
         self.add(cont)
+        self.add(editor)
         self.add(end)
 
 
@@ -245,7 +249,7 @@ class OptionMenu(Menu):
 
     
 
-class Hud(Menu):
+class GameHud(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
 
@@ -334,3 +338,16 @@ class Hud(Menu):
 
         self.add(optionBackground)
         self.add(optionText)
+
+
+class EditorHud(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+
+    def main(self):
+        self.open = True
+
+        topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
+
+        self.add(topbar)

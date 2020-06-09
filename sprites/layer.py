@@ -10,14 +10,15 @@ from gridManager import *
 from person import *
 
 class Layer(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups):
+    def __init__(self, spriteRenderer, groups, level):
         self.groups = groups
         #layer added to sprite group first
         pygame.sprite.Sprite.__init__(self, self.groups) 
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
+        self.level = level
    
-        self.grid = GridManager(self.game, self.groups) # each layer has its own grid manager
+        self.grid = GridManager(self.game, self.groups, self.level) # each layer has its own grid manager
         
         self.nodes = self.grid.getNodes()
         self.connections = self.grid.getConnections()
@@ -30,6 +31,11 @@ class Layer(pygame.sprite.Sprite):
 
 
     def addPerson(self):
+        # No nodes in the layer to add the person to
+        if len(self.nodes) <= 0:
+            return 
+
+
         # Add the person to a random node on the layer
         node = random.randint(0, len(self.nodes) - 1)
         p = Person(self.spriteRenderer, self.groups, self.nodes[node])
@@ -83,31 +89,31 @@ class Layer(pygame.sprite.Sprite):
 
 
 class Layer1(Layer):
-    def __init__(self, spriteRenderer, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createGrid("layer 1")
         self.addConnections()  
 
 
 class Layer2(Layer):
-    def __init__(self, spriteRenderer, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createGrid("layer 2")
         self.addConnections()     
 
 
 
 class Layer3(Layer):
-    def __init__(self, spriteRenderer, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createGrid("layer 3")
         self.addConnections()            
 
 
 
 class Layer4(Layer):
-    def __init__(self, spriteRenderer, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
         self.addComponent(background)
 

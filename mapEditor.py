@@ -1,6 +1,8 @@
 import pygame
 
 from gridManager import *
+from node import *
+from menu import *
 
 class MapEditor:
     def __init__(self, game):
@@ -9,6 +11,24 @@ class MapEditor:
 
         self.createGrid()
 
+        self.hud = EditorHud(self.game)
+        self.rendering = False
+
+
+    def setRendering(self, rendering):
+        self.rendering = rendering
+        self.hud.main() if self.rendering else self.hud.close()
+
+
+    def getHud(self):
+        return self.hud
+
     def createGrid(self):
-        print(self.nodePositions)
+        pass
+
+
+
+    def render(self):
+        if self.rendering:
+            self.hud.display()
 

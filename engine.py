@@ -7,6 +7,7 @@ from layer import *
 from clickManager import *
 from node import *
 from gridManager import *
+from menu import *
 
 vec = pygame.math.Vector2
 
@@ -22,8 +23,6 @@ class Renderer:
 
         self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE)
         self.gameDisplay = pygame.Surface((self.width, self.height))
-
-        # self.gameDisplay.set_alpha(None)
 
         self.scale = 1
         self.surfaces = []
@@ -83,7 +82,7 @@ class Renderer:
         if fullscreen:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
-            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE)
+            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
         self.gameDisplay = pygame.Surface((self.width, self.height))  
 
 
@@ -111,13 +110,36 @@ class SpriteRenderer():
         self.game = game
         self.currentLayer = 4
 
+        # Hud for when the game is running
+        self.hud = GameHud(self.game)
+        self.rendering = False
 
-    def createLevel(self):
+
+    def setRendering(self, rendering):
+        self.rendering = rendering
+        self.hud.main() if self.rendering else self.hud.close()
+
+
+    def getHud(self):
+        return self.hud
+
+
+    def clearLevel(self):
+        self.allSprites.empty()
+        self.layer1.empty()
+        self.layer2.empty()
+        self.layer3.empty()
+        self.layer4.empty()
+
+
+    def createLevel(self, level):
+        self.clearLevel()
+
         # ordering matters -> stack
-        self.allGridLayers = Layer4(self, (self.allSprites, self.layer4))
-        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4))
-        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4))
-        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4)) # walking layer at the bottom so nodes are drawn above metro stations
+        self.allGridLayers = Layer4(self, (self.allSprites, self.layer4), level)
+        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level)
+        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level)
+        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level) # walking layer at the bottom so nodes are drawn above metro stations
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
@@ -128,6 +150,7 @@ class SpriteRenderer():
         # self.gridLayer3.addPerson()
 
         self.removeDuplicates()
+
 
 
     def getGridLayer(self, connectionType):
@@ -173,28 +196,31 @@ class SpriteRenderer():
 
     def resize(self):
         # If a layer has any images, they must be resized here
-        self.allGridLayers.resize()
+        if self.rendering:
+            self.allGridLayers.resize()
+            self.hud.resize()
 
-        for sprite in self.allSprites:
-            sprite.dirty = True
+            for sprite in self.allSprites:
+                sprite.dirty = True
+
+
+    def renderLayer(self, layer, group):
+        if self.currentLayer == layer:
+            for sprite in group:
+                sprite.draw()
 
 
     def render(self):
-        if self.currentLayer == 1:
-            for sprite in self.layer1:
-                sprite.draw()
+        if self.rendering:
+            self.renderLayer(1, self.layer1)
+            self.renderLayer(2, self.layer2)
+            self.renderLayer(3, self.layer3)
+            self.renderLayer(4, self.layer4)
+
+
+            # Render the hud above all the other sprites
+            self.hud.display()
             
-        elif self.currentLayer == 2:
-            for sprite in self.layer2:
-                sprite.draw()
-
-        elif self.currentLayer == 3:
-            for sprite in self.layer3:
-                sprite.draw()
-
-        elif self.currentLayer == 4:
-            for sprite in self.layer4:
-                sprite.draw()
 
 
 class ImageLoader:

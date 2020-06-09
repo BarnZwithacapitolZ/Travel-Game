@@ -125,7 +125,6 @@ class Node(pygame.sprite.Sprite):
 
 
 
-
 class BusStop(Node):
     def __init__(self, game, groups, number, connectionType, x, y):
         super().__init__(game, groups, number, connectionType, x, y)

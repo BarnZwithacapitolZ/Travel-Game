@@ -1,0 +1,38 @@
+{
+    "mapName": "Another test map",
+    "connections": {
+        "layer 1": [
+            [10, 11],
+            [11, 12],
+            [12, 13]
+        ],
+        "layer 2": [
+            [100, 101]
+        ],
+        "layer 3": [
+
+        ]
+    },
+    "transport": {
+        "layer 1": [
+            11
+        ],
+        "layer 2": [
+
+        ],
+        "layer 3": [
+
+        ]
+    },
+    "stops": {
+        "layer 1": [
+
+        ],
+        "layer 2": [
+
+        ],
+        "layer 3": [
+
+        ]
+    }
+}

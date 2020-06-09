@@ -17,11 +17,6 @@ def closeGame(obj, menu):
     menu.game.playing = False
 
 
-def showMainMenu(obj, menu):
-    menu.close()
-    menu.game.paused = False
-    menu.game.mainMenu.main()
-
 def showMain(obj, menu):
     menu.close()
     menu.main()
@@ -121,9 +116,35 @@ def hoverOutAnimation(obj, menu, animation):
 
 
 
+##### Option-Meny Functions #####
+
+# Game option menu
+def showMainMenu(obj, menu):
+    menu.close()
+    menu.game.paused = False
+    menu.game.spriteRenderer.setRendering(False) # Close the hud
+    menu.game.mapEditor.setRendering(False)
+    menu.game.mainMenu.main()
+
+
+
+##### Main-Menu Functions #####
+def continueGame(obj, menu):
+    menu.game.spriteRenderer.createLevel("testmap.json")
+    menu.game.spriteRenderer.setRendering(True) #Load the hud
+    closeMenu(obj, menu)
+
+def openMapEditor(obj, menu):
+    menu.game.mapEditor.setRendering(True)
+    closeMenu(obj, menu)
+
+
+
+##### Hud Functions #####
+ 
+# Layer Functions
 def showLayers(obj, menu):
     obj.setImageName("layersSelected")
-
 
 def hideLayers(obj, menu):
     obj.setImageName("layers")
@@ -133,8 +154,7 @@ def changeLayer(obj, menu):
     current += 1 if current < 4 else -3
     menu.game.spriteRenderer.showLayer(current)
 
-
-
+# Home button functions
 def showHome(obj, menu):
     obj.setImageName("homeSelected")
 
@@ -145,5 +165,5 @@ def hideHome(obj, menu):
 
 def goHome(obj, menu):
     menu.game.paused = not menu.game.paused
-    menu.game.hud.open = not menu.game.hud.open
+    menu.game.hud.open = not menu.game.hud.open # To Do: fix
     menu.game.optionMenu.main()

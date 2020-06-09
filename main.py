@@ -29,9 +29,13 @@ class Game:
         self.renderer = Renderer()
         self.clickManager = ClickManager(self)
         self.imageLoader = ImageLoader()
+        
+        # Map editor 
+        self.mapEditor = MapEditor(self)
+
+        # Menu's
         self.mainMenu = MainMenu(self)
         self.optionMenu = OptionMenu(self)
-        self.hud = Hud(self)
 
         self.spriteRenderer = SpriteRenderer(self)
 
@@ -57,6 +61,9 @@ class Game:
         pygame.mouse.set_cursor(*pygame.cursors.tri_left)
 
 
+    def getPaused(self):
+        return self.paused
+
 
     def __quit(self):
         self.playing = False
@@ -71,14 +78,12 @@ class Game:
                 self.renderer.setScale(e.size, self.fullscreen)
                 self.spriteRenderer.resize()
                 self.optionMenu.resize()
-                self.mainMenu.resize()
-                self.hud.resize()
-               
+                self.mainMenu.resize()               
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open:
                     self.paused = not self.paused
-                    self.hud.open = not self.hud.open
+                    # self.hud.open = not self.hud.open
                     
                     if self.paused: self.optionMenu.main()
                     else: self.optionMenu.close()
@@ -102,25 +107,14 @@ class Game:
                     if pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
 
-
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                self.optionMenu.setClicked(True)
-                self.mainMenu.setClicked(True)
-                self.hud.setClicked(True)
-                self.clickManager.setClicked(True)
-            else:
-                self.optionMenu.setClicked(False)
-                self.mainMenu.setClicked(False)
-                self.hud.setClicked(False)
-                self.clickManager.setClicked(False)
+            self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
 
 
     def run(self):
-        self.spriteRenderer.createLevel()
+        # self.spriteRenderer.createLevel("grid.json")
 
         #main menu
         self.mainMenu.main()
-        self.hud.main()
 
         # Game loop
         while self.playing:
@@ -148,10 +142,10 @@ class Game:
     def __draw(self):
         #add sprites
         self.spriteRenderer.render()
+        self.mapEditor.render()
 
         #add menus when not paused
-        if not self.mainMenu.open: self.hud.display()
-        if self.paused: self.optionMenu.display()
+        if self.paused: self.optionMenu.display() #To Do: Different option menus for sprite renderer and level editor
         if self.mainMenu.open: self.mainMenu.display()
 
         # render everything
