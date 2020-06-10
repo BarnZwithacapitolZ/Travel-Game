@@ -10,7 +10,7 @@ vec = pygame.math.Vector2
 class Node(pygame.sprite.Sprite):
     def __init__(self, game, groups, number, connectionType, x, y):
         self.groups = groups
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        super().__init__(self.groups)
 
         self.game = game
         self.number = number
@@ -37,8 +37,56 @@ class Node(pygame.sprite.Sprite):
         self.currentImage = 0
 
 
-    # def __eq__(self, other):
-    #     return self.getNumber() == other.getNumber()
+    #### Getters ####
+
+    # Return the connections, in a list, of the node
+    def getConnections(self):
+        return self.connections
+
+
+    # Return the connection type of the node
+    def getConnectionType(self):
+        return self.connectionType
+
+
+    # Return the transports at the node -- is this even used??
+    def getTransports(self):
+        return self.transports
+
+
+    # Return the people, as a list, currently at the node
+    def getPeople(self):
+        return self.people
+
+
+    # Return the node number
+    def getNumber(self):
+        return self.number
+
+
+    #### Setters ####
+
+    # Add a connection to the node
+    def addConnection(self, connection):
+        self.connections.append(connection)
+
+
+    # Add a transport to the node
+    def addTransport(self, transport):
+        self.transports.append(transport)
+
+
+    # Add a person to the node
+    def addPerson(self, person):
+        self.people.append(person)
+
+
+    # Remove a person from the node
+    def removePerson(self, person):
+        if person not in self.people:
+            return
+
+        self.people.remove(person)
 
 
     def __render(self):
@@ -55,39 +103,6 @@ class Node(pygame.sprite.Sprite):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
 
-    
-    def addConnection(self, connection):
-        self.connections.append(connection)
-
-    
-    def addTransport(self, transport):
-        self.transports.append(transport)
-
-    
-    def addPerson(self, person):
-        self.people.append(person)
-    
-    def removePerson(self, person):
-        self.people.remove(person)
-
-
-    def getConnections(self):
-        return self.connections
-
-    def getConnectionType(self):
-        return self.connectionType
-
-
-    def getTransports(self):
-        return self.transports
-
-
-    def getPeople(self):
-        return self.people
-
-
-    def getNumber(self):
-        return self.number
 
     def events(self):
         mx, my = pygame.mouse.get_pos()
@@ -101,6 +116,7 @@ class Node(pygame.sprite.Sprite):
                 self.game.clickManager.setClicked(False)
 
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() is not None:
+
             # If the player is moving on a transport, dont show hovering over a node 
             if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
                 self.mouseOver = True
@@ -110,8 +126,8 @@ class Node(pygame.sprite.Sprite):
             # print(self.number)
             # print(self.people)
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+            for connection in self.connections:
+                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
         
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False

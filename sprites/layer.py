@@ -7,13 +7,14 @@ import random
 import math
 
 from gridManager import *
+from connection import *
 from person import *
 
 class Layer(pygame.sprite.Sprite):
     def __init__(self, spriteRenderer, groups, level):
         self.groups = groups
         #layer added to sprite group first
-        pygame.sprite.Sprite.__init__(self, self.groups) 
+        super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.level = level
@@ -25,11 +26,28 @@ class Layer(pygame.sprite.Sprite):
 
         self.components = []
 
+
+    #### Getters ####
     
+    # Get the grid of the layer
     def getGrid(self):
         return self.grid
 
 
+    #### Setters ####
+
+    # Add a component to the layer
+    def addComponent(self, component):
+        self.components.append(component)
+
+
+    # Add the connections to each of the nodes in each connection
+    def addConnections(self):
+        for connection in self.connections:
+            connection.getFrom().addConnection(connection)
+
+
+    # Add a person to the layer
     def addPerson(self):
         # No nodes in the layer to add the person to
         if len(self.nodes) <= 0:
@@ -44,18 +62,11 @@ class Layer(pygame.sprite.Sprite):
         p = Person(self.spriteRenderer, self.groups, self.nodes[node])
         return p
 
-    def addComponent(self, component):
-        self.components.append(component)
-
-
-    def addConnections(self):
-        for connection in self.connections:
-            connection.getFrom().addConnection(connection)
-
-
+    
+    # Create the connections by drawing them to the screen
     def createConnections(self):
         for connection in self.connections:
-            if connection.getDirection() == 0: # From node
+            if connection.getDirection() == Connection.Direction.FORWARDS: # From node
                 self.drawConnection(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
 
                 if connection.getSideColor() is not None:
@@ -63,6 +74,7 @@ class Layer(pygame.sprite.Sprite):
                     self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
 
 
+    # Draw a connection to the screen
     def drawConnection(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale()
         dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset)

@@ -25,7 +25,7 @@ class Person(pygame.sprite.Sprite):
 
     def __init__(self, renderer, groups, currentNode):
         self.groups = groups
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        super().__init__(self.groups)
         self.renderer = renderer
         self.game = self.renderer.game
         self.width = 20
@@ -55,12 +55,108 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
 
+    #### Getters ####
+
+    # Return the current status (Status) of the person
+    def getStatus(self):
+        return self.status
+
+
+    # Return the status value (int) of the person
+    def getStatusValue(self):
+        return self.status.value
+
+
+    # Return the current node that the person is at
+    def getCurrentNode(self):
+        return self.currentNode
+
+
+    # Return the current connection type of the person
+    def getCurrentConnectionType(self): 
+        return self.currentConnectionType
+
+
+    # Return the connection type that the person started at
+    def getStartingConnectionType(self):
+        return self.startingConnectionType
+
+
+    # Return the layer, given the connection 
+    def getLayer(self, connection):
+        if connection == "layer 1":
+            return self.renderer.layer1
+        if connection == "layer 2":
+            return self.renderer.layer2
+        if connection == "layer 3":
+            return self.renderer.layer3
+
+
+    #### Setters ####
+
+    # Set the persons status
+    def setStatus(self, status):
+        self.status = status
+
+
+    # Set the current node that the person is at
+    def setCurrentNode(self, node):
+        self.currentNode = node
+
+
+    # Set the current image of the person and change to that image
+    def setCurrentImage(self, currentImage):
+        self.currentImage = currentImage
+        self.dirty = True # Redraw the image to the new image
+
+
+    # Add a node to the persons path
+    def addToPath(self, node):
+        self.path.append(node)
+
+    
+    # Remove a node from the persons path
+    def removeFromPath(self, node):
+        self.path.remove(node)
+
+
+    # Switch the person and their status indicator from one layer to a new layer
+    def switchLayer(self, oldLayer, newLayer):
+        oldLayer.remove(self)
+        newLayer.add(self)
+        oldLayer.remove(self.statusIndicator)
+        newLayer.add(self.statusIndicator)
+        self.currentConnectionType = self.currentNode.connectionType
+
+
+    # Move the status indicator above the plerson so follow the persons movement
     def moveStatusIndicator(self):
         if not hasattr(self.statusIndicator, 'rect'):
             return
 
         self.statusIndicator.pos = self.pos + self.statusIndicator.offset
         self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale()
+    
+
+    # Visualize the players path by drawing the connection between each node in the path
+    def drawPath(self):
+        if len(self.path) <= 0 or self.currentImage != 2:
+            return
+
+        start = self.path[0]
+        scale = self.game.renderer.getScale()
+        thickness = 3
+
+        for previous, current in zip(self.path, self.path[1:]):
+            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
+            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
+
+            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, int(thickness * scale))
+            
+        # Connection from player to the first node in the path
+        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
+        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
     def __render(self):
@@ -77,77 +173,8 @@ class Person(pygame.sprite.Sprite):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
 
+         # Visualize the players path
         self.drawPath()
-
-
-
-    def setStatus(self, status):
-        self.status = status
-
-
-    def setCurrentNode(self, node):
-        self.currentNode = node
-
-
-    def setCurrentImage(self, currentImage):
-        self.currentImage = currentImage
-        self.dirty = True # Redraw the image to the new image
-
-
-    def getStatus(self):
-        return self.status
-
-
-    def getStatusValue(self):
-        return self.status.value
-
-
-    def getCurrentNode(self):
-        return self.currentNode
-
-
-    def getCurrentConnectionType(self):
-        return self.currentConnectionType
-
-    
-    def getStartingConnectionType(self):
-        return self.startingConnectionType
-
-
-    def addToPath(self, node):
-        self.path.append(node)
-
-    
-    def removeFromPath(self, node):
-        self.path.remove(node)
-
-
-    def switchLayer(self, oldLayer, newLayer):
-        oldLayer.remove(self)
-        newLayer.add(self)
-        oldLayer.remove(self.statusIndicator)
-        newLayer.add(self.statusIndicator)
-        self.currentConnectionType = self.currentNode.connectionType
-
-
-    def drawPath(self):
-        if len(self.path) <= 0 or self.currentImage != 2:
-            return
-
-        start = self.path[0]
-        scale = self.game.renderer.getScale()
-        thickness = 3
-
-        for previous, current in zip(self.path, self.path[1:]):
-            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
-            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
-
-            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, int(thickness * scale))
-            
-
-        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
-        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
-        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
     def events(self):
@@ -162,9 +189,6 @@ class Person(pygame.sprite.Sprite):
             self.game.clickManager.setPerson(None)
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-
-            # Visualize the players path
-
             self.game.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
@@ -185,24 +209,17 @@ class Person(pygame.sprite.Sprite):
 
             self.game.clickManager.setClicked(False)
             
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and not self.game.clickManager.getPersonClicked():
+        # If the player is clicked on, dont show hover effect
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() != self:
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True
         
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and not self.game.clickManager.getPersonClicked():
+        # If the player is clicked on, dont show hover effect
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.game.clickManager.getPerson() != self:
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
-
-
-    def getLayer(self, connection):
-        if connection == "layer 1":
-            return self.renderer.layer1
-        if connection == "layer 2":
-            return self.renderer.layer2
-        if connection == "layer 3":
-            return self.renderer.layer3
 
 
     def update(self):
@@ -238,14 +255,10 @@ class Person(pygame.sprite.Sprite):
                 self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
-
-
-
-
 class StatusIndicator(pygame.sprite.Sprite):
     def __init__(self, game, groups, currentPerson):
         self.groups = groups
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        super().__init__(self.groups)
         self.game = game
         self.currentPerson = currentPerson
 

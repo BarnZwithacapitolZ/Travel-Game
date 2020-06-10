@@ -9,13 +9,14 @@ import math
 
 from node import *
 from person import *
+from connection import *
 vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
     def __init__(self, game, groups, currentConnection, direction):
         self.groups = groups
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        super().__init__(self.groups)
         
         self.game = game
         self.currentConnection = currentConnection
@@ -43,61 +44,19 @@ class Transport(pygame.sprite.Sprite):
         self.stopType = MetroStation
 
 
-    def addPerson(self, person):
-        self.people.append(person)
+    #### Getters ####
 
-    def removePerson(self, person):
-        self.people.remove(person)
-    
+    # Return the people, in a list, current on the transport
     def getPeople(self):
         return self.people
 
-    # Set people waiting at the train station to boarding the transportation 
-    def setPeopleDeparting(self):
-        # If theres no one at the station, dont bother trying to add anyone
-        if len(self.currentNode.getPeople()) <= 0:
-            return
 
-        for person in self.currentNode.getPeople():
-            if person.getStatus() == Person.Status.WAITING: # If they're waiting for the train
-                person.setStatus(Person.Status.BOARDING)
+    # Return if the transport is moving or not
+    def getMoving(self):
+        return self.moving
 
 
-    # Add multiple people who are departing on the transportation
-    def addPeople(self):
-        # If theres no one at the station, dont bother trying to add anyone
-        if len(self.currentNode.getPeople()) <= 0:
-            return
-
-        for person in self.currentNode.getPeople():
-            # Only remove people from the station once the train is moving
-            if person.getStatus() == Person.Status.BOARDING:
-                self.addPerson(person)
-                self.currentNode.removePerson(person)
-                person.setStatus(Person.Status.MOVING)
-
-                # Make the person unclicked?
-                self.game.clickManager.setPerson(None)
-
-
-
-    # Remove multiple people who are departing from the transportation
-    def removePeople(self):
-        if len(self.people) <= 0:
-            return
-
-        for person in self.people:
-            if person.getStatus() == Person.Status.DEPARTING:
-                self.removePerson(person) # Remove the person from the transport
-                self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
-                person.setStatus(Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
-                person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
-
-                # Position the person offset to the node
-                person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
-                person.rect.topleft = person.pos * self.game.renderer.getScale()
-                person.moveStatusIndicator()
-
+    #### Setters ####
 
     def setSpeed(self, speed):
         self.speed = speed
@@ -105,33 +64,11 @@ class Transport(pygame.sprite.Sprite):
     def setDirection(self, direction):
         self.direction = direction
 
-
     def setMoving(self, moving):
         self.moving = moving
 
-    
-    def getMoving(self):
-        return self.moving
-        
-        
-    def __render(self):
-        self.dirty = False
 
-        self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
-        self.rect = self.image.get_rect()
-
-    def draw(self):
-        if self.dirty or self.image is None: self.__render()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
-        if self.timer > 0:
-            #draw the time indicator
-            self.drawTimer()
-
-
-
+    # Set the connection that the transport will follow next
     def setConnection(self, nextNode):
         possibleNodes = []
         backwardsNodes = []
@@ -148,24 +85,13 @@ class Transport(pygame.sprite.Sprite):
             # if theres multiple possible nodes, pick a random one                          #TO DO - make transports follow specific path
             self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
         else:
-            self.direction = not self.direction
+            self.direction = Connection.Direction(not self.direction.value) # Go the opposite direction
             self.currentConnection = backwardsNodes[0]
 
         self.currentNode = self.currentConnection.getFrom()
 
 
-
-    def drawTimer(self):
-        scale = self.game.renderer.getScale()
-
-        # Arc Indicator 
-        offx = 0.01
-        step = self.timer / (self.timerLength / 2) + 0.02
-        for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, 8)
-            offx += 0.01
-
-
+    # Set the next connection for the transport to follow
     def setNextConnection(self):
         nextNode = self.currentConnection.getTo()
         
@@ -193,6 +119,63 @@ class Transport(pygame.sprite.Sprite):
                 self.addPeople()
 
 
+    # Set people waiting at the train station to boarding the transportation 
+    def setPeopleDeparting(self):
+        # If theres no one at the station, dont bother trying to add anyone
+        if len(self.currentNode.getPeople()) <= 0:
+            return
+
+        for person in self.currentNode.getPeople():
+            if person.getStatus() == Person.Status.WAITING: # If they're waiting for the train
+                person.setStatus(Person.Status.BOARDING)
+
+
+    # Add a person to the transport
+    def addPerson(self, person):
+        self.people.append(person)
+
+    # Remove a person from the transport
+    def removePerson(self, person):
+        self.people.remove(person)
+    
+    
+
+
+    # Add multiple people who are departing on the transportation
+    def addPeople(self):
+        # If theres no one at the station, dont bother trying to add anyone
+        if len(self.currentNode.getPeople()) <= 0:
+            return
+
+        for person in self.currentNode.getPeople():
+            # Only remove people from the station once the train is moving
+            if person.getStatus() == Person.Status.BOARDING:
+                self.addPerson(person)
+                self.currentNode.removePerson(person)
+                person.setStatus(Person.Status.MOVING)
+
+                # Make the person unclicked?
+                self.game.clickManager.setPerson(None)
+
+
+    # Remove multiple people who are departing from the transportation
+    def removePeople(self):
+        if len(self.people) <= 0:
+            return
+
+        for person in self.people:
+            if person.getStatus() == Person.Status.DEPARTING:
+                self.removePerson(person) # Remove the person from the transport
+                self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
+                person.setStatus(Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
+                person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
+
+                # Position the person offset to the node
+                person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
+                person.rect.topleft = person.pos * self.game.renderer.getScale()
+                person.moveStatusIndicator()
+
+
     #move all the people within the transport relative to its location
     def movePeople(self):
         if len(self.people) <= 0:
@@ -204,9 +187,41 @@ class Transport(pygame.sprite.Sprite):
             person.moveStatusIndicator()
 
 
-    def update(self):
-        # print(self.pos)
+    # Draw how long is left at each stop 
+    def drawTimer(self):
+        scale = self.game.renderer.getScale()
 
+        # Arc Indicator 
+        offx = 0.01
+        step = self.timer / (self.timerLength / 2) + 0.02
+        for x in range(6):
+            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, 8)
+            offx += 0.01
+
+
+    def __render(self):
+        self.dirty = False
+
+        self.image = self.game.imageLoader.getImage(self.imageName)
+        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
+                                                            int(self.height * self.game.renderer.getScale())))
+        self.rect = self.image.get_rect()
+
+
+    def draw(self):
+        if self.dirty or self.image is None: self.__render()
+        self.game.renderer.addSurface(self.image, (self.rect))
+
+        if self.timer > 0:
+            #draw the time indicator
+            self.drawTimer()
+
+
+    def events(self):
+        pass
+
+
+    def update(self):
         if hasattr(self, 'rect'):
             # Reset velocity to prevent infinate movement
             self.vel = (0, 0)
