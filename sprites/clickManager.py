@@ -133,25 +133,12 @@ class ClickManager:
 
     # for a given node, return the adjacent nodes
     def getAdjacentNodes(self, n):
-        topleft = n.getNumber() - 11
-        top = n.getNumber() - 1
-        topright = n.getNumber() + 9
-        left = n.getNumber() - 10
-        right = n.getNumber() + 10
-        bottomleft = n.getNumber() - 9
-        bottom = n.getNumber() + 1
-        bottomright = n.getNumber() + 11
-
-        adjacent = [topleft, top, topright, left, right, bottomleft, bottom, bottomright]
         adjNodes = []
 
         for connection in n.getConnections():
-            node = connection.getTo()
-            for adj in adjacent:
-                if node.getNumber() == adj:
-                    newnode = copy.copy(node)
-                    newnode.parent = n
-                    adjNodes.append(newnode)
+            node = copy.copy(connection.getTo())
+            node.parent = n
+            adjNodes.append(node)
         return adjNodes
 
 
@@ -242,7 +229,11 @@ class ClickManager:
         # Both the node and the person are set, we can create a path
         if self.node is not None and self.person is not None:
             # Only move the person if they're a curtain state
-            if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING:
+
+            if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING or self.person.getStatus() == Person.Status.WALKING:
+                # Clear the players current path before assigning a new one
+                self.person.clearPath()
+                
                 # Create the path
                 for node in self.pathFinding():
                     self.person.addToPath(node)

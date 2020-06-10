@@ -126,8 +126,8 @@ class Node(pygame.sprite.Sprite):
             # print(self.number)
             # print(self.people)
 
-            for connection in self.connections:
-                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+            # for connection in self.connections:
+            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
         
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False

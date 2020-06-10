@@ -119,6 +119,12 @@ class Person(pygame.sprite.Sprite):
     def removeFromPath(self, node):
         self.path.remove(node)
 
+    
+    # Clear the players path by removing all nodes 
+    # To Do: FIX PLAYER WALKING BACK TO CURRENT NODE WHEN NEW PATH IS ASSINGNED
+    def clearPath(self):
+        self.path = []
+
 
     # Switch the person and their status indicator from one layer to a new layer
     def switchLayer(self, oldLayer, newLayer):
