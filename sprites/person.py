@@ -92,6 +92,10 @@ class Person(pygame.sprite.Sprite):
             return self.renderer.layer3
 
 
+    def getMouseOver(self):
+        return self.mouseOver
+
+
     #### Setters ####
 
     # Set the persons status
@@ -195,6 +199,9 @@ class Person(pygame.sprite.Sprite):
             self.game.clickManager.setPerson(None)
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            if self.currentNode.getMouseOver():
+                return
+                
             self.game.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
@@ -217,6 +224,9 @@ class Person(pygame.sprite.Sprite):
             
         # If the player is clicked on, dont show hover effect
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() != self:
+            if self.currentNode.getMouseOver():
+                return
+
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True

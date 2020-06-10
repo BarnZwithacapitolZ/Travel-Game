@@ -64,6 +64,10 @@ class Node(pygame.sprite.Sprite):
         return self.number
 
 
+    def getMouseOver(self):
+        return self.mouseOver
+
+
     #### Setters ####
 
     # Add a connection to the node
@@ -110,12 +114,21 @@ class Node(pygame.sprite.Sprite):
         my -= self.game.renderer.getDifference()[1]
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.clickManager.getPerson() is not None:
+            # Prevent the node and the player from being pressed at the same time
+            for person in self.people:
+                if person.getMouseOver() and person != self.game.clickManager.getPerson():
+                    return
+                    
             # If the player is moving on a transport, dont allow them to select a node
             if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
                 self.game.clickManager.setNode(self)
                 self.game.clickManager.setClicked(False)
 
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() is not None:
+            # Prevent the node and the player from being pressed at the same time
+            for person in self.people:
+                if person.getMouseOver() and person != self.game.clickManager.getPerson():
+                    return
 
             # If the player is moving on a transport, dont show hovering over a node 
             if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:

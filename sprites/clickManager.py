@@ -135,27 +135,29 @@ class ClickManager:
     def getAdjacentNodes(self, n):
         adjNodes = []
 
-        for connection in n.getConnections():
-            node = copy.copy(connection.getTo())
-            node.parent = n
+        for connection in n["node"].getConnections():
+            node = {"node": connection.getTo(), "parent": n}
             adjNodes.append(node)
         return adjNodes
 
 
     '''
         function: aStartPathFinding
-        input:  Node startNode
-                Node endNode
+        input:  Node A
+                Node B
         output: List path (empty if no path is found)
     '''
-    def aStarPathFinding(self, startNode, endNode):
+    def aStarPathFinding(self, A, B):
         openList = []
         closedList = []
 
-        startNode.g = startNode.h = startNode.f = 0
-        startNode.parent = None
-        endNode.h = endNode.h = endNode.f = 0
-        endNode.parent = None
+        # startNode.g = startNode.h = startNode.f = 0
+        # startNode.parent = None
+        # endNode.h = endNode.h = endNode.f = 0
+        # endNode.parent = None
+
+        startNode = {"node": A, "g": 0, "h": 0, "f": 0, "parent": None}
+        endNode = {"node": B, "g": 0, "h": 0, "f": 0, "parent": None}
 
         openList.append(startNode)
 
@@ -167,7 +169,7 @@ class ClickManager:
             currentIndex = 0
 
             for index, item in enumerate(openList):
-                if item.f < currentNode.f:
+                if item["f"] < currentNode["f"]:
                     currentNode = item
                     currentIndex = index            
 
@@ -175,13 +177,13 @@ class ClickManager:
             closedList.append(currentNode)
 
             # Check if the current node is the goal
-            if currentNode.getNumber() == endNode.getNumber():
+            if currentNode["node"].getNumber() == endNode["node"].getNumber():
                 path = []
                 current = currentNode
 
                 while current is not None:
-                    path.append(current)
-                    current = current.parent
+                    path.append(current["node"])
+                    current = current["parent"]
 
                 return path[::-1]
 
@@ -191,25 +193,25 @@ class ClickManager:
                 c = False
                 # Child is in the closed list
                 for closedNode in closedList:
-                    if child.getNumber() == closedNode.getNumber():
+                    if child["node"].getNumber() == closedNode["node"].getNumber():
                         c = True
                 if c: continue
 
                 # Get the distance between the child and the current node
-                for connection in child.getConnections():
-                    if connection.getTo().getNumber() == currentNode.getNumber():
+                for connection in child["node"].getConnections():
+                    if connection.getTo().getNumber() == currentNode["node"].getNumber():
                         dis = connection.getDistance()
                         break
                 
                 # Create f, g and g values
-                child.g = currentNode.g + dis                     
-                child.h = ((child.pos - child.offset) - (endNode.pos - endNode.offset)).length()
-                child.f = child.g + child.h
+                child["g"] = currentNode["g"] + dis                     
+                child["h"] = ((child["node"].pos - child["node"].offset) - (endNode["node"].pos - endNode["node"].offset)).length()
+                child["f"] = child["g"] + child["h"]
 
                 # Child is already in the open list
                 o = False
                 for openNode in openList:
-                    if child.getNumber() == openNode.getNumber() and child.g > openNode.g:
+                    if child["node"].getNumber() == openNode["node"].getNumber() and child["g"] > openNode["g"]:
                         o = True
                 if o: continue
 
