@@ -34,7 +34,7 @@ class Transport(pygame.sprite.Sprite):
 
         self.moving = True
         self.timer = 0
-        self.timerLength = 250
+        self.timerLength = 150
 
         #people travelling in the transport
         self.people = []
@@ -205,6 +205,8 @@ class Transport(pygame.sprite.Sprite):
 
 
     def update(self):
+        # print(self.pos)
+
         if hasattr(self, 'rect'):
             # Reset velocity to prevent infinate movement
             self.vel = (0, 0)

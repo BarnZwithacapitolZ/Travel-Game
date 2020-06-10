@@ -35,6 +35,9 @@ class Layer(pygame.sprite.Sprite):
         if len(self.nodes) <= 0:
             return 
 
+        # Add the person to a random node on the layer
+        node = random.randint(0, len(self.nodes) - 1)
+        p = Person(self.spriteRenderer, self.groups, self.nodes[node])
 
         # Add the person to a random node on the layer
         node = random.randint(0, len(self.nodes) - 1)

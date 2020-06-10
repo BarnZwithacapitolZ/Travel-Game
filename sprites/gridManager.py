@@ -16,6 +16,7 @@ class GridManager:
         self.game = game
         self.groups = groups
         self.level = level
+        self.levelName = ""
 
         self.nodes = []
         self.nodePositions = []
@@ -33,6 +34,12 @@ class GridManager:
     def loadMap(self):
         with open(self.level) as f:
             self.map = json.load(f)
+
+        self.levelName = self.map["mapName"]
+
+
+    def getLevelName(self):
+        return self.levelName
 
 
 
@@ -104,16 +111,19 @@ class GridManager:
 
         for transport in self.map["transport"][connectionType]:
             direction = random.randint(0, 1)
+            
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
-                if connection.getFrom().getNumber() == transport and connection.getDirection() == direction:
-                    if connectionType == "layer 2":
-                        t = Bus(self.game, layers, connection, direction)
-                    else:
-                        t = Transport(self.game, layers, connection, direction)
-                    self.transports.append(t)
-                    break
-
+                if connection.getFrom().getNumber() == transport:
+                    # If the connection is the same as the direction, or its an end node (so theres only one direction)
+                    if connection.getDirection() == direction or len(connection.getFrom().getConnections()) <= 1:
+                        if connectionType == "layer 2":
+                            t = Bus(self.game, layers, connection, connection.getDirection())
+                        else:
+                            t = Transport(self.game, layers, connection, connection.getDirection())
+                        self.transports.append(t)
+                        break
+           
 
     # return the nodes, in a list to be appended to each layer
     def getNodes(self):

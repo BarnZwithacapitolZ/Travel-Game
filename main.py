@@ -111,8 +111,6 @@ class Game:
 
 
     def run(self):
-        # self.spriteRenderer.createLevel("grid.json")
-
         #main menu
         self.mainMenu.main()
 

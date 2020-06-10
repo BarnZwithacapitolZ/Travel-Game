@@ -110,6 +110,8 @@ class SpriteRenderer():
         self.game = game
         self.currentLayer = 4
 
+        self.level = ""
+
         # Hud for when the game is running
         self.hud = GameHud(self.game)
         self.rendering = False
@@ -122,6 +124,9 @@ class SpriteRenderer():
 
     def getHud(self):
         return self.hud
+
+    def getLevel(self):
+        return self.level
 
 
     def clearLevel(self):
@@ -144,6 +149,8 @@ class SpriteRenderer():
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
         self.gridLayer3.grid.loadTransport("layer 3")
+
+        self.level = level + ' | ' + self.allGridLayers.getGrid().getLevelName()
 
         # self.gridLayer1.addPerson()
         self.gridLayer2.addPerson()

@@ -130,7 +130,7 @@ def showMainMenu(obj, menu):
 
 ##### Main-Menu Functions #####
 def continueGame(obj, menu):
-    menu.game.spriteRenderer.createLevel("testmap.json")
+    menu.game.spriteRenderer.createLevel("grid.json")
     menu.game.spriteRenderer.setRendering(True) #Load the hud
     closeMenu(obj, menu)
 
@@ -139,6 +139,13 @@ def openMapEditor(obj, menu):
     closeMenu(obj, menu)
 
 
+def loadMap(obj, menu):
+    mapName = obj.getText() + '.json'
+    menu.game.spriteRenderer.createLevel(mapName)
+    menu.game.spriteRenderer.setRendering(True)
+    closeMenu(obj, menu)
+
+    
 
 ##### Hud Functions #####
  

@@ -75,6 +75,10 @@ class Label(MenuComponent):
     def setUnderline(self, underline):
         self.underline = underline
 
+
+    def getText(self):
+        return self.text
+
     def __render(self):
         self.dirty = False
 
