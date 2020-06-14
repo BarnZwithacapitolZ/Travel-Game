@@ -126,7 +126,14 @@ class Person(pygame.sprite.Sprite):
     
     # Clear the players path by removing all nodes 
     # To Do: FIX PLAYER WALKING BACK TO CURRENT NODE WHEN NEW PATH IS ASSINGNED
-    def clearPath(self):
+    def clearPath(self, newPath):
+        if len(self.path) <= 0 or len(newPath) <= 0:
+            return
+
+        # The new path is going in the same direction, so we delete its starting node since the player has already passed this
+        if self.path[0] in newPath:
+            del newPath[0]
+
         self.path = []
 
 

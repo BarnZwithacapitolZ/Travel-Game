@@ -233,11 +233,15 @@ class ClickManager:
             # Only move the person if they're a curtain state
 
             if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING or self.person.getStatus() == Person.Status.WALKING:
-                # Clear the players current path before assigning a new one
-                self.person.clearPath()
+                
                 
                 # Create the path
-                for node in self.pathFinding():
+                path = self.pathFinding()
+
+                # Clear the players current path before assigning a new one
+                self.person.clearPath(path)
+
+                for node in path:
                     self.person.addToPath(node)
 
                 self.person.setCurrentImage(0)
