@@ -22,6 +22,8 @@
         "personClicked": "PersonClicked.png",
         "node": "Node.png", 
         "nodeSelected": "NodeSelected.png", 
+        "nodeStart": "NodeStart.png",
+        "nodeEnd": "NodeEnd.png",
         "train": "Train.png", 
         "trainStation": "TrainStation.png",
         "bus": "Bus.png",

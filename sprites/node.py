@@ -70,6 +70,10 @@ class Node(pygame.sprite.Sprite):
 
     #### Setters ####
 
+    def setCurrentImage(self, image):
+        self.currentImage = image
+        self.dirty = True
+
     # Add a connection to the node
     def addConnection(self, connection):
         self.connections.append(connection)
@@ -96,11 +100,13 @@ class Node(pygame.sprite.Sprite):
     def __render(self):
         self.dirty = False
 
+
         self.image = self.game.imageLoader.getImage(self.images[self.currentImage])
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale()
+
 
 
     def draw(self):
@@ -151,6 +157,47 @@ class Node(pygame.sprite.Sprite):
     def update(self):
         if not self.dirty:
             self.events()
+
+
+
+class EditorNode(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
+        super().__init__(game, groups, number, connectionType, x, y)
+
+        self.connectionManager = connectionManager
+        self.images = ["node", "nodeSelected", "nodeStart", "nodeEnd"]
+
+
+    # Override the events function
+    def events(self):
+        mx, my = pygame.mouse.get_pos()
+        mx -= self.game.renderer.getDifference()[0]
+        my -= self.game.renderer.getDifference()[1]
+
+
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            self.game.clickManager.setClicked(False)
+
+
+            if self.connectionManager.getStartNode() is None:
+                self.connectionManager.setStartNode(self)
+            else:
+                self.connectionManager.setEndNode(self)
+
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.connectionManager.getStartNode() != self:
+            self.mouseOver = True
+            self.currentImage = 1
+            self.dirty = True
+
+            for connection in self.connections:
+                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
+
+
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.connectionManager.getStartNode() != self:
+            self.mouseOver = False
+            self.currentImage = 0
+            self.dirty = True
+
 
 
 

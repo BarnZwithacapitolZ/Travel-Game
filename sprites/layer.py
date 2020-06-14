@@ -11,7 +11,7 @@ from connection import *
 from person import *
 
 class Layer(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups, level):
+    def __init__(self, spriteRenderer, groups, level = None):
         self.groups = groups
         #layer added to sprite group first
         super().__init__(self.groups)
@@ -41,9 +41,12 @@ class Layer(pygame.sprite.Sprite):
         self.components.append(component)
 
 
-    # Add the connections to each of the nodes in each connection
-    def addConnections(self):
-        for connection in self.connections:
+    # Add the connections to each of the nodes in each connection, given a set of connections
+    def addConnections(self, connections = None):
+        if connections is None:
+            connections = self.connections
+
+        for connection in connections:
             connection.getFrom().addConnection(connection)
 
 
@@ -132,7 +135,37 @@ class Layer4(Layer):
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
         self.addComponent(background)
 
+
+
+class EditorLayer1(Layer):
+    def __init__(self, spriteRenderer, connectionManager, groups):
+        super().__init__(spriteRenderer, groups)
+        self.grid.createFullGrid("layer 1", connectionManager)
+
+
+
+class EditorLayer2(Layer):
+    def __init__(self, spriteRenderer, connectionManager, groups):
+        super().__init__(spriteRenderer, groups)
+        self.grid.createFullGrid("layer 2", connectionManager)
+
+
+class EditorLayer3(Layer):
+    def __init__(self, spriteRenderer, connectionManager, groups):
+        super().__init__(spriteRenderer, groups)
+        self.grid.createFullGrid("layer 3", connectionManager)
+
+
+
+class EditorLayer4(Layer):
+    def __init__(self, spriteRenderer, connectionManager, groups):
+        super().__init__(spriteRenderer, groups)
+
+
+
+
         
+
 
         
 class Background():

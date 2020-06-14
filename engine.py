@@ -136,12 +136,15 @@ class SpriteRenderer():
         self.layer3.empty()
         self.layer4.empty()
 
+        # Reset the layers to show the top layer
+        self.currentLayer = 4
+
 
     def createLevel(self, level):
         self.clearLevel()
 
         # ordering matters -> stack
-        self.allGridLayers = Layer4(self, (self.allSprites, self.layer4), level)
+        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
         self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level)
         self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level) # walking layer at the bottom so nodes are drawn above metro stations
@@ -150,14 +153,12 @@ class SpriteRenderer():
         self.gridLayer2.grid.loadTransport("layer 2")
         self.gridLayer3.grid.loadTransport("layer 3")
 
-        self.level = level + ' | ' + self.allGridLayers.getGrid().getLevelName()
-
-        # self.gridLayer1.addPerson()
-        self.gridLayer2.addPerson()
-        # self.gridLayer3.addPerson()
-
         self.removeDuplicates()
 
+        # Set the name of the level
+        self.level = level + ' | ' + self.gridLayer4.getGrid().getLevelName()
+
+        self.gridLayer2.addPerson()
 
 
     def getGridLayer(self, connectionType):
@@ -189,12 +190,13 @@ class SpriteRenderer():
 
 
     def update(self):
-        self.allSprites.update()
+        if self.rendering:
+            self.allSprites.update()
 
 
     def showLayer(self, layer):
         self.currentLayer = layer
-        #self.resize() #redraw the nodes so that the mouse cant collide with them
+        self.resize() #redraw the nodes so that the mouse cant collide with them
 
 
     def getLayer(self):
@@ -204,7 +206,10 @@ class SpriteRenderer():
     def resize(self):
         # If a layer has any images, they must be resized here
         if self.rendering:
-            self.allGridLayers.resize()
+            self.gridLayer1.resize()
+            self.gridLayer2.resize()
+            self.gridLayer3.resize()    
+            self.gridLayer4.resize()
             self.hud.resize()
 
             for sprite in self.allSprites:

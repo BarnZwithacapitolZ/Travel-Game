@@ -233,8 +233,6 @@ class ClickManager:
             # Only move the person if they're a curtain state
 
             if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING or self.person.getStatus() == Person.Status.WALKING:
-                
-                
                 # Create the path
                 path = self.pathFinding()
 
@@ -250,3 +248,48 @@ class ClickManager:
                 #after the click is managed, clear the player and the node to allow for another click management
                 self.person = None
                 self.node = None
+
+
+
+class ConnectionManager:
+    def __init__(self, game):
+        self.game = game
+        self.startNode = None
+        self.endNode = None
+
+
+    def getStartNode(self):
+        return self.startNode
+
+    def getEndNode(self):
+        return self.endNode
+
+
+    def setStartNode(self, node):
+        self.startNode = node
+        self.startNode.setCurrentImage(2)
+        self.createConnection()
+
+    def setEndNode(self, node):
+        # If the end node is on a different layer to the start node, make it be the start node
+        if node.getConnectionType() != self.startNode.getConnectionType():
+            self.startNode = node
+            node.setCurrentImage(2)
+            return
+
+        self.endNode = node
+        self.endNode.setCurrentImage(3)
+        self.createConnection()
+
+    def createConnection(self):
+        if self.startNode is not None and self.endNode is not None:
+            if self.startNode.getNumber() != self.endNode.getNumber():            
+                if self.startNode.getConnectionType() == self.endNode.getConnectionType():
+                    # Create a new connection
+                    self.game.mapEditor.createConnection(self.startNode.getConnectionType(), self.startNode, self.endNode)
+                    
+
+            self.startNode = None
+            self.endNode = None
+
+

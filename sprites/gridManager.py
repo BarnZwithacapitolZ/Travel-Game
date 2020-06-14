@@ -12,7 +12,7 @@ from connection import *
 from transport import *
 
 class GridManager:
-    def __init__(self, game, groups, level):
+    def __init__(self, game, groups, level = None):
         self.game = game
         self.groups = groups
         self.level = level
@@ -27,7 +27,8 @@ class GridManager:
 
         self.nodePositions = GridManager.setNodePositions()
 
-        self.loadMap()
+        if self.level is not None:
+            self.loadMap()
 
 
     #### Getters ####
@@ -65,6 +66,16 @@ class GridManager:
             for x in range(10):
                 positions.append(((i + offx) * spacing, (x + offy) * spacing))
         return positions
+
+
+
+    def addConnections(self, connectionType, A, B):
+        c1 = Connection(self.game, connectionType, A, B, Connection.Direction.FORWARDS) 
+        c2 = Connection(self.game, connectionType, B, A, Connection.Direction.BACKWARDS) 
+        self.connections.append(c1) #forwards
+        self.connections.append(c2) #backwards
+
+        return c1, c2
 
 
 
@@ -123,6 +134,13 @@ class GridManager:
             c2 = Connection(self.game, connectionType, n2, n1, Connection.Direction.BACKWARDS) 
             self.connections.append(c1) #forwards
             self.connections.append(c2) #backwards
+
+
+    # Create a full grid with all the nodes populated and no connections (for the map editor)
+    def createFullGrid(self, connectionType, connectionManager):
+        for number, position in enumerate(self.nodePositions):
+            n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+            self.nodes.append(n)
 
 
     # Load the transportation to the grid on a specified connection 

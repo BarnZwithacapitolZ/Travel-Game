@@ -135,6 +135,7 @@ def continueGame(obj, menu):
     closeMenu(obj, menu)
 
 def openMapEditor(obj, menu):
+    menu.game.mapEditor.createLevel()
     menu.game.mapEditor.setRendering(True)
     closeMenu(obj, menu)
 

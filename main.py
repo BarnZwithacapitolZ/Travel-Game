@@ -77,6 +77,7 @@ class Game:
             if e.type == pygame.VIDEORESIZE:
                 self.renderer.setScale(e.size, self.fullscreen)
                 self.spriteRenderer.resize()
+                self.mapEditor.resize()
                 self.optionMenu.resize()
                 self.mainMenu.resize()               
 
@@ -95,17 +96,22 @@ class Game:
                     else: self.renderer.unsetFullscreen()
 
                 if not self.paused:
+                    # Show / Hide the different layers depending on key press
                     if pygame.key.name(e.key) == config["controls"]["layer1"]:
                         self.spriteRenderer.showLayer(1)
+                        self.mapEditor.showLayer(1)
 
                     if pygame.key.name(e.key) == config["controls"]["layer2"]:
                         self.spriteRenderer.showLayer(2)
+                        self.mapEditor.showLayer(2)
 
                     if pygame.key.name(e.key) == config["controls"]["layer3"]:
                         self.spriteRenderer.showLayer(3)
+                        self.mapEditor.showLayer(3)
 
                     if pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
+                        self.mapEditor.showLayer(4)
 
             self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
 
@@ -135,6 +141,7 @@ class Game:
     def __update(self):
         if not self.paused and not self.mainMenu.open:
             self.spriteRenderer.update()
+            self.mapEditor.update()
 
 
     def __draw(self):

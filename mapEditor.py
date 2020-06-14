@@ -3,32 +3,35 @@ import pygame
 from gridManager import *
 from node import *
 from menu import *
+from engine import *
 
-class MapEditor:
+class MapEditor(SpriteRenderer):
     def __init__(self, game):
-        self.game = game
-        self.nodePositions = GridManager.setNodePositions()
+        super().__init__(game)
 
-        self.createGrid()
-
+        # Hud for when the game is running
         self.hud = EditorHud(self.game)
-        self.rendering = False
+
+        self.connectionManager = ConnectionManager(self.game)
 
 
-    def setRendering(self, rendering):
-        self.rendering = rendering
-        self.hud.main() if self.rendering else self.hud.close()
+    
+    # Override creating the level
+    def createLevel(self):
+        self.clearLevel()
+
+        self.gridLayer4 = EditorLayer4(self, self.connectionManager, (self.allSprites, self.layer4)) # Do i even need this layer????
+        self.gridLayer3 = EditorLayer3(self, self.connectionManager, (self.allSprites, self.layer3, self.layer4))
+        self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4))
+        self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4))
 
 
-    def getHud(self):
-        return self.hud
+    def createConnection(self, connectionType, startNode, endNode):
+        layer = self.getGridLayer(connectionType)
+        newConnections = layer.getGrid().addConnections(connectionType, startNode, endNode)
 
-    def createGrid(self):
-        pass
+        # Only add the new connections to the nodes
+        layer.addConnections(newConnections)
 
-
-
-    def render(self):
-        if self.rendering:
-            self.hud.display()
+        
 
