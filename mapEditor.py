@@ -33,5 +33,8 @@ class MapEditor(SpriteRenderer):
         # Only add the new connections to the nodes
         layer.addConnections(newConnections)
 
+
+    def deleteConnection(self, connection):
+        pass
         
 

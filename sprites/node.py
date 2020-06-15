@@ -174,17 +174,16 @@ class EditorNode(Node):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
-
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+        
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4:
             self.game.clickManager.setClicked(False)
-
 
             if self.connectionManager.getStartNode() is None:
                 self.connectionManager.setStartNode(self)
             else:
                 self.connectionManager.setEndNode(self)
 
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.connectionManager.getStartNode() != self:
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.connectionManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True
@@ -192,8 +191,7 @@ class EditorNode(Node):
             for connection in self.connections:
                 print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
-
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.connectionManager.getStartNode() != self:
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.connectionManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True

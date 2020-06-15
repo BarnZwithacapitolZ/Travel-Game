@@ -175,3 +175,9 @@ def goHome(obj, menu):
     menu.game.paused = not menu.game.paused
     menu.game.hud.open = not menu.game.hud.open # To Do: fix
     menu.game.optionMenu.main()
+
+
+
+#### Editor Hud Function ####
+def clearMap(obj, menu):
+    menu.game.mapEditor.createLevel()

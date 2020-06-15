@@ -369,5 +369,11 @@ class EditorHud(Menu):
         self.open = True
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
+        clear = Label(self, "Clear", 25, Color("white"), (20, 10))
+
+        clear.addEvent(hoverGreen, 'onMouseOver')
+        clear.addEvent(hoverWhite, 'onMouseOut')
+        clear.addEvent(clearMap, 'onMouseClick')
 
         self.add(topbar)
+        self.add(clear)
