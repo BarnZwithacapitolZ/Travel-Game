@@ -187,7 +187,6 @@ def runMap(obj, menu):
     level = menu.game.mapEditor.getLevelData()
     menu.game.mapEditor.setRendering(False)
 
-
     menu.game.spriteRenderer.createLevel(level, True)
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 

@@ -198,10 +198,10 @@ class SpriteRenderer():
 
         allnodes = layer1Nodes + layer2Nodes + layer3Nodes
 
+        # Make sure stops are at the front of the list, so they are not removed 
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, MetroStation))
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, BusStop))
-        allnodes = allnodes[::-1]
-
+        allnodes = allnodes[::-1] # Reverse the list so they're at the front
 
         for node in allnodes:
             if node.getNumber() not in seen:

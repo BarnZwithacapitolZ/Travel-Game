@@ -23,6 +23,11 @@ class MapEditor(SpriteRenderer):
         self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4), level)
 
+
+        self.gridLayer1.grid.loadTransport("layer 1", False)
+        self.gridLayer2.grid.loadTransport("layer 2", False)
+        self.gridLayer3.grid.loadTransport("layer 3", False)
+
         self.removeDuplicates()
 
         # Set the level data equal to the maps config file

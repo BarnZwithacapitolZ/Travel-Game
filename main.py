@@ -84,8 +84,7 @@ class Game:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open:
                     self.paused = not self.paused
-                    # self.hud.open = not self.hud.open
-                    
+                                        
                     if self.paused: self.optionMenu.main()
                     else: self.optionMenu.close()
 
@@ -95,7 +94,7 @@ class Game:
                     if self.fullscreen: self.renderer.setFullscreen()
                     else: self.renderer.unsetFullscreen()
 
-                if not self.paused:
+                if not self.paused and not self.mainMenu.open:
                     # Show / Hide the different layers depending on key press
                     if pygame.key.name(e.key) == config["controls"]["layer1"]:
                         self.spriteRenderer.showLayer(1)
@@ -132,6 +131,8 @@ class Game:
 
             self.__update()
             self.__draw()
+
+            print(self.paused)
 
             # print(self.clock.get_fps())
             # print(pygame.mouse.get_pos())

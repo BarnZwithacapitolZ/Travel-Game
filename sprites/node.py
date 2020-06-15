@@ -174,6 +174,10 @@ class EditorNode(Node):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
+        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            # Unset the clicked on node
+            pass
+
         
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4:
             self.game.clickManager.setClicked(False)

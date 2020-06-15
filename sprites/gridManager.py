@@ -173,11 +173,9 @@ class GridManager:
 
 
     # Load the transportation to the grid on a specified connection 
-    def loadTransport(self, connectionType, layers = None):
+    def loadTransport(self, connectionType, running = True):
         if len(self.connections) <= 0 or connectionType not in self.map["transport"]:
             return 
-
-        layers = self.groups if layers is None else layers
 
         # For each transportation in the map
         for transport in self.map["transport"][connectionType]:
@@ -190,9 +188,9 @@ class GridManager:
                     # If the connection is the same as the direction, or its an end node (so theres only one direction)
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
                         if connectionType == "layer 2":
-                            t = Bus(self.game, layers, connection, connection.getDirection())
+                            t = Bus(self.game, self.groups, connection, connection.getDirection(), running)
                         else:
-                            t = Transport(self.game, layers, connection, connection.getDirection())
+                            t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
                         self.transports.append(t)
                         break
            

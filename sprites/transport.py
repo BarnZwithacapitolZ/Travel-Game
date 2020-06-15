@@ -14,7 +14,7 @@ vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentConnection, direction):
+    def __init__(self, game, groups, currentConnection, direction, running):
         self.groups = groups
         super().__init__(self.groups)
         
@@ -33,7 +33,8 @@ class Transport(pygame.sprite.Sprite):
         
         self.dirty = True
 
-        self.moving = True
+        self.running = running
+        self.moving = self.running
         self.timer = 0
         self.timerLength = 150
 
@@ -206,6 +207,8 @@ class Transport(pygame.sprite.Sprite):
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos * self.game.renderer.getScale()
+
 
 
     def draw(self):
@@ -222,7 +225,7 @@ class Transport(pygame.sprite.Sprite):
 
 
     def update(self):
-        if hasattr(self, 'rect'):
+        if hasattr(self, 'rect') and self.running:
             # Reset velocity to prevent infinate movement
             self.vel = (0, 0)
 
@@ -258,8 +261,8 @@ class Taxi(Transport):
 
 
 class Bus(Transport):
-    def __init__(self, game, groups, currentConnection, direction):
-        super().__init__(game, groups, currentConnection, direction)
+    def __init__(self, game, groups, currentConnection, direction, running):
+        super().__init__(game, groups, currentConnection, direction, running)
         self.imageName = "bus"
         self.stopType = BusStop
 
