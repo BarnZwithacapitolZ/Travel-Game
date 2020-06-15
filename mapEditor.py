@@ -13,17 +13,24 @@ class MapEditor(SpriteRenderer):
         self.hud = EditorHud(self.game)
 
         self.connectionManager = ConnectionManager(self.game)
-
-
     
     # Override creating the level
-    def createLevel(self):
+    def createLevel(self, level = None):
         self.clearLevel()
 
-        self.gridLayer4 = EditorLayer4(self, self.connectionManager, (self.allSprites, self.layer4)) # Do i even need this layer????
-        self.gridLayer3 = EditorLayer3(self, self.connectionManager, (self.allSprites, self.layer3, self.layer4))
-        self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4))
-        self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4))
+        self.gridLayer4 = EditorLayer4(self, self.connectionManager, (self.allSprites, self.layer4), level) 
+        self.gridLayer3 = EditorLayer3(self, self.connectionManager, (self.allSprites, self.layer3, self.layer4), level)
+        self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4), level)
+        self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4), level)
+
+        # self.removeDuplicates()
+
+        # Set the level data equal to the maps config file
+        if level is not None:
+            self.levelData = self.gridLayer4.getGrid().getMap()
+
+    def saveLevel(self):
+        pass
 
 
     def createConnection(self, connectionType, startNode, endNode):
@@ -32,6 +39,9 @@ class MapEditor(SpriteRenderer):
 
         # Only add the new connections to the nodes
         layer.addConnections(newConnections)
+
+        # Add the new connection to the level data
+        self.levelData["connections"].setdefault(connectionType, []).append([startNode.getNumber(), endNode.getNumber()])
 
 
     def deleteConnection(self, connection):

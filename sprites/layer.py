@@ -138,29 +138,33 @@ class Layer4(Layer):
 
 
 class EditorLayer1(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 1", connectionManager)
+        self.addConnections()
 
 
 
 class EditorLayer2(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 2", connectionManager)
+        self.addConnections()
+
 
 
 class EditorLayer3(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups):
-        super().__init__(spriteRenderer, groups)
+    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+        super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 3", connectionManager)
+        self.addConnections()
+
 
 
 
 class EditorLayer4(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups):
-        super().__init__(spriteRenderer, groups)
-
+    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+        super().__init__(spriteRenderer, groups, level)
 
 
 

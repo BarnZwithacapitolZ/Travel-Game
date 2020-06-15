@@ -135,7 +135,7 @@ def continueGame(obj, menu):
     closeMenu(obj, menu)
 
 def openMapEditor(obj, menu):
-    menu.game.mapEditor.createLevel()
+    menu.game.mapEditor.createLevel("grid.json")
     menu.game.mapEditor.setRendering(True)
     closeMenu(obj, menu)
 
@@ -181,3 +181,22 @@ def goHome(obj, menu):
 #### Editor Hud Function ####
 def clearMap(obj, menu):
     menu.game.mapEditor.createLevel()
+
+
+def runMap(obj, menu):
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.setRendering(False)
+
+
+    menu.game.spriteRenderer.createLevel(level, True)
+    menu.game.spriteRenderer.setRendering(True) #Load the hud
+
+
+
+#### Preview Hud Functions ####
+def stopMap(obj, menu):
+    level = menu.game.spriteRenderer.getLevelData()
+    menu.game.spriteRenderer.setRendering(False) # Close the hud
+
+    menu.game.mapEditor.createLevel(level)
+    menu.game.mapEditor.setRendering(True)

@@ -22,8 +22,6 @@ class GridManager:
         self.nodePositions = []
         self.connections = []
         self.transports = []
-        self.grid = []
-        self.stops = []
 
         self.nodePositions = GridManager.setNodePositions()
 
@@ -50,6 +48,10 @@ class GridManager:
     # Return the transportations, in a list for each layer
     def getTransports(self):
         return self.transports
+
+
+    def getMap(self):
+        return self.map
 
 
     #### Setters ####
@@ -81,8 +83,11 @@ class GridManager:
 
     # Load the .json map data into a dictionary
     def loadMap(self):
-        with open(self.level) as f:
-            self.map = json.load(f)
+        if isinstance(self.level, dict):
+            self.map = self.level
+        else:
+            with open(self.level) as f:
+                self.map = json.load(f)
 
         self.levelName = self.map["mapName"] # Get the name of the map
 
@@ -104,13 +109,14 @@ class GridManager:
     # Add a stop, instead of a node, to the grid 
     def addStop(self, connection, direction, connectionType):
         n = None
-        for stop in self.map["stops"][connectionType]:
-            if stop == connection[direction]:
-                # Set the type of stop
-                if connectionType == "layer 2":
-                    n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
-                else:
-                    n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
+        if connectionType in self.map["stops"]:
+            for stop in self.map["stops"][connectionType]:
+                if stop == connection[direction]:
+                    # Set the type of stop
+                    if connectionType == "layer 2":
+                        n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
+                    else:
+                        n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
         return n
         
 
@@ -118,34 +124,57 @@ class GridManager:
     def createGrid(self, connectionType):
         currentNodes = []
 
-        for connection in self.map["connections"][connectionType]:
-            # Add the nodes in the connection
-            currentNodes = self.addNode(connection, connectionType, currentNodes, 0)
-            currentNodes = self.addNode(connection, connectionType, currentNodes, 1)
+        if connectionType in self.map["connections"]:
+            for connection in self.map["connections"][connectionType]:
+                # Add the nodes in the connection
+                currentNodes = self.addNode(connection, connectionType, currentNodes, 0)
+                currentNodes = self.addNode(connection, connectionType, currentNodes, 1)
 
-            for node in self.nodes:
-                if node.getNumber() == connection[0]:
-                    n1 = node
-                if node.getNumber() == connection[1]:
-                    n2 = node
+                for node in self.nodes:
+                    if node.getNumber() == connection[0]:
+                        n1 = node
+                    if node.getNumber() == connection[1]:
+                        n2 = node
 
-            # Create the connection with the nodes
-            c1 = Connection(self.game, connectionType, n1, n2, Connection.Direction.FORWARDS) 
-            c2 = Connection(self.game, connectionType, n2, n1, Connection.Direction.BACKWARDS) 
-            self.connections.append(c1) #forwards
-            self.connections.append(c2) #backwards
+                # Create the connection with the nodes
+                self.addConnections(connectionType, n1, n2)
+
 
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
     def createFullGrid(self, connectionType, connectionManager):
-        for number, position in enumerate(self.nodePositions):
-            n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
-            self.nodes.append(n)
+        if self.level is None:
+            for number, position in enumerate(self.nodePositions):
+                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                self.nodes.append(n)
+        else:
+            for number, position in enumerate(self.nodePositions):
+                n = None
+                if connectionType in self.map["stops"]:
+                    for stop in self.map["stops"][connectionType]:
+                        if stop == number:
+                            if connectionType == "layer 2":
+                                n = EditorBusStop(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                            else:
+                                n = EditorMetroStation(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                if n is None:
+                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                self.nodes.append(n)
+
+            if connectionType in self.map["connections"]:
+                for connection in self.map["connections"][connectionType]:
+                    for node in self.nodes:
+                        if node.getNumber() == connection[0]:
+                            n1 = node
+                        if node.getNumber() == connection[1]:
+                            n2 = node
+
+                    self.addConnections(connectionType, n1, n2)
 
 
     # Load the transportation to the grid on a specified connection 
     def loadTransport(self, connectionType, layers = None):
-        if len(self.connections) <= 0:
+        if len(self.connections) <= 0 or connectionType not in self.map["transport"]:
             return 
 
         layers = self.groups if layers is None else layers

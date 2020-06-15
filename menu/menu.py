@@ -370,10 +370,36 @@ class EditorHud(Menu):
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         clear = Label(self, "Clear", 25, Color("white"), (20, 10))
+        run = Label(self, "Run", 25, Color("white"), (130, 10))
 
         clear.addEvent(hoverGreen, 'onMouseOver')
         clear.addEvent(hoverWhite, 'onMouseOut')
         clear.addEvent(clearMap, 'onMouseClick')
 
+        run.addEvent(hoverGreen, 'onMouseOver')
+        run.addEvent(hoverWhite, 'onMouseOut')
+        run.addEvent(runMap, 'onMouseClick')
+
         self.add(topbar)
         self.add(clear)
+        self.add(run)
+
+
+
+class PreviewHud(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+    def main(self):
+        self.open = True
+
+        topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
+        stop = Label(self, "Stop", 25, Color("white"), (20, 10))
+
+        stop.addEvent(hoverGreen, 'onMouseOver')
+        stop.addEvent(hoverWhite, 'onMouseOut')
+        stop.addEvent(stopMap, 'onMouseClick')
+
+        self.add(topbar)
+        self.add(stop)
+        

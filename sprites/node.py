@@ -209,6 +209,13 @@ class BusStop(Node):
         self.images = ["busStation", "nodeSelected"]
 
 
+class EditorBusStop(EditorNode, BusStop):
+    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
+        super().__init__(game, groups, number, connectionType, x, y, connectionManager)
+
+        self.images = ["busStation", "nodeSelected", "nodeStart", "nodeEnd"]
+
+
 class MetroStation(Node):
     def __init__(self, game, groups, number, connectionType, x, y):
         super().__init__(game, groups, number, connectionType, x, y)
@@ -218,3 +225,11 @@ class MetroStation(Node):
         self.offset = vec(-2.5, -2.5)
         self.pos = self.pos + self.offset
         self.images = ["metro", "nodeSelected"]
+
+
+class EditorMetroStation(EditorNode, MetroStation):
+    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
+        super().__init__(game, groups, number, connectionType, x, y, connectionManager)
+
+        self.images = ["metro", "nodeSelected", "nodeStart", "nodeEnd"]
+

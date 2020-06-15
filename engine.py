@@ -116,6 +116,9 @@ class SpriteRenderer():
         self.hud = GameHud(self.game)
         self.rendering = False
 
+        self.levelData = {"mapName": "new map", "connections": {}, "transport": {}, "stops": {}} # Level data to be stored, for export to JSON
+
+
 
     def setRendering(self, rendering):
         self.rendering = rendering
@@ -128,6 +131,9 @@ class SpriteRenderer():
     def getLevel(self):
         return self.level
 
+    def getLevelData(self):
+        return self.levelData
+
 
     def clearLevel(self):
         self.allSprites.empty()
@@ -138,10 +144,16 @@ class SpriteRenderer():
 
         # Reset the layers to show the top layer
         self.currentLayer = 4
+        self.levelData = {"mapName": "new map", "connections": {}, "transport": {}, "stops": {}}
 
 
-    def createLevel(self, level):
+    def createLevel(self, level, debug = False):
         self.clearLevel()
+
+        if debug:
+            self.hud = PreviewHud(self.game)
+        else:
+            self.hud = GameHud(self.game)
 
         # ordering matters -> stack
         self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
@@ -155,10 +167,15 @@ class SpriteRenderer():
 
         self.removeDuplicates()
 
-        # Set the name of the level
-        self.level = level + ' | ' + self.gridLayer4.getGrid().getLevelName()
-
         self.gridLayer2.addPerson()
+
+
+        # Set the name of the level
+        self.level = self.gridLayer4.getGrid().getLevelName()
+
+        # Set the level data
+        self.levelData = self.gridLayer4.getGrid().getMap()
+
 
 
     def getGridLayer(self, connectionType):
