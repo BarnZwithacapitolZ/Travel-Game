@@ -23,7 +23,7 @@ class MapEditor(SpriteRenderer):
         self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4), level)
 
-        # self.removeDuplicates()
+        self.removeDuplicates()
 
         # Set the level data equal to the maps config file
         if level is not None:

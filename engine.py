@@ -191,19 +191,27 @@ class SpriteRenderer():
     def removeDuplicates(self):
         seen = {}
         dupes = []
-        
-        # To Do change this to use the grid layer instead
-        for sprite in self.layer4:
-            if isinstance(sprite, Node):
-                if sprite.getNumber() not in seen:
-                    seen[sprite.getNumber()] = 1
-                else:
-                    if seen[sprite.getNumber()] == 1:
-                        dupes.append(sprite)
-                    seen[sprite.getNumber()] += 1
-        
-        for sprite in dupes:
-            self.layer4.remove(sprite)
+
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
+
+        allnodes = layer1Nodes + layer2Nodes + layer3Nodes
+
+        allnodes = sorted(allnodes, key=lambda x:isinstance(x, MetroStation))
+        allnodes = sorted(allnodes, key=lambda x:isinstance(x, BusStop))
+        allnodes = allnodes[::-1]
+
+
+        for node in allnodes:
+            if node.getNumber() not in seen:
+                seen[node.getNumber()] = 1
+            else:
+                if seen[node.getNumber()] == 1:
+                    dupes.append(node)
+
+        for node in dupes:
+            self.layer4.remove(node)
 
 
     def update(self):
