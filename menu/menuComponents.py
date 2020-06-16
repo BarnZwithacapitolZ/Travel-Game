@@ -167,9 +167,7 @@ class InputBox(Label):
         self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
 
 
-    def setText(self):
-        print(len(self.menu.game.textHandler.getText()))
-        
+    def setText(self):        
         if len(self.menu.game.textHandler.getText()) < self.maxLength:
             self.menu.game.textHandler.setLengthReached(False)
         else:

@@ -13,6 +13,11 @@ class MapEditor(SpriteRenderer):
         self.hud = EditorHud(self.game)
 
         self.connectionManager = ConnectionManager(self.game)
+
+
+    def getSaved(self):
+        return self.levelData["saved"]
+    
     
     # Override creating the level
     def createLevel(self, level = None):
@@ -35,10 +40,11 @@ class MapEditor(SpriteRenderer):
             self.levelData = self.gridLayer4.getGrid().getMap()
 
 
-    # name of map, and the data to make the map
-    def saveLevel(self):
+    # Save As function
+    def saveLevelAs(self):
         # Name of the map
         self.levelData["mapName"] = self.game.textHandler.getText()
+        self.levelData["saved"] = True
 
         saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
         path = os.path.join(MAPSFOLDER, saveName)
@@ -52,9 +58,13 @@ class MapEditor(SpriteRenderer):
 
         self.game.mapLoader.addMap(self.game.textHandler.getText(), path)
 
+    
+    # Save function, for when the level has already been created before (and is being edited)
+    def saveLevel(self):
+        with open(self.game.mapLoader.getMap(self.levelData["mapName"]), "w") as f:
+            json.dump(self.levelData, f)
+        f.close()
 
-
-        
 
 
     def createConnection(self, connectionType, startNode, endNode):

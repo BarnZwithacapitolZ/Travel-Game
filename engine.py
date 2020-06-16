@@ -115,8 +115,18 @@ class SpriteRenderer():
         self.hud = GameHud(self.game)
         self.rendering = False
 
-        self.levelData = {"mapName": "", "connections": {}, "transport": {}, "stops": {}} # Level data to be stored, for export to JSON
+        self.setDefaultMap()
 
+
+    def setDefaultMap(self):
+        self.levelData = {
+            "mapName": "", 
+            "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
+            "saved": False, # Has the map been saved before 
+            "connections": {}, 
+            "transport": {}, 
+            "stops": {}
+        } # Level data to be stored, for export to JSON
 
 
     def setRendering(self, rendering):
@@ -143,7 +153,7 @@ class SpriteRenderer():
 
         # Reset the layers to show the top layer
         self.currentLayer = 4
-        self.levelData = {"mapName": "new map", "connections": {}, "transport": {}, "stops": {}}
+        self.setDefaultMap()
 
 
     def createLevel(self, level, debug = False):

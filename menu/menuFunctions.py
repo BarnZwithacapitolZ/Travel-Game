@@ -122,8 +122,9 @@ def hoverOutAnimation(obj, menu, animation):
 def showMainMenu(obj, menu):
     menu.close()
     menu.game.paused = False
-    menu.game.spriteRenderer.setRendering(False) # Close the hud
-    menu.game.mapEditor.setRendering(False)
+    menu.game.spriteRenderer.setRendering(False) # Always close the Game
+    menu.game.mapEditor.setRendering(False) # Always close the Editor
+    menu.game.textHandler.setActive(False) # Always close any open inputs
     menu.game.mainMenu.main()
 
 
@@ -138,6 +139,12 @@ def openMapEditor(obj, menu):
     menu.game.mapEditor.createLevel(menu.game.mapLoader.getMap("London"))
     menu.game.mapEditor.setRendering(True)
     closeMenu(obj, menu)
+
+
+def closeMapEditor(obj, menu):
+    menu.game.textHandler.setActive(False)
+    showMainMenu(obj, menu)
+
 
 
 def loadMap(obj, menu):
@@ -180,7 +187,7 @@ def goHome(obj, menu):
 
 #### Editor Hud Function ####
 def clearMap(obj, menu):
-    menu.game.mapEditor.createLevel()
+    menu.game.mapEditor.createLevel() # no level creates an empty, clear map
 
 
 def runMap(obj, menu):
@@ -199,13 +206,16 @@ def changeEditorLayer(obj, menu):
 
 def toggleSaveBox(obj, menu):
     if not menu.saveBoxOpen:
-        menu.saveBox()
+        if menu.game.mapEditor.getSaved():
+            menu.game.mapEditor.saveLevel()
+            closeMapEditor(obj, menu)
+        else:
+            menu.game.textHandler.setActive(True)
+            menu.saveBox()
     else:
+        menu.game.textHandler.setActive(False)
         menu.close()
         menu.main()
-
-    active = menu.game.textHandler.getActive()
-    menu.game.textHandler.setActive(not active)
 
 
 def saveMap(obj, menu):
@@ -213,15 +223,14 @@ def saveMap(obj, menu):
     text = menu.game.textHandler.getText()
     text = text.replace(" ", "")
 
+    # No input
     if len(text) <= 0:
         menu.inputBox.setColor(RED)
         menu.inputBox.dirty = True
-        return
-
-    # Save and close
-    menu.game.mapEditor.saveLevel()
-    menu.game.textHandler.setActive(False)
-    showMainMenu(obj, menu)
+    else:
+        # Save and close
+        menu.game.mapEditor.saveLevelAs()
+        closeMapEditor(obj, menu)
 
 
 
