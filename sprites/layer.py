@@ -77,6 +77,7 @@ class Layer(pygame.sprite.Sprite):
                     self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
 
 
+    # THESE DONT NEED TO BE DRAWN EACH FRAME, BLIT TO A SURFACE AND JUST DRAW THAT SURFACE
     # Draw a connection to the screen
     def drawConnection(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale()

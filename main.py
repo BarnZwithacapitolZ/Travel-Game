@@ -13,7 +13,7 @@ from sprites import *
 from menuComponents import *
 from mapEditor import *
 
-from threading import Thread as worker
+import cProfile
 
 
 class Game:
@@ -171,4 +171,6 @@ class Game:
 if __name__ == "__main__":
     g = Game()
     g.run()
+
+    # cProfile.run('g.run()')
     pygame.quit()

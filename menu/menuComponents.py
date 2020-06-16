@@ -8,6 +8,7 @@ class TextHandler:
     def __init__(self):
         self.text = ""
         self.active = False
+        self.lengthReached = False
         self.pressed = False
         
         self.keys = list(string.ascii_letters) + list(string.digits)
@@ -22,11 +23,17 @@ class TextHandler:
     def getPressed(self):
         return self.pressed
 
+    def getLengthReached(self):
+        return self.lengthReached
+
     def setPressed(self, pressed):
         self.pressed = pressed
 
     def setText(self, text):
-        self.text = text
+        self.text = text#
+
+    def setLengthReached(self, lengthReached):
+        self.lengthReached = lengthReached
 
     # When active clear the text so its ready for input
     def setActive(self, active):
@@ -40,7 +47,7 @@ class TextHandler:
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
-                if event.unicode in self.keys:
+                if event.unicode in self.keys and not self.lengthReached:
                     self.text += event.unicode
 
 
@@ -159,9 +166,14 @@ class InputBox(Label):
         self.timer = 0
         self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
 
+
     def setText(self):
-        if len(self.menu.game.textHandler.getText()) >= self.maxLength:
-            return
+        print(len(self.menu.game.textHandler.getText()))
+        
+        if len(self.menu.game.textHandler.getText()) < self.maxLength:
+            self.menu.game.textHandler.setLengthReached(False)
+        else:
+            self.menu.game.textHandler.setLengthReached(True)
 
         if self.text != self.menu.game.textHandler.getText():
             self.text = self.menu.game.textHandler.getText()

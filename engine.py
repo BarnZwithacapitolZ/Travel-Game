@@ -35,8 +35,8 @@ class Renderer:
 
 
     # Add a surface to the gameDisplay
-    def addSurface(self, surface, pos = tuple(), resize = False):
-        self.surfaces.append((surface, vec(pos[0], pos[1]), resize))
+    def addSurface(self, surface, pos = tuple()):
+        self.surfaces.append((surface, vec(pos[0], pos[1])))
 
 
     def setWidth(self, width):
@@ -89,8 +89,6 @@ class Renderer:
 
     # on tick function
     def render(self):
-        # self.gameDisplay.fill((	35, 201, 220)) #white
-
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], (surface[1].x, surface[1].y))
 
