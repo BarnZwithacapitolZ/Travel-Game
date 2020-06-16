@@ -28,8 +28,10 @@ class Menu:
         for component in self.components:
             component.dirty = True # force redraw
 
-            if component.type == "text":
+            if isinstance(component, Label):
                 component.setFont(height)
+            if isinstance(component, InputBox):
+                component.resizeIndicator()
                 
 
     def display(self):    
@@ -406,7 +408,7 @@ class EditorHud(Menu):
         box = Shape(self, GREEN, (width, height), (x, y))
         title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
         self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
-        mapName = InputBox(self, 30, BLACK, (x + 40, y + 92), 28)
+        mapName = InputBox(self, 30, BLACK, (x + 40, y + 92), 20)
         saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
 

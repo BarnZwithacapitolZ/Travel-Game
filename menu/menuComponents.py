@@ -57,7 +57,6 @@ class MenuComponent:
         self.y = pos[1]
         self.size = size
         self.pos = pos
-        self.type = ""
 
         self.events = []
         self.animations = []
@@ -99,7 +98,6 @@ class Label(MenuComponent):
         self.bold = False
         self.italic = False
         self.underline = False
-        self.type = "text"
 
         self.setFont(self.menu.renderer.getHeight())
 
@@ -137,6 +135,10 @@ class Label(MenuComponent):
 
         self.rect = self.image.get_rect()
 
+        # Scale down as font is automatically sized to scale when set
+        self.width = self.rect.width / self.menu.renderer.getScale()
+        self.height= self.rect.height / self.menu.renderer.getScale()
+
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
         
@@ -153,6 +155,9 @@ class InputBox(Label):
         self.menu.game.textHandler.setText("")
         self.maxLength = maxLength
 
+        self.flashing = True
+        self.timer = 0
+        self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
 
     def setText(self):
         if len(self.menu.game.textHandler.getText()) >= self.maxLength:
@@ -161,6 +166,22 @@ class InputBox(Label):
         if self.text != self.menu.game.textHandler.getText():
             self.text = self.menu.game.textHandler.getText()
             self.dirty = True
+
+
+    def setFlashing(self):
+        if hasattr(self.indicator, 'rect'):
+            self.indicator.x = self.x + self.width
+            self.indicator.rect.x = self.indicator.x * self.menu.renderer.getScale()
+
+            self.timer += 1
+
+            if self.timer >= 25:
+                self.flashing = not self.flashing
+                self.timer = 0
+
+
+    def resizeIndicator(self):
+        self.indicator.dirty = True
 
         
     def __render(self):
@@ -174,13 +195,22 @@ class InputBox(Label):
 
         self.rect = self.image.get_rect()
 
+        # Scale down as font is automatically sized to scale when set
+        self.width = self.rect.width / self.menu.renderer.getScale()
+        self.height= self.rect.height / self.menu.renderer.getScale()
+
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
-        
+
 
     def draw(self):
         if self.dirty or self.image is None: self.__render()
         self.menu.renderer.addSurface(self.image, self.rect)
+
+        self.setFlashing()
+
+        if self.flashing:
+            self.indicator.draw()
 
         # change the text
         if self.menu.game.textHandler.getActive():
@@ -190,7 +220,6 @@ class InputBox(Label):
 class Shape(MenuComponent):
     def __init__(self, menu, color, size = tuple(), pos = tuple(), alpha = None):   
         super().__init__(menu, color, size, pos)
-        self.type = "button"
         self.alpha = alpha        
 
     def __render(self):
@@ -215,7 +244,6 @@ class Shape(MenuComponent):
 class Image(MenuComponent):
     def __init__(self, menu, imageName, color, size = tuple(), pos = tuple(), alpha = None):
         super().__init__(menu, color, size, pos)
-        self.type = "image"
         self.imageName = imageName
         self.alpha = alpha
 
