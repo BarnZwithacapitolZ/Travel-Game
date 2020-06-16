@@ -143,16 +143,6 @@ class MainMenu(Menu):
         end.addEvent(hoverOver, 'onMouseOver')
         end.addEvent(hoverOut, 'onMouseOut')
 
-
-        map1 = Label(self, "grid", 30, BLACK, (600, 100))
-        map2 = Label(self, "testmap", 30, BLACK, (600, 140))
-        map3 = Label(self, "map 3", 30, BLACK, (600, 180))
-        map4 = Label(self, "map 4", 30, BLACK, (600, 220))
-        map5 = Label(self, "map 5", 30, BLACK, (600, 260))
-        map6 = Label(self, "map 6", 30, BLACK, (600, 300))
-
-
-
         self.add(sidebar)
 
         self.add(title1)
@@ -162,16 +152,14 @@ class MainMenu(Menu):
         self.add(editor)
         self.add(end)
 
-
-        map1.addEvent(loadMap, 'onMouseClick')
-        map2.addEvent(loadMap, 'onMouseClick')
-
-        self.add(map1)
-        self.add(map2)
-        self.add(map3)
-        self.add(map4)
-        self.add(map5)
-        self.add(map6)
+        # Temporarily load in the existing maps
+        y = 100
+        for mapName, path in self.game.mapLoader.getMaps().items():
+            m = Label(self, mapName, 30, BLACK, (600, y))
+            m.addEvent(loadMap, 'onMouseClick')
+            self.add(m)
+            y += 40
+    
 
 
 class OptionMenu(Menu):

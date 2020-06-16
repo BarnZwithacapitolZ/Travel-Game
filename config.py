@@ -26,6 +26,7 @@ with open('config.json') as f:
 GAMEFOLDER = getFilePath()
 FONTFOLDER = os.path.join(GAMEFOLDER, "fonts")
 ASSETSFOLDER = os.path.join(GAMEFOLDER, 'assets')
+MAPSFOLDER = os.path.join(GAMEFOLDER, 'maps')
 
 # colours
 BLACK = (65, 62, 75)

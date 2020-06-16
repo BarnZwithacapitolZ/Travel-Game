@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from config import *
 import os
+import json
 
 from layer import *
 from clickManager import *
@@ -116,7 +117,7 @@ class SpriteRenderer():
         self.hud = GameHud(self.game)
         self.rendering = False
 
-        self.levelData = {"mapName": "new map", "connections": {}, "transport": {}, "stops": {}} # Level data to be stored, for export to JSON
+        self.levelData = {"mapName": "", "connections": {}, "transport": {}, "stops": {}} # Level data to be stored, for export to JSON
 
 
 
@@ -274,4 +275,25 @@ class ImageLoader:
     def getImage(self, key):
         return self.images[key]
 
+
+class MapLoader:
+    def __init__(self):
+        self.maps = {}
+
+        self.loadAllMaps()
+        
+    def getMaps(self):
+        return self.maps
+    
+    def getMap(self, key):
+        return self.maps[key]
+
+    def addMap(self, mapName, path):
+        self.maps[mapName] = path
+
+    def loadAllMaps(self):
+        for key, level in config["maps"].items():
+            m = os.path.join(MAPSFOLDER, level)
+            self.maps[key] = m
+            
 

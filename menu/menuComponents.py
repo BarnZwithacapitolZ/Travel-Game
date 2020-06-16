@@ -1,6 +1,7 @@
 import pygame 
 from pygame.locals import *
 from config import *
+import string
 
 
 class TextHandler:
@@ -8,6 +9,9 @@ class TextHandler:
         self.text = ""
         self.active = False
         self.pressed = False
+        
+        self.keys = list(string.ascii_letters) + list(string.digits)
+        self.keys.append(" ")
 
     def getText(self):
         return self.text
@@ -36,7 +40,8 @@ class TextHandler:
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
-                self.text += event.unicode
+                if event.unicode in self.keys:
+                    self.text += event.unicode
 
 
 

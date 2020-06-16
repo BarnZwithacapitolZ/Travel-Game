@@ -130,19 +130,19 @@ def showMainMenu(obj, menu):
 
 ##### Main-Menu Functions #####
 def continueGame(obj, menu):
-    menu.game.spriteRenderer.createLevel("grid.json")
+    menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
     menu.game.spriteRenderer.setRendering(True) #Load the hud
     closeMenu(obj, menu)
 
 def openMapEditor(obj, menu):
-    menu.game.mapEditor.createLevel("grid.json")
+    menu.game.mapEditor.createLevel(menu.game.mapLoader.getMap("London"))
     menu.game.mapEditor.setRendering(True)
     closeMenu(obj, menu)
 
 
 def loadMap(obj, menu):
-    mapName = obj.getText() + '.json'
-    menu.game.spriteRenderer.createLevel(mapName)
+    path = menu.game.mapLoader.getMap(obj.getText())
+    menu.game.spriteRenderer.createLevel(path)
     menu.game.spriteRenderer.setRendering(True)
     closeMenu(obj, menu)
 

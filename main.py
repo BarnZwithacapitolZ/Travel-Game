@@ -32,6 +32,7 @@ class Game:
         self.clickManager = ClickManager(self)
         self.textHandler = TextHandler()
         self.imageLoader = ImageLoader()
+        self.mapLoader = MapLoader()
         
         # Map editor 
         self.mapEditor = MapEditor(self)
@@ -101,7 +102,7 @@ class Game:
                 #     if self.fullscreen: self.renderer.setFullscreen()
                 #     else: self.renderer.unsetFullscreen()
 
-                if not self.paused and not self.mainMenu.open:
+                if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
                     # Show / Hide the different layers depending on key press
                     if pygame.key.name(e.key) == config["controls"]["layer1"]:
                         self.spriteRenderer.showLayer(1)
@@ -142,7 +143,7 @@ class Game:
             self.__draw()
 
             # print(self.paused)
-            print(self.clock.get_fps())
+            # print(self.clock.get_fps())
             # print(pygame.mouse.get_pos())
 
         self.running = False

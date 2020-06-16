@@ -34,9 +34,25 @@ class MapEditor(SpriteRenderer):
         if level is not None:
             self.levelData = self.gridLayer4.getGrid().getMap()
 
+
+    # name of map, and the data to make the map
     def saveLevel(self):
         # Name of the map
-        print(self.game.textHandler.getText())
+        self.levelData["mapName"] = self.game.textHandler.getText()
+
+        saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
+        path = os.path.join(MAPSFOLDER, saveName)
+
+        with open(path, "w") as f:
+            json.dump(self.levelData, f)
+        f.close()
+
+        config["maps"][self.game.textHandler.getText()] = saveName
+        dump(config)
+
+        self.game.mapLoader.addMap(self.game.textHandler.getText(), path)
+
+
 
         
 
