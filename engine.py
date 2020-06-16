@@ -13,7 +13,8 @@ from menu import *
 vec = pygame.math.Vector2
 
 class Renderer:
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
         self.width = config["graphics"]["displayWidth"]
         self.height = config["graphics"]["displayHeight"]
         self.windowWidth = config["graphics"]["displayWidth"]
@@ -27,6 +28,9 @@ class Renderer:
 
         self.scale = 1
         self.surfaces = []
+
+        self.fpsFont = pygame.font.Font(pygame.font.get_default_font(), 30)
+
 
 
     # Prepare the gamedisplay for blitting to, this means overriding it with a new color
@@ -91,6 +95,9 @@ class Renderer:
     def render(self):
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], (surface[1].x, surface[1].y))
+
+        self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
+        self.gameDisplay.blit(self.fontImage, (10, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         self.surfaces = []

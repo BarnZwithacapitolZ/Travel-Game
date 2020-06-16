@@ -39,62 +39,60 @@ class Menu:
             for component in self.components:
                 component.draw()
                 
-            self.events()
-            self.animate()
+                self.events(component)
+                self.animate(component)
 
 
-    def animate(self):
-        for component in self.components:
-            if hasattr(component, 'rect'):
-                if len(component.animations) > 0:
-                    for animation in component.animations:
-                        if animation[1] == 'onMouseOver':
-                            animation[0](component, self, animation)
-                            component.dirty = True
+    def animate(self, component):
+        if hasattr(component, 'rect'):
+            if len(component.animations) > 0:
+                for animation in component.animations:
+                    if animation[1] == 'onMouseOver':
+                        animation[0](component, self, animation)
+                        # component.dirty = True
 
-                        if animation[1] == 'onMouseOut':
-                            animation[0](component, self, animation)
-                            component.dirty = True
+                    if animation[1] == 'onMouseOut':
+                        animation[0](component, self, animation)
+                        # component.dirty = True
 
-                        if animation[1] == 'onLoad':
-                            animation[0](component, self, animation)
-                            component.dirty = True
+                    if animation[1] == 'onLoad':
+                        animation[0](component, self, animation)
+                        # component.dirty = True
 
                         
 
-    def events(self):
+    def events(self, component):
         mx, my = pygame.mouse.get_pos()
         #apply difference from screen size
         mx -= self.renderer.getDifference()[0]
         my -= self.renderer.getDifference()[1]
 
-        for component in self.components:
-            if hasattr(component, 'rect'): # check the component has been drawn (if called before next tick)
-                if len(component.events) > 0:
-                    for event in component.events:
-                        if event[1] == 'onMouseClick':
-                            if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-                                self.game.clickManager.setClicked(False)
-                                event[0](component, self)
-                                component.dirty = True
+        if hasattr(component, 'rect'): # check the component has been drawn (if called before next tick)
+            if len(component.events) > 0:
+                for event in component.events:
+                    if event[1] == 'onMouseClick':
+                        if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+                            self.game.clickManager.setClicked(False)
+                            event[0](component, self)
+                            component.dirty = True
 
-                        if event[1] == 'onMouseOver':
-                            if component.rect.collidepoint((mx, my)) and not component.mouseOver:
-                                component.mouseOver = True
-                                event[0](component, self)
-                                component.dirty = True
+                    if event[1] == 'onMouseOver':
+                        if component.rect.collidepoint((mx, my)) and not component.mouseOver:
+                            component.mouseOver = True
+                            event[0](component, self)
+                            component.dirty = True
 
-                        if event[1] == 'onMouseOut':
-                            if not component.rect.collidepoint((mx, my)) and component.mouseOver:
-                                component.mouseOver = False
-                                event[0](component, self)
-                                component.dirty = True
+                    if event[1] == 'onMouseOut':
+                        if not component.rect.collidepoint((mx, my)) and component.mouseOver:
+                            component.mouseOver = False
+                            event[0](component, self)
+                            component.dirty = True
 
-                        if event[1] == 'onKeyPress':
-                            if self.game.textHandler.getPressed():
-                                self.game.textHandler.setPressed(False)
-                                event[0](component, self)
-                                component.dirty = True
+                    if event[1] == 'onKeyPress':
+                        if self.game.textHandler.getPressed():
+                            self.game.textHandler.setPressed(False)
+                            event[0](component, self)
+                            component.dirty = True
 
 
     # define where key events will be called
@@ -365,6 +363,7 @@ class EditorHud(Menu):
     def main(self):
         self.open = True
         self.saveBoxOpen = False
+        self.saveAsBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         clear = Label(self, "Clear", 25, Color("white"), (20, 10))
@@ -383,7 +382,7 @@ class EditorHud(Menu):
 
         save.addEvent(hoverGreen, 'onMouseOver')
         save.addEvent(hoverWhite, 'onMouseOut')
-        save.addEvent(toggleSaveBox, 'onMouseClick')
+        save.addEvent(toggleSaveDropdown, 'onMouseClick')
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -394,6 +393,27 @@ class EditorHud(Menu):
         self.add(run)
         self.add(save)
         self.add(layers)
+
+
+    def saveAsBox(self):
+        self.open = True
+        self.saveAsBoxOpen = True
+
+        box = Shape(self, BLACK, (150, 80), (180, 40))
+        save = Label(self, "Save", 25, Color("white"), (190, 50))
+        saveAs = Label(self, "Save as", 25, Color("white"), (190, 80))
+
+        save.addEvent(hoverGreen, 'onMouseOver')
+        save.addEvent(hoverWhite, 'onMouseOut')
+        save.addEvent(toggleSaveBox, 'onMouseClick')
+
+        saveAs.addEvent(hoverGreen, 'onMouseOver')
+        saveAs.addEvent(hoverWhite, 'onMouseOut')
+        saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+
+        self.add(box)
+        self.add(save)
+        self.add(saveAs)
 
 
     def saveBox(self):

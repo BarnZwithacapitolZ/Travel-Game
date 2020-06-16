@@ -44,6 +44,7 @@ class MapEditor(SpriteRenderer):
     def saveLevelAs(self):
         # Name of the map
         self.levelData["mapName"] = self.game.textHandler.getText()
+        self.levelData["deletable"] = True
         self.levelData["saved"] = True
 
         saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'

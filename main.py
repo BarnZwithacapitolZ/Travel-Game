@@ -28,7 +28,7 @@ class Game:
         self.paused = False
         self.fullscreen = config["graphics"]["fullscreen"]
 
-        self.renderer = Renderer()
+        self.renderer = Renderer(self)
         self.clickManager = ClickManager(self)
         self.textHandler = TextHandler()
         self.imageLoader = ImageLoader()
@@ -143,7 +143,6 @@ class Game:
             self.__draw()
 
             # print(self.paused)
-            # print(self.clock.get_fps())
             # print(pygame.mouse.get_pos())
 
         self.running = False
@@ -171,6 +170,5 @@ class Game:
 if __name__ == "__main__":
     g = Game()
     g.run()
-
     # cProfile.run('g.run()')
     pygame.quit()

@@ -106,6 +106,7 @@ def hoverOverAnimation(obj, menu, animation):
 
     if obj.x > 110:
         obj.animations.remove(animation)
+    obj.rect.x = obj.x * menu.renderer.getScale()
 
 
 def hoverOutAnimation(obj, menu, animation):
@@ -113,6 +114,8 @@ def hoverOutAnimation(obj, menu, animation):
 
     if obj.x < 100:
         obj.animations.remove(animation)
+    obj.rect.x = obj.x * menu.renderer.getScale()
+    
 
 
 
@@ -202,6 +205,15 @@ def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
     current += 1 if current < 4 else -3
     menu.game.mapEditor.showLayer(current)
+    
+
+
+def toggleSaveDropdown(obj, menu):
+    if not menu.saveAsBoxOpen:
+        menu.saveAsBox()
+    else:
+        menu.close()
+        menu.main()
 
 
 def toggleSaveBox(obj, menu):
@@ -212,6 +224,16 @@ def toggleSaveBox(obj, menu):
         else:
             menu.game.textHandler.setActive(True)
             menu.saveBox()
+    else:
+        menu.game.textHandler.setActive(False)
+        menu.close()
+        menu.main()
+
+
+def toggleSaveAsBox(obj, menu):
+    if not menu.saveBoxOpen:
+        menu.game.textHandler.setActive(True)
+        menu.saveBox()
     else:
         menu.game.textHandler.setActive(False)
         menu.close()
