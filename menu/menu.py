@@ -88,6 +88,12 @@ class Menu:
                                 event[0](component, self)
                                 component.dirty = True
 
+                        if event[1] == 'onKeyPress':
+                            if self.game.textHandler.getPressed():
+                                self.game.textHandler.setPressed(False)
+                                event[0](component, self)
+                                component.dirty = True
+
 
     # define where key events will be called
     def keyEvents(self):
@@ -124,6 +130,7 @@ class MainMenu(Menu):
         editor = Label(self, "Level editor", 50, BLACK, (100, 380))
         end = Label(self, "Quit", 50, BLACK, (100, 440))
 
+
         cont.addEvent(continueGame, 'onMouseClick')
         cont.addEvent(hoverOver, 'onMouseOver')
         cont.addEvent(hoverOut, 'onMouseOut')
@@ -143,6 +150,7 @@ class MainMenu(Menu):
         map4 = Label(self, "map 4", 30, BLACK, (600, 220))
         map5 = Label(self, "map 5", 30, BLACK, (600, 260))
         map6 = Label(self, "map 6", 30, BLACK, (600, 300))
+
 
 
         self.add(sidebar)
@@ -277,7 +285,6 @@ class GameHud(Menu):
     def main(self):
         self.open = True
         self.dropdownOpen = False
-        self.layersOpen = False
         
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
@@ -287,7 +294,7 @@ class GameHud(Menu):
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
-        layers.addEvent(changeLayer, 'onMouseClick')
+        layers.addEvent(changeGameLayer, 'onMouseClick')
 
         home.addEvent(showHome, 'onMouseOver')
         home.addEvent(hideHome, 'onMouseOut')
@@ -367,10 +374,14 @@ class EditorHud(Menu):
 
     def main(self):
         self.open = True
+        self.saveBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         clear = Label(self, "Clear", 25, Color("white"), (20, 10))
-        run = Label(self, "Run", 25, Color("white"), (130, 10))
+        run = Label(self, "Run", 25, Color("white"), (110, 10))
+        save = Label(self, "Save", 25, Color("white"), (180, 10))
+        layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
+
 
         clear.addEvent(hoverGreen, 'onMouseOver')
         clear.addEvent(hoverWhite, 'onMouseOut')
@@ -380,9 +391,58 @@ class EditorHud(Menu):
         run.addEvent(hoverWhite, 'onMouseOut')
         run.addEvent(runMap, 'onMouseClick')
 
+        save.addEvent(hoverGreen, 'onMouseOver')
+        save.addEvent(hoverWhite, 'onMouseOut')
+        save.addEvent(toggleSaveBox, 'onMouseClick')
+
+        layers.addEvent(showLayers, 'onMouseOver')
+        layers.addEvent(hideLayers, 'onMouseOut')
+        layers.addEvent(changeEditorLayer, 'onMouseClick')
+
         self.add(topbar)
         self.add(clear)
         self.add(run)
+        self.add(save)
+        self.add(layers)
+
+
+    def saveBox(self):
+        self.open = True
+        self.saveBoxOpen = True
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        box = Shape(self, GREEN, (width, height), (x, y))
+        title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
+        self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
+        mapName = InputBox(self, 30, BLACK, (x + 40, y + 92), 28)
+        saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
+
+        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
+
+        self.inputBox.addEvent(hoverWhite, 'onKeyPress')
+
+        save.addEvent(hoverGreen, 'onMouseOver')
+        save.addEvent(hoverWhite, 'onMouseOut')
+        save.addEvent(saveMap, 'onMouseClick')
+
+        cancel.addEvent(hoverGreen, 'onMouseOver')
+        cancel.addEvent(hoverWhite, 'onMouseOut')
+        cancel.addEvent(toggleSaveBox, 'onMouseClick')
+
+        self.add(box)
+        self.add(title)
+        self.add(self.inputBox)
+        self.add(mapName)
+        self.add(saveBox)
+        self.add(save)
+        self.add(cancelBox)
+        self.add(cancel)
 
 
 

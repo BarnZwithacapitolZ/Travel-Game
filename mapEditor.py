@@ -23,7 +23,7 @@ class MapEditor(SpriteRenderer):
         self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4), level)
 
-
+        # Add the transport not running (so it doesnt move)
         self.gridLayer1.grid.loadTransport("layer 1", False)
         self.gridLayer2.grid.loadTransport("layer 2", False)
         self.gridLayer3.grid.loadTransport("layer 3", False)
@@ -35,7 +35,10 @@ class MapEditor(SpriteRenderer):
             self.levelData = self.gridLayer4.getGrid().getMap()
 
     def saveLevel(self):
-        pass
+        # Name of the map
+        print(self.game.textHandler.getText())
+
+        
 
 
     def createConnection(self, connectionType, startNode, endNode):
@@ -47,6 +50,10 @@ class MapEditor(SpriteRenderer):
 
         # Add the new connection to the level data
         self.levelData["connections"].setdefault(connectionType, []).append([startNode.getNumber(), endNode.getNumber()])
+
+
+    def addTransport(self, node):
+        pass
 
 
     def deleteConnection(self, connection):

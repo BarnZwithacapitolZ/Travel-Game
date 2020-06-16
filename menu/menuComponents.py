@@ -2,6 +2,46 @@ import pygame
 from pygame.locals import *
 from config import *
 
+
+class TextHandler:
+    def __init__(self):
+        self.text = ""
+        self.active = False
+        self.pressed = False
+
+    def getText(self):
+        return self.text
+
+    def getActive(self):
+        return self.active
+
+    def getPressed(self):
+        return self.pressed
+
+    def setPressed(self, pressed):
+        self.pressed = pressed
+
+    def setText(self, text):
+        self.text = text
+
+    # When active clear the text so its ready for input
+    def setActive(self, active):
+        self.active = active
+
+        if self.active:
+            self.text = ""
+
+    def events(self, event):
+        if self.active:
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                self.text += event.unicode
+
+
+
+
+
 class MenuComponent:
     def __init__(self, menu, color, size = tuple(), pos = tuple()):
         self.menu = menu
@@ -46,9 +86,10 @@ class Label(MenuComponent):
     def __init__(self, menu, text, fontSize, color, pos = tuple()):
         super().__init__(menu, color, (1, 1), pos)
 
+
         self.text = text
         self.fontName = pygame.font.get_default_font()
-        # self.fontName = config["fonts"]["joystix"]
+        # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["joystix"])
         self.fontSize = fontSize
         self.bold = False
         self.italic = False
@@ -65,6 +106,7 @@ class Label(MenuComponent):
 
     def setText(self, text):
         self.text = text
+
 
     def setBold(self, bold):
         self.bold = bold
@@ -87,6 +129,7 @@ class Label(MenuComponent):
         self.font.set_underline(self.underline)
 
         self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color)
+
         self.rect = self.image.get_rect()
 
         self.rect.x = self.x * self.menu.renderer.getScale()
@@ -99,28 +142,65 @@ class Label(MenuComponent):
 
 
 
-class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), alpha = None):   
-        super().__init__(menu, color, size, pos)
-        self.type = "button"
-        self.alpha = alpha
+class InputBox(Label):
+    def __init__(self, menu, fontSize, color, pos = tuple(), maxLength = 40):
+        super().__init__(menu, "", fontSize, color, pos)
+        self.menu.game.textHandler.setText("")
+        self.maxLength = maxLength
 
-        self.image = pygame.Surface((self.size)).convert()
-        self.image.fill(self.color)
-        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-        self.rect = self.image.get_rect()
 
-        self.__render()
+    def setText(self):
+        if len(self.menu.game.textHandler.getText()) >= self.maxLength:
+            return
+
+        if self.text != self.menu.game.textHandler.getText():
+            self.text = self.menu.game.textHandler.getText()
+            self.dirty = True
+
         
-
     def __render(self):
         self.dirty = False
+
+        self.font.set_bold(self.bold)
+        self.font.set_italic(self.italic)
+        self.font.set_underline(self.underline)
+
+        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color)
+
+        self.rect = self.image.get_rect()
 
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
         
+
+    def draw(self):
+        if self.dirty or self.image is None: self.__render()
+        self.menu.renderer.addSurface(self.image, self.rect)
+
+        # change the text
+        if self.menu.game.textHandler.getActive():
+            self.setText()        
+
+
+class Shape(MenuComponent):
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), alpha = None):   
+        super().__init__(menu, color, size, pos)
+        self.type = "button"
+        self.alpha = alpha        
+
+    def __render(self):
+        self.dirty = False
+
+        self.image = pygame.Surface((self.size)).convert()
         self.image = pygame.transform.scale(self.image, (int(self.width * self.menu.renderer.getScale()), 
                                                             int(self.height * self.menu.renderer.getScale())))
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+
+        self.image.fill(self.color)
+        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+
 
     def draw(self):
         if self.dirty or self.image is None: self.__render()

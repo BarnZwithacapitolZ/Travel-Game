@@ -10,7 +10,8 @@
         "displayWidth": 1024, 
         "displayHeight": 576, 
         "antiAliasing": true, 
-        "fullscreen": false
+        "fullscreen": true,
+        "resizeable": true
     }, 
     "fonts": {
         "joystix": "joystix monospace.ttf"

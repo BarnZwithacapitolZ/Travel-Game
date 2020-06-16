@@ -13,6 +13,8 @@ from sprites import *
 from menuComponents import *
 from mapEditor import *
 
+from threading import Thread as worker
+
 
 class Game:
     def __init__(self):
@@ -28,6 +30,7 @@ class Game:
 
         self.renderer = Renderer()
         self.clickManager = ClickManager(self)
+        self.textHandler = TextHandler()
         self.imageLoader = ImageLoader()
         
         # Map editor 
@@ -82,17 +85,21 @@ class Game:
                 self.mainMenu.resize()               
 
             if e.type == pygame.KEYDOWN:
+                self.textHandler.events(e)
+                self.textHandler.setPressed(True)
+
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open:
                     self.paused = not self.paused
                                         
                     if self.paused: self.optionMenu.main()
                     else: self.optionMenu.close()
 
-                if e.key == pygame.K_f:
-                    self.fullscreen = not self.fullscreen
+                # THIS WILL BE REMOVED IN THE FINAL BUILD
+                # if e.key == pygame.K_f:
+                #     self.fullscreen = not self.fullscreen
 
-                    if self.fullscreen: self.renderer.setFullscreen()
-                    else: self.renderer.unsetFullscreen()
+                #     if self.fullscreen: self.renderer.setFullscreen()
+                #     else: self.renderer.unsetFullscreen()
 
                 if not self.paused and not self.mainMenu.open:
                     # Show / Hide the different layers depending on key press
@@ -111,6 +118,8 @@ class Game:
                     if pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
+            else:
+                self.textHandler.setPressed(False)
 
             self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
 
@@ -132,9 +141,8 @@ class Game:
             self.__update()
             self.__draw()
 
-            print(self.paused)
-
-            # print(self.clock.get_fps())
+            # print(self.paused)
+            print(self.clock.get_fps())
             # print(pygame.mouse.get_pos())
 
         self.running = False
@@ -161,7 +169,5 @@ class Game:
 
 if __name__ == "__main__":
     g = Game()
-
-    while g.running:
-        g.run()
+    g.run()
     pygame.quit()

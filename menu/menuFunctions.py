@@ -157,7 +157,7 @@ def showLayers(obj, menu):
 def hideLayers(obj, menu):
     obj.setImageName("layers")
 
-def changeLayer(obj, menu):
+def changeGameLayer(obj, menu):
     current = menu.game.spriteRenderer.getLayer()
     current += 1 if current < 4 else -3
     menu.game.spriteRenderer.showLayer(current)
@@ -189,6 +189,39 @@ def runMap(obj, menu):
 
     menu.game.spriteRenderer.createLevel(level, True)
     menu.game.spriteRenderer.setRendering(True) #Load the hud
+
+
+def changeEditorLayer(obj, menu):
+    current = menu.game.mapEditor.getLayer()
+    current += 1 if current < 4 else -3
+    menu.game.mapEditor.showLayer(current)
+
+
+def toggleSaveBox(obj, menu):
+    if not menu.saveBoxOpen:
+        menu.saveBox()
+    else:
+        menu.close()
+        menu.main()
+
+    active = menu.game.textHandler.getActive()
+    menu.game.textHandler.setActive(not active)
+
+
+def saveMap(obj, menu):
+    # Make sure the input is not blank
+    text = menu.game.textHandler.getText()
+    text = text.replace(" ", "")
+
+    if len(text) <= 0:
+        menu.inputBox.setColor(RED)
+        menu.inputBox.dirty = True
+        return
+
+    # Save and close
+    menu.game.mapEditor.saveLevel()
+    menu.game.textHandler.setActive(False)
+    showMainMenu(obj, menu)
 
 
 
