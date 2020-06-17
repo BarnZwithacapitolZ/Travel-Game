@@ -7,7 +7,7 @@ import random
 import math
 
 from enum import Enum
-from node import *
+import node as NODE
 
 vec = pygame.math.Vector2
 
@@ -23,10 +23,11 @@ class Person(pygame.sprite.Sprite):
         DEPARTING = 5
         
 
-    def __init__(self, renderer, groups, currentNode):
+    def __init__(self, renderer, groups, currentNode, clickManager):
         self.groups = groups
         super().__init__(self.groups)
         self.renderer = renderer
+        self.clickManager = clickManager
         self.game = self.renderer.game
         self.width = 20
         self.height = 20
@@ -203,16 +204,16 @@ class Person(pygame.sprite.Sprite):
 
         # If the mouse is clicked, but not on a person, unset the person from the clickmanager (no one clicked)
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-            self.game.clickManager.setPerson(None)
+            self.clickManager.setPerson(None)
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             if self.currentNode.getMouseOver():
                 return
                 
-            self.game.clickManager.setPerson(self)
+            self.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
-                if isinstance(self.currentNode, MetroStation) or isinstance(self.currentNode, BusStop):
+                if isinstance(self.currentNode, NODE.MetroStation) or isinstance(self.currentNode, NODE.BusStop):
                     self.status = Person.Status.WAITING
 
             elif self.status == Person.Status.WAITING:
@@ -230,7 +231,7 @@ class Person(pygame.sprite.Sprite):
             self.game.clickManager.setClicked(False)
             
         # If the player is clicked on, dont show hover effect
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() != self:
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getPerson() != self:
             if self.currentNode.getMouseOver():
                 return
 
@@ -239,7 +240,7 @@ class Person(pygame.sprite.Sprite):
             self.dirty = True
         
         # If the player is clicked on, dont show hover effect
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.game.clickManager.getPerson() != self:
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getPerson() != self:
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True

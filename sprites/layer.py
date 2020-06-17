@@ -19,7 +19,7 @@ class Layer(pygame.sprite.Sprite):
         self.game = self.spriteRenderer.game
         self.level = level
    
-        self.grid = GridManager(self.game, self.groups, self.level) # each layer has its own grid manager
+        self.grid = GridManager(self, self.groups, self.level) # each layer has its own grid manager
         
         self.nodes = self.grid.getNodes()
         self.connections = self.grid.getConnections()
@@ -32,6 +32,9 @@ class Layer(pygame.sprite.Sprite):
     # Get the grid of the layer
     def getGrid(self):
         return self.grid
+
+    def getSpriteRenderer(self):
+        return self.spriteRenderer
 
 
     #### Setters ####
@@ -58,11 +61,11 @@ class Layer(pygame.sprite.Sprite):
 
         # Add the person to a random node on the layer
         node = random.randint(0, len(self.nodes) - 1)
-        p = Person(self.spriteRenderer, self.groups, self.nodes[node])
+        p = Person(self.spriteRenderer, self.groups, self.nodes[node], self.spriteRenderer.getClickManager())
 
         # Add the person to a random node on the layer
         node = random.randint(0, len(self.nodes) - 1)
-        p = Person(self.spriteRenderer, self.groups, self.nodes[node])
+        p = Person(self.spriteRenderer, self.groups, self.nodes[node], self.spriteRenderer.getClickManager())
         return p
 
     
@@ -139,40 +142,34 @@ class Layer4(Layer):
 
 
 class EditorLayer1(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+    def __init__(self, spriteRenderer, groups, level = None):
         super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 1", connectionManager)
+        self.grid.createFullGrid("layer 1")
         self.addConnections()
 
 
 
 class EditorLayer2(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+    def __init__(self, spriteRenderer, groups, level = None):
         super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 2", connectionManager)
+        self.grid.createFullGrid("layer 2")
         self.addConnections()
-
 
 
 class EditorLayer3(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+    def __init__(self, spriteRenderer, groups, level = None):
         super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 3", connectionManager)
+        self.grid.createFullGrid("layer 3")
         self.addConnections()
 
 
-
-
 class EditorLayer4(Layer):
-    def __init__(self, spriteRenderer, connectionManager, groups, level = None):
+    def __init__(self, spriteRenderer, groups, level = None):
         super().__init__(spriteRenderer, groups, level)
 
 
 
-        
-
-
-        
+    
 class Background():
     def __init__(self, game, imageName, size = tuple(), pos = tuple()):
         self.game = game

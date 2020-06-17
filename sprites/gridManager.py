@@ -12,8 +12,9 @@ from connection import *
 from transport import *
 
 class GridManager:
-    def __init__(self, game, groups, level = None):
-        self.game = game
+    def __init__(self, layer, groups, level = None):
+        self.layer = layer
+        self.game = self.layer.game
         self.groups = groups
         self.level = level
         self.levelName = ""
@@ -98,7 +99,7 @@ class GridManager:
             n = self.addStop(connection, direction, connectionType)
 
             if n is None: #no stop was found at this node 
-                n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
+                n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
 
             self.nodes.append(n)
             currentNodes.append(connection[direction])
@@ -114,9 +115,9 @@ class GridManager:
                 if stop == connection[direction]:
                     # Set the type of stop
                     if connectionType == "layer 2":
-                        n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
+                        n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
                     else:
-                        n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1])
+                        n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
         return n
         
 
@@ -142,10 +143,10 @@ class GridManager:
 
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
-    def createFullGrid(self, connectionType, connectionManager):
+    def createFullGrid(self, connectionType):
         if self.level is None:
             for number, position in enumerate(self.nodePositions):
-                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 self.nodes.append(n)
         else:
             for number, position in enumerate(self.nodePositions):
@@ -154,11 +155,11 @@ class GridManager:
                     for stop in self.map["stops"][connectionType]:
                         if stop == number:
                             if connectionType == "layer 2":
-                                n = EditorBusStop(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                                n = EditorBusStop(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                             else:
-                                n = EditorMetroStation(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                                n = EditorMetroStation(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 if n is None:
-                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], connectionManager)
+                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 self.nodes.append(n)
 
             if connectionType in self.map["connections"]:
@@ -193,4 +194,14 @@ class GridManager:
                             t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
                         self.transports.append(t)
                         break
+
+
+    def addTransport(self, connectionType, connection, running = True):
+        if connectionType == "layer 2":
+            t = Bus(self.game, self.groups, connection, connection.getDirection(), running)
+        else:
+            t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
+        self.transports.append(t)
+
+        
            

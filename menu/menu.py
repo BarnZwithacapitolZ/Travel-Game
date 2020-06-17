@@ -371,6 +371,8 @@ class EditorHud(Menu):
         run = Label(self, "Run", 25, Color("white"), (110, 10))
         save = Label(self, "Save", 25, Color("white"), (180, 10))
         load = Label(self, "Load", 25, Color("white"), (260, 10))
+        transport = Label(self, "Add transport", 25, Color("white"), (340, 10))
+        connection = Label(self, "Add connection", 25,Color("white"), (540, 10))
         layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
 
 
@@ -386,10 +388,17 @@ class EditorHud(Menu):
         save.addEvent(hoverWhite, 'onMouseOut')
         save.addEvent(toggleSaveDropdown, 'onMouseClick')
 
-
         load.addEvent(hoverGreen, 'onMouseOver')
         load.addEvent(hoverWhite, 'onMouseOut')
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
+
+        transport.addEvent(hoverGreen, 'onMouseOver')
+        transport.addEvent(hoverWhite, 'onMouseOut')
+        transport.addEvent(addTransport, 'onMouseClick')
+
+        connection.addEvent(hoverGreen, 'onMouseOver')
+        connection.addEvent(hoverWhite, 'onMouseOut')
+        connection.addEvent(addConnection, 'onMouseClick')
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -400,6 +409,8 @@ class EditorHud(Menu):
         self.add(run)
         self.add(save)
         self.add(load)
+        self.add(transport)
+        self.add(connection)
         self.add(layers)
 
 

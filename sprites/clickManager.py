@@ -1,13 +1,34 @@
-from person import *
-from node import *
-import copy
+import pygame
+import person as PERSON
+import node as NODE
+from enum import Enum
 
 class ClickManager:
     def __init__(self, game):
         self.game = game
-        self.node = None
-        self.person = None
         self.clicked = False
+
+    #### Getters
+
+    # Return if the mouse has been pressed
+    def getClicked(self):
+        return self.clicked
+
+
+    #### Setters ####
+
+    # Set the mouse pressed
+    def setClicked(self, clicked):
+        self.clicked = clicked
+
+
+
+class GameClickManager(ClickManager):
+    def __init__(self, game):
+        super().__init__(game)
+        self.node = None # A
+        self.person = None # B
+
         self.personClicked = False
 
 
@@ -18,22 +39,12 @@ class ClickManager:
         return self.personClicked
 
 
-    # Return if the mouse has been pressed
-    def getClicked(self):
-        return self.clicked
-
-
     # Return the current selected person
     def getPerson(self):
         return self.person
 
 
     #### Setters ####
-
-    # Set the mouse pressed
-    def setClicked(self, clicked):
-        self.clicked = clicked
-
 
     # Set the person has been selected
     def setPersonClicked(self, personClicked):
@@ -65,7 +76,6 @@ class ClickManager:
         self.movePerson()
 
 
-    
     '''
         function: pathFinding
         input:  Node A
@@ -91,7 +101,7 @@ class ClickManager:
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node
 
@@ -106,7 +116,7 @@ class ClickManager:
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node                        
 
@@ -232,7 +242,7 @@ class ClickManager:
         if self.node is not None and self.person is not None:
             # Only move the person if they're a curtain state
 
-            if self.person.getStatus() == Person.Status.UNASSIGNED or self.person.getStatus() == Person.Status.WAITING or self.person.getStatus() == Person.Status.BOARDING or self.person.getStatus() == Person.Status.WALKING:
+            if self.person.getStatus() == PERSON.Person.Status.UNASSIGNED or self.person.getStatus() == PERSON.Person.Status.WAITING or self.person.getStatus() == PERSON.Person.Status.BOARDING or self.person.getStatus() == PERSON.Person.Status.WALKING:
                 # Create the path
                 path = self.pathFinding()
 
@@ -251,11 +261,19 @@ class ClickManager:
 
 
 
-class ConnectionManager:
+class EditorClickManager(ClickManager):
+    class ClickType(Enum):
+        CONNECTION = 1
+        STOP = 2
+        TRANSPORT = 3
+
+
     def __init__(self, game):
-        self.game = game
-        self.startNode = None
-        self.endNode = None
+        super().__init__(game)
+        self.startNode = None # A
+        self.endNode = None # B
+
+        self.clickType = EditorClickManager.ClickType.CONNECTION
 
 
     def getStartNode(self):
@@ -263,6 +281,13 @@ class ConnectionManager:
 
     def getEndNode(self):
         return self.endNode
+
+    def getClickType(self):
+        return self.clickType
+
+
+    def setClickType(self, clickType):
+        self.clickType = clickType
 
 
     def setStartNode(self, node):
@@ -281,6 +306,7 @@ class ConnectionManager:
         self.endNode.setCurrentImage(3)
         self.createConnection()
 
+
     def createConnection(self):
         if self.startNode is not None and self.endNode is not None:
             if self.startNode.getNumber() != self.endNode.getNumber():            
@@ -293,3 +319,15 @@ class ConnectionManager:
             self.endNode = None
 
 
+    def addTransport(self, node):
+        # No connections in the node, we cant add any transport
+        if len(node.getConnections()) > 0:
+
+            # for connection in node.getConnections():
+            #     print(connection.getFrom().getNumber(), connection.getTo().getNumber())
+
+            self.game.mapEditor.addTransport(node.getConnectionType(), node.getConnections()[0])
+
+
+    def addStop(self, node):
+        pass

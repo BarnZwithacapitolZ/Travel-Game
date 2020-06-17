@@ -5,16 +5,20 @@ from config import *
 import os
 import math
 
+import clickManager as CLICKMANAGER
+import person as PERSON
+
 vec = pygame.math.Vector2
 
 class Node(pygame.sprite.Sprite):
-    def __init__(self, game, groups, number, connectionType, x, y):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         self.groups = groups
         super().__init__(self.groups)
 
         self.game = game
         self.number = number
         self.connectionType = connectionType
+        self.clickManager = clickManager
         self.width = 20
         self.height = 20
 
@@ -119,25 +123,26 @@ class Node(pygame.sprite.Sprite):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.clickManager.getPerson() is not None:
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.clickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
-                if person.getMouseOver() and person != self.game.clickManager.getPerson():
+                if person.getMouseOver() and person != self.clickManager.getPerson():
                     return
                     
             # If the player is moving on a transport, dont allow them to select a node
-            if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
-                self.game.clickManager.setNode(self)
+            if self.clickManager.getPerson().getStatus() != PERSON.Person.Status.MOVING and self.clickManager.getPerson().getStatus() != PERSON.Person.Status.DEPARTING:
+                self.clickManager.setNode(self)
                 self.game.clickManager.setClicked(False)
 
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.game.clickManager.getPerson() is not None:
+
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
-                if person.getMouseOver() and person != self.game.clickManager.getPerson():
+                if person.getMouseOver() and person != self.clickManager.getPerson():
                     return
 
             # If the player is moving on a transport, dont show hovering over a node 
-            if self.game.clickManager.getPerson().getStatusValue() != 4 and self.game.clickManager.getPerson().getStatusValue() != 5:
+            if self.clickManager.getPerson().getStatus() != PERSON.Person.Status.MOVING and self.clickManager.getPerson().getStatus() != PERSON.Person.Status.DEPARTING:
                 self.mouseOver = True
                 self.currentImage = 1
                 self.dirty = True
@@ -147,6 +152,7 @@ class Node(pygame.sprite.Sprite):
 
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+        
         
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
@@ -161,10 +167,9 @@ class Node(pygame.sprite.Sprite):
 
 
 class EditorNode(Node):
-    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
-        super().__init__(game, groups, number, connectionType, x, y)
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
-        self.connectionManager = connectionManager
         self.images = ["node", "nodeSelected", "nodeStart", "nodeEnd"]
 
 
@@ -178,24 +183,27 @@ class EditorNode(Node):
             # Unset the clicked on node
             pass
 
-        
+
+        # Cant click on a node in the top layer
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4:
             self.game.clickManager.setClicked(False)
 
-            if self.connectionManager.getStartNode() is None:
-                self.connectionManager.setStartNode(self)
+            if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:
+                self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:
+                self.clickManager.addTransport(self)
             else:
-                self.connectionManager.setEndNode(self)
-
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.connectionManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
+                self.clickManager.addStop(self)
+ 
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True
 
-            for connection in self.connections:
-                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
+            # for connection in self.connections:
+            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.connectionManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
@@ -204,8 +212,8 @@ class EditorNode(Node):
 
 
 class BusStop(Node):
-    def __init__(self, game, groups, number, connectionType, x, y):
-        super().__init__(game, groups, number, connectionType, x, y)
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
         self.width = 25
         self.height = 25
         self.offset = vec(-2.5, -2.5)
@@ -214,15 +222,15 @@ class BusStop(Node):
 
 
 class EditorBusStop(EditorNode, BusStop):
-    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
-        super().__init__(game, groups, number, connectionType, x, y, connectionManager)
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
         self.images = ["busStation", "nodeSelected", "nodeStart", "nodeEnd"]
 
 
 class MetroStation(Node):
-    def __init__(self, game, groups, number, connectionType, x, y):
-        super().__init__(game, groups, number, connectionType, x, y)
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
         self.width = 25
         self.height = 25
@@ -232,8 +240,8 @@ class MetroStation(Node):
 
 
 class EditorMetroStation(EditorNode, MetroStation):
-    def __init__(self, game, groups, number, connectionType, x, y, connectionManager):
-        super().__init__(game, groups, number, connectionType, x, y, connectionManager)
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
         self.images = ["metro", "nodeSelected", "nodeStart", "nodeEnd"]
 

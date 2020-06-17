@@ -7,9 +7,10 @@ import random
 import decimal
 import math
 
-from node import *
-from person import *
-from connection import *
+import node as NODE
+import person as PERSON
+import connection as CONNECTION    
+
 vec = pygame.math.Vector2
 
 
@@ -42,7 +43,7 @@ class Transport(pygame.sprite.Sprite):
         self.people = []
 
         self.imageName = "train"
-        self.stopType = MetroStation
+        self.stopType = NODE.MetroStation
 
 
     #### Getters ####
@@ -86,7 +87,7 @@ class Transport(pygame.sprite.Sprite):
             # if theres multiple possible nodes, pick a random one                          #TO DO - make transports follow specific path
             self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
         else:
-            self.direction = Connection.Direction(not self.direction.value) # Go the opposite direction
+            self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
             self.currentConnection = backwardsNodes[0]
 
         self.currentNode = self.currentConnection.getFrom()
@@ -127,8 +128,8 @@ class Transport(pygame.sprite.Sprite):
             return
 
         for person in self.currentNode.getPeople():
-            if person.getStatus() == Person.Status.WAITING: # If they're waiting for the train
-                person.setStatus(Person.Status.BOARDING)
+            if person.getStatus() == PERSON.Person.Status.WAITING: # If they're waiting for the train
+                person.setStatus(PERSON.Person.Status.BOARDING)
 
 
     # Add a person to the transport
@@ -150,10 +151,10 @@ class Transport(pygame.sprite.Sprite):
 
         for person in self.currentNode.getPeople():
             # Only remove people from the station once the train is moving
-            if person.getStatus() == Person.Status.BOARDING:
+            if person.getStatus() == PERSON.Person.Status.BOARDING:
                 self.addPerson(person)
                 self.currentNode.removePerson(person)
-                person.setStatus(Person.Status.MOVING)
+                person.setStatus(PERSON.Person.Status.MOVING)
 
                 # Make the person unclicked?
                 # self.game.clickManager.setPerson(None)
@@ -165,10 +166,10 @@ class Transport(pygame.sprite.Sprite):
             return
 
         for person in self.people:
-            if person.getStatus() == Person.Status.DEPARTING:
+            if person.getStatus() == PERSON.Person.Status.DEPARTING:
                 self.removePerson(person) # Remove the person from the transport
                 self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
-                person.setStatus(Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
+                person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
                 person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
 
                 # Position the person offset to the node
@@ -264,7 +265,7 @@ class Bus(Transport):
     def __init__(self, game, groups, currentConnection, direction, running):
         super().__init__(game, groups, currentConnection, direction, running)
         self.imageName = "bus"
-        self.stopType = BusStop
+        self.stopType = NODE.BusStop
 
 
 class Metro(Transport):

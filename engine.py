@@ -122,6 +122,9 @@ class SpriteRenderer():
 
         # Hud for when the game is running
         self.hud = GameHud(self.game)
+
+        self.clickManager = GameClickManager(self.game)
+
         self.rendering = False
 
         self.setDefaultMap()
@@ -151,6 +154,9 @@ class SpriteRenderer():
 
     def getLevelData(self):
         return self.levelData
+
+    def getClickManager(self):
+        return self.clickManager
 
 
     def clearLevel(self):

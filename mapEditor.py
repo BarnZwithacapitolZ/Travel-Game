@@ -11,8 +11,7 @@ class MapEditor(SpriteRenderer):
 
         # Hud for when the game is running
         self.hud = EditorHud(self.game)
-
-        self.connectionManager = ConnectionManager(self.game)
+        self.clickManager = EditorClickManager(self.game)
 
 
     def getSaved(self):
@@ -23,10 +22,10 @@ class MapEditor(SpriteRenderer):
     def createLevel(self, level = None):
         self.clearLevel()
 
-        self.gridLayer4 = EditorLayer4(self, self.connectionManager, (self.allSprites, self.layer4), level) 
-        self.gridLayer3 = EditorLayer3(self, self.connectionManager, (self.allSprites, self.layer3, self.layer4), level)
-        self.gridLayer1 = EditorLayer1(self, self.connectionManager, (self.allSprites, self.layer1, self.layer4), level)
-        self.gridLayer2 = EditorLayer2(self, self.connectionManager, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), level) 
+        self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), level)
+        self.gridLayer1 = EditorLayer1(self, (self.allSprites, self.layer1, self.layer4), level)
+        self.gridLayer2 = EditorLayer2(self, (self.allSprites, self.layer2, self.layer4), level)
 
         # Add the transport not running (so it doesnt move)
         self.gridLayer1.grid.loadTransport("layer 1", False)
@@ -67,7 +66,6 @@ class MapEditor(SpriteRenderer):
         f.close()
 
 
-
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
         newConnections = layer.getGrid().addConnections(connectionType, startNode, endNode)
@@ -79,11 +77,19 @@ class MapEditor(SpriteRenderer):
         self.levelData["connections"].setdefault(connectionType, []).append([startNode.getNumber(), endNode.getNumber()])
 
 
-    def addTransport(self, node):
-        pass
+    def addTransport(self, connectionType, connection):
+        layer = self.getGridLayer(connectionType)
+
+        layer.getGrid().addTransport(connectionType, connection, False)
+
+        node = connection.getFrom().getNumber()
+
+        self.levelData["transport"].setdefault(connectionType, []).append(node)
 
 
     def deleteConnection(self, connection):
-        pass
+        # if the path to the file exists
+        if os.path.exists("myfile.json"):
+            os.remove("myfile.json") # delete the file
         
 

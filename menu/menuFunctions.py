@@ -2,6 +2,7 @@
 import pygame
 from pygame.locals import *
 from config import *
+from clickManager import *
 
 
 def closeMenu(obj, menu):
@@ -264,6 +265,14 @@ def saveMap(obj, menu):
         # Save and close
         menu.game.mapEditor.saveLevelAs()
         closeMapEditor(obj, menu)
+
+
+def addTransport(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
+
+
+def addConnection(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
 
 
 

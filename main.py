@@ -28,9 +28,13 @@ class Game:
         self.paused = False
         self.fullscreen = config["graphics"]["fullscreen"]
 
+        # Engine
         self.renderer = Renderer(self)
+        self.spriteRenderer = SpriteRenderer(self)
         self.clickManager = ClickManager(self)
         self.textHandler = TextHandler()
+
+        # Loaders
         self.imageLoader = ImageLoader()
         self.mapLoader = MapLoader()
         
@@ -41,7 +45,6 @@ class Game:
         self.mainMenu = MainMenu(self)
         self.optionMenu = OptionMenu(self)
 
-        self.spriteRenderer = SpriteRenderer(self)
 
         if self.fullscreen:
             self.renderer.setFullscreen()
