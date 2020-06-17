@@ -364,11 +364,13 @@ class EditorHud(Menu):
         self.open = True
         self.saveBoxOpen = False
         self.saveAsBoxOpen = False
+        self.loadBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         clear = Label(self, "Clear", 25, Color("white"), (20, 10))
         run = Label(self, "Run", 25, Color("white"), (110, 10))
         save = Label(self, "Save", 25, Color("white"), (180, 10))
+        load = Label(self, "Load", 25, Color("white"), (260, 10))
         layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
 
 
@@ -384,6 +386,11 @@ class EditorHud(Menu):
         save.addEvent(hoverWhite, 'onMouseOut')
         save.addEvent(toggleSaveDropdown, 'onMouseClick')
 
+
+        load.addEvent(hoverGreen, 'onMouseOver')
+        load.addEvent(hoverWhite, 'onMouseOut')
+        load.addEvent(toggleLoadDropdown, 'onMouseClick')
+
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
         layers.addEvent(changeEditorLayer, 'onMouseClick')
@@ -392,6 +399,7 @@ class EditorHud(Menu):
         self.add(clear)
         self.add(run)
         self.add(save)
+        self.add(load)
         self.add(layers)
 
 
@@ -399,7 +407,7 @@ class EditorHud(Menu):
         self.open = True
         self.saveAsBoxOpen = True
 
-        box = Shape(self, BLACK, (150, 80), (180, 40))
+        box = Shape(self, BLACK, (130, 80), (180, 40))
         save = Label(self, "Save", 25, Color("white"), (190, 50))
         saveAs = Label(self, "Save as", 25, Color("white"), (190, 80))
 
@@ -453,6 +461,30 @@ class EditorHud(Menu):
         self.add(save)
         self.add(cancelBox)
         self.add(cancel)
+
+
+    def loadBox(self):
+        self.open = True
+        self.loadBoxOpen = True
+
+        width = 130
+        if self.game.mapLoader.getLongestMapLength() * 15 > width:
+            width = self.game.mapLoader.getLongestMapLength() * 15
+
+        # make width equal to the longest map name
+        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (260, 40))
+
+        self.add(box)
+
+        # Temporarily load in the existing maps
+        y = 50
+        for mapName, path in self.game.mapLoader.getMaps().items():
+            m = Label(self, mapName, 25, Color("white"), (270, y))
+            m.addEvent(hoverGreen, 'onMouseOver')
+            m.addEvent(hoverWhite, 'onMouseOut')
+            m.addEvent(loadEditorMap, 'onMouseClick')
+            self.add(m)
+            y += 30
 
 
 

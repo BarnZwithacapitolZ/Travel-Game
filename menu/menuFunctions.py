@@ -139,7 +139,7 @@ def continueGame(obj, menu):
     closeMenu(obj, menu)
 
 def openMapEditor(obj, menu):
-    menu.game.mapEditor.createLevel(menu.game.mapLoader.getMap("London"))
+    menu.game.mapEditor.createLevel()
     menu.game.mapEditor.setRendering(True)
     closeMenu(obj, menu)
 
@@ -205,12 +205,23 @@ def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
     current += 1 if current < 4 else -3
     menu.game.mapEditor.showLayer(current)
-    
+
+
+def loadEditorMap(obj, menu):
+    path = menu.game.mapLoader.getMap(obj.getText())
+    menu.game.mapEditor.createLevel(path)
 
 
 def toggleSaveDropdown(obj, menu):
     if not menu.saveAsBoxOpen:
         menu.saveAsBox()
+    else:
+        menu.close()
+        menu.main()
+
+def toggleLoadDropdown(obj, menu):
+    if not menu.loadBoxOpen:
+        menu.loadBox()
     else:
         menu.close()
         menu.main()

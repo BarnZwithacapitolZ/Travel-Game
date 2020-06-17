@@ -30,6 +30,7 @@ class Renderer:
         self.surfaces = []
 
         self.fpsFont = pygame.font.Font(pygame.font.get_default_font(), 30)
+        self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
 
 
 
@@ -96,13 +97,14 @@ class Renderer:
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], (surface[1].x, surface[1].y))
 
-        self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
         self.gameDisplay.blit(self.fontImage, (10, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         self.surfaces = []
         
         pygame.display.update()
+
+        self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
 
 
 class SpriteRenderer():
@@ -302,6 +304,13 @@ class MapLoader:
     
     def getMap(self, key):
         return self.maps[key]
+
+    def getLongestMapLength(self):
+        longest = 0
+        for mapName in self.maps:
+            if len(mapName) > longest:
+                longest = len(mapName)
+        return longest
 
     def addMap(self, mapName, path):
         self.maps[mapName] = path
