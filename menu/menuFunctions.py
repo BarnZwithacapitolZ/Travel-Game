@@ -142,13 +142,13 @@ def continueGame(obj, menu):
 def openMapEditor(obj, menu):
     menu.game.mapEditor.createLevel()
     menu.game.mapEditor.setRendering(True)
+    addConnection(obj, menu)
     closeMenu(obj, menu)
 
 
 def closeMapEditor(obj, menu):
     menu.game.textHandler.setActive(False)
     showMainMenu(obj, menu)
-
 
 
 def loadMap(obj, menu):
@@ -273,6 +273,10 @@ def addTransport(obj, menu):
 
 def addConnection(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
+
+
+def addStop(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.STOP)
 
 
 

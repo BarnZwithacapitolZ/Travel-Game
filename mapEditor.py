@@ -82,9 +82,17 @@ class MapEditor(SpriteRenderer):
 
         layer.getGrid().addTransport(connectionType, connection, False)
 
-        node = connection.getFrom().getNumber()
+        number = connection.getFrom().getNumber()
 
-        self.levelData["transport"].setdefault(connectionType, []).append(node)
+        self.levelData["transport"].setdefault(connectionType, []).append(number)
+
+
+    def addStop(self, connectionType, node):
+        layer = self.getGridLayer(connectionType)
+
+        newNode = layer.getGrid().replaceStop(connectionType, node)
+
+        self.levelData["stops"].setdefault(connectionType, []).append(newNode.getNumber())
 
 
     def deleteConnection(self, connection):

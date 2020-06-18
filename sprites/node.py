@@ -93,6 +93,10 @@ class Node(pygame.sprite.Sprite):
         self.people.append(person)
 
 
+    def remove(self):
+        self.kill()
+
+
     # Remove a person from the node
     def removePerson(self, person):
         if person not in self.people:

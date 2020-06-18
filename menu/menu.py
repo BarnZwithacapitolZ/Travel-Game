@@ -367,12 +367,13 @@ class EditorHud(Menu):
         self.loadBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        clear = Label(self, "Clear", 25, Color("white"), (20, 10))
+        clear = Label(self, "New", 25, Color("white"), (20, 10))
         run = Label(self, "Run", 25, Color("white"), (110, 10))
         save = Label(self, "Save", 25, Color("white"), (180, 10))
         load = Label(self, "Load", 25, Color("white"), (260, 10))
         transport = Label(self, "Add transport", 25, Color("white"), (340, 10))
-        connection = Label(self, "Add connection", 25,Color("white"), (540, 10))
+        connection = Label(self, "Add connection", 25, Color("white"), (540, 10))
+        stop = Label(self, "Add stop", 25, Color("white"), (760, 10))
         layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
 
 
@@ -400,6 +401,10 @@ class EditorHud(Menu):
         connection.addEvent(hoverWhite, 'onMouseOut')
         connection.addEvent(addConnection, 'onMouseClick')
 
+        stop.addEvent(hoverGreen, 'onMouseOver')
+        stop.addEvent(hoverWhite, 'onMouseOut')
+        stop.addEvent(addStop, 'onMouseClick')
+
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
         layers.addEvent(changeEditorLayer, 'onMouseClick')
@@ -411,6 +416,7 @@ class EditorHud(Menu):
         self.add(load)
         self.add(transport)
         self.add(connection)
+        self.add(stop)
         self.add(layers)
 
 

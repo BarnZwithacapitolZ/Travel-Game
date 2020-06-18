@@ -119,7 +119,20 @@ class GridManager:
                     else:
                         n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
         return n
+
+
+    def replaceStop(self, connectionType, node):
+        number = node.getNumber()
+        self.nodes.remove(node)
+        node.remove()
+
+        if connectionType == "layer 2":
+            n = EditorBusStop(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.layer.getSpriteRenderer().getClickManager())
+        else:
+            n = EditorMetroStation(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.layer.getSpriteRenderer().getClickManager())
         
+        self.nodes.append(n)
+        return n
 
     # Create the grid by adding all the nodes and connections to the grid
     def createGrid(self, connectionType):
