@@ -3,6 +3,7 @@ from pygame.locals import *
 from config import *
 from menuFunctions import *
 from menuComponents import *
+from clickManager import *
 
 class Menu:
     def __init__(self, game):
@@ -362,83 +363,109 @@ class EditorHud(Menu):
 
     def main(self):
         self.open = True
+        self.fileDropdownOpen = False
+        self.addDropdownOpen = False
         self.saveBoxOpen = False
         self.saveAsBoxOpen = False
         self.loadBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        clear = Label(self, "New", 25, Color("white"), (20, 10))
-        run = Label(self, "Run", 25, Color("white"), (110, 10))
-        save = Label(self, "Save", 25, Color("white"), (180, 10))
-        load = Label(self, "Load", 25, Color("white"), (260, 10))
+        run = Label(self, "Run", 25, Color("white"), (200, 10))
         transport = Label(self, "Add transport", 25, Color("white"), (340, 10))
         connection = Label(self, "Add connection", 25, Color("white"), (540, 10))
         stop = Label(self, "Add stop", 25, Color("white"), (760, 10))
         layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
 
 
-        clear.addEvent(hoverGreen, 'onMouseOver')
-        clear.addEvent(hoverWhite, 'onMouseOut')
-        clear.addEvent(clearMap, 'onMouseClick')
 
-        run.addEvent(hoverGreen, 'onMouseOver')
-        run.addEvent(hoverWhite, 'onMouseOut')
-        run.addEvent(runMap, 'onMouseClick')
 
-        save.addEvent(hoverGreen, 'onMouseOver')
-        save.addEvent(hoverWhite, 'onMouseOut')
-        save.addEvent(toggleSaveDropdown, 'onMouseClick')
+        fileSelect = Label(self, "File", 25, Color("white"), (20, 10))
+        add = Label(self, "Add", 25, Color("white"), (90, 10))
 
-        load.addEvent(hoverGreen, 'onMouseOver')
-        load.addEvent(hoverWhite, 'onMouseOut')
-        load.addEvent(toggleLoadDropdown, 'onMouseClick')
-
-        transport.addEvent(hoverGreen, 'onMouseOver')
-        transport.addEvent(hoverWhite, 'onMouseOut')
-        transport.addEvent(addTransport, 'onMouseClick')
-
-        connection.addEvent(hoverGreen, 'onMouseOver')
-        connection.addEvent(hoverWhite, 'onMouseOut')
-        connection.addEvent(addConnection, 'onMouseClick')
-
-        stop.addEvent(hoverGreen, 'onMouseOver')
-        stop.addEvent(hoverWhite, 'onMouseOut')
-        stop.addEvent(addStop, 'onMouseClick')
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
         layers.addEvent(changeEditorLayer, 'onMouseClick')
 
         self.add(topbar)
-        self.add(clear)
-        self.add(run)
-        self.add(save)
-        self.add(load)
-        self.add(transport)
-        self.add(connection)
-        self.add(stop)
-        self.add(layers)
+
+        fileSelect.addEvent(toggleFileDropdown, 'onMouseClick')
+        add.addEvent(toggleAddDropdown, 'onMouseClick')
+        run.addEvent(runMap, 'onMouseClick')
 
 
-    def saveAsBox(self):
+        labels = [fileSelect, add, run]
+        for label in labels:
+            label.addEvent(hoverGreen, 'onMouseOver')
+            label.addEvent(hoverWhite, 'onMouseOut')
+            self.add(label)
+
+
+    def fileDropdown(self):
         self.open = True
-        self.saveAsBoxOpen = True
+        self.fileDropdownOpen = True
 
-        box = Shape(self, BLACK, (130, 80), (180, 40))
-        save = Label(self, "Save", 25, Color("white"), (190, 50))
-        saveAs = Label(self, "Save as", 25, Color("white"), (190, 80))
+        box = Shape(self, BLACK, (130, 220), (20, 40))
+        new = Label(self, "New", 25, Color("white"), (30, 50))
+        load = Label(self, "Open", 25, Color("white"), (30, 85))
+        save = Label(self, "Save", 25, Color("white"), (30, 120))
+        saveAs = Label(self, "Save as", 25, Color("white"), (30, 155))
+        delete = Label(self, "Delete", 25, Color("white"), (30, 190))
+        close = Label(self, "Exit", 25, Color("white"), (30, 225))
 
-        save.addEvent(hoverGreen, 'onMouseOver')
-        save.addEvent(hoverWhite, 'onMouseOut')
+        new.addEvent(newMap, 'onMouseClick')
+        load.addEvent(toggleLoadDropdown, 'onMouseClick')
         save.addEvent(toggleSaveBox, 'onMouseClick')
-
-        saveAs.addEvent(hoverGreen, 'onMouseOver')
-        saveAs.addEvent(hoverWhite, 'onMouseOut')
         saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+        close.addEvent(closeMapEditor, 'onMouseClick')
 
         self.add(box)
-        self.add(save)
-        self.add(saveAs)
+
+        # Add each of the labels
+        labels = [new, load, save, saveAs, delete, close]
+        for label in labels:
+            label.addEvent(hoverGreen, 'onMouseOver')
+            label.addEvent(hoverWhite, 'onMouseOut')
+            self.add(label)
+
+
+    def addDropdown(self):
+        self.open = True
+        self.addDropdownOpen = True
+
+        # box = Shape(self, BLACK, (200, 120), (90, 40))
+
+        clickType = self.game.mapEditor.getClickManager().getClickType()
+        connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
+        stopSelectd = True if clickType == EditorClickManager.ClickType.STOP else False 
+        transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
+
+
+        connectionBox = Shape(self, GREEN if connectionSelected else BLACK, (200, 38), (90, 40))
+        stopBox = Shape(self, GREEN if stopSelectd else BLACK, (200, 38), (90, 78))
+        transportBox = Shape(self, GREEN if transportSelected else BLACK, (200, 38), (90, 116))
+
+        connection = Label(self, "Connection", 25, Color("white"), (100, 50))
+        stop = Label(self, "Stop", 25, Color("white"), (100, 85))
+        transport = Label(self, "Transport", 25, Color("white"), (100, 120))
+
+        connection.addEvent(addConnection, 'onMouseClick')
+        stop.addEvent(addStop, 'onMouseClick')
+        transport.addEvent(addTransport, 'onMouseClick')
+
+        # self.add(box)
+        self.add(connectionBox)
+        self.add(stopBox)
+        self.add(transportBox)
+
+        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
+        for label in labels:
+            if label[1]:
+                label[0].addEvent(hoverBlack, 'onMouseOver')
+            else:
+                label[0].addEvent(hoverGreen, 'onMouseOver')
+            label[0].addEvent(hoverWhite, 'onMouseOut')
+            self.add(label[0])
 
 
     def saveBox(self):
@@ -480,7 +507,7 @@ class EditorHud(Menu):
         self.add(cancel)
 
 
-    def loadBox(self):
+    def loadDropdown(self):
         self.open = True
         self.loadBoxOpen = True
 
@@ -489,14 +516,14 @@ class EditorHud(Menu):
             width = self.game.mapLoader.getLongestMapLength() * 15
 
         # make width equal to the longest map name
-        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (260, 40))
+        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (150, 85))
 
         self.add(box)
 
         # Temporarily load in the existing maps
-        y = 50
+        y = 95
         for mapName, path in self.game.mapLoader.getMaps().items():
-            m = Label(self, mapName, 25, Color("white"), (270, y))
+            m = Label(self, mapName, 25, Color("white"), (160, y))
             m.addEvent(hoverGreen, 'onMouseOver')
             m.addEvent(hoverWhite, 'onMouseOut')
             m.addEvent(loadEditorMap, 'onMouseClick')

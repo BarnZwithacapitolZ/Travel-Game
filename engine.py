@@ -97,7 +97,7 @@ class Renderer:
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], (surface[1].x, surface[1].y))
 
-        self.gameDisplay.blit(self.fontImage, (10, 10))
+        self.gameDisplay.blit(self.fontImage, (950, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         self.surfaces = []

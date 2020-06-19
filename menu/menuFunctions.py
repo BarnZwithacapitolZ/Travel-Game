@@ -190,8 +190,17 @@ def goHome(obj, menu):
 
 
 #### Editor Hud Function ####
-def clearMap(obj, menu):
-    menu.game.mapEditor.createLevel() # no level creates an empty, clear map
+
+def toggleFileDropdown(obj, menu):
+    if not menu.fileDropdownOpen:
+        menu.fileDropdown()
+    else:
+        menu.close()
+        menu.main()
+
+def newMap(obj, menu):
+    menu.game.mapEditor.createLevel() # no level creates an empty, clear map    
+
 
 
 def runMap(obj, menu):
@@ -202,10 +211,12 @@ def runMap(obj, menu):
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 
 
+
 def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
     current += 1 if current < 4 else -3
     menu.game.mapEditor.showLayer(current)
+
 
 
 def loadEditorMap(obj, menu):
@@ -213,19 +224,22 @@ def loadEditorMap(obj, menu):
     menu.game.mapEditor.createLevel(path)
 
 
-def toggleSaveDropdown(obj, menu):
-    if not menu.saveAsBoxOpen:
-        menu.saveAsBox()
+def toggleAddDropdown(obj, menu):
+    if not menu.addDropdownOpen:
+        menu.addDropdown()
     else:
         menu.close()
         menu.main()
 
+
+
 def toggleLoadDropdown(obj, menu):
     if not menu.loadBoxOpen:
-        menu.loadBox()
+        menu.loadDropdown()
     else:
         menu.close()
         menu.main()
+        menu.fileDropdown()
 
 
 def toggleSaveBox(obj, menu):
@@ -240,6 +254,7 @@ def toggleSaveBox(obj, menu):
         menu.game.textHandler.setActive(False)
         menu.close()
         menu.main()
+        menu.fileDropdown()
 
 
 def toggleSaveAsBox(obj, menu):
@@ -250,6 +265,7 @@ def toggleSaveAsBox(obj, menu):
         menu.game.textHandler.setActive(False)
         menu.close()
         menu.main()
+        menu.fileDropdown()
 
 
 def saveMap(obj, menu):
@@ -269,15 +285,18 @@ def saveMap(obj, menu):
 
 def addTransport(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
-
+    menu.close()
+    menu.main()
 
 def addConnection(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
-
+    menu.close()
+    menu.main()
 
 def addStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.STOP)
-
+    menu.close()
+    menu.main()
 
 
 #### Preview Hud Functions ####
