@@ -22,6 +22,7 @@ class Transport(pygame.sprite.Sprite):
         self.game = game
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
+        self.currentNode.addTransport(self)
         self.width = 30
         self.height = 30
 
@@ -90,7 +91,10 @@ class Transport(pygame.sprite.Sprite):
             self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
             self.currentConnection = backwardsNodes[0]
 
+        self.currentNode.removeTransport(self)
         self.currentNode = self.currentConnection.getFrom()
+        self.currentNode.addTransport(self)
+
 
 
     # Set the next connection for the transport to follow

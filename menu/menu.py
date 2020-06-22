@@ -449,20 +449,26 @@ class EditorHud(Menu):
         load = Label(self, "Open", 25, Color("white"), (30, 85))
         save = Label(self, "Save", 25, Color("white"), (30, 120))
         saveAs = Label(self, "Save as", 25, Color("white"), (30, 155))
-        delete = Label(self, "Delete", 25, Color("white"), (30, 190))
+
+        delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (30, 190))
         close = Label(self, "Exit", 25, Color("white"), (30, 225))
 
         new.addEvent(newMap, 'onMouseClick')
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
         save.addEvent(toggleSaveBox, 'onMouseClick')
         saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
-        delete.addEvent(toggleConfirmBox, 'onMouseClick')
         close.addEvent(closeMapEditor, 'onMouseClick')
 
+        if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable():
+            delete.addEvent(hoverGreen, 'onMouseOver')
+            delete.addEvent(hoverWhite, 'onMouseOut')
+            delete.addEvent(toggleConfirmBox, 'onMouseClick')
+
         self.add(box)
+        self.add(delete)
 
         # Add each of the labels
-        labels = [new, load, save, saveAs, delete, close]
+        labels = [new, load, save, saveAs, close]
         for label in labels:
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')

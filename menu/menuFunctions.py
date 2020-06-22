@@ -200,7 +200,8 @@ def toggleFileDropdown(obj, menu):
 
 def newMap(obj, menu):
     menu.game.mapEditor.createLevel() # no level creates an empty, clear map    
-
+    menu.close()
+    menu.main()
 
 
 def runMap(obj, menu):
@@ -212,8 +213,9 @@ def runMap(obj, menu):
 
 
 def deleteMap(obj, menu):
-    menu.game.mapEditor.deleteLevel()
-    closeMapEditor(obj, menu)
+    if menu.game.mapEditor.getSaved() and menu.game.mapEditor.getDeletable():
+        menu.game.mapEditor.deleteLevel()
+        closeMapEditor(obj, menu)
 
 
 
@@ -227,6 +229,8 @@ def changeEditorLayer(obj, menu):
 def loadEditorMap(obj, menu):
     path = menu.game.mapLoader.getMap(obj.getText())
     menu.game.mapEditor.createLevel(path)
+    menu.close()
+    menu.main()
 
 
 def toggleAddDropdown(obj, menu):
@@ -288,7 +292,8 @@ def saveMap(obj, menu):
     text = text.replace(" ", "")
 
     # No input
-    if len(text) <= 0:
+    if len(text) <= 0 or menu.game.mapLoader.checkMapExists(text):
+        # Maybe show some text explaining the error?
         menu.inputBox.setColor(RED)
         menu.inputBox.dirty = True
     else:

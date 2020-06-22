@@ -321,15 +321,11 @@ class EditorClickManager(ClickManager):
 
     def addTransport(self, node):
         # No connections to the node, we cant add any transport
-        if len(node.getConnections()) > 0:
-
-            # for connection in node.getConnections():
-            #     print(connection.getFrom().getNumber(), connection.getTo().getNumber())
-
+        if len(node.getConnections()) > 0 and len(node.getTransports()) < 1:
             self.game.mapEditor.addTransport(node.getConnectionType(), node.getConnections()[0])
 
 
     def addStop(self, node):
         # No connections to the node, we dont want to add a stop if nothing can stop at it
-        if len(node.getConnections()) > 0:
+        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation):
             self.game.mapEditor.addStop(node.getConnectionType(), node)

@@ -16,6 +16,9 @@ class MapEditor(SpriteRenderer):
 
     def getSaved(self):
         return self.levelData["saved"]
+
+    def getDeletable(self):
+        return self.levelData["deletable"]
     
     
     # Override creating the level
@@ -46,7 +49,8 @@ class MapEditor(SpriteRenderer):
         self.levelData["deletable"] = True
         self.levelData["saved"] = True
 
-        saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
+        # saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
+        saveName = "map_" + self.game.textHandler.getText().replace(" ", "_") + '.json'
         path = os.path.join(MAPSFOLDER, saveName)
 
         with open(path, "w") as f:

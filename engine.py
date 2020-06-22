@@ -328,5 +328,11 @@ class MapLoader:
         for key, level in config["maps"].items():
             m = os.path.join(MAPSFOLDER, level)
             self.maps[key] = m
+
+
+    def checkMapExists(self, mapName):
+        if mapName in self.maps:
+            return True
+        return False
             
 

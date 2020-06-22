@@ -104,6 +104,12 @@ class Node(pygame.sprite.Sprite):
 
         self.people.remove(person)
 
+    def removeTransport(self, transport):
+        if transport not in self.transports:
+            return
+
+        self.transports.remove(transport)
+
 
     def __render(self):
         self.dirty = False
