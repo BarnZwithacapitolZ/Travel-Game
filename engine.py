@@ -321,6 +321,9 @@ class MapLoader:
     def addMap(self, mapName, path):
         self.maps[mapName] = path
 
+    def removeMap(self, mapName):
+        del self.maps[mapName]
+
     def loadAllMaps(self):
         for key, level in config["maps"].items():
             m = os.path.join(MAPSFOLDER, level)

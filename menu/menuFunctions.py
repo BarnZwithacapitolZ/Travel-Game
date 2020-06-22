@@ -211,6 +211,11 @@ def runMap(obj, menu):
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 
 
+def deleteMap(obj, menu):
+    menu.game.mapEditor.deleteLevel()
+    closeMapEditor(obj, menu)
+
+
 
 def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
@@ -230,7 +235,6 @@ def toggleAddDropdown(obj, menu):
     else:
         menu.close()
         menu.main()
-
 
 
 def toggleLoadDropdown(obj, menu):
@@ -263,6 +267,16 @@ def toggleSaveAsBox(obj, menu):
         menu.saveBox()
     else:
         menu.game.textHandler.setActive(False)
+        menu.close()
+        menu.main()
+        menu.fileDropdown()
+
+
+def toggleConfirmBox(obj, menu):
+    if not menu.confirmBoxOpen:
+        if menu.game.mapEditor.getLevelData()["mapName"] != "":
+            menu.confirmBox()
+    else:
         menu.close()
         menu.main()
         menu.fileDropdown()

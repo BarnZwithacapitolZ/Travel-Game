@@ -66,6 +66,16 @@ class MapEditor(SpriteRenderer):
         f.close()
 
 
+    # Remove a map, which has already been saved, from the maps folder and references in config
+    # TODO: FIX NAMING CONVENTION OF MAPS SO WHEN DELETED IT DOESNT MESS WITH THE OTHER MAPS WHEN CREATING A NEW MAP
+    def deleteLevel(self):
+        path = self.game.mapLoader.getMap(self.levelData["mapName"])
+        if os.path.exists(path):
+            os.remove(path) # Delete the level
+            self.game.mapLoader.removeMap(self.levelData["mapName"])
+            del config["maps"][self.levelData["mapName"]]
+            dump(config)
+
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
         newConnections = layer.getGrid().addConnections(connectionType, startNode, endNode)
@@ -96,8 +106,6 @@ class MapEditor(SpriteRenderer):
 
 
     def deleteConnection(self, connection):
-        # if the path to the file exists
-        if os.path.exists("myfile.json"):
-            os.remove("myfile.json") # delete the file
+        pass
         
 

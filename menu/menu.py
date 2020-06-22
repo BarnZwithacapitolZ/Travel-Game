@@ -365,9 +365,6 @@ class EditorHud(Menu):
         self.open = True
         self.fileDropdownOpen = False
         self.addDropdownOpen = False
-        self.saveBoxOpen = False
-        self.saveAsBoxOpen = False
-        self.loadBoxOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         run = Label(self, "Run", 25, Color("white"), (200, 10))
@@ -401,9 +398,51 @@ class EditorHud(Menu):
             self.add(label)
 
 
+    def addDropdown(self):
+        self.open = True
+        self.addDropdownOpen = True
+
+        # box = Shape(self, BLACK, (200, 120), (90, 40))
+
+        clickType = self.game.mapEditor.getClickManager().getClickType()
+        connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
+        stopSelectd = True if clickType == EditorClickManager.ClickType.STOP else False 
+        transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
+
+        box = Shape(self, BLACK, (200, 114), (90, 40))
+        connectionBox = Shape(self, GREEN, (200, 33), (90, 45))
+        stopBox = Shape(self, GREEN, (200, 33), (90, 81))
+        transportBox = Shape(self, GREEN, (200, 33), (90, 116))
+
+        connection = Label(self, "Connection", 25, Color("white"), (100, 50))
+        stop = Label(self, "Stop", 25, Color("white"), (100, 85))
+        transport = Label(self, "Transport", 25, Color("white"), (100, 120))
+
+        connection.addEvent(addConnection, 'onMouseClick')
+        stop.addEvent(addStop, 'onMouseClick')
+        transport.addEvent(addTransport, 'onMouseClick')
+
+        self.add(box)
+        if connectionSelected: self.add(connectionBox)
+        if stopSelectd: self.add(stopBox)
+        if transportSelected: self.add(transportBox)
+
+        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
+        for label in labels:
+            if label[1]:
+                label[0].addEvent(hoverBlack, 'onMouseOver')
+            else:
+                label[0].addEvent(hoverGreen, 'onMouseOver')
+            label[0].addEvent(hoverWhite, 'onMouseOut')
+            self.add(label[0])
+
+
     def fileDropdown(self):
         self.open = True
         self.fileDropdownOpen = True
+        self.saveBoxOpen = False
+        self.loadBoxOpen = False
+        self.confirmBoxOpen = False
 
         box = Shape(self, BLACK, (130, 220), (20, 40))
         new = Label(self, "New", 25, Color("white"), (30, 50))
@@ -417,6 +456,7 @@ class EditorHud(Menu):
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
         save.addEvent(toggleSaveBox, 'onMouseClick')
         saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+        delete.addEvent(toggleConfirmBox, 'onMouseClick')
         close.addEvent(closeMapEditor, 'onMouseClick')
 
         self.add(box)
@@ -427,84 +467,6 @@ class EditorHud(Menu):
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')
             self.add(label)
-
-
-    def addDropdown(self):
-        self.open = True
-        self.addDropdownOpen = True
-
-        # box = Shape(self, BLACK, (200, 120), (90, 40))
-
-        clickType = self.game.mapEditor.getClickManager().getClickType()
-        connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
-        stopSelectd = True if clickType == EditorClickManager.ClickType.STOP else False 
-        transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
-
-
-        connectionBox = Shape(self, GREEN if connectionSelected else BLACK, (200, 38), (90, 40))
-        stopBox = Shape(self, GREEN if stopSelectd else BLACK, (200, 38), (90, 78))
-        transportBox = Shape(self, GREEN if transportSelected else BLACK, (200, 38), (90, 116))
-
-        connection = Label(self, "Connection", 25, Color("white"), (100, 50))
-        stop = Label(self, "Stop", 25, Color("white"), (100, 85))
-        transport = Label(self, "Transport", 25, Color("white"), (100, 120))
-
-        connection.addEvent(addConnection, 'onMouseClick')
-        stop.addEvent(addStop, 'onMouseClick')
-        transport.addEvent(addTransport, 'onMouseClick')
-
-        # self.add(box)
-        self.add(connectionBox)
-        self.add(stopBox)
-        self.add(transportBox)
-
-        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
-        for label in labels:
-            if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
-            else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
-            self.add(label[0])
-
-
-    def saveBox(self):
-        self.open = True
-        self.saveBoxOpen = True
-
-        width = config["graphics"]["displayWidth"] / 2
-        height = 240
-        x = width - (width / 2)
-        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
-
-        box = Shape(self, GREEN, (width, height), (x, y))
-        title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
-        self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
-        mapName = InputBox(self, 30, BLACK, (x + 40, y + 92), 20)
-        saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
-        save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
-
-        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
-        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
-
-        self.inputBox.addEvent(hoverWhite, 'onKeyPress')
-
-        save.addEvent(hoverGreen, 'onMouseOver')
-        save.addEvent(hoverWhite, 'onMouseOut')
-        save.addEvent(saveMap, 'onMouseClick')
-
-        cancel.addEvent(hoverGreen, 'onMouseOver')
-        cancel.addEvent(hoverWhite, 'onMouseOut')
-        cancel.addEvent(toggleSaveBox, 'onMouseClick')
-
-        self.add(box)
-        self.add(title)
-        self.add(self.inputBox)
-        self.add(mapName)
-        self.add(saveBox)
-        self.add(save)
-        self.add(cancelBox)
-        self.add(cancel)
 
 
     def loadDropdown(self):
@@ -530,6 +492,85 @@ class EditorHud(Menu):
             self.add(m)
             y += 30
 
+
+    def saveBox(self):
+        self.open = True
+        self.saveBoxOpen = True
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        box = Shape(self, GREEN, (width, height), (x, y))
+        title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
+        self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
+        mapName = InputBox(self, 30, BLACK, (x + 40, y + 92), 20)
+        saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
+        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
+
+        self.inputBox.addEvent(hoverWhite, 'onKeyPress')
+
+        save.addEvent(hoverGreen, 'onMouseOver')
+        save.addEvent(hoverWhite, 'onMouseOut')
+        save.addEvent(saveMap, 'onMouseClick')
+
+        cancel.addEvent(hoverGreen, 'onMouseOver')
+        cancel.addEvent(hoverWhite, 'onMouseOut')
+        cancel.addEvent(toggleSaveBox, 'onMouseClick')
+
+        self.add(box)
+        self.add(title)
+        self.add(self.inputBox)
+        self.add(mapName)
+        self.add(saveBox)
+        self.add(save)
+        self.add(cancelBox)
+        self.add(cancel)
+
+
+    def confirmBox(self):
+        self.open = True
+        self.confirmBoxOpen = True
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        box = Shape(self, GREEN, (width, height), (x, y))
+        title = Label(self, "Delete", 30, Color("white"), (x + 20, y + 20))
+        title.setUnderline(True)
+        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 92))
+        confirm2 = Label(self, "this map?", 30, Color("white"), (x + 40, y + 125))
+
+        confirmBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
+        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
+
+
+        confirm.addEvent(hoverGreen, 'onMouseOver')
+        confirm.addEvent(hoverWhite, 'onMouseOut')
+        confirm.addEvent(deleteMap, 'onMouseClick')
+
+        cancel.addEvent(hoverGreen, 'onMouseOver')
+        cancel.addEvent(hoverWhite, 'onMouseOut')
+        cancel.addEvent(toggleConfirmBox, 'onMouseClick')
+
+        self.add(box)
+        self.add(title)
+        self.add(confirm1)
+        self.add(confirm2)
+        self.add(confirmBox)
+        self.add(confirm)
+        self.add(cancelBox)
+        self.add(cancel)
+
+
+    
 
 
 class PreviewHud(Menu):
