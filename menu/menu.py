@@ -365,20 +365,16 @@ class EditorHud(Menu):
         self.open = True
         self.fileDropdownOpen = False
         self.addDropdownOpen = False
+        self.deleteDropdownOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        run = Label(self, "Run", 25, Color("white"), (200, 10))
-        transport = Label(self, "Add transport", 25, Color("white"), (340, 10))
-        connection = Label(self, "Add connection", 25, Color("white"), (540, 10))
-        stop = Label(self, "Add stop", 25, Color("white"), (760, 10))
         layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
-
-
 
 
         fileSelect = Label(self, "File", 25, Color("white"), (20, 10))
         add = Label(self, "Add", 25, Color("white"), (90, 10))
-
+        delete = Label(self, "Delete", 25, Color("white"), (170, 10))
+        run = Label(self, "Run", 25, Color("white"), (280, 10))
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -388,10 +384,11 @@ class EditorHud(Menu):
 
         fileSelect.addEvent(toggleFileDropdown, 'onMouseClick')
         add.addEvent(toggleAddDropdown, 'onMouseClick')
+        delete.addEvent(toggleDeleteDropdown, 'onMouseClick')
         run.addEvent(runMap, 'onMouseClick')
 
 
-        labels = [fileSelect, add, run]
+        labels = [fileSelect, add, delete, run]
         for label in labels:
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')
@@ -401,8 +398,6 @@ class EditorHud(Menu):
     def addDropdown(self):
         self.open = True
         self.addDropdownOpen = True
-
-        # box = Shape(self, BLACK, (200, 120), (90, 40))
 
         clickType = self.game.mapEditor.getClickManager().getClickType()
         connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
@@ -435,6 +430,30 @@ class EditorHud(Menu):
                 label[0].addEvent(hoverGreen, 'onMouseOver')
             label[0].addEvent(hoverWhite, 'onMouseOut')
             self.add(label[0])
+
+
+    def deleteDropdown(self):
+        self.open = True
+        self.deleteDropdownOpen = True
+
+        box = Shape(self, BLACK, (200, 114), (170, 40))
+
+
+        connection = Label(self, "Connection", 25, Color("white"), (180, 50))
+        stop = Label(self, "Stop", 25, Color("white"), (180, 85))
+        transport = Label(self, "Transport", 25, Color("white"), (180, 120))
+
+        connection.addEvent(deleteConnection, 'onMouseClick')
+        stop.addEvent(deleteStop, 'onMouseClick')
+        transport.addEvent(deleteTransport, 'onMouseClick')
+
+        self.add(box)
+
+        labels = [connection, stop, transport]
+        for label in labels:
+            label.addEvent(hoverGreen, 'onMouseOver')
+            label.addEvent(hoverWhite, 'onMouseOut')
+            self.add(label)
 
 
     def fileDropdown(self):

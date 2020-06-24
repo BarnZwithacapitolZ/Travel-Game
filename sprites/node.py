@@ -198,12 +198,16 @@ class EditorNode(Node):
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4:
             self.game.clickManager.setClicked(False)
 
-            if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:
+            if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
                 self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:   # Add a transport
                 self.clickManager.addTransport(self)
-            else:
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
                 self.clickManager.addStop(self)
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
+                self.clickManager.deleteTransport(self)
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
+                self.clickManager.deleteStop(self)
  
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = True

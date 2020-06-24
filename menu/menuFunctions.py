@@ -241,6 +241,14 @@ def toggleAddDropdown(obj, menu):
         menu.main()
 
 
+def toggleDeleteDropdown(obj, menu):
+    if not menu.deleteDropdownOpen:
+        menu.deleteDropdown()
+    else:
+        menu.close()
+        menu.main()
+
+
 def toggleLoadDropdown(obj, menu):
     if not menu.loadBoxOpen:
         menu.loadDropdown()
@@ -314,6 +322,23 @@ def addConnection(obj, menu):
 
 def addStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.STOP)
+    menu.close()
+    menu.main()
+
+
+def deleteTransport(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DTRANSPORT)
+    menu.close()
+    menu.main()
+
+def deleteConnection(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DCONNECTION)
+    menu.close()
+    menu.main()
+
+
+def deleteStop(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DSTOP)
     menu.close()
     menu.main()
 

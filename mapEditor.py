@@ -101,12 +101,31 @@ class MapEditor(SpriteRenderer):
         self.levelData["transport"].setdefault(connectionType, []).append(number)
 
 
+    # TO DO: Maybe let the user select the stop type they want to add so there can be different types of stops on each layer?
     def addStop(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
 
-        newNode = layer.getGrid().replaceStop(connectionType, node)
+        if connectionType == "layer 2":
+            stopType = EditorBusStop
+        else:
+            stopType = EditorMetroStation
+
+        newNode = layer.getGrid().replaceNode(connectionType, node, stopType)
 
         self.levelData["stops"].setdefault(connectionType, []).append(newNode.getNumber())
+
+
+    def deleteTransport(self, connectionType, node):
+        pass
+
+
+
+    def deleteStop(self, connectionType, node):
+        layer = self.getGridLayer(connectionType)
+
+        newNode = layer.getGrid().replaceNode(connectionType, node, EditorNode)
+
+        self.levelData["stops"][connectionType].remove(newNode.getNumber())
 
 
     def deleteConnection(self, connection):

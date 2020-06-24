@@ -267,6 +267,11 @@ class EditorClickManager(ClickManager):
         STOP = 2
         TRANSPORT = 3
 
+        # D at front signifies deletion options
+        DCONNECTION = 4
+        DSTOP = 5
+        DTRANSPORT = 6
+
 
     def __init__(self, game):
         super().__init__(game)
@@ -329,3 +334,17 @@ class EditorClickManager(ClickManager):
         # No connections to the node, we dont want to add a stop if nothing can stop at it
         if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
+
+
+    def deleteTransport(self, node):
+        # Check that there is a transportation to delete
+        if len(node.getTransports()) >= 1:
+            print(node.getNumber())
+
+
+    def deleteStop(self, node):
+        # Make sure it is actually a stop
+
+        if isinstance(node, NODE.EditorBusStop) or isinstance(node, NODE.EditorMetroStation):
+            self.game.mapEditor.deleteStop(node.getConnectionType(), node)            
+
