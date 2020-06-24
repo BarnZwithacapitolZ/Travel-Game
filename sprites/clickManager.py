@@ -339,7 +339,7 @@ class EditorClickManager(ClickManager):
     def deleteTransport(self, node):
         # Check that there is a transportation to delete
         if len(node.getTransports()) >= 1:
-            print(node.getNumber())
+            self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
 
 
     def deleteStop(self, node):

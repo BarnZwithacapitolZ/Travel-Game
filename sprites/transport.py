@@ -143,6 +143,10 @@ class Transport(pygame.sprite.Sprite):
     # Remove a person from the transport
     def removePerson(self, person):
         self.people.remove(person)
+
+
+    def remove(self):
+        self.kill()
     
     
 

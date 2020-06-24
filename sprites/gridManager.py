@@ -216,5 +216,10 @@ class GridManager:
             t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
         self.transports.append(t)
 
+
+    def removeTransport(self, transport):
+        self.transports.remove(transport)
+        transport.remove()
+
         
            

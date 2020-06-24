@@ -116,9 +116,16 @@ class MapEditor(SpriteRenderer):
 
 
     def deleteTransport(self, connectionType, node):
-        pass
+        layer = self.getGridLayer(connectionType)
 
+        # Since a node in the editor can only have one transport on it
+        transport = node.getTransports()[0]
 
+        node.removeTransport(transport)
+        layer.getGrid().removeTransport(transport)
+
+        self.levelData["transport"][connectionType].remove(node.getNumber())
+        
 
     def deleteStop(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
