@@ -436,8 +436,16 @@ class EditorHud(Menu):
         self.open = True
         self.deleteDropdownOpen = True
 
-        box = Shape(self, BLACK, (200, 114), (170, 40))
 
+        clickType = self.game.mapEditor.getClickManager().getClickType()
+        connectionSelected = True if clickType == EditorClickManager.ClickType.DCONNECTION else False 
+        stopSelectd = True if clickType == EditorClickManager.ClickType.DSTOP else False 
+        transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
+
+        box = Shape(self, BLACK, (200, 114), (170, 40))
+        connectionBox = Shape(self, GREEN, (200, 33), (170, 45))
+        stopBox = Shape(self, GREEN, (200, 33), (170, 81))
+        transportBox = Shape(self, GREEN, (200, 33), (170, 116))
 
         connection = Label(self, "Connection", 25, Color("white"), (180, 50))
         stop = Label(self, "Stop", 25, Color("white"), (180, 85))
@@ -448,12 +456,18 @@ class EditorHud(Menu):
         transport.addEvent(deleteTransport, 'onMouseClick')
 
         self.add(box)
+        if connectionSelected: self.add(connectionBox)
+        if stopSelectd: self.add(stopBox)
+        if transportSelected: self.add(transportBox)
 
-        labels = [connection, stop, transport]
+        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
         for label in labels:
-            label.addEvent(hoverGreen, 'onMouseOver')
-            label.addEvent(hoverWhite, 'onMouseOut')
-            self.add(label)
+            if label[1]:
+                label[0].addEvent(hoverBlack, 'onMouseOver')
+            else:
+                label[0].addEvent(hoverGreen, 'onMouseOver')
+            label[0].addEvent(hoverWhite, 'onMouseOut')
+            self.add(label[0])
 
 
     def fileDropdown(self):
@@ -466,28 +480,37 @@ class EditorHud(Menu):
         box = Shape(self, BLACK, (130, 220), (20, 40))
         new = Label(self, "New", 25, Color("white"), (30, 50))
         load = Label(self, "Open", 25, Color("white"), (30, 85))
-        save = Label(self, "Save", 25, Color("white"), (30, 120))
-        saveAs = Label(self, "Save as", 25, Color("white"), (30, 155))
+        save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (30, 120)) 
+        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (30, 155))
 
+        # Must be already saved and be a deletable map
         delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (30, 190))
         close = Label(self, "Exit", 25, Color("white"), (30, 225))
 
         new.addEvent(newMap, 'onMouseClick')
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
-        save.addEvent(toggleSaveBox, 'onMouseClick')
-        saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
         close.addEvent(closeMapEditor, 'onMouseClick')
 
-        if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable():
-            delete.addEvent(hoverGreen, 'onMouseOver')
-            delete.addEvent(hoverWhite, 'onMouseOut')
-            delete.addEvent(toggleConfirmBox, 'onMouseClick')
+        if self.game.mapEditor.getDeletable():
+            save.addEvent(hoverGreen, 'onMouseOver')
+            save.addEvent(hoverWhite, 'onMouseOut')
+            save.addEvent(toggleSaveBox, 'onMouseClick')
+            saveAs.addEvent(hoverGreen, 'onMouseOver')
+            saveAs.addEvent(hoverWhite, 'onMouseOut')
+            saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+
+            if self.game.mapEditor.getSaved(): 
+                delete.addEvent(hoverGreen, 'onMouseOver')
+                delete.addEvent(hoverWhite, 'onMouseOut')
+                delete.addEvent(toggleConfirmBox, 'onMouseClick')                   
 
         self.add(box)
+        self.add(save)
+        self.add(saveAs)
         self.add(delete)
 
         # Add each of the labels
-        labels = [new, load, save, saveAs, close]
+        labels = [new, load, close]
         for label in labels:
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')

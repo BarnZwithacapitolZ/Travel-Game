@@ -6,6 +6,7 @@ import os
 import random
 import math
 from enum import Enum
+vec = pygame.math.Vector2
 
 class Connection:
     class Direction(Enum):
@@ -22,6 +23,8 @@ class Connection:
 
         self.setColor()
         self.setLength()
+
+        self.mouseOver = False
 
 
     #### Getters ####
@@ -95,3 +98,28 @@ class Connection:
     # Set point B (to)
     def setToNode(self, toNode):
         self.toNode = toNode
+
+
+    def update(self):
+        mx, my = pygame.mouse.get_pos()
+        mx -= self.game.renderer.getDifference()[0]
+        my -= self.game.renderer.getDifference()[1]
+
+        scale = self.game.renderer.getScale()
+        buffer = 1
+        d1 = ((vec(mx, my) - vec(10,10) * scale) - (self.fromNode.pos - self.fromNode.offset) * scale).length()
+        d2 = ((vec(mx, my) - vec(10, 10) * scale) - (self.toNode.pos - self.toNode.offset) * scale).length()
+
+        if d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and self.game.clickManager.getClicked():
+            print("it is clicked!")
+            self.game.clickManager.setClicked(False)
+
+        elif d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and not self.mouseOver:
+            self.color = YELLOW
+            self.mouseOver = True
+        
+        elif not (d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer) and self.mouseOver:
+            self.mouseOver = False
+            self.setColor()
+
+

@@ -191,17 +191,22 @@ def goHome(obj, menu):
 
 #### Editor Hud Function ####
 
+def clearMenu(obj, menu):
+    menu.close()
+    menu.main()
+
+
 def toggleFileDropdown(obj, menu):
     if not menu.fileDropdownOpen:
+        clearMenu(obj, menu)
         menu.fileDropdown()
     else:
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
+
 
 def newMap(obj, menu):
     menu.game.mapEditor.createLevel() # no level creates an empty, clear map    
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
 
 
 def runMap(obj, menu):
@@ -218,7 +223,6 @@ def deleteMap(obj, menu):
         closeMapEditor(obj, menu)
 
 
-
 def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
     current += 1 if current < 4 else -3
@@ -229,32 +233,30 @@ def changeEditorLayer(obj, menu):
 def loadEditorMap(obj, menu):
     path = menu.game.mapLoader.getMap(obj.getText())
     menu.game.mapEditor.createLevel(path)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
 
 
 def toggleAddDropdown(obj, menu):
     if not menu.addDropdownOpen:
+        clearMenu(obj, menu)
         menu.addDropdown()
     else:
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
 
 
 def toggleDeleteDropdown(obj, menu):
     if not menu.deleteDropdownOpen:
+        clearMenu(obj, menu)
         menu.deleteDropdown()
     else:
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
 
 
 def toggleLoadDropdown(obj, menu):
     if not menu.loadBoxOpen:
         menu.loadDropdown()
     else:
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
         menu.fileDropdown()
 
 
@@ -268,8 +270,7 @@ def toggleSaveBox(obj, menu):
             menu.saveBox()
     else:
         menu.game.textHandler.setActive(False)
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
         menu.fileDropdown()
 
 
@@ -279,8 +280,7 @@ def toggleSaveAsBox(obj, menu):
         menu.saveBox()
     else:
         menu.game.textHandler.setActive(False)
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
         menu.fileDropdown()
 
 
@@ -289,8 +289,7 @@ def toggleConfirmBox(obj, menu):
         if menu.game.mapEditor.getLevelData()["mapName"] != "":
             menu.confirmBox()
     else:
-        menu.close()
-        menu.main()
+        clearMenu(obj, menu)
         menu.fileDropdown()
 
 
@@ -312,35 +311,32 @@ def saveMap(obj, menu):
 
 def addTransport(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
+
 
 def addConnection(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
+
 
 def addStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.STOP)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
 
 
 def deleteTransport(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DTRANSPORT)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
+
 
 def deleteConnection(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DCONNECTION)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
 
 
 def deleteStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DSTOP)
-    menu.close()
-    menu.main()
+    clearMenu(obj, menu)
 
 
 #### Preview Hud Functions ####

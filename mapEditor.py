@@ -139,3 +139,18 @@ class MapEditor(SpriteRenderer):
         pass
         
 
+    def update(self):
+        super().update()
+
+        if self.rendering:
+            if self.currentLayer == 1:
+                for connection in self.gridLayer1.getGrid().getConnections():
+                    connection.update()
+            
+            elif self.currentLayer == 2:
+                for connection in self.gridLayer2.getGrid().getConnections():
+                    connection.update()
+
+            elif self.currentLayer == 3:
+                for connection in self.gridLayer3.getGrid().getConnections():
+                    connection.update()
