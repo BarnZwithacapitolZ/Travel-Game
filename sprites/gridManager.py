@@ -124,11 +124,14 @@ class GridManager:
 
     def replaceNode(self, connectionType, node, nodeType):
         number = node.getNumber()
+        connections = node.getConnections() #need to transfer the connections from the old node to the new node
+        transports = node.getTransports()
         self.nodes.remove(node)
         node.remove()
 
         n = nodeType(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.layer.getSpriteRenderer().getClickManager())
-
+        n.setConnections(connections)
+        n.setTransports(transports)
         self.nodes.append(n)
         return n    
 

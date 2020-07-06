@@ -3,10 +3,72 @@ import pygame
 from pygame.locals import *
 from config import *
 from clickManager import *
+from menuComponents import *
+
+
+def transitionAnimationOpen(obj, menu, animation):
+    obj.x += 100
+
+    if obj.x >= 0:
+        obj.animations.remove(animation)
+        menu.close()
+        menu.transition()
+
+    obj.rect.x = obj.x * menu.renderer.getScale()
+
+
+def transitionAnimationClose(obj, menu, animation):
+    obj.x += 100
+
+    if obj.x >= config["graphics"]["displayWidth"]:
+        obj.animations.remove(animation)
+        menu.close()
+
+    obj.rect.x = obj.x * menu.renderer.getScale()
+
+
+def transitionFadeIn(obj, menu, animation):
+    obj.setAlpha(obj.getAlpha() + 20)
+    obj.dirty = True
+
+    if obj.getAlpha() >= 255:
+        obj.animations.remove(animation)
+        menu.close()
+        menu.transition()
+
+
+def transitionFadeOut(obj, menu, animation):
+    obj.setAlpha(obj.getAlpha() - 20)
+    obj.dirty = True
+
+    if obj.getAlpha() <= 0:
+        obj.animations.remove(animation)
+        menu.close()
+
+
+def transitionLeft(obj, menu, animation):
+    obj.x -= 60
+
+    if obj.x < -500:
+        obj.animations.remove(animation)
+        menu.close()
+
+    obj.rect.x = obj.x * menu.renderer.getScale()
+    
 
 
 def closeMenu(obj, menu):
-    menu.close()
+    # menu.close()
+
+    for component in menu.components:
+        if component.x < 500:
+            component.addAnimation(transitionLeft, 'onLoad')
+
+    # transition = Shape(menu, BLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), 0)
+    # transition.addAnimation(transitionFadeIn, 'onLoad')
+    # menu.add(transition)
+
+
 
 def unpause(obj, menu):
     menu.close()
@@ -18,10 +80,6 @@ def closeGame(obj, menu):
     menu.game.playing = False
 
 
-def showMain(obj, menu):
-    menu.close()
-    menu.main()
-
 def showOptions(obj, menu):
     menu.close()
     menu.options()
@@ -31,6 +89,9 @@ def showGraphics(obj, menu):
     menu.graphics()
 
 
+def showMain(obj, menu):
+    menu.close()
+    menu.main()
 
 def toggleDropdown(obj, menu):
     if not menu.dropdownOpen:
@@ -142,7 +203,7 @@ def continueGame(obj, menu):
 def openMapEditor(obj, menu):
     menu.game.mapEditor.createLevel()
     menu.game.mapEditor.setRendering(True)
-    addConnection(obj, menu)
+    addConnection(obj, menu) # Set the default hud option to adding a connection
     closeMenu(obj, menu)
 
 

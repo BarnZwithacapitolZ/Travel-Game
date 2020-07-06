@@ -82,6 +82,14 @@ class Node(pygame.sprite.Sprite):
     def addConnection(self, connection):
         self.connections.append(connection)
 
+    
+    def setConnections(self, connections = []):
+        self.connections = connections
+
+
+    def setTransports(self, transports = []):
+        self.transports = transports
+
 
     # Add a transport to the node
     def addTransport(self, transport):

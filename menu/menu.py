@@ -113,6 +113,12 @@ class Menu:
         self.open = False
 
 
+    def transition(self):
+        self.open = True
+
+        test = Shape(self, BLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), 255)
+        test.addAnimation(transitionFadeOut, 'onLoad')
+        self.add(test)
 
 
 class MainMenu(Menu):
@@ -121,7 +127,8 @@ class MainMenu(Menu):
 
     def main(self):
         self.open = True
-        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+        sidebar = Shape(self, (0, 169, 132), (config["graphics"]["displayWidth"] / 2, config["graphics"]["displayHeight"]), (0, 0))
+        otherbar = Shape(self, CREAM, (config["graphics"]["displayWidth"] / 2, config["graphics"]["displayHeight"]), (config["graphics"]["displayWidth"] / 2, 0))
 
         title1 = Label(self, "Transport", 70, Color("white"), (100, 100))
         title2 = Label(self, "The", 30, Color("white"), (100, 170))
@@ -145,6 +152,7 @@ class MainMenu(Menu):
         end.addEvent(hoverOut, 'onMouseOut')
 
         self.add(sidebar)
+        # self.add(otherbar)
 
         self.add(title1)
         self.add(title2)

@@ -230,7 +230,15 @@ class InputBox(Label):
 class Shape(MenuComponent):
     def __init__(self, menu, color, size = tuple(), pos = tuple(), alpha = None):   
         super().__init__(menu, color, size, pos)
-        self.alpha = alpha        
+        self.alpha = alpha
+        
+
+    def getAlpha(self):
+        return self.alpha if self.alpha is not None else 0
+
+    def setAlpha(self, alpha):
+        self.alpha = alpha
+
 
     def __render(self):
         self.dirty = False
