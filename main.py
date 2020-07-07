@@ -8,6 +8,7 @@ sys.path.insert(0, 'sprites')
 
 from config import *
 from engine import *
+from spriteRenderer import *
 from menu import *
 from sprites import *
 from menuComponents import *

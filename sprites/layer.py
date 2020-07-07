@@ -52,6 +52,14 @@ class Layer(pygame.sprite.Sprite):
         for connection in connections:
             connection.getFrom().addConnection(connection)
 
+    
+    def removeConnections(self, connections = None):
+        if connections is None:
+            connections = self.connections
+
+        for connection in connections:
+            connection.getFrom().removeConnection(connection)
+
 
     # Add a person to the layer
     def addPerson(self):

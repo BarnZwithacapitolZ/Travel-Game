@@ -81,6 +81,20 @@ class GridManager:
         return c1, c2
 
 
+    def removeConnections(self, connections = []):
+        for connection in connections:
+            self.connections.remove(connection)
+
+
+    def getOppositeConnection(self, currentConnection):
+        for connection in self.connections:
+            if connection.getFrom() == currentConnection.getTo() and connection.getTo() == currentConnection.getFrom():
+                return currentConnection, connection
+
+        # There is no opposite connection
+        return False
+
+
 
     # Load the .json map data into a dictionary
     def loadMap(self):

@@ -258,6 +258,8 @@ class Shape(MenuComponent):
         if self.dirty or self.image is None: self.__render()
         self.menu.renderer.addSurface(self.image, (self.rect))
 
+        # pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect)
+
 
 class Image(MenuComponent):
     def __init__(self, menu, imageName, color, size = tuple(), pos = tuple(), alpha = None):

@@ -3,7 +3,8 @@ import pygame
 from gridManager import *
 from node import *
 from menu import *
-from engine import *
+from spriteRenderer import *
+from clickManager import *
 
 class MapEditor(SpriteRenderer):
     def __init__(self, game):
@@ -135,22 +136,32 @@ class MapEditor(SpriteRenderer):
         self.levelData["stops"][connectionType].remove(newNode.getNumber())
 
 
-    def deleteConnection(self, connection):
-        pass
-        
+    def deleteConnection(self, connectionType, connection):
+        layer = self.getGridLayer(connectionType)
+
+        connections = layer.getGrid().getOppositeConnection(connection)
+
+        if connections:
+            layer.getGrid().removeConnections(connections)
+            layer.removeConnections(connections)
+
+            self.levelData["connections"][connectionType].remove([connection.getFrom().getNumber(), connection.getTo().getNumber()])
+
+        else:
+            return
+
+
+    def updateConnection(self, layer, group):
+        if self.currentLayer == layer:
+            for connection in group.getGrid().getConnections():
+                connection.update()
+
 
     def update(self):
         super().update()
 
         if self.rendering:
-            if self.currentLayer == 1:
-                for connection in self.gridLayer1.getGrid().getConnections():
-                    connection.update()
-            
-            elif self.currentLayer == 2:
-                for connection in self.gridLayer2.getGrid().getConnections():
-                    connection.update()
-
-            elif self.currentLayer == 3:
-                for connection in self.gridLayer3.getGrid().getConnections():
-                    connection.update()
+            if self.clickManager.getClickType() == EditorClickManager.ClickType.DCONNECTION:
+                self.updateConnection(1, self.gridLayer1)
+                self.updateConnection(2, self.gridLayer2)
+                self.updateConnection(3, self.gridLayer3)

@@ -69,6 +69,10 @@ class Connection:
         return self.direction
 
 
+    def getConnectionType(self):
+        return self.connectionType
+
+
     #### Setters ####
 
     # Set the colour of the connection depending on the type 
@@ -111,7 +115,7 @@ class Connection:
         d2 = ((vec(mx, my) - vec(10, 10) * scale) - (self.toNode.pos - self.toNode.offset) * scale).length()
 
         if d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and self.game.clickManager.getClicked():
-            print("it is clicked!")
+            self.game.mapEditor.getClickManager().deleteConnection(self)
             self.game.clickManager.setClicked(False)
 
         elif d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and not self.mouseOver:

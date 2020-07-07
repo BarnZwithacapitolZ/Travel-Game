@@ -336,6 +336,26 @@ class EditorClickManager(ClickManager):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
 
 
+    def deleteConnection(self, connection):
+
+        fromNode = connection.getFrom()
+        toNode = connection.getTo()
+
+        self.game.mapEditor.deleteConnection(connection.getConnectionType(), connection)
+
+        if len(fromNode.getConnections()) <= 0:
+            self.deleteStop(fromNode)
+            self.deleteTransport(fromNode)
+        
+        if len(toNode.getConnections()) <= 0:
+            self.deleteStop(toNode)
+            self.deleteTransport(toNode)
+
+
+
+
+
+
     def deleteTransport(self, node):
         # Check that there is a transportation to delete
         if len(node.getTransports()) >= 1:

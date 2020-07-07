@@ -119,6 +119,10 @@ class Node(pygame.sprite.Sprite):
         self.transports.remove(transport)
 
 
+    def removeConnection(self, connection):
+        self.connections.remove(connection)
+
+
     def __render(self):
         self.dirty = False
 
@@ -128,7 +132,6 @@ class Node(pygame.sprite.Sprite):
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale()
-
 
 
     def draw(self):
@@ -222,8 +225,8 @@ class EditorNode(Node):
             self.currentImage = 1
             self.dirty = True
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
+            for connection in self.connections:
+                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
         if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = False
