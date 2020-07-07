@@ -92,19 +92,12 @@ class Game:
                 self.textHandler.events(e)
                 self.textHandler.setPressed(True)
 
-                if e.key == pygame.K_ESCAPE and not self.mainMenu.open:
-                    self.paused = not self.paused
-                                        
-                    if self.paused: self.optionMenu.main()
-                    else: self.optionMenu.close()
+                if e.key == pygame.K_ESCAPE and not self.mainMenu.open:                                        
+                    if not self.paused: self.optionMenu.main()
+                    else: self.optionMenu.closeTransition()
 
-                # THIS WILL BE REMOVED IN THE FINAL BUILD
-                # if e.key == pygame.K_f:
-                #     self.fullscreen = not self.fullscreen
 
-                #     if self.fullscreen: self.renderer.setFullscreen()
-                #     else: self.renderer.unsetFullscreen()
-
+                # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
                     # Show / Hide the different layers depending on key press
                     if pygame.key.name(e.key) == config["controls"]["layer1"]:
@@ -144,9 +137,6 @@ class Game:
 
             self.__update()
             self.__draw()
-
-            # print(self.paused)
-            # print(pygame.mouse.get_pos())
 
         self.running = False
 

@@ -3,152 +3,21 @@ import pygame
 from pygame.locals import *
 from config import *
 from clickManager import *
-from menuComponents import *
+from transitionFunctions import *
 
 
-def transitionAnimationOpen(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= 0:
-        obj.animations.remove(animation)
-        menu.close()
-        menu.transition()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionAnimationClose(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= config["graphics"]["displayWidth"]:
-        obj.animations.remove(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionFadeIn(obj, menu, animation):
-    obj.setAlpha(obj.getAlpha() + 20)
-    obj.dirty = True
-
-    if obj.getAlpha() >= 255:
-        obj.animations.remove(animation)
-        menu.close()
-        menu.transition()
-
-
-def transitionFadeOut(obj, menu, animation):
-    obj.setAlpha(obj.getAlpha() - 20)
-    obj.dirty = True
-
-    if obj.getAlpha() <= 0:
-        obj.animations.remove(animation)
-        menu.close()
-
-
-def transitionLeft(obj, menu, animation):
-    obj.x -= 60
-
-    if obj.x < -500:
-        obj.animations.remove(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-    
-
-
-def closeMenu(obj, menu):
-    # menu.close()
-
+def closeMenu(obj, menu, animation):
     for component in menu.components:
-        if component.x < 500:
-            component.addAnimation(transitionLeft, 'onLoad')
-
-    # transition = Shape(menu, BLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), 0)
-    # transition.addAnimation(transitionFadeIn, 'onLoad')
-    # menu.add(transition)
-
-
-
-def unpause(obj, menu):
-    menu.close()
-    menu.game.paused = False
-    menu.game.hud.open = True
-
-def closeGame(obj, menu):
-    menu.close()
-    menu.game.playing = False
-
-
-def showOptions(obj, menu):
-    menu.close()
-    menu.options()
-
-def showGraphics(obj, menu):
-    menu.close()
-    menu.graphics()
-
-
-def showMain(obj, menu):
-    menu.close()
-    menu.main()
-
-def toggleDropdown(obj, menu):
-    if not menu.dropdownOpen:
-        menu.dropdown()
-    else:
-        menu.close()
-        menu.main()
-
-
-def toggleOption1(obj, menu):
-    if not menu.option1Open:
-        menu.option1()
-    else:
-        menu.close()
-        menu.main()
-        menu.dropdown()
-
-
-def toggleOption2(obj, menu):
-    if not menu.option2Open:
-        menu.option2()
-    else:
-        menu.close()
-        menu.main()
-        menu.dropdown()
-
-def toggleAlias(obj, menu):
-    toggle = not config["graphics"]['antiAliasing']
-    config["graphics"]['antiAliasing'] = toggle
-
-    text = "On" if toggle else "Off"
-
-    obj.setText("AntiAliasing: " + text)
-
-    dump(config)
-
-
-def toggleFullscreen(obj, menu):
-    menu.game.fullscreen = not menu.game.fullscreen
-
-    text = "On" if menu.game.fullscreen else "Off"
-
-    if menu.game.fullscreen: menu.renderer.setFullscreen()
-    else: menu.renderer.unsetFullscreen()
-
-    obj.setText("Fullscreen: " + text)
-
-    config["graphics"]["fullscreen"] = menu.game.fullscreen
-    dump(config)
-
+        component.addAnimation(animation, 'onLoad')
 
 
 def hoverGreen(obj, menu):
     obj.setColor((0, 169, 132))
 
+
 def hoverWhite(obj, menu):
     obj.setColor(Color("white"))
+
 
 def hoverBlack(obj, menu):
     obj.setColor(BLACK)
@@ -180,8 +49,34 @@ def hoverOutAnimation(obj, menu, animation):
     
 
 
+##### Main-Menu Functions #####
+def continueGame(obj, menu):
+    menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
+    menu.game.spriteRenderer.setRendering(True) #Load the hud
+    closeMenu(obj, menu, transitionLeft)
 
-##### Option-Meny Functions #####
+
+def closeGame(obj, menu):
+    menu.close()
+    menu.game.playing = False
+
+
+def openMapEditor(obj, menu):
+    menu.game.mapEditor.createLevel()
+    menu.game.mapEditor.setRendering(True)
+    addConnection(obj, menu) # Set the default hud option to adding a connection
+    closeMenu(obj, menu, transitionLeft)
+
+
+def loadMap(obj, menu):
+    path = menu.game.mapLoader.getMap(obj.getText())
+    menu.game.spriteRenderer.createLevel(path)
+    menu.game.spriteRenderer.setRendering(True)
+    closeMenu(obj, menu, transitionLeft)
+
+    
+
+##### Option-Menu Functions #####
 
 # Game option menu
 def showMainMenu(obj, menu):
@@ -193,32 +88,55 @@ def showMainMenu(obj, menu):
     menu.game.mainMenu.main()
 
 
-
-##### Main-Menu Functions #####
-def continueGame(obj, menu):
-    menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
-    menu.game.spriteRenderer.setRendering(True) #Load the hud
-    closeMenu(obj, menu)
-
-def openMapEditor(obj, menu):
-    menu.game.mapEditor.createLevel()
-    menu.game.mapEditor.setRendering(True)
-    addConnection(obj, menu) # Set the default hud option to adding a connection
-    closeMenu(obj, menu)
+def unpause(obj, menu):
+    menu.closeTransition()
 
 
-def closeMapEditor(obj, menu):
-    menu.game.textHandler.setActive(False)
-    showMainMenu(obj, menu)
+def showOptions(obj, menu):
+    menu.close()
+    menu.options()
 
 
-def loadMap(obj, menu):
-    path = menu.game.mapLoader.getMap(obj.getText())
-    menu.game.spriteRenderer.createLevel(path)
-    menu.game.spriteRenderer.setRendering(True)
-    closeMenu(obj, menu)
+def showGraphics(obj, menu):
+    menu.close()
+    menu.graphics()
 
-    
+
+# Show the main menu of the option menu (for back buttons)
+def showMain(obj, menu):
+    menu.close()
+    menu.main()
+
+
+# Toggle anti-aliasing
+def toggleAlias(obj, menu):
+    toggle = not config["graphics"]['antiAliasing']
+    config["graphics"]['antiAliasing'] = toggle
+
+    text = "On" if toggle else "Off"
+
+    obj.setText("AntiAliasing: " + text)
+
+    dump(config)
+
+
+# Toggle fullscreen
+def toggleFullscreen(obj, menu):
+    menu.game.fullscreen = not menu.game.fullscreen
+
+    text = "On" if menu.game.fullscreen else "Off"
+
+    if menu.game.fullscreen: menu.renderer.setFullscreen()
+    else: menu.renderer.unsetFullscreen()
+
+    obj.setText("Fullscreen: " + text)
+
+    config["graphics"]["fullscreen"] = menu.game.fullscreen
+    dump(config)
+
+
+
+
 
 ##### Hud Functions #####
  
@@ -244,8 +162,6 @@ def hideHome(obj, menu):
 
 
 def goHome(obj, menu):
-    menu.game.paused = not menu.game.paused
-    menu.game.hud.open = not menu.game.hud.open # To Do: fix
     menu.game.optionMenu.main()
 
 
@@ -255,6 +171,10 @@ def goHome(obj, menu):
 def clearMenu(obj, menu):
     menu.close()
     menu.main()
+
+def closeMapEditor(obj, menu):
+    menu.game.textHandler.setActive(False)
+    showMainMenu(obj, menu)
 
 
 def toggleFileDropdown(obj, menu):

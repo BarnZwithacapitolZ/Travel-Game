@@ -80,16 +80,21 @@ class Renderer:
         if size[1] < config["graphics"]['minDisplayHeight']: size[1] = config["graphics"]["minDisplayHeight"]
 
         self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1)
-        
+
         self.width = (config["graphics"]["displayWidth"] * self.scale)
         self.height = (config["graphics"]["displayHeight"] * self.scale)
         self.windowWidth = size[0]
         self.windowHeight = size[1]
+
+        print((self.width, self.height), (self.windowWidth, self.windowHeight))
+
+
         if fullscreen:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
         self.gameDisplay = pygame.Surface((self.width, self.height))  
+
 
 
     # on tick function
@@ -100,6 +105,8 @@ class Renderer:
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
+        # self.screen.blit(pygame.transform.scale(self.gameDisplay, (int(self.windowWidth), int(self.windowHeight))), (0, 0))
+
         self.surfaces = []
         
         pygame.display.update()

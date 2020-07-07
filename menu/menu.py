@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from config import *
 from menuFunctions import *
+from transitionFunctions import *
 from menuComponents import *
 from clickManager import *
 
@@ -18,6 +19,13 @@ class Menu:
 
         # print(pygame.display.get_surface())
         self.clicked = False
+
+    
+    def setOpen(self, hudOpen):
+        self.open = hudOpen
+
+    def getOpen(self):
+        return self.open
 
     def add(self, obj):
         self.components.append(obj)
@@ -36,10 +44,17 @@ class Menu:
                 
 
     def display(self):    
-        if self.open:
-            for component in self.components:
-                component.draw()
+        # if self.open:
+        #     for component in self.components:
+        #         component.draw()
                 
+        #         self.events(component)
+        #         self.animate(component)
+
+        for component in self.components:
+            component.draw()
+
+            if self.open:
                 self.events(component)
                 self.animate(component)
 
@@ -176,17 +191,30 @@ class OptionMenu(Menu):
         super().__init__(renderer)
 
 
+    def closeTransition(self):
+        self.game.spriteRenderer.getHud().setOpen(True)
+        self.game.mapEditor.getHud().setOpen(True)
+
+        for component in self.components:
+            component.addAnimation(transitionLeftUnpause, 'onLoad')
+
+
     def main(self):
         self.open = True
-        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+        
+        self.game.paused = True
+        self.game.spriteRenderer.getHud().setOpen(False)
+        self.game.mapEditor.getHud().setOpen(False)
 
-        paused = Label(self, "Paused", 70, BLACK, (100, 100))
+        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (-500, 0))
 
-        options = Label(self, "Options", 50,  BLACK, (100, 200))
-        new = Label(self, "New Game", 50,  BLACK, (100, 260))
-        save = Label(self, "Save Game", 50,  BLACK, (100, 320))
-        mainMenu = Label(self, "Main Menu", 50, BLACK, (100, 380))
-        close = Label(self, "Close", 30, BLACK, (100, 440))
+        paused = Label(self, "Paused", 70, BLACK, (-400, 100))
+
+        options = Label(self, "Options", 50,  BLACK, (-400, 200))
+        new = Label(self, "New Game", 50,  BLACK, (-400, 260))
+        save = Label(self, "Save Game", 50,  BLACK, (-400, 320))
+        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 380))
+        close = Label(self, "Close", 30, BLACK, (-400, 440))
 
         options.addEvent(showOptions, 'onMouseClick')
         options.addEvent(hoverOver, 'onMouseOver')
@@ -204,7 +232,14 @@ class OptionMenu(Menu):
         close.addEvent(hoverOver, 'onMouseOver')
         close.addEvent(hoverOut, 'onMouseOut')
 
-        # self.add(background)
+
+
+        sidebar.addAnimation(transitionRightBackground, 'onLoad')
+        animateComponents = [paused, options, new, save, mainMenu, close]
+        for component in animateComponents:
+            component.addAnimation(transitionRight, 'onLoad')
+
+
         self.add(sidebar)
         self.add(paused)
         self.add(options)
@@ -212,6 +247,10 @@ class OptionMenu(Menu):
         self.add(save)
         self.add(mainMenu)
         self.add(close)
+        
+
+
+
 
     def options(self):
         self.open = True
@@ -297,10 +336,6 @@ class GameHud(Menu):
         home.addEvent(hideHome, 'onMouseOut')
         home.addEvent(goHome, 'onMouseClick')
 
-        # dropdown.addEvent(toggleDropdown, 'onMouseClick')
-        # dropdown.addEvent(hoverGreen, 'onMouseOver')
-        # dropdown.addEvent(hoverWhite, 'onMouseOut')
-
 
         # self.add(topbar)
         self.add(dropdown)
@@ -308,60 +343,6 @@ class GameHud(Menu):
         self.add(layers)
 
 
-    def dropdown(self):
-        self.open = True
-        self.dropdownOpen = True
-        self.option1Open = False
-        self.option2Open = False
-
-        background = Shape(self, (0, 169, 132), (150, 100), (400, 40))
-        option1 = Label(self, "option 1", 25, Color("white"), (420, 60))
-        option2 = Label(self, "option 2", 25, Color("white"), (420, 100))
-
-        option1.addEvent(toggleOption1, 'onMouseClick')
-        option1.addEvent(hoverBlack, 'onMouseOver')
-        option1.addEvent(hoverWhite, 'onMouseOut')
-
-        option2.addEvent(toggleOption2, 'onMouseClick')
-        option2.addEvent(hoverBlack, 'onMouseOver')
-        option2.addEvent(hoverWhite, 'onMouseOut')
-
-
-        self.add(background)
-        self.add(option1)
-        self.add(option2)
-
-
-
-    def option1(self):
-        self.open = True
-        self.option1Open = True
-
-
-        optionBackground = Shape(self, (0, 169, 132), (150, 35), (550, 55))
-        optionText = Label(self, "something", 25, Color("white"), (560, 60))
-
-        optionText.addEvent(hoverBlack, 'onMouseOver')
-        optionText.addEvent(hoverWhite, 'onMouseOut')
-
-
-        self.add(optionBackground)
-        self.add(optionText)
-
-    def option2(self):
-        self.open = True
-        self.option2Open = True
-
-
-        optionBackground = Shape(self, (0, 169, 132), (150, 35), (550, 95))
-        optionText = Label(self, "another", 25, Color("white"), (560, 100))
-
-        optionText.addEvent(hoverBlack, 'onMouseOver')
-        optionText.addEvent(hoverWhite, 'onMouseOut')
-
-
-        self.add(optionBackground)
-        self.add(optionText)
 
 
 class EditorHud(Menu):
