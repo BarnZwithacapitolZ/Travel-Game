@@ -126,7 +126,7 @@ class Label(MenuComponent):
     def getText(self):
         return self.text
 
-    def __render(self):
+    def render(self):
         self.dirty = False
 
         self.font = pygame.font.Font(self.fontName, int(self.fontSize * self.menu.renderer.getScale()))
@@ -148,7 +148,7 @@ class Label(MenuComponent):
         
 
     def draw(self):
-        if self.dirty or self.image is None: self.__render()
+        if self.dirty or self.image is None: self.render()
         self.menu.renderer.addSurface(self.image, self.rect)
 
 
@@ -190,28 +190,10 @@ class InputBox(Label):
     def resizeIndicator(self):
         self.indicator.dirty = True
 
-        
-    def __render(self):
-        self.dirty = False
-
-        self.font.set_bold(self.bold)
-        self.font.set_italic(self.italic)
-        self.font.set_underline(self.underline)
-
-        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color)
-
-        self.rect = self.image.get_rect()
-
-        # Scale down as font is automatically sized to scale when set
-        self.width = self.rect.width / self.menu.renderer.getScale()
-        self.height= self.rect.height / self.menu.renderer.getScale()
-
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
-
+    
 
     def draw(self):
-        if self.dirty or self.image is None: self.__render()
+        if self.dirty or self.image is None: self.render()
         self.menu.renderer.addSurface(self.image, self.rect)
 
         self.setFlashing()

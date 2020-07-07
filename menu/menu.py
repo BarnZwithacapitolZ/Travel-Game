@@ -5,6 +5,7 @@ from menuFunctions import *
 from transitionFunctions import *
 from menuComponents import *
 from clickManager import *
+import abc
 
 class Menu:
     def __init__(self, game):
@@ -304,12 +305,22 @@ class OptionMenu(Menu):
         self.add(fullscreen)
         self.add(back)
 
-    
 
-class GameHud(Menu):
+
+# Anything that all the game huds will use
+class GameHudLayout(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+    @abc.abstractmethod
+    def updateLayerText(self):
+        return
+
+    
+
+class GameHud(GameHudLayout):
+    def __init__(self, renderer):
+        super().__init__(renderer)
 
     def main(self):
         self.open = True
@@ -318,7 +329,7 @@ class GameHud(Menu):
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
         home = Image(self, "home", Color("white"), (50, 50), (20, 500))
-        layers = Image(self, "layers", Color("white"), (50, 50), (80, 500))
+        layers = Image(self, "layers", Color("white"), (50, 50), (20, 440))
         
 
         layers.addEvent(showLayers, 'onMouseOver')
@@ -338,9 +349,14 @@ class GameHud(Menu):
 
 
 
-class EditorHud(Menu):
+class EditorHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
+
+
+    def updateLayerText(self):
+        if hasattr(self, 'currentLayer'):
+            self.currentLayer.setText("layer " + str(self.game.mapEditor.getLayer()))
 
 
     def main(self):
@@ -350,19 +366,22 @@ class EditorHud(Menu):
         self.deleteDropdownOpen = False
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        layers = Image(self, "layers", Color("white"), (50, 50), (15, 500))
-
 
         fileSelect = Label(self, "File", 25, Color("white"), (20, 10))
         add = Label(self, "Add", 25, Color("white"), (90, 10))
         delete = Label(self, "Delete", 25, Color("white"), (170, 10))
         run = Label(self, "Run", 25, Color("white"), (280, 10))
 
+        layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, 10))
+        self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, 10))
+
         layers.addEvent(showLayers, 'onMouseOver')
-        layers.addEvent(hideLayers, 'onMouseOut')
+        layers.addEvent(hideLayersWhite, 'onMouseOut')
         layers.addEvent(changeEditorLayer, 'onMouseClick')
 
         self.add(topbar)
+        self.add(layers)
+        self.add(self.currentLayer)
 
         fileSelect.addEvent(toggleFileDropdown, 'onMouseClick')
         add.addEvent(toggleAddDropdown, 'onMouseClick')
@@ -603,7 +622,7 @@ class EditorHud(Menu):
     
 
 
-class PreviewHud(Menu):
+class PreviewHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 

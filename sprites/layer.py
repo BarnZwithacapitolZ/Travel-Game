@@ -11,7 +11,7 @@ from connection import *
 from person import *
 
 class Layer(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups, level = None):
+    def __init__(self, spriteRenderer, groups, level = None, spacing = (1.5, 1.5)):
         self.groups = groups
         #layer added to sprite group first
         super().__init__(self.groups)

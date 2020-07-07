@@ -132,6 +132,9 @@ def showLayers(obj, menu):
 def hideLayers(obj, menu):
     obj.setImageName("layers")
 
+def hideLayersWhite(obj, menu):
+    obj.setImageName("layersWhite")
+
 def changeGameLayer(obj, menu):
     current = menu.game.spriteRenderer.getLayer()
     current += 1 if current < 4 else -3
@@ -193,6 +196,7 @@ def changeEditorLayer(obj, menu):
     current = menu.game.mapEditor.getLayer()
     current += 1 if current < 4 else -3
     menu.game.mapEditor.showLayer(current)
+    menu.updateLayerText()
 
 
 

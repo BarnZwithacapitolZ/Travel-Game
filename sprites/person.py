@@ -55,7 +55,7 @@ class Person(pygame.sprite.Sprite):
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
-        self.timer = 100 #some random time amount
+        self.timer = random.randint(60, 150)
 
 
     #### Getters ####

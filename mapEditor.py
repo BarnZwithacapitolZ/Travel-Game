@@ -154,7 +154,7 @@ class MapEditor(SpriteRenderer):
     def updateConnection(self, layer, group):
         if self.currentLayer == layer:
             for connection in group.getGrid().getConnections():
-                connection.update()
+                connection.update()        
 
 
     def update(self):

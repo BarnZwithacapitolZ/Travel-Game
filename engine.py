@@ -100,14 +100,13 @@ class Renderer:
     def render(self):
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], surface[1])
-            # self.dirtySurfaces.append(surface[1])
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.scale(self.gameDisplay, (int(self.windowWidth), int(self.windowHeight))), (0, 0))
 
-        pygame.display.update(self.dirtySurfaces)
+        pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
 
         self.surfaces = []
         self.dirtySurfaces = []

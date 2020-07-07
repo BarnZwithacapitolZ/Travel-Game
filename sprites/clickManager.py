@@ -294,6 +294,10 @@ class EditorClickManager(ClickManager):
     def setClickType(self, clickType):
         self.clickType = clickType
 
+        if self.clickType != EditorClickManager.ClickType.CONNECTION:
+            if self.startNode is not None:
+                self.startNode = None
+
 
     def setStartNode(self, node):
         self.startNode = node

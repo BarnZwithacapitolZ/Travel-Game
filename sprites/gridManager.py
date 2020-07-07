@@ -59,9 +59,9 @@ class GridManager:
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
     @staticmethod
-    def setNodePositions():
-        offx = 1.5 # Offset on the x coordinate
-        offy = 1.5 # Offset on the y coordinate
+    def setNodePositions(offx = 1.5, offy = 1.5):
+        # Offset on the x coordinate
+        # Offset on the y coordinate
         spacing = 50 #spacing between each node
         positions = []
 
