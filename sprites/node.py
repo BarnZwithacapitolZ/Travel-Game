@@ -225,8 +225,8 @@ class EditorNode(Node):
             self.currentImage = 1
             self.dirty = True
 
-            for connection in self.connections:
-                print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
+            # for connection in self.connections:
+            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
         if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
             self.mouseOver = False

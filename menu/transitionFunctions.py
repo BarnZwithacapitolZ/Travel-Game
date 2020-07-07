@@ -42,8 +42,12 @@ def transitionFadeOut(obj, menu, animation):
         menu.close()
 
 
+
+
+transitionspeed = 40
+
 def transitionLeft(obj, menu, animation):
-    obj.x -= 100
+    obj.x -= transitionspeed * 100 * menu.game.dt
 
     if obj.x < -500:
         obj.animations.remove(animation)
@@ -53,7 +57,7 @@ def transitionLeft(obj, menu, animation):
     
 
 def transitionLeftUnpause(obj, menu, animation):
-    obj.x -= 100
+    obj.x -= transitionspeed * 100 * menu.game.dt
 
     if obj.x < -500:
         obj.animations.remove(animation)
@@ -64,17 +68,39 @@ def transitionLeftUnpause(obj, menu, animation):
 
 
 def transitionRight(obj, menu, animation):
-    obj.x += 100
+    obj.x += transitionspeed * 100 * menu.game.dt
 
     if obj.x >= 100:
+        obj.x = 100
         obj.animations.remove(animation)
 
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 def transitionRightBackground(obj, menu, animation):
-    obj.x += 100
+    obj.x += transitionspeed * 100 * menu.game.dt
 
     if obj.x >= 0:
+        obj.x = 0
         obj.animations.remove(animation)
 
+    obj.rect.x = obj.x * menu.renderer.getScale()
+
+
+
+#### Text hover animations ####
+hoverspeed = 10
+
+def hoverOverAnimation(obj, menu, animation):
+    obj.x += hoverspeed * 10 * menu.game.dt
+
+    if obj.x >= 110:
+        obj.animations.remove(animation)
+    obj.rect.x = obj.x * menu.renderer.getScale()
+
+
+def hoverOutAnimation(obj, menu, animation):
+    obj.x -= hoverspeed * 10 * menu.game.dt
+
+    if obj.x <= 100:
+        obj.animations.remove(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()

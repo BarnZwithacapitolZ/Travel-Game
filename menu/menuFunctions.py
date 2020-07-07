@@ -31,21 +31,6 @@ def hoverOut(obj, menu):
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
 
-
-def hoverOverAnimation(obj, menu, animation):
-    obj.x += 3
-
-    if obj.x > 110:
-        obj.animations.remove(animation)
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def hoverOutAnimation(obj, menu, animation):
-    obj.x -= 3
-
-    if obj.x < 100:
-        obj.animations.remove(animation)
-    obj.rect.x = obj.x * menu.renderer.getScale()
     
 
 

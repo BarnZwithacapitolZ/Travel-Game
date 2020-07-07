@@ -100,7 +100,7 @@ class Renderer:
     def render(self):
         for surface in self.surfaces:    
             self.gameDisplay.blit(surface[0], surface[1])
-            self.dirtySurfaces.append(surface[1])
+            # self.dirtySurfaces.append(surface[1])
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 

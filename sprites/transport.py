@@ -38,7 +38,7 @@ class Transport(pygame.sprite.Sprite):
         self.running = running
         self.moving = self.running
         self.timer = 0
-        self.timerLength = 150
+        self.timerLength = 300
 
         #people travelling in the transport
         self.people = []
@@ -114,7 +114,8 @@ class Transport(pygame.sprite.Sprite):
             self.setPeopleDeparting()
 
             self.moving = False
-            self.timer += 1
+            self.timer += 100 * self.game.dt
+            # self.timer += 1
 
             # Leaving the station
             if self.timer > self.timerLength:

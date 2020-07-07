@@ -130,7 +130,7 @@ class Game:
         while self.playing:
             self.renderer.prepareSurface(CREAM)
             self.__events()
-            self.dt = self.clock.tick(60) / 1000
+            self.dt = self.clock.tick() / 1000
 
             # Prevent game from updating if window is being moved?
             if self.dt >= 0.05:
