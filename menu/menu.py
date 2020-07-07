@@ -32,25 +32,14 @@ class Menu:
     
 
     def resize(self):
-        height = self.renderer.getHeight()
-
         for component in self.components:
             component.dirty = True # force redraw
 
-            if isinstance(component, Label):
-                component.setFont(height)
             if isinstance(component, InputBox):
                 component.resizeIndicator()
                 
 
     def display(self):    
-        # if self.open:
-        #     for component in self.components:
-        #         component.draw()
-                
-        #         self.events(component)
-        #         self.animate(component)
-
         for component in self.components:
             component.draw()
 
@@ -148,6 +137,10 @@ class MainMenu(Menu):
         title1 = Label(self, "Transport", 70, Color("white"), (100, 100))
         title2 = Label(self, "The", 30, Color("white"), (100, 170))
         title3 = Label(self, "Public", 70, Color("white"), (100, 200))
+
+        title1.setItalic(True)
+        title2.setItalic(True)
+        title3.setItalic(True)
 
         cont = Label(self, "Continue", 50,  BLACK, (100, 320))
         editor = Label(self, "Level editor", 50, BLACK, (100, 380))

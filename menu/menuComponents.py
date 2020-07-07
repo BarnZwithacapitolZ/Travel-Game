@@ -97,7 +97,6 @@ class Label(MenuComponent):
     def __init__(self, menu, text, fontSize, color, pos = tuple()):
         super().__init__(menu, color, (1, 1), pos)
 
-
         self.text = text
         self.fontName = pygame.font.get_default_font()
         # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["joystix"])
@@ -106,10 +105,6 @@ class Label(MenuComponent):
         self.italic = False
         self.underline = False
 
-        self.setFont(self.menu.renderer.getHeight())
-
-    def setFont(self, height):
-        self.font = pygame.font.Font(self.fontName, int(self.fontSize * height / config["graphics"]["displayHeight"]))
 
     def setFontName(self, fontName):
         self.fontName = fontName
@@ -133,6 +128,8 @@ class Label(MenuComponent):
 
     def __render(self):
         self.dirty = False
+
+        self.font = pygame.font.Font(self.fontName, int(self.fontSize * self.menu.renderer.getScale()))
 
         self.font.set_bold(self.bold)
         self.font.set_italic(self.italic)

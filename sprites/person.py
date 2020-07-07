@@ -55,6 +55,8 @@ class Person(pygame.sprite.Sprite):
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
+        self.timer = 100 #some random time amount
+
 
     #### Getters ####
 
@@ -158,7 +160,7 @@ class Person(pygame.sprite.Sprite):
 
     # Visualize the players path by drawing the connection between each node in the path
     def drawPath(self):
-        if len(self.path) <= 0 or self.currentImage != 2:
+        if len(self.path) <= 0:
             return
 
         start = self.path[0]
@@ -177,6 +179,21 @@ class Person(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
+    def drawTimer(self):
+        scale = self.game.renderer.getScale()
+        thickness = 4
+
+        start = (self.pos - self.offset) 
+        end = (self.pos + vec(30, -40)) 
+        end2 = end + vec(30, 0)
+
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, start * scale, end * scale, int(thickness * scale))
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, end * scale, end2 * scale, int(thickness * scale))
+
+        self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, BLACK)
+        self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * scale)
+
+
     def __render(self):
         self.dirty = False
 
@@ -186,13 +203,18 @@ class Person(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale()
 
+        self.timerFont = pygame.font.Font(pygame.font.get_default_font(), int(15 * self.game.renderer.getScale()))
+
+
 
     def draw(self):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
 
          # Visualize the players path
-        self.drawPath()
+        if self.clickManager.getPerson() == self:
+            self.drawPath()
+            self.drawTimer()
 
 
     def events(self):
@@ -250,6 +272,12 @@ class Person(pygame.sprite.Sprite):
         if hasattr(self, 'rect'):
             self.events()
             # print(self.status)
+
+            self.timer -= self.game.dt
+
+            if self.timer <= 0:
+                self.kill()
+
 
             if len(self.path) > 0:
                 path = self.path[0]
