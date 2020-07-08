@@ -108,6 +108,8 @@ class MapEditor(SpriteRenderer):
 
         if connectionType == "layer 2":
             stopType = EditorBusStop
+        elif connectionType == "layer 3":
+            stopType = EditorTramStop
         else:
             stopType = EditorMetroStation
 

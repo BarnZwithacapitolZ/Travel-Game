@@ -29,6 +29,8 @@ class GridManager:
         if self.level is not None:
             self.loadMap()
 
+        self.transportMappings = {"metro": Transport, "bus": Bus, "tram": Tram, "taxi": Taxi}
+
 
     #### Getters ####
 
@@ -130,6 +132,8 @@ class GridManager:
                     # Set the type of stop
                     if connectionType == "layer 2":
                         n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                    elif connectionType == "layer 3":
+                        n = TramStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
                     else:
                         n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
         return n
@@ -186,6 +190,8 @@ class GridManager:
                         if stop == number:
                             if connectionType == "layer 2":
                                 n = EditorBusStop(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
+                            elif connectionType == "layer 3":
+                                n = EditorTramStop(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                             else:
                                 n = EditorMetroStation(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 if n is None:
@@ -215,13 +221,10 @@ class GridManager:
             # for each connection, find the connection of the transportation
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
-                if connection.getFrom().getNumber() == transport:
+                if connection.getFrom().getNumber() == transport["location"]:
                     # If the connection is the same as the direction, or its an end node (so theres only one direction)
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        if connectionType == "layer 2":
-                            t = Bus(self.game, self.groups, connection, connection.getDirection(), running)
-                        else:
-                            t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
+                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running)
                         self.transports.append(t)
                         break
 
@@ -229,6 +232,8 @@ class GridManager:
     def addTransport(self, connectionType, connection, running = True):
         if connectionType == "layer 2":
             t = Bus(self.game, self.groups, connection, connection.getDirection(), running)
+        elif connectionType == "layer 3":
+            t = Tram(self.game, self.groups, connection, connection.getDirection(), running)
         else:
             t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
         self.transports.append(t)

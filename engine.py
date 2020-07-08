@@ -85,8 +85,7 @@ class Renderer:
         self.windowWidth = size[0]
         self.windowHeight = size[1]
 
-        print((self.width, self.height), (self.windowWidth, self.windowHeight))
-
+        # print((self.width, self.height), (self.windowWidth, self.windowHeight))
 
         if fullscreen:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)

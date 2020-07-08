@@ -270,3 +270,28 @@ class EditorMetroStation(EditorNode, MetroStation):
 
         self.images = ["metro", "nodeSelected", "nodeStart", "nodeEnd"]
 
+
+class TramStop(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        self.width = 25
+        self.height = 25
+        self.offset = vec(-2.5, -2.5)
+        self.pos = self.pos + self.offset
+        self.images = ["tramStation", "nodeSelected"]
+
+class EditorTramStop(EditorNode, TramStop):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+
+        self.images = ["tramStation", "nodeSelected", "nodeStart", "nodeEnd"]
+
+
+class TaxiStop(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        self.width = 25
+        self.height = 25
+        self.offset = vec(-2.5, -2.5)
+        self.pos = self.pos + self.offset
+

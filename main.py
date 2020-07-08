@@ -105,15 +105,15 @@ class Game:
                         self.spriteRenderer.showLayer(1)
                         self.mapEditor.showLayer(1)
 
-                    if pygame.key.name(e.key) == config["controls"]["layer2"]:
+                    elif pygame.key.name(e.key) == config["controls"]["layer2"]:
                         self.spriteRenderer.showLayer(2)
                         self.mapEditor.showLayer(2)
 
-                    if pygame.key.name(e.key) == config["controls"]["layer3"]:
+                    elif pygame.key.name(e.key) == config["controls"]["layer3"]:
                         self.spriteRenderer.showLayer(3)
                         self.mapEditor.showLayer(3)
 
-                    if pygame.key.name(e.key) == config["controls"]["layer4"]:
+                    elif pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
             else:

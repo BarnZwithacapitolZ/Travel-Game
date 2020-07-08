@@ -21,6 +21,7 @@ class Person(pygame.sprite.Sprite):
         BOARDING = 3
         MOVING = 4
         DEPARTING = 5
+        FLAG = 6
         
 
     def __init__(self, renderer, groups, currentNode, clickManager):
@@ -235,10 +236,12 @@ class Person(pygame.sprite.Sprite):
             self.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
-                if isinstance(self.currentNode, NODE.MetroStation) or isinstance(self.currentNode, NODE.BusStop):
+                if isinstance(self.currentNode, NODE.MetroStation) or isinstance(self.currentNode, NODE.BusStop) or isinstance(self.currentNode, NODE.TramStop):
                     self.status = Person.Status.WAITING
+                elif isinstance(self.currentNode, NODE.Node):
+                    self.status = Person.Status.FLAG
 
-            elif self.status == Person.Status.WAITING:
+            elif self.status == Person.Status.WAITING or self.status == Person.Status.FLAG:
                 self.status = Person.Status.UNASSIGNED
             
             elif self.status == Person.Status.BOARDING:
@@ -322,7 +325,7 @@ class StatusIndicator(pygame.sprite.Sprite):
 
         self.dirty = True
 
-        self.images = [None, "walking", "waiting", "boarding", None, "departing"]
+        self.images = [None, "walking", "waiting", "boarding", None, "departing", "flag"]
         self.currentState = self.currentPerson.getStatusValue()
 
 

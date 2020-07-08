@@ -101,7 +101,7 @@ class GameClickManager(ClickManager):
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node
 
@@ -116,7 +116,7 @@ class GameClickManager(ClickManager):
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node                        
 
@@ -242,7 +242,7 @@ class GameClickManager(ClickManager):
         if self.node is not None and self.person is not None:
             # Only move the person if they're a curtain state
 
-            if self.person.getStatus() == PERSON.Person.Status.UNASSIGNED or self.person.getStatus() == PERSON.Person.Status.WAITING or self.person.getStatus() == PERSON.Person.Status.BOARDING or self.person.getStatus() == PERSON.Person.Status.WALKING:
+            if self.person.getStatus() == PERSON.Person.Status.UNASSIGNED or self.person.getStatus() == PERSON.Person.Status.WAITING or self.person.getStatus() == PERSON.Person.Status.BOARDING or self.person.getStatus() == PERSON.Person.Status.WALKING or self.person.getStatus() == PERSON.Person.Status.FLAG:
                 # Create the path
                 path = self.pathFinding()
 
@@ -336,7 +336,7 @@ class EditorClickManager(ClickManager):
 
     def addStop(self, node):
         # No connections to the node, we dont want to add a stop if nothing can stop at it
-        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation):
+        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation) and not isinstance(node, NODE.TramStop):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
 
 
@@ -365,6 +365,6 @@ class EditorClickManager(ClickManager):
     def deleteStop(self, node):
         # Make sure it is actually a stop
 
-        if isinstance(node, NODE.EditorBusStop) or isinstance(node, NODE.EditorMetroStation):
+        if isinstance(node, NODE.EditorBusStop) or isinstance(node, NODE.EditorMetroStation) or isinstance(node, NODE.TramStop):
             self.game.mapEditor.deleteStop(node.getConnectionType(), node)            
 
