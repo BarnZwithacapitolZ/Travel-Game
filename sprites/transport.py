@@ -115,7 +115,6 @@ class Transport(pygame.sprite.Sprite):
 
             self.moving = False
             self.timer += 100 * self.game.dt
-            # self.timer += 1
 
             # Leaving the station
             if self.timer > self.timerLength:
@@ -292,17 +291,14 @@ class Taxi(Transport):
         if self.moving:
             self.setConnection(nextNode)
 
-        if isinstance(self.currentNode, self.stopType) and len(self.currentNode.getPeople()) > 0 and self.checkTaxiStop(self.currentNode):
 
-            # Remove anyone departing before we add new people
-            self.removePeople()
+        if isinstance(self.currentNode, self.stopType) and len(self.currentNode.getPeople()) > 0 and self.checkTaxiStop(self.currentNode):
 
             # Set people waiting for the transportation to departing 
             self.setPeopleBoarding()
 
             self.moving = False
             self.timer += 100 * self.game.dt
-            # self.timer += 1
 
             # Leaving the station
             if self.timer > self.timerLength:
@@ -312,10 +308,23 @@ class Taxi(Transport):
                 # Add the people boarding to the transportation
                 self.addPeople()
 
+        elif isinstance(self.currentNode, self.stopType):
+            # Remove anyone departing before we add new people
+            self.removePeople()
+
+            # Do I want to show the timer here?
+
 
     def checkTaxiStop(self, node):
         for person in node.getPeople():
             if person.getStatus() == PERSON.Person.Status.FLAG or person.getStatus() == PERSON.Person.Status.BOARDING:
+                return True
+        return False
+
+
+    def checkPersonStop(self, node):
+        for person in self.people:
+            if person.getStatus() == PERSON.Person.Status.DEPARTING:
                 return True
         return False
 
@@ -331,15 +340,15 @@ class Taxi(Transport):
             if dis >= 0.5 and self.moving: #move towards the node
                 
                 # speed up when leaving
-                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and len(self.currentNode.getPeople()) > 0:
-                    if self.checkTaxiStop(self.currentNode):
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
+                    if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode):
                         self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt
 
                 # slow down when stopping
-                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.currentConnection.getTo().getPeople()) > 0:
-                    if self.checkTaxiStop(self.currentConnection.getTo()):
+                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                    if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
                         self.vel = (dxy * (self.speed / 10)) * self.game.dt
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt
@@ -352,7 +361,6 @@ class Taxi(Transport):
             else:
                 self.setNextConnection()
                 self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
-
             
             self.pos += self.vel
             self.rect.topleft = self.pos * self.game.renderer.getScale()
