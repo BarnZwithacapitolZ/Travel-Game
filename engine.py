@@ -128,6 +128,16 @@ class ImageLoader:
         return self.images[key]
 
 
+class AudioLoader:
+    def __init__(self):
+        self.audios = {}
+
+        self.loadAllAudios()
+
+    def loadAllAudios(self):
+        return
+
+
 class MapLoader:
     def __init__(self):
         self.maps = {}

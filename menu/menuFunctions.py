@@ -279,9 +279,29 @@ def saveMap(obj, menu):
         closeMapEditor(obj, menu)
 
 
-def addTransport(obj, menu):
-    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
-    clearMenu(obj, menu)
+def toggleAddStopDropdown(obj, menu):
+    if not menu.addStopDropdownOpen:
+        clearMenu(obj, menu)
+        addStop(obj, menu)
+        menu.addDropdown()
+        menu.addStopDropdown()
+    else:
+        clearMenu(obj, menu)
+        menu.addDropdown()
+
+
+def toggleAddTransportDropdown(obj, menu):
+    if not menu.addTransportDropdownOpen:
+        clearMenu(obj, menu)
+        addTransport(obj, menu)
+        menu.addDropdown()
+        menu.addTransportDropdown()
+    else:
+        clearMenu(obj, menu)
+        menu.addDropdown()
+
+
+
 
 
 def addConnection(obj, menu):
@@ -289,9 +309,39 @@ def addConnection(obj, menu):
     clearMenu(obj, menu)
 
 
+
 def addStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.STOP)
+
+
+def addTransport(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
+
+
+
+#### Adding different stop and transport  types ####
+def addMetro(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("metro")
     clearMenu(obj, menu)
+
+
+def addBus(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("bus")
+    clearMenu(obj, menu)
+
+
+def addTram(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("tram")
+    clearMenu(obj, menu)
+
+def addTaxi(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("taxi")
+    clearMenu(obj, menu)
+
+
+
+
+
 
 
 def deleteTransport(obj, menu):

@@ -206,7 +206,7 @@ class EditorNode(Node):
 
 
         # Cant click on a node in the top layer
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4:
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.game.clickManager.setClicked(False)
 
             if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
@@ -287,11 +287,4 @@ class EditorTramStop(EditorNode, TramStop):
         self.images = ["tramStation", "nodeSelected", "nodeStart", "nodeEnd"]
 
 
-class TaxiStop(Node):
-    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
-        super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.width = 25
-        self.height = 25
-        self.offset = vec(-2.5, -2.5)
-        self.pos = self.pos + self.offset
 

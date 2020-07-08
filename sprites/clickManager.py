@@ -116,7 +116,7 @@ class GameClickManager(ClickManager):
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.MetroStation): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node                        
 
@@ -279,6 +279,7 @@ class EditorClickManager(ClickManager):
         self.endNode = None # B
 
         self.clickType = EditorClickManager.ClickType.CONNECTION
+        self.addType = "metro"
 
 
     def getStartNode(self):
@@ -289,6 +290,13 @@ class EditorClickManager(ClickManager):
 
     def getClickType(self):
         return self.clickType
+
+    def getAddType(self):
+        return self.addType
+
+
+    def setAddType(self, addType):
+        self.addType = addType
 
 
     def setClickType(self, clickType):
@@ -336,7 +344,7 @@ class EditorClickManager(ClickManager):
 
     def addStop(self, node):
         # No connections to the node, we dont want to add a stop if nothing can stop at it
-        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation) and not isinstance(node, NODE.TramStop):
+        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation) and not isinstance(node, NODE.EditorTramStop):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
 
 

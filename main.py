@@ -38,6 +38,7 @@ class Game:
         # Loaders
         self.imageLoader = ImageLoader()
         self.mapLoader = MapLoader()
+        self.audioLoader = AudioLoader()
         
         # Map editor 
         self.mapEditor = MapEditor(self)

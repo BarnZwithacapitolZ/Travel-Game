@@ -14,12 +14,20 @@ class MapEditor(SpriteRenderer):
         self.hud = EditorHud(self.game)
         self.clickManager = EditorClickManager(self.game)
 
+        self.allowEdits = True
 
     def getSaved(self):
         return self.levelData["saved"]
 
     def getDeletable(self):
         return self.levelData["deletable"]
+
+    def getAllowEdits(self):
+        return self.allowEdits
+
+
+    def setAllowEdits(self, allowEdits):
+        self.allowEdits = allowEdits
     
     
     # Override creating the level
@@ -95,27 +103,31 @@ class MapEditor(SpriteRenderer):
     def addTransport(self, connectionType, connection):
         layer = self.getGridLayer(connectionType)
 
-        layer.getGrid().addTransport(connectionType, connection, False)
+        key = self.clickManager.getAddType()
+        mappings = layer.getGrid().getTransportMappings()
 
-        number = connection.getFrom().getNumber()
-
-        self.levelData["transport"].setdefault(connectionType, []).append(number)
+        if key in mappings:
+            layer.getGrid().addTransport(connectionType, connection, mappings[key], False)
+            self.levelData["transport"].setdefault(connectionType, []).append({
+                "location": connection.getFrom().getNumber(),
+                "type": str(key)
+            })
+        
 
 
     # TO DO: Maybe let the user select the stop type they want to add so there can be different types of stops on each layer?
     def addStop(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
 
-        if connectionType == "layer 2":
-            stopType = EditorBusStop
-        elif connectionType == "layer 3":
-            stopType = EditorTramStop
-        else:
-            stopType = EditorMetroStation
+        key = self.clickManager.getAddType()
+        mappings = layer.getGrid().getEditorStopMappings()
 
-        newNode = layer.getGrid().replaceNode(connectionType, node, stopType)
-
-        self.levelData["stops"].setdefault(connectionType, []).append(newNode.getNumber())
+        if key in mappings:
+            newNode = layer.getGrid().replaceNode(connectionType, node, mappings[key])
+            self.levelData["stops"].setdefault(connectionType, []).append({
+                "location": newNode.getNumber(),
+                "type": str(key)
+            })
 
 
     def deleteTransport(self, connectionType, node):
@@ -124,18 +136,31 @@ class MapEditor(SpriteRenderer):
         # Since a node in the editor can only have one transport on it
         transport = node.getTransports()[0]
 
-        node.removeTransport(transport)
-        layer.getGrid().removeTransport(transport)
+        mappings = layer.getGrid().getTransportMappings()
+        key = layer.getGrid().reverseMappingsSearch(mappings, transport)
 
-        self.levelData["transport"][connectionType].remove(node.getNumber())
-        
+        if key:
+            node.removeTransport(transport)
+            layer.getGrid().removeTransport(transport)
+
+            self.levelData["transport"][connectionType].remove({
+                "location": node.getNumber(),
+                "type": str(key)
+            })        
 
     def deleteStop(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
 
-        newNode = layer.getGrid().replaceNode(connectionType, node, EditorNode)
+        mappings = layer.getGrid().getEditorStopMappings()
+        key = layer.getGrid().reverseMappingsSearch(mappings, node)
 
-        self.levelData["stops"][connectionType].remove(newNode.getNumber())
+        if key:
+            newNode = layer.getGrid().replaceNode(connectionType, node, EditorNode)
+
+            self.levelData["stops"][connectionType].remove({
+                "location": newNode.getNumber(),
+                "type": str(key)
+            })
 
 
     def deleteConnection(self, connectionType, connection):

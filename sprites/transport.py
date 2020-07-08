@@ -349,7 +349,6 @@ class Taxi(Transport):
             dis = dxy.length()
 
             if dis >= 0.5 and self.moving: #move towards the node
-                
                 # speed up when leaving
                 if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
                     if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
@@ -369,7 +368,7 @@ class Taxi(Transport):
 
                 self.movePeople()
 
-            else:
+            else: # At the node
                 self.setNextConnection()
                 self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
             
@@ -394,4 +393,5 @@ class Tram(Transport):
 
 
 class Metro(Transport):
-    pass
+    def __init__(self, game, groups, currentConnection, direction, running):
+        super().__init__(game, groups, currentConnection, direction, running)

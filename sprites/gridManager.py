@@ -29,7 +29,7 @@ class GridManager:
         if self.level is not None:
             self.loadMap()
 
-        self.transportMappings = {"metro": Transport, "bus": Bus, "tram": Tram, "taxi": Taxi}
+        self.transportMappings = {"metro": Metro, "bus": Bus, "tram": Tram, "taxi": Taxi}
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
 
@@ -69,6 +69,14 @@ class GridManager:
 
     def getMap(self):
         return self.map
+
+
+    def reverseMappingsSearch(self, dic, searchValue):
+        for key, value in dic.items():
+            if isinstance(searchValue, value):
+                return key
+        return False
+        
 
 
     #### Setters ####
@@ -235,13 +243,8 @@ class GridManager:
                         break
 
 
-    def addTransport(self, connectionType, connection, running = True):
-        if connectionType == "layer 2":
-            t = Bus(self.game, self.groups, connection, connection.getDirection(), running)
-        elif connectionType == "layer 3":
-            t = Tram(self.game, self.groups, connection, connection.getDirection(), running)
-        else:
-            t = Transport(self.game, self.groups, connection, connection.getDirection(), running)
+    def addTransport(self, connectionType, connection, transport, running = True):
+        t = transport(self.game, self.groups, connection, connection.getDirection(), running)
         self.transports.append(t)
 
 
