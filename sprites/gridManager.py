@@ -30,9 +30,23 @@ class GridManager:
             self.loadMap()
 
         self.transportMappings = {"metro": Transport, "bus": Bus, "tram": Tram, "taxi": Taxi}
+        self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
+        self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
 
 
     #### Getters ####
+
+    def getTransportMappings(self):
+        return self.transportMappings
+
+
+    def getStopMappings(self):
+        return self.stopMappings
+
+
+    def getEditorStopMappings(self):
+        return self.editorStopMappings
+         
 
     def getLevelName(self):
         return self.levelName
@@ -128,14 +142,9 @@ class GridManager:
         n = None
         if connectionType in self.map["stops"]:
             for stop in self.map["stops"][connectionType]:
-                if stop == connection[direction]:
-                    # Set the type of stop
-                    if connectionType == "layer 2":
-                        n = BusStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
-                    elif connectionType == "layer 3":
-                        n = TramStop(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
-                    else:
-                        n = MetroStation(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                if stop["location"] == connection[direction]:
+                    n = self.stopMappings[stop["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                    break
         return n
 
 
@@ -187,13 +196,10 @@ class GridManager:
                 n = None
                 if connectionType in self.map["stops"]:
                     for stop in self.map["stops"][connectionType]:
-                        if stop == number:
-                            if connectionType == "layer 2":
-                                n = EditorBusStop(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
-                            elif connectionType == "layer 3":
-                                n = EditorTramStop(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
-                            else:
-                                n = EditorMetroStation(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
+                        if stop["location"] == number:
+                            n = self.editorStopMappings[stop["type"]](self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
+                            break
+
                 if n is None:
                     n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 self.nodes.append(n)

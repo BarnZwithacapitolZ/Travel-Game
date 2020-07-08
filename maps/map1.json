@@ -96,18 +96,42 @@
     }, 
     "stops": {
         "layer 1": [
-            11, 
-            23
+            { 
+                "location": 11,
+                "type": "metro"
+            },
+            {
+                "location": 23,
+                "type": "metro" 
+            } 
         ], 
         "layer 2": [
-            43, 
-            74, 
-            26, 
-            80
+            {
+                "location": 43,
+                "type": "bus"
+            },
+            {
+                "location": 74,
+                "type": "bus"
+            },
+            {
+                "location": 26,
+                "type": "bus"
+            },
+            {
+                "location": 80,
+                "type": "bus"
+            }
         ], 
         "layer 3": [
-            73, 
-            163
+            {
+                "location": 73,
+                "type": "tram"
+            },
+            {
+                "location": 163,
+                "type": "tram"
+            }
         ]
     }
 }

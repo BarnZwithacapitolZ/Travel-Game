@@ -272,6 +272,8 @@ class Taxi(Transport):
         self.imageName = "taxi"
         self.stopType = NODE.Node
 
+        self.hasStopped = False
+
     # override
     def setPeopleBoarding(self):
         # If theres no one at the station, dont bother trying to add anyone
@@ -290,9 +292,10 @@ class Taxi(Transport):
         # If the transport is moving, set its next connection to the next upcoming node
         if self.moving:
             self.setConnection(nextNode)
+            self.hasStopped = False
 
 
-        if isinstance(self.currentNode, self.stopType) and len(self.currentNode.getPeople()) > 0 and self.checkTaxiStop(self.currentNode):
+        if isinstance(self.currentNode, self.stopType) and self.checkTaxiStop(self.currentNode) or self.hasStopped:
 
             # Set people waiting for the transportation to departing 
             self.setPeopleBoarding()
@@ -308,23 +311,31 @@ class Taxi(Transport):
                 # Add the people boarding to the transportation
                 self.addPeople()
 
-        elif isinstance(self.currentNode, self.stopType):
+
+        elif isinstance(self.currentNode, self.stopType) and self.checkPersonStop(self.currentNode):
             # Remove anyone departing before we add new people
             self.removePeople()
-
             # Do I want to show the timer here?
 
 
     def checkTaxiStop(self, node):
+        if len(node.getPeople()) <= 0:
+            return False
+
         for person in node.getPeople():
             if person.getStatus() == PERSON.Person.Status.FLAG or person.getStatus() == PERSON.Person.Status.BOARDING:
+                self.hasStopped = True
                 return True
         return False
 
 
     def checkPersonStop(self, node):
+        if len(self.people) <= 0:
+            return False
+
         for person in self.people:
             if person.getStatus() == PERSON.Person.Status.DEPARTING:
+                self.hasStopped = True
                 return True
         return False
 
@@ -341,7 +352,7 @@ class Taxi(Transport):
                 
                 # speed up when leaving
                 if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
-                    if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode):
+                    if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
                         self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt
