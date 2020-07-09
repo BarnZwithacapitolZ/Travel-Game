@@ -42,7 +42,8 @@ class SpriteRenderer():
             "saved": False, # Has the map been saved before 
             "connections": {}, 
             "transport": {}, 
-            "stops": {}
+            "stops": {},
+            "destinations": {}
         } # Level data to be stored, for export to JSON
 
 
@@ -131,6 +132,8 @@ class SpriteRenderer():
         allnodes = layer1Nodes + layer2Nodes + layer3Nodes
 
         # Do i need to add tram stops????????????
+
+        # To Do: replace all different stop sorting with parent stop class (stop)
 
         # Make sure stops are at the front of the list, so they are not removed 
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, MetroStation))

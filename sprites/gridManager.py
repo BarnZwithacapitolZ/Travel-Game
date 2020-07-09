@@ -32,6 +32,7 @@ class GridManager:
         self.transportMappings = {"metro": Metro, "bus": Bus, "tram": Tram, "taxi": Taxi}
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
+        self.destinationMappings = {"airport": Destination}
 
 
     #### Getters ####
@@ -134,7 +135,9 @@ class GridManager:
     # Add a node to the grid if the node is not already on the grid
     def addNode(self, connection, connectionType, currentNodes, direction):
         if connection[direction] not in currentNodes:
-            n = self.addStop(connection, direction, connectionType)
+            n = None
+            n = self.addStop(n, connection, direction, connectionType)
+            n = self.addDestination(n, connection, direction, connectionType)
 
             if n is None: #no stop was found at this node 
                 n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
@@ -146,12 +149,20 @@ class GridManager:
 
 
     # Add a stop, instead of a node, to the grid 
-    def addStop(self, connection, direction, connectionType):
-        n = None
+    def addStop(self, n, connection, direction, connectionType):
         if connectionType in self.map["stops"]:
             for stop in self.map["stops"][connectionType]:
                 if stop["location"] == connection[direction]:
                     n = self.stopMappings[stop["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                    break
+        return n 
+
+
+    def addDestination(self, n, connection, direction, connectionType):
+        if connectionType in self.map["destinations"]:
+            for destination in self.map["destinations"][connectionType]:
+                if destination["location"] == connection[direction]:
+                    n = self.destinationMappings[destination["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
                     break
         return n
 
@@ -159,12 +170,20 @@ class GridManager:
 
     def replaceNode(self, connectionType, node, nodeType):
         number = node.getNumber()
-        connections = node.getConnections() #need to transfer the connections from the old node to the new node
+        connections = node.getConnections() #need to transfer the connections from the old node to the new node                
         transports = node.getTransports()
         self.nodes.remove(node)
         node.remove()
 
         n = nodeType(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.layer.getSpriteRenderer().getClickManager())
+        
+        # Need to replace the connection with the new node, otherwise it cant be deleted
+        for connection in self.connections:
+            if connection.getFrom().getNumber() == n.getNumber():
+                connection.setFromNode(n)
+            elif connection.getTo().getNumber() == n.getNumber():
+                connection.setToNode(n)        
+
         n.setConnections(connections)
         n.setTransports(transports)
         self.nodes.append(n)

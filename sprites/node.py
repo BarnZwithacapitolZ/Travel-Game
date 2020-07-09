@@ -204,7 +204,6 @@ class EditorNode(Node):
             # Unset the clicked on node
             pass
 
-
         # Cant click on a node in the top layer
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.game.clickManager.setClicked(False)
@@ -220,7 +219,7 @@ class EditorNode(Node):
             elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
                 self.clickManager.deleteStop(self)
  
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.mouseOver = True
             self.currentImage = 1
             self.dirty = True
@@ -233,6 +232,12 @@ class EditorNode(Node):
             self.currentImage = 0
             self.dirty = True
 
+
+
+# To Do: Parent class for all stops
+class Stop(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
 
 
@@ -280,11 +285,24 @@ class TramStop(Node):
         self.pos = self.pos + self.offset
         self.images = ["tramStation", "nodeSelected"]
 
+
 class EditorTramStop(EditorNode, TramStop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
         self.images = ["tramStation", "nodeSelected", "nodeStart", "nodeEnd"]
+
+
+
+class Destination(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        self.width = 30
+        self.height = 30
+        self.offset = vec(-5, -5)
+        self.pos = self.pos + self.offset
+
+        self.images = ["airport", "nodeSelected"]
 
 
 

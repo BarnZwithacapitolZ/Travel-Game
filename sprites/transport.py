@@ -272,6 +272,8 @@ class Taxi(Transport):
         self.imageName = "taxi"
         self.stopType = NODE.Node
 
+        #self.timerLength = 200 # To Do: choose a value length
+
         self.hasStopped = False
 
     # override
@@ -319,7 +321,8 @@ class Taxi(Transport):
 
 
     def checkTaxiStop(self, node):
-        if len(node.getPeople()) <= 0:
+        # only stop if there is someone flagging the taxi down, dont stop if the taxi is already carrying someone 
+        if len(node.getPeople()) <= 0 or len(self.people) >= 1:
             return False
 
         for person in node.getPeople():

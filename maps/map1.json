@@ -133,5 +133,13 @@
                 "type": "tram"
             }
         ]
+    },
+    "destinations": {
+        "layer 2": [
+            {
+                "location": 179,
+                "type": "airport"
+            }
+        ]
     }
 }
