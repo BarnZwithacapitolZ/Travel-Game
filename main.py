@@ -55,7 +55,6 @@ class Game:
         self.setIcon()
         self.setCursor()
 
-
     # Set the games caption (name)
     def setCaption(self):
         pygame.display.set_caption(config["game"]["gameTitle"])

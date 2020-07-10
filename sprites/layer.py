@@ -10,6 +10,9 @@ from gridManager import *
 from connection import *
 from person import *
 
+
+vec = pygame.math.Vector2
+
 class Layer(pygame.sprite.Sprite):
     def __init__(self, spriteRenderer, groups, level = None, spacing = (1.5, 1.5)):
         self.groups = groups
@@ -19,7 +22,7 @@ class Layer(pygame.sprite.Sprite):
         self.game = self.spriteRenderer.game
         self.level = level
    
-        self.grid = GridManager(self, self.groups, self.level) # each layer has its own grid manager
+        self.grid = GridManager(self, self.groups, self.level, spacing) # each layer has its own grid manager
         
         self.nodes = self.grid.getNodes()
         self.connections = self.grid.getConnections()
@@ -67,13 +70,22 @@ class Layer(pygame.sprite.Sprite):
         if len(self.nodes) <= 0:
             return 
 
-        # Add the person to a random node on the layer
-        node = random.randint(0, len(self.nodes) - 1)
-        p = Person(self.spriteRenderer, self.groups, self.nodes[node], self.spriteRenderer.getClickManager())
+        # List of possible nodes to add a new player to
+        possibleNodes = []
+        for node in self.nodes:
+            if len(node.getPeople()) <= 0:
+                possibleNodes.append(node)
+
+        destinations = self.grid.getDestinations()
+        destination = random.randint(0, len(destinations) - 1)
 
         # Add the person to a random node on the layer
-        node = random.randint(0, len(self.nodes) - 1)
-        p = Person(self.spriteRenderer, self.groups, self.nodes[node], self.spriteRenderer.getClickManager())
+        node = random.randint(0, len(possibleNodes) - 1)
+        p = Person(self.spriteRenderer, self.groups, self.nodes[node], destinations[destination], self.spriteRenderer.getClickManager())
+
+        # Put the player at a position outside of the map
+        # p.setPosition(vec(0, 0))
+        # p.addToPath(self.nodes[node])
         return p
 
     
@@ -119,23 +131,23 @@ class Layer(pygame.sprite.Sprite):
 
 
 class Layer1(Layer):
-    def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, level)
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 1")
         self.addConnections()  
 
 
 class Layer2(Layer):
-    def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, level)
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 2")
         self.addConnections()     
 
 
 
 class Layer3(Layer):
-    def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, level)
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 3")
         self.addConnections()            
 

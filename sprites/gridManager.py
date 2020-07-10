@@ -12,7 +12,7 @@ from connection import *
 from transport import *
 
 class GridManager:
-    def __init__(self, layer, groups, level = None):
+    def __init__(self, layer, groups, level = None, spacing = (1.5, 1.5)):
         self.layer = layer
         self.game = self.layer.game
         self.groups = groups
@@ -20,11 +20,17 @@ class GridManager:
         self.levelName = ""
 
         self.nodes = []
-        self.nodePositions = []
         self.connections = []
         self.transports = []
+        self.destinations = []
 
-        self.nodePositions = GridManager.setNodePositions()
+        self.nodePositions = GridManager.setNodePositions(spacing[0], spacing[1])
+
+        # Entry nodes
+        # self.nodePositions.extend(GridManager.setNodePositions(1.5, 0.9, 18, 1))
+        # self.nodePositions.extend(GridManager.setNodePositions(1.5, 11.1, 18, 1))
+        # self.nodePositions.extend(GridManager.setNodePositions(0.9, 1.5, 1, 10))
+
 
         if self.level is not None:
             self.loadMap()
@@ -47,6 +53,10 @@ class GridManager:
 
     def getEditorStopMappings(self):
         return self.editorStopMappings
+
+
+    def getDestinationMappings(self):
+        return self.destinationMappings
          
 
     def getLevelName(self):
@@ -68,6 +78,10 @@ class GridManager:
         return self.transports
 
 
+    def getDestinations(self):
+        return self.destinations
+
+
     def getMap(self):
         return self.map
 
@@ -84,17 +98,16 @@ class GridManager:
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
     @staticmethod
-    def setNodePositions(offx = 1.5, offy = 1.5):
+    def setNodePositions(offx = 1.5, offy = 1.5, width = 18, height = 10):
         # Offset on the x coordinate
         # Offset on the y coordinate
         spacing = 50 #spacing between each node
         positions = []
 
-        for i in range(18):
-            for x in range(10):
+        for i in range(width):
+            for x in range(height):
                 positions.append(((i + offx) * spacing, (x + offy) * spacing))
         return positions
-
 
 
     def addConnections(self, connectionType, A, B):
@@ -163,6 +176,7 @@ class GridManager:
             for destination in self.map["destinations"][connectionType]:
                 if destination["location"] == connection[direction]:
                     n = self.destinationMappings[destination["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                    self.destinations.append(n)
                     break
         return n
 
@@ -209,6 +223,9 @@ class GridManager:
 
                 # Create the connection with the nodes
                 self.addConnections(connectionType, n1, n2)
+
+        # if connectionType in self.map["entries"]:
+        #     pass
 
 
 

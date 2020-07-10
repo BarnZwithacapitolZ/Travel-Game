@@ -344,7 +344,7 @@ class EditorClickManager(ClickManager):
 
     def addStop(self, node):
         # No connections to the node, we dont want to add a stop if nothing can stop at it
-        if len(node.getConnections()) > 0 and not isinstance(node, NODE.EditorBusStop) and not isinstance(node, NODE.EditorMetroStation) and not isinstance(node, NODE.EditorTramStop):
+        if len(node.getConnections()) > 0 and not isinstance(node, NODE.Stop):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
 
 
@@ -353,9 +353,6 @@ class EditorClickManager(ClickManager):
         toNode = connection.getTo()
 
         self.game.mapEditor.deleteConnection(connection.getConnectionType(), connection)
-
-        for connection in fromNode.getConnections():
-            print(connection.getFrom(), connection.getTo())
 
         # Remove any stops and transports from nodes with no connections
         if len(fromNode.getConnections()) <= 0:
@@ -375,6 +372,6 @@ class EditorClickManager(ClickManager):
 
     def deleteStop(self, node):
         # Make sure it is actually a stop
-        if isinstance(node, NODE.EditorBusStop) or isinstance(node, NODE.EditorMetroStation) or isinstance(node, NODE.EditorTramStop):
+        if isinstance(node, NODE.Stop):
             self.game.mapEditor.deleteStop(node.getConnectionType(), node)            
 

@@ -32,6 +32,11 @@ class SpriteRenderer():
 
         self.rendering = False
 
+        # Game timer to keep track of how long has been played 
+        self.timer = 0
+        self.timeStep = 20
+        self.timeSetMet = False
+
         self.setDefaultMap()
 
 
@@ -69,6 +74,7 @@ class SpriteRenderer():
 
 
     def clearLevel(self):
+        self.timer = 0
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -83,25 +89,25 @@ class SpriteRenderer():
     def createLevel(self, level, debug = False):
         self.clearLevel()
 
-        if debug:
+        if debug: 
             self.hud = PreviewHud(self.game)
-        else:
+            spacing = (1.5, 1.5)
+        else: 
             self.hud = GameHud(self.game)
+            spacing = (1.5, 1)
+
 
         # ordering matters -> stack
         self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
-        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level)
-        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level)
-        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level) # walking layer at the bottom so nodes are drawn above metro stations
+        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
+        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
+        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
         self.gridLayer3.grid.loadTransport("layer 3")
 
         self.removeDuplicates()
-
-        self.gridLayer2.addPerson()
-
 
         # Set the name of the level
         self.level = self.gridLayer4.getGrid().getLevelName()
@@ -133,12 +139,8 @@ class SpriteRenderer():
 
         # Do i need to add tram stops????????????
 
-        # To Do: replace all different stop sorting with parent stop class (stop)
-
         # Make sure stops are at the front of the list, so they are not removed 
-        allnodes = sorted(allnodes, key=lambda x:isinstance(x, MetroStation))
-        allnodes = sorted(allnodes, key=lambda x:isinstance(x, TramStop))
-        allnodes = sorted(allnodes, key=lambda x:isinstance(x, BusStop))
+        allnodes = sorted(allnodes, key=lambda x:isinstance(x, Stop))
         allnodes = allnodes[::-1] # Reverse the list so they're at the front
 
 
@@ -156,6 +158,15 @@ class SpriteRenderer():
     def update(self):
         if self.rendering:
             self.allSprites.update()
+
+            self.timer += self.game.dt
+            if int(self.timer) % self.timeStep == 0:
+                if not self.timeSetMet:
+                    print("is this called??")
+                    self.timeSetMet = True
+                    self.gridLayer2.addPerson()
+            else:
+                self.timeSetMet = False            
 
 
     def showLayer(self, layer):

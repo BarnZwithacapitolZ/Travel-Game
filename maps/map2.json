@@ -121,5 +121,7 @@
                 "type": "metro"
             } 
         ]
-    }
+    },
+    "destinations": {}
+
 }

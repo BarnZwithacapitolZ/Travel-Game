@@ -137,6 +137,10 @@
     "destinations": {
         "layer 2": [
             {
+                "location": 97,
+                "type": "airport"
+            },
+            {
                 "location": 179,
                 "type": "airport"
             }

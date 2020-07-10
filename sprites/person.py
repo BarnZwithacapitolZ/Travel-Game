@@ -24,7 +24,7 @@ class Person(pygame.sprite.Sprite):
         FLAG = 6
         
 
-    def __init__(self, renderer, groups, currentNode, clickManager):
+    def __init__(self, renderer, groups, currentNode, destination, clickManager):
         self.groups = groups
         super().__init__(self.groups)
         self.renderer = renderer
@@ -37,6 +37,11 @@ class Person(pygame.sprite.Sprite):
         self.startingConnectionType = self.currentNode.connectionType
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
+
+
+        print(self.currentNode.getNumber())
+
+        self.destination = destination
 
         self.offset = vec(-10, -15) #-10, -20 # Move it back 10 pixels x, 20 pixels y
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
@@ -57,6 +62,9 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(60, 150)
+        self.rad = 5
+        self.step = 15
+
 
 
     #### Getters ####
@@ -118,6 +126,11 @@ class Person(pygame.sprite.Sprite):
         self.dirty = True # Redraw the image to the new image
 
 
+    def setPosition(self, pos):
+        self.pos = pos
+        self.dirty = True
+
+
     # Add a node to the persons path
     def addToPath(self, node):
         self.path.append(node)
@@ -157,7 +170,8 @@ class Person(pygame.sprite.Sprite):
 
         self.statusIndicator.pos = self.pos + self.statusIndicator.offset
         self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale()
-    
+
+
 
     # Visualize the players path by drawing the connection between each node in the path
     def drawPath(self):
@@ -180,19 +194,36 @@ class Person(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
-    def drawTimer(self):
+    def drawTimerOutline(self):
         scale = self.game.renderer.getScale()
         thickness = 4
 
-        start = (self.pos - self.offset) 
-        end = (self.pos + vec(30, -40)) 
-        end2 = end + vec(30, 0)
+        start = (self.pos - self.offset) + vec(5, -10)
+        middle = (self.pos + vec(30, -40)) 
+        end = middle + vec(30, 0)
 
-        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, start * scale, end * scale, int(thickness * scale))
-        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, end * scale, end2 * scale, int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [start * scale, middle * scale, end * scale], int(thickness * scale))
 
+
+    def drawTimerTime(self):
         self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, BLACK)
-        self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * scale)
+        self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale())
+
+
+    def drawDestination(self):
+        scale = self.game.renderer.getScale()
+        thickness = 4
+
+        pos = (self.destination.pos - vec(self.rad, self.rad)) * scale 
+        size = vec(self.destination.width + (self.rad * 2), self.destination.height + (self.rad * 2)) * scale
+        rect = pygame.Rect(pos, size)
+
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.topleft + (vec(0, 10) * scale), rect.topleft, rect.topleft + (vec(10, 0) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.topright + (vec(-10, 0) * scale), rect.topright, rect.topright + (vec(0, 10) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.bottomleft + (vec(0, -10) * scale), rect.bottomleft, rect.bottomleft + (vec(10, 0) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.bottomright + (vec(-10, 0) * scale), rect.bottomright, rect.bottomright + (vec(0, -10) * scale)], int(thickness * scale))
+
+        # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
 
 
     def __render(self):
@@ -215,7 +246,9 @@ class Person(pygame.sprite.Sprite):
          # Visualize the players path
         if self.clickManager.getPerson() == self:
             self.drawPath()
-            self.drawTimer()
+            self.drawDestination()
+            self.drawTimerTime()
+            self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
 
     def events(self):
@@ -236,7 +269,7 @@ class Person(pygame.sprite.Sprite):
             self.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
-                if isinstance(self.currentNode, NODE.MetroStation) or isinstance(self.currentNode, NODE.BusStop) or isinstance(self.currentNode, NODE.TramStop):
+                if isinstance(self.currentNode, NODE.Stop):
                     self.status = Person.Status.WAITING
                 elif isinstance(self.currentNode, NODE.Node):
                     self.status = Person.Status.FLAG
@@ -277,7 +310,11 @@ class Person(pygame.sprite.Sprite):
             # print(self.status)
 
             self.timer -= self.game.dt
+            self.rad += self.step * self.game.dt
 
+            if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
+                self.step = -self.step
+                
             if self.timer <= 0:
                 self.kill()
 

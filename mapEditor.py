@@ -185,9 +185,9 @@ class MapEditor(SpriteRenderer):
 
 
     def update(self):
-        super().update()
-
         if self.rendering:
+            self.allSprites.update()
+
             if self.clickManager.getClickType() == EditorClickManager.ClickType.DCONNECTION:
                 self.updateConnection(1, self.gridLayer1)
                 self.updateConnection(2, self.gridLayer2)

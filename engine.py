@@ -35,8 +35,8 @@ class Renderer:
 
 
     # Add a surface to the gameDisplay
-    def addSurface(self, surface, rect):
-        self.surfaces.append((surface, rect))
+    def addSurface(self, surface, rect, method = None):
+        self.surfaces.append((surface, rect, method))
 
 
     def addDirtySurface(self, surface):
@@ -98,7 +98,10 @@ class Renderer:
     # on tick function
     def render(self):
         for surface in self.surfaces:    
-            self.gameDisplay.blit(surface[0], surface[1])
+            if surface[2]:
+                surface[2]()
+            else:
+                self.gameDisplay.blit(surface[0], surface[1])
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 

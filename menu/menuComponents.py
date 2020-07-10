@@ -233,9 +233,13 @@ class Shape(MenuComponent):
         if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
 
 
+    def drawShape(self):
+        pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect)
+
     def draw(self):
         if self.dirty or self.image is None: self.__render()
-        self.menu.renderer.addSurface(self.image, (self.rect))
+        # self.menu.renderer.addSurface(self.image, (self.rect))
+        self.menu.renderer.addSurface(None, None, self.drawShape)
 
         # pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect)
 
