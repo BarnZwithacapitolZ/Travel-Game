@@ -403,6 +403,7 @@ class EditorHud(GameHudLayout):
         self.addDropdownOpen = True
         self.addStopDropdownOpen = False
         self.addTransportDropdownOpen = False
+        self.addDestinationDropdownOpen = False
 
         self.game.mapEditor.setAllowEdits(False)
 
@@ -410,26 +411,31 @@ class EditorHud(GameHudLayout):
         connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
         stopSelectd = True if clickType == EditorClickManager.ClickType.STOP else False 
         transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
+        destinationSelected = True if clickType == EditorClickManager.ClickType.DESTINATION else False
 
-        box = Shape(self, BLACK, (200, 114), (90, 40))
+        box = Shape(self, BLACK, (200, 150), (90, 40))
         connectionBox = Shape(self, GREEN, (200, 33), (90, 45))
         stopBox = Shape(self, GREEN, (200, 33), (90, 81))
         transportBox = Shape(self, GREEN, (200, 33), (90, 116))
+        destinationBox = Shape(self, GREEN, (200, 33), (90, 151))
 
         connection = Label(self, "Connection", 25, Color("white"), (100, 50))
         stop = Label(self, "Stop", 25, Color("white"), (100, 85))
         transport = Label(self, "Transport", 25, Color("white"), (100, 120))
+        destination = Label(self, "Destination", 25, Color("white"), (100, 155))
 
         connection.addEvent(addConnection, 'onMouseClick')
         stop.addEvent(toggleAddStopDropdown, 'onMouseClick')
         transport.addEvent(toggleAddTransportDropdown, 'onMouseClick')
+        destination.addEvent(toggleAddDestinationDropdown, 'onMouseClick')
 
         self.add(box)
         if connectionSelected: self.add(connectionBox)
         elif stopSelectd: self.add(stopBox)
         elif transportSelected: self.add(transportBox)
+        elif destinationSelected: self.add(destinationBox)
 
-        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
+        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
                 label[0].addEvent(hoverBlack, 'onMouseOver')
@@ -521,6 +527,21 @@ class EditorHud(GameHudLayout):
             label[0].addEvent(hoverWhite, 'onMouseOut')
             self.add(label[0])
 
+
+
+    def addDestinationDropdown(self):
+        self.open = True
+        self.addDestinationDropdownOpen = True
+
+        self.game.mapEditor.setAllowEdits(False)
+
+        box = Shape(self, BLACK, (200, 114), (290, 155))
+
+
+        self.add(box)
+
+
+        
 
 
     def deleteDropdown(self):

@@ -70,14 +70,16 @@ class Layer(pygame.sprite.Sprite):
         if len(self.nodes) <= 0:
             return 
 
+        destinations = self.grid.getDestinations()
+        destination = random.randint(0, len(destinations) - 1)
+
         # List of possible nodes to add a new player to
         possibleNodes = []
         for node in self.nodes:
-            if len(node.getPeople()) <= 0:
+            # Must be a node that no one else is assigned to and is not the persons destination
+            if len(node.getPeople()) <= 0 and node != destinations[destination]:
                 possibleNodes.append(node)
 
-        destinations = self.grid.getDestinations()
-        destination = random.randint(0, len(destinations) - 1)
 
         # Add the person to a random node on the layer
         node = random.randint(0, len(possibleNodes) - 1)

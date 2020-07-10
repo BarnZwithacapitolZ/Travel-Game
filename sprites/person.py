@@ -38,9 +38,6 @@ class Person(pygame.sprite.Sprite):
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
 
-
-        print(self.currentNode.getNumber())
-
         self.destination = destination
 
         self.offset = vec(-10, -15) #-10, -20 # Move it back 10 pixels x, 20 pixels y
@@ -61,7 +58,7 @@ class Person(pygame.sprite.Sprite):
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
-        self.timer = random.randint(60, 150)
+        self.timer = random.randint(40, 70)
         self.rad = 5
         self.step = 15
 
@@ -312,6 +309,7 @@ class Person(pygame.sprite.Sprite):
             self.timer -= self.game.dt
             self.rad += self.step * self.game.dt
 
+            # Increase the radius of the selector showing the destination
             if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
                 self.step = -self.step
                 

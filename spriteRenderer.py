@@ -34,7 +34,7 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played 
         self.timer = 0
-        self.timeStep = 20
+        self.timeStep = 15
         self.timeSetMet = False
 
         self.setDefaultMap()
@@ -141,6 +141,7 @@ class SpriteRenderer():
 
         # Make sure stops are at the front of the list, so they are not removed 
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, Stop))
+        allnodes = sorted(allnodes, key=lambda x:isinstance(x, Destination))
         allnodes = allnodes[::-1] # Reverse the list so they're at the front
 
 

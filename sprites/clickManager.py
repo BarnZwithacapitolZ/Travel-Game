@@ -266,11 +266,13 @@ class EditorClickManager(ClickManager):
         CONNECTION = 1
         STOP = 2
         TRANSPORT = 3
+        DESTINATION = 4
 
         # D at front signifies deletion options
-        DCONNECTION = 4
-        DSTOP = 5
-        DTRANSPORT = 6
+        DCONNECTION = 5
+        DSTOP = 6
+        DTRANSPORT = 7
+        DDESTINATION = 8
 
 
     def __init__(self, game):

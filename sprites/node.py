@@ -292,4 +292,12 @@ class Destination(Node):
         self.images = ["airport", "nodeSelected"]
 
 
+class EditorDestination(EditorNode, Destination):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+
+        self.images = ["airport", "nodeSelected", "nodeStart", "nodeEnd"]
+        
+
+
 

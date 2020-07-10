@@ -301,6 +301,19 @@ def toggleAddTransportDropdown(obj, menu):
         menu.addDropdown()
 
 
+def toggleAddDestinationDropdown(obj, menu):
+    if not menu.addDestinationDropdownOpen:
+        clearMenu(obj, menu)
+        addDestination(obj, menu)
+        menu.addDropdown()
+        menu.addDestinationDropdown()
+    else:
+        clearMenu(obj, menu)
+        menu.addDropdown()
+
+
+
+
 
 
 
@@ -316,6 +329,10 @@ def addStop(obj, menu):
 
 def addTransport(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.TRANSPORT)
+
+
+def addDestination(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DESTINATION)
 
 
 

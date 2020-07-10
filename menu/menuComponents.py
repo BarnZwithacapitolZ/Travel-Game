@@ -3,6 +3,8 @@ from pygame.locals import *
 from config import *
 import string
 
+vec = pygame.math.Vector2
+
 
 class TextHandler:
     def __init__(self):
@@ -207,41 +209,47 @@ class InputBox(Label):
 
 
 class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), alpha = None):   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0):   
         super().__init__(menu, color, size, pos)
-        self.alpha = alpha
-        
+        self.shapeType = shapeType
+        self.shapeOutline = shapeOutline
 
-    def getAlpha(self):
-        return self.alpha if self.alpha is not None else 0
+    def getShapeType(self):
+        return self.shapeType
 
-    def setAlpha(self, alpha):
-        self.alpha = alpha
+
+    def getShapeOutline(self):
+        return self.shapeOutline
+
+    
+    def setShapeType(self, shapeType):
+        self.shapeType = shapeType
+
+
+    def setShapeOutline(self, shapeOutline):
+        self.shapeOutline = shapeOutline
 
 
     def __render(self):
         self.dirty = False
 
-        self.image = pygame.Surface((self.size)).convert()
-        self.image = pygame.transform.scale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                            int(self.height * self.menu.renderer.getScale())))
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
-
-        self.image.fill(self.color)
-        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        self.rect = pygame.Rect(pos, size)
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
 
     def drawShape(self):
-        pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect)
+        if self.shapeType == "rect":
+            pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect, int(self.outline))
+        elif self.shapeType == "ellipse":
+            # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
+            pygame.draw.ellipse(self.menu.renderer.gameDisplay, self.color, self.rect, int(self.outline))
+
 
     def draw(self):
-        if self.dirty or self.image is None: self.__render()
-        # self.menu.renderer.addSurface(self.image, (self.rect))
+        if self.dirty or self.rect is None: self.__render()
         self.menu.renderer.addSurface(None, None, self.drawShape)
 
-        # pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect)
 
 
 class Image(MenuComponent):
@@ -250,7 +258,6 @@ class Image(MenuComponent):
         self.imageName = imageName
         self.alpha = alpha
 
-        self.dirty = True
 
     def setImageName(self, imageName):
         self.imageName = imageName

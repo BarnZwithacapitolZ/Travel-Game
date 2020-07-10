@@ -39,6 +39,7 @@ class GridManager:
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
         self.destinationMappings = {"airport": Destination}
+        self.editorDestinationMappings = {"airport": EditorDestination}
 
 
     #### Getters ####
@@ -84,13 +85,6 @@ class GridManager:
 
     def getMap(self):
         return self.map
-
-
-    def reverseMappingsSearch(self, dic, searchValue):
-        for key, value in dic.items():
-            if isinstance(searchValue, value):
-                return key
-        return False
         
 
 
@@ -132,6 +126,13 @@ class GridManager:
         # There is no opposite connection
         return False
 
+    
+    def reverseMappingsSearch(self, dic, searchValue):
+        for key, value in dic.items():
+            if isinstance(searchValue, value):
+                return key
+        return False
+
 
 
     # Load the .json map data into a dictionary
@@ -149,8 +150,8 @@ class GridManager:
     def addNode(self, connection, connectionType, currentNodes, direction):
         if connection[direction] not in currentNodes:
             n = None
-            n = self.addStop(n, connection, direction, connectionType)
-            n = self.addDestination(n, connection, direction, connectionType)
+            n = self.addStop(n, self.stopMappings, connectionType, connection[direction])
+            n = self.addDestination(n, self.destinationMappings, connectionType, connection[direction])
 
             if n is None: #no stop was found at this node 
                 n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
@@ -162,24 +163,30 @@ class GridManager:
 
 
     # Add a stop, instead of a node, to the grid 
-    def addStop(self, n, connection, direction, connectionType):
+    def addStop(self, n, mappings, connectionType, number, x = None, y = None):
+        if x is None: x = self.nodePositions[number][0]
+        if y is None: y = self.nodePositions[number][1]
+
+        # Change if to a for to show all stops from other layers on each layer (i.e metro stations on layer 2, etc.)
         if connectionType in self.map["stops"]:
             for stop in self.map["stops"][connectionType]:
-                if stop["location"] == connection[direction]:
-                    n = self.stopMappings[stop["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
-                    break
-        return n 
-
-
-    def addDestination(self, n, connection, direction, connectionType):
-        if connectionType in self.map["destinations"]:
-            for destination in self.map["destinations"][connectionType]:
-                if destination["location"] == connection[direction]:
-                    n = self.destinationMappings[destination["type"]](self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
-                    self.destinations.append(n)
+                if stop["location"] == number:
+                    n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, self.layer.getSpriteRenderer().getClickManager())
                     break
         return n
 
+
+    def addDestination(self, n, mappings, connectionType, number, x = None, y = None):
+        if x is None: x = self.nodePositions[number][0]
+        if y is None: y = self.nodePositions[number][1]
+
+        if connectionType in self.map["destinations"]:
+            for destination in self.map["destinations"][connectionType]:
+                if destination["location"] == number:
+                    n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, self.layer.getSpriteRenderer().getClickManager())
+                    self.destinations.append(n)
+                    break
+        return n
 
 
     def replaceNode(self, connectionType, node, nodeType):
@@ -224,10 +231,6 @@ class GridManager:
                 # Create the connection with the nodes
                 self.addConnections(connectionType, n1, n2)
 
-        # if connectionType in self.map["entries"]:
-        #     pass
-
-
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
     def createFullGrid(self, connectionType):
@@ -236,13 +239,11 @@ class GridManager:
                 n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
                 self.nodes.append(n)
         else:
+            # Loop through all the node positions
             for number, position in enumerate(self.nodePositions):
                 n = None
-                if connectionType in self.map["stops"]:
-                    for stop in self.map["stops"][connectionType]:
-                        if stop["location"] == number:
-                            n = self.editorStopMappings[stop["type"]](self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
-                            break
+                n = self.addStop(n, self.editorStopMappings, connectionType, number, position[0], position[1])
+                n = self.addDestination(n, self.editorDestinationMappings, connectionType, number, position[0], position[1])
 
                 if n is None:
                     n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
