@@ -535,10 +535,33 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (200, 114), (290, 155))
+        addType = self.game.mapEditor.getClickManager().getAddType()
+        airportSelected = True if addType == 'airport' else False
+        officeSelected = True if addType == 'office' else False
+        # TO DO: Add other types of transportation    
 
+        box = Shape(self, BLACK, (200, 114), (290, 155))
+        airportBox = Shape(self, GREEN, (200, 33), (290, 160))
+        officeBox = Shape(self, GREEN, (200, 33), (290, 196))
+        
+        airport = Label(self, "Airport", 25, Color("white"), (300, 165))
+        office = Label(self, "Office", 25, Color("white"), (300, 200))
 
         self.add(box)
+        if airportSelected: self.add(airportBox)
+        elif officeSelected: self.add(officeBox)
+
+        airport.addEvent(addAirport, 'onMouseClick')
+        office.addEvent(addOffice, 'onMouseClick')
+
+        labels = [(airport, airportSelected), (office, officeSelected)]
+        for label in labels:
+            if label[1]:
+                label[0].addEvent(hoverBlack, 'onMouseOver')
+            else:
+                label[0].addEvent(hoverGreen, 'onMouseOver')
+            label[0].addEvent(hoverWhite, 'onMouseOut')
+            self.add(label[0])
 
 
         
@@ -554,26 +577,31 @@ class EditorHud(GameHudLayout):
         connectionSelected = True if clickType == EditorClickManager.ClickType.DCONNECTION else False 
         stopSelectd = True if clickType == EditorClickManager.ClickType.DSTOP else False 
         transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
+        destinationSelected = True if clickType == EditorClickManager.ClickType.DDESTINATION else False
 
-        box = Shape(self, BLACK, (200, 114), (170, 40))
+        box = Shape(self, BLACK, (200, 150), (170, 40))
         connectionBox = Shape(self, GREEN, (200, 33), (170, 45))
         stopBox = Shape(self, GREEN, (200, 33), (170, 81))
         transportBox = Shape(self, GREEN, (200, 33), (170, 116))
+        destinationBox = Shape(self, GREEN, (200, 33), (170, 151))
 
         connection = Label(self, "Connection", 25, Color("white"), (180, 50))
         stop = Label(self, "Stop", 25, Color("white"), (180, 85))
         transport = Label(self, "Transport", 25, Color("white"), (180, 120))
+        destination = Label(self, "Destination", 25, Color("white"), (180, 155))
 
         connection.addEvent(deleteConnection, 'onMouseClick')
         stop.addEvent(deleteStop, 'onMouseClick')
         transport.addEvent(deleteTransport, 'onMouseClick')
+        destination.addEvent(deleteDestination, 'onMouseClick')
 
         self.add(box)
         if connectionSelected: self.add(connectionBox)
         elif stopSelectd: self.add(stopBox)
         elif transportSelected: self.add(transportBox)
+        elif destinationSelected: self.add(destinationBox)
 
-        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected)]
+        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
                 label[0].addEvent(hoverBlack, 'onMouseOver')

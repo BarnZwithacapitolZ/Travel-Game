@@ -350,6 +350,15 @@ class EditorClickManager(ClickManager):
             self.game.mapEditor.addStop(node.getConnectionType(), node)
 
 
+    def addDestination(self, node):
+        if len(node.getConnections()) > 0 and not isinstance(node, NODE.Stop) and not isinstance(node, NODE.Destination):
+            self.game.mapEditor.addDestination(node.getConnectionType(), node)
+
+
+    def deleteDestination(self, node):
+        if isinstance(node, NODE.Destination):
+            self.game.mapEditor.deleteDestination(node.getConnectionType(), node)
+
     def deleteConnection(self, connection):
         fromNode = connection.getFrom()
         toNode = connection.getTo()

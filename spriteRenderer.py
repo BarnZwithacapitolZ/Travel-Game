@@ -34,7 +34,7 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played 
         self.timer = 0
-        self.timeStep = 15
+        self.timeStep = 12.5
         self.timeSetMet = False
 
         self.setDefaultMap()
@@ -48,7 +48,8 @@ class SpriteRenderer():
             "connections": {}, 
             "transport": {}, 
             "stops": {},
-            "destinations": {}
+            "destinations": {},
+            "entrances": {}
         } # Level data to be stored, for export to JSON
 
 
@@ -116,6 +117,13 @@ class SpriteRenderer():
         self.levelData = self.gridLayer4.getGrid().getMap()
 
 
+        # Set all the destinations to be the destinations from all layers
+        layer1Destinations =  self.gridLayer1.getGrid().getDestinations() 
+        layer2Destinations =  self.gridLayer2.getGrid().getDestinations() 
+        layer3Destinations =  self.gridLayer3.getGrid().getDestinations() 
+        self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
+
+
 
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
@@ -163,9 +171,11 @@ class SpriteRenderer():
             self.timer += self.game.dt
             if int(self.timer) % self.timeStep == 0:
                 if not self.timeSetMet:
-                    print("is this called??")
+                    # print("is this called??")
                     self.timeSetMet = True
-                    self.gridLayer2.addPerson()
+
+                    # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
+                    self.gridLayer2.addPerson(self.allDestinations)
             else:
                 self.timeSetMet = False            
 

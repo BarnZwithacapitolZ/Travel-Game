@@ -214,10 +214,14 @@ class EditorNode(Node):
                 self.clickManager.addTransport(self)
             elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
                 self.clickManager.addStop(self)
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DESTINATION: # Add a destination
+                self.clickManager.addDestination(self)
             elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
                 self.clickManager.deleteTransport(self)
             elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
                 self.clickManager.deleteStop(self)
+            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
+                self.clickManager.deleteDestination(self)
  
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.mouseOver = True
@@ -231,6 +235,18 @@ class EditorNode(Node):
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
+
+
+
+
+class EntranceNode(Node):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        print(self.number)
+
+    # Empty draw function so its a hidden node
+    def draw(self):
+        pass
 
 
 
@@ -289,15 +305,30 @@ class Destination(Node):
         self.offset = vec(-5, -5)
         self.pos = self.pos + self.offset
 
+
+
+class Airport(Destination):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
         self.images = ["airport", "nodeSelected"]
 
 
-class EditorDestination(EditorNode, Destination):
+class EditorAirport(EditorNode, Airport):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        self.images = ["airport", "nodeSelected", "nodeStart", "nodeEnd"]
+
+
+class Office(Destination):
+    def __init__(self, game, groups, number, connectionType, x, y, clickManager):
+        super().__init__(game, groups, number, connectionType, x, y, clickManager)
+        self.images = ["office", "nodeSelected"]
+        
+class EditorOffice(EditorNode, Office):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
-        self.images = ["airport", "nodeSelected", "nodeStart", "nodeEnd"]
-        
+        self.images = ["office", "nodeSelected", "nodeStart", "nodeEnd"]
 
 
 

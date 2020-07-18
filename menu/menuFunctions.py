@@ -313,14 +313,9 @@ def toggleAddDestinationDropdown(obj, menu):
 
 
 
-
-
-
-
 def addConnection(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
     clearMenu(obj, menu)
-
 
 
 def addStop(obj, menu):
@@ -356,6 +351,16 @@ def addTaxi(obj, menu):
     clearMenu(obj, menu)
 
 
+#### Adding different destination types ####
+def addAirport(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("airport")
+    clearMenu(obj, menu)
+
+
+def addOffice(obj, menu):
+    menu.game.mapEditor.getClickManager().setAddType("office")
+    clearMenu(obj, menu)
+
 
 
 
@@ -373,6 +378,11 @@ def deleteConnection(obj, menu):
 
 def deleteStop(obj, menu):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DSTOP)
+    clearMenu(obj, menu)
+
+
+def deleteDestination(obj, menu):
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.DDESTINATION)
     clearMenu(obj, menu)
 
 

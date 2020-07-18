@@ -78,10 +78,11 @@ class Transport(pygame.sprite.Sprite):
 
         for connection in nextNode.getConnections():
             if connection.getType() == self.currentConnection.getType():
-                if connection.getDirection() == self.direction:
-                    possibleNodes.append(connection)
-                else:
-                    backwardsNodes.append(connection)
+                if not isinstance(connection.getTo(), NODE.EntranceNode):
+                    if connection.getDirection() == self.direction:
+                        possibleNodes.append(connection)
+                    else:
+                        backwardsNodes.append(connection)
 
         #it can keep going the same direction
         if len(possibleNodes) > 0:

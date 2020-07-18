@@ -107,7 +107,7 @@ class MapEditor(SpriteRenderer):
         mappings = layer.getGrid().getTransportMappings()
 
         if key in mappings:
-            layer.getGrid().addTransport(connectionType, connection, mappings[key], False)
+            layer.getGrid().addTransport(connectionType, connection, mappings[key], False) # False so the transports dont move
             self.levelData["transport"].setdefault(connectionType, []).append({
                 "location": connection.getFrom().getNumber(),
                 "type": str(key)
@@ -130,6 +130,35 @@ class MapEditor(SpriteRenderer):
             })
 
 
+    def addDestination(self, connectionType, node):
+        layer = self.getGridLayer(connectionType)
+
+        key = self.clickManager.getAddType()
+        mappings = layer.getGrid().getEditorDestinationMappings()
+
+        if key in mappings:
+            newNode = layer.getGrid().replaceNode(connectionType, node, mappings[key])
+            self.levelData["destinations"].setdefault(connectionType, []).append({
+                "location": newNode.getNumber(),
+                "type": str(key)
+            })
+
+
+    def deleteDestination(self, connectionType, node):
+        layer = self.getGridLayer(connectionType)
+
+        mappings = layer.getGrid().getEditorDestinationMappings()
+        key = layer.getGrid().reverseMappingsSearch(mappings, node)
+
+        if key:
+            newNode = layer.getGrid().replaceNode(connectionType, node, EditorNode)
+
+            self.levelData["destinations"][connectionType].remove({
+                "location": newNode.getNumber(),
+                "type": str(key)
+            })
+
+
     def deleteTransport(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
 
@@ -147,6 +176,7 @@ class MapEditor(SpriteRenderer):
                 "location": node.getNumber(),
                 "type": str(key)
             })        
+
 
     def deleteStop(self, connectionType, node):
         layer = self.getGridLayer(connectionType)

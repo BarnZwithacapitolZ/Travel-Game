@@ -24,7 +24,7 @@ class Person(pygame.sprite.Sprite):
         FLAG = 6
         
 
-    def __init__(self, renderer, groups, currentNode, destination, clickManager):
+    def __init__(self, renderer, groups, currentNode, clickManager):
         self.groups = groups
         super().__init__(self.groups)
         self.renderer = renderer
@@ -38,7 +38,11 @@ class Person(pygame.sprite.Sprite):
         self.currentConnectionType = self.currentNode.connectionType
         self.currentNode.addPerson(self)
 
-        self.destination = destination
+        #List of possible destinations that the player can have (different player types might have different destinatiosn that they go to)
+        self.possibleDestinations = (NODE.Airport, NODE.Office) # Default is to accept all types
+        self.destination = None
+
+        self.budget = 20
 
         self.offset = vec(-10, -15) #-10, -20 # Move it back 10 pixels x, 20 pixels y
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
@@ -105,6 +109,14 @@ class Person(pygame.sprite.Sprite):
         return self.mouseOver
 
 
+    def getPossibleDestinations(self):
+        return self.possibleDestinations
+
+    
+    def getBudget(self):
+        return self.budget
+
+
     #### Setters ####
 
     # Set the persons status
@@ -126,6 +138,17 @@ class Person(pygame.sprite.Sprite):
     def setPosition(self, pos):
         self.pos = pos
         self.dirty = True
+
+
+    def setDestination(self, destinations = []):
+        possibleDestinations = []
+        for destination in destinations:
+            # If the destination is one of the persons possible destinations and not the node the player is currently on
+            if isinstance(destination, self.possibleDestinations) and destination.getNumber() != self.currentNode.getNumber():
+                possibleDestinations.append(destination)
+
+        destination = random.randint(0, len(possibleDestinations) - 1)
+        self.destination = possibleDestinations[destination]
 
 
     # Add a node to the persons path
@@ -208,6 +231,9 @@ class Person(pygame.sprite.Sprite):
 
 
     def drawDestination(self):
+        if self.destination is None:
+            return 
+
         scale = self.game.renderer.getScale()
         thickness = 4
 
@@ -343,6 +369,27 @@ class Person(pygame.sprite.Sprite):
                 
                 self.pos += self.vel
                 self.rect.topleft = self.pos * self.game.renderer.getScale()
+
+
+
+class Manager(Person):
+    def __init__(self, renderer, groups, currentNode, clickManager):
+        super().__init__(renderer, groups, currentNode,clickManager)
+        self.possibleDestinations = (NODE.Airport, NODE.Office)
+        self.budget = 40
+
+    # Office, airport
+    # has a very high budget so can afford taxis etc.
+
+class Commuter(Person):
+    def __init__(self, renderer, groups, currentNode, clickManager):
+        super().__init__(renderer, groups, currentNode, clickManager)
+        self.possibleDestinations = (NODE.Office)
+        self.budget = 12
+
+    # Office, home?
+    # has a small budget so cant rly afford many taxis etc.
+
 
 
 class StatusIndicator(pygame.sprite.Sprite):

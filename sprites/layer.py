@@ -65,29 +65,27 @@ class Layer(pygame.sprite.Sprite):
 
 
     # Add a person to the layer
-    def addPerson(self):
+    def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to
         if len(self.nodes) <= 0:
             return 
 
-        destinations = self.grid.getDestinations()
-        destination = random.randint(0, len(destinations) - 1)
-
-        # List of possible nodes to add a new player to
-        possibleNodes = []
-        for node in self.nodes:
-            # Must be a node that no one else is assigned to and is not the persons destination
-            if len(node.getPeople()) <= 0 and node != destinations[destination]:
-                possibleNodes.append(node)
+        if destinations == None:
+            destinations = self.grid.getDestinations() 
 
 
         # Add the person to a random node on the layer
-        node = random.randint(0, len(possibleNodes) - 1)
-        p = Person(self.spriteRenderer, self.groups, self.nodes[node], destinations[destination], self.spriteRenderer.getClickManager())
+        node = random.randint(0, len(self.grid.getEntrances()) - 1)
+        currentNode = self.grid.getEntrances()[node]
+
+        peopleTypes = [Manager, Commuter]
+        person = random.randint(0, len(peopleTypes) - 1)
+
+        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getClickManager())
+        p.setDestination(destinations)
 
         # Put the player at a position outside of the map
-        # p.setPosition(vec(0, 0))
-        # p.addToPath(self.nodes[node])
+        p.addToPath(currentNode.getConnections()[0].getTo())
         return p
 
     

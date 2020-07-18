@@ -182,7 +182,7 @@ class InputBox(Label):
             self.indicator.x = self.x + self.width
             self.indicator.rect.x = self.indicator.x * self.menu.renderer.getScale()
 
-            self.timer += 1
+            self.timer += 60 * self.menu.game.dt
 
             if self.timer >= 25:
                 self.flashing = not self.flashing

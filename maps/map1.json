@@ -142,7 +142,29 @@
             },
             {
                 "location": 179,
+                "type": "office"
+            }
+        ],
+        "layer 1": [
+            {
+                "location": 0,
                 "type": "airport"
+            }
+        ]
+    },
+    "entrances": {
+        "layer 2": [
+            {
+                "location": 10,
+                "type": "top"
+            },
+            {
+                "location": 70,
+                "type": "top"
+            },
+            {
+                "location": 79,
+                "type": "bottom"
             }
         ]
     }
