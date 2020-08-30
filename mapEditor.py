@@ -25,6 +25,9 @@ class MapEditor(SpriteRenderer):
     def getAllowEdits(self):
         return self.allowEdits
 
+    def getClickManager(self):
+        return self.clickManager
+
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits

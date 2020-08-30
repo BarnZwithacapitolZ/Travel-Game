@@ -14,6 +14,7 @@ from transport import *
 class GridManager:
     def __init__(self, layer, groups, level = None, spacing = (1.5, 1.5)):
         self.layer = layer
+        self.spriteRenderer = self.layer.getSpriteRenderer()
         self.game = self.layer.game
         self.groups = groups
         self.level = level
@@ -158,12 +159,13 @@ class GridManager:
     # Add a node to the grid if the node is not already on the grid
     def addNode(self, connection, connectionType, currentNodes, direction):
         if connection[direction] not in currentNodes:
+            clickManagers = [self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager()]
             n = None
-            n = self.addStop(n, self.stopMappings, connectionType, connection[direction])
-            n = self.addDestination(n, self.destinationMappings, connectionType, connection[direction])
+            n = self.addStop(n, self.stopMappings, connectionType, connection[direction], clickManagers)
+            n = self.addDestination(n, self.destinationMappings, connectionType, connection[direction], clickManagers)
 
             if n is None: #no stop was found at this node 
-                n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.layer.getSpriteRenderer().getClickManager())
+                n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
 
             self.nodes.append(n)
             currentNodes.append(connection[direction])
@@ -172,7 +174,7 @@ class GridManager:
 
 
     # Add a stop, instead of a node, to the grid 
-    def addStop(self, n, mappings, connectionType, number, x = None, y = None):
+    def addStop(self, n, mappings, connectionType, number, clickManagers = [], x = None, y = None):
         if x is None: x = self.nodePositions[number][0]
         if y is None: y = self.nodePositions[number][1]
 
@@ -180,19 +182,25 @@ class GridManager:
         if connectionType in self.map["stops"]:
             for stop in self.map["stops"][connectionType]:
                 if stop["location"] == number:
-                    n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, self.layer.getSpriteRenderer().getClickManager())
+                    if len(clickManagers) <= 2:
+                        n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
+                    else:
+                        n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
                     break
         return n
 
 
-    def addDestination(self, n, mappings, connectionType, number, x = None, y = None):
+    def addDestination(self, n, mappings, connectionType, number, clickManagers = [], x = None, y = None):
         if x is None: x = self.nodePositions[number][0]
         if y is None: y = self.nodePositions[number][1]
 
         if connectionType in self.map["destinations"]:
             for destination in self.map["destinations"][connectionType]:
                 if destination["location"] == number:
-                    n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, self.layer.getSpriteRenderer().getClickManager())
+                    if len(clickManagers) <= 2:
+                        n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
+                    else:
+                        n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
                     self.destinations.append(n)
                     break
         return n
@@ -205,8 +213,8 @@ class GridManager:
         self.nodes.remove(node)
         node.remove()
 
-        n = nodeType(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.layer.getSpriteRenderer().getClickManager())
-        
+        n = nodeType(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.spriteRenderer.getClickManager(), self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+
         # Need to replace the connection with the new node, otherwise it cant be deleted
         for connection in self.connections:
             if connection.getFrom().getNumber() == n.getNumber():
@@ -245,7 +253,7 @@ class GridManager:
             if connectionType in self.map["entrances"]:
                 for entrance in self.map["entrances"][connectionType]:
                     index = int(entrance["location"] / 10)
-                    n = EntranceNode(self.game, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.layer.getSpriteRenderer().getClickManager())
+                    n = EntranceNode(self.game, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
                     self.entrances.append(n)
 
                     for node in self.nodes:
@@ -258,19 +266,21 @@ class GridManager:
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
     def createFullGrid(self, connectionType):
+        clickManagers = [self.spriteRenderer.getClickManager(), self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager()]
+        
         if self.level is None:
             for number, position in enumerate(self.nodePositions):
-                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
+                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
                 self.nodes.append(n)
         else:
             # Loop through all the node positions
             for number, position in enumerate(self.nodePositions):
                 n = None
-                n = self.addStop(n, self.editorStopMappings, connectionType, number, position[0], position[1])
-                n = self.addDestination(n, self.editorDestinationMappings, connectionType, number, position[0], position[1])
+                n = self.addStop(n, self.editorStopMappings, connectionType, number, clickManagers, position[0], position[1])
+                n = self.addDestination(n, self.editorDestinationMappings, connectionType, number, clickManagers, position[0], position[1])
 
                 if n is None:
-                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], self.layer.getSpriteRenderer().getClickManager())
+                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
                 self.nodes.append(n)
 
             if connectionType in self.map["connections"]:
@@ -299,18 +309,20 @@ class GridManager:
                 if connection.getFrom().getNumber() == transport["location"]:
                     # If the connection is the same as the direction, or its an end node (so theres only one direction)
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running)
+                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager())
                         self.transports.append(t)
-                        t.addToPath(connection.getTo())
-                        t.addToPath(connection.getTo().getConnections()[0].getTo())
+                        # t.addToPath(connection.getTo())
+                        # t.addToPath(connection.getTo().getConnections()[0].getTo())
                         break
 
 
+    # Add a transport to the map within the map editor
     def addTransport(self, connectionType, connection, transport, running = True):
-        t = transport(self.game, self.groups, connection, connection.getDirection(), running)
+        t = transport(self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager())
         self.transports.append(t)
 
 
+    # Remove a transport from the map within the map editor 
     def removeTransport(self, transport):
         self.transports.remove(transport)
         transport.remove()

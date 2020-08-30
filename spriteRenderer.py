@@ -28,7 +28,8 @@ class SpriteRenderer():
         # Hud for when the game is running
         self.hud = GameHud(self.game)
 
-        self.clickManager = GameClickManager(self.game)
+        self.personClickManager = PersonClickManager(self.game)
+        self.transportClickManager = TransportClickManager(self.game)
 
         self.rendering = False
 
@@ -67,8 +68,11 @@ class SpriteRenderer():
     def getLevelData(self):
         return self.levelData
 
-    def getClickManager(self):
-        return self.clickManager
+    def getPersonClickManager(self):
+        return self.personClickManager
+
+    def getTransportClickManager(self):
+        return self.transportClickManager
 
     def getLayer(self):
         return self.currentLayer

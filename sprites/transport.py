@@ -15,7 +15,7 @@ vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentConnection, direction, running):
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
         self.groups = groups
         super().__init__(self.groups)
         
@@ -40,6 +40,8 @@ class Transport(pygame.sprite.Sprite):
         self.moving = self.running
         self.timer = 0
         self.timerLength = 300
+
+        self.clickManager = clickManager
 
         #people travelling in the transport
         self.people = []
@@ -244,10 +246,20 @@ class Transport(pygame.sprite.Sprite):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
+
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+
+            self.clickManager.setTransport(self)
+
+
+            self.game.clickManager.setClicked(False)
+
+        # Hover over event
         if self.rect.collidepoint((mx, my)) and not self.mouseOver:
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True 
 
+        # Hover out event
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
             self.dirty = True
@@ -328,8 +340,8 @@ class Transport(pygame.sprite.Sprite):
 
 
 class Taxi(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running):
-        super().__init__(game, groups, currentConnection, direction, running)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager)
 
         self.imageName = "taxi"
         self.stopType = NODE.Node
@@ -444,20 +456,20 @@ class Taxi(Transport):
 
 
 class Bus(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running):
-        super().__init__(game, groups, currentConnection, direction, running)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager)
         self.imageName = "bus"
         self.stopType = NODE.BusStop
 
 
 
 class Tram(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running):
-        super().__init__(game, groups, currentConnection, direction, running)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager)
         self.imageName = "tram"
         self.stopType = NODE.TramStop
 
 
 class Metro(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running):
-        super().__init__(game, groups, currentConnection, direction, running)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager)

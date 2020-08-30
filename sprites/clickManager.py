@@ -22,8 +22,100 @@ class ClickManager:
         self.clicked = clicked
 
 
+    
+    # for a given node, return the adjacent nodes
+    def getAdjacentNodes(self, n):
+        adjNodes = []
 
-class GameClickManager(ClickManager):
+        for connection in n["node"].getConnections():
+            node = {"node": connection.getTo(), "parent": n}
+            adjNodes.append(node)
+        return adjNodes
+
+
+    '''
+        function: aStartPathFinding
+        input:  Node A
+                Node B
+        output: List path (empty if no path is found)
+    '''
+    def aStarPathFinding(self, A, B):
+        openList = []
+        closedList = []
+
+        # startNode.g = startNode.h = startNode.f = 0
+        # startNode.parent = None
+        # endNode.h = endNode.h = endNode.f = 0
+        # endNode.parent = None
+
+        startNode = {"node": A, "g": 0, "h": 0, "f": 0, "parent": None}
+        endNode = {"node": B, "g": 0, "h": 0, "f": 0, "parent": None}
+
+        openList.append(startNode)
+
+        # While the openlist is not empty
+        while len(openList) > 0:
+
+            # Set the current node
+            currentNode = openList[0]
+            currentIndex = 0
+
+            for index, item in enumerate(openList):
+                if item["f"] < currentNode["f"]:
+                    currentNode = item
+                    currentIndex = index            
+
+            openList.pop(currentIndex)
+            closedList.append(currentNode)
+
+            # Check if the current node is the goal
+            if currentNode["node"].getNumber() == endNode["node"].getNumber():
+                path = []
+                current = currentNode
+
+                while current is not None:
+                    path.append(current["node"])
+                    current = current["parent"]
+
+                return path[::-1]
+
+            children = self.getAdjacentNodes(currentNode)
+
+            for child in children:
+                c = False
+                # Child is in the closed list
+                for closedNode in closedList:
+                    if child["node"].getNumber() == closedNode["node"].getNumber():
+                        c = True
+                if c: continue
+
+                # Get the distance between the child and the current node
+                for connection in child["node"].getConnections():
+                    if connection.getTo().getNumber() == currentNode["node"].getNumber():
+                        dis = connection.getDistance()
+                        break
+                
+                # Create f, g and g values
+                child["g"] = currentNode["g"] + dis                     
+                child["h"] = ((child["node"].pos - child["node"].offset) - (endNode["node"].pos - endNode["node"].offset)).length()
+                child["f"] = child["g"] + child["h"]
+
+                # Child is already in the open list
+                o = False
+                for openNode in openList:
+                    if child["node"].getNumber() == openNode["node"].getNumber() and child["g"] > openNode["g"]:
+                        o = True
+                if o: continue
+
+                # Add the child to the open list
+                openList.append(child)
+
+        print("Route is impossible")
+        return [] # Return the empty path if route is impossible
+
+
+
+class PersonClickManager(ClickManager):
     def __init__(self, game):
         super().__init__(game)
         self.node = None # A
@@ -139,98 +231,7 @@ class GameClickManager(ClickManager):
             if finalNode is not None and len(path) > 0: path.append(finalNode)
         
         return path
-
-
-    # for a given node, return the adjacent nodes
-    def getAdjacentNodes(self, n):
-        adjNodes = []
-
-        for connection in n["node"].getConnections():
-            node = {"node": connection.getTo(), "parent": n}
-            adjNodes.append(node)
-        return adjNodes
-
-
-    '''
-        function: aStartPathFinding
-        input:  Node A
-                Node B
-        output: List path (empty if no path is found)
-    '''
-    def aStarPathFinding(self, A, B):
-        openList = []
-        closedList = []
-
-        # startNode.g = startNode.h = startNode.f = 0
-        # startNode.parent = None
-        # endNode.h = endNode.h = endNode.f = 0
-        # endNode.parent = None
-
-        startNode = {"node": A, "g": 0, "h": 0, "f": 0, "parent": None}
-        endNode = {"node": B, "g": 0, "h": 0, "f": 0, "parent": None}
-
-        openList.append(startNode)
-
-        # While the openlist is not empty
-        while len(openList) > 0:
-
-            # Set the current node
-            currentNode = openList[0]
-            currentIndex = 0
-
-            for index, item in enumerate(openList):
-                if item["f"] < currentNode["f"]:
-                    currentNode = item
-                    currentIndex = index            
-
-            openList.pop(currentIndex)
-            closedList.append(currentNode)
-
-            # Check if the current node is the goal
-            if currentNode["node"].getNumber() == endNode["node"].getNumber():
-                path = []
-                current = currentNode
-
-                while current is not None:
-                    path.append(current["node"])
-                    current = current["parent"]
-
-                return path[::-1]
-
-            children = self.getAdjacentNodes(currentNode)
-
-            for child in children:
-                c = False
-                # Child is in the closed list
-                for closedNode in closedList:
-                    if child["node"].getNumber() == closedNode["node"].getNumber():
-                        c = True
-                if c: continue
-
-                # Get the distance between the child and the current node
-                for connection in child["node"].getConnections():
-                    if connection.getTo().getNumber() == currentNode["node"].getNumber():
-                        dis = connection.getDistance()
-                        break
-                
-                # Create f, g and g values
-                child["g"] = currentNode["g"] + dis                     
-                child["h"] = ((child["node"].pos - child["node"].offset) - (endNode["node"].pos - endNode["node"].offset)).length()
-                child["f"] = child["g"] + child["h"]
-
-                # Child is already in the open list
-                o = False
-                for openNode in openList:
-                    if child["node"].getNumber() == openNode["node"].getNumber() and child["g"] > openNode["g"]:
-                        o = True
-                if o: continue
-
-                # Add the child to the open list
-                openList.append(child)
-
-        print("Route is impossible")
-        return [] # Return the empty path if route is impossible
-
+    
 
     # Move the person by setting the persons path when the person and the node are both set
     def movePerson(self):
@@ -269,11 +270,11 @@ class TransportClickManager(ClickManager):
 
 
     def setNode(self, node):
-        pass
+        self.node = node
 
 
-    def setTransport(self, node):
-        pass
+    def setTransport(self, transport):
+        self.transport = transport
 
 
     def moveTransport(self):
