@@ -66,7 +66,7 @@ class GameClickManager(ClickManager):
 
             # Set selected image of new person
             if person is not None:
-                person.setCurrentImage(2)
+                person.setCurrentImage(1)
                 self.personClicked = True
             else:
                 self.personClicked = False
@@ -261,6 +261,27 @@ class GameClickManager(ClickManager):
 
 
 
+class TransportClickManager(ClickManager):
+    def __init__(self, game):
+        super().__init__(game)
+        self.node = None
+        self.transport = None
+
+
+    def setNode(self, node):
+        pass
+
+
+    def setTransport(self, node):
+        pass
+
+
+    def moveTransport(self):
+        pass
+
+
+
+
 class EditorClickManager(ClickManager):
     class ClickType(Enum):
         CONNECTION = 1
@@ -311,18 +332,18 @@ class EditorClickManager(ClickManager):
 
     def setStartNode(self, node):
         self.startNode = node
-        self.startNode.setCurrentImage(2)
+        self.startNode.setCurrentImage(1)
         self.createConnection()
 
     def setEndNode(self, node):
         # If the end node is on a different layer to the start node, make it be the start node
         if node.getConnectionType() != self.startNode.getConnectionType():
             self.startNode = node
-            node.setCurrentImage(2)
+            node.setCurrentImage(1)
             return
 
         self.endNode = node
-        self.endNode.setCurrentImage(3)
+        self.endNode.setCurrentImage(2)
         self.createConnection()
 
 
@@ -333,7 +354,6 @@ class EditorClickManager(ClickManager):
                     # Create a new connection
                     self.game.mapEditor.createConnection(self.startNode.getConnectionType(), self.startNode, self.endNode)
                     
-
             self.startNode = None
             self.endNode = None
 

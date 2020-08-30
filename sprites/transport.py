@@ -33,6 +33,7 @@ class Transport(pygame.sprite.Sprite):
         self.speed = float(decimal.Decimal(random.randrange(40, 50)))
         self.direction = direction #0 forwards, 1 backwards
         
+        self.mouseOver = False
         self.dirty = True
 
         self.running = running
@@ -45,6 +46,8 @@ class Transport(pygame.sprite.Sprite):
 
         self.imageName = "train"
         self.stopType = NODE.MetroStation
+
+        self.path = []
 
 
     #### Getters ####
@@ -77,7 +80,7 @@ class Transport(pygame.sprite.Sprite):
         backwardsNodes = []
 
         for connection in nextNode.getConnections():
-            if connection.getType() == self.currentConnection.getType():
+            if connection.getConnectionType() == self.currentConnection.getConnectionType():
                 if not isinstance(connection.getTo(), NODE.EntranceNode):
                     if connection.getDirection() == self.direction:
                         possibleNodes.append(connection)
@@ -89,8 +92,10 @@ class Transport(pygame.sprite.Sprite):
             # if theres multiple possible nodes, pick a random one                          #TO DO - make transports follow specific path
             self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
         else:
-            self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
+            # self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
             self.currentConnection = backwardsNodes[0]
+            self.direction = self.currentConnection.getDirection()
+
 
         self.currentNode.removeTransport(self)
         self.currentNode = self.currentConnection.getFrom()
@@ -135,6 +140,10 @@ class Transport(pygame.sprite.Sprite):
         for person in self.currentNode.getPeople():
             if person.getStatus() == PERSON.Person.Status.WAITING: # If they're waiting for the train
                 person.setStatus(PERSON.Person.Status.BOARDING)
+
+
+    def addToPath(self, node):
+        self.path.append(node)
 
 
     # Add a person to the transport
@@ -231,39 +240,91 @@ class Transport(pygame.sprite.Sprite):
 
 
     def events(self):
-        pass
+        mx, my = pygame.mouse.get_pos()
+        mx -= self.game.renderer.getDifference()[0]
+        my -= self.game.renderer.getDifference()[1]
+
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.mouseOver = True 
+
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
+            self.mouseOver = False
+            self.dirty = True
 
 
     def update(self):
         if hasattr(self, 'rect') and self.running:
+            self.events()
+
             # Reset velocity to prevent infinate movement
-            self.vel = (0, 0)
+            self.vel = vec(0, 0)
 
-            dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
-            dis = dxy.length()
+            if len(self.path) > 0:
+                path = self.path[0]
 
-            if dis >= 0.5 and self.moving: #move towards the node
-                # Speed up when leaving a stop
-                # Change the number taken away from the length of the connection for the length of the smooth starting 
-                # Change the other number to say when the smooth starting should begin (after how many pixels)
-                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
-                    self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
+                dxy = (path.pos - path.offset) - self.pos + self.offset
+                dis = dxy.length()
 
-                # Slow down when reaching a stop
-                # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
-                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                    self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                if dis >= 0.5 and self.moving:
+                    # if its the last node in the path, slow down if the last node is a stop
+                    if len(self.path) <= 1: 
+                        # Slow down when reaching a stop
+                        # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
+                        if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                            self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                        else:
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt
+                            
+                    else:
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+
+                    self.movePeople()
 
                 else:
-                    self.vel = dxy / dis * float(self.speed) * self.game.dt
-                self.movePeople()
+                    # set the current connection to be one of the paths connections (just pick a random one)
+                    if len(self.path) > 1:
+                        connections = path.getConnections()
+                        connection = random.randint(0, len(connections) - 1)
+                        self.currentConnection = connections[connection]
+                        self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
 
-            else: #its reached the node
-                self.setNextConnection()
-                self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
+                        self.currentNode.removeTransport(self)
+                        self.currentNode = self.currentConnection.getFrom()
+                        self.currentNode.addTransport(self)
 
-            self.pos += self.vel
-            self.rect.topleft = self.pos * self.game.renderer.getScale()
+                    self.path.remove(path)
+
+                self.pos += self.vel
+                self.rect.topleft = self.pos * self.game.renderer.getScale()
+
+
+            else:
+                dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
+                dis = dxy.length()
+                
+                if dis >= 0.5 and self.moving: #move towards the node
+                    # Speed up when leaving a stop
+                    # Change the number taken away from the length of the connection for the length of the smooth starting 
+                    # Change the other number to say when the smooth starting should begin (after how many pixels)
+                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
+                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
+
+                    # Slow down when reaching a stop
+                    # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
+                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                        self.vel = (dxy * (self.speed / 10)) * self.game.dt
+
+                    else:
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+                    self.movePeople()
+
+                else: #its reached the node
+                    self.setNextConnection()
+                    self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
+
+                self.pos += self.vel
+                self.rect.topleft = self.pos * self.game.renderer.getScale()
 
 
 class Taxi(Transport):
@@ -347,7 +408,8 @@ class Taxi(Transport):
     # override
     def update(self):
         if hasattr(self, 'rect') and self.running:
-            self.vel = (0, 0)
+            self.events()
+            self.vel = vec(0, 0)
 
             dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
             dis = dxy.length()

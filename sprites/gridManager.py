@@ -240,21 +240,20 @@ class GridManager:
                 # Create the connection with the nodes
                 self.addConnections(connectionType, n1, n2)
         
-        if connectionType in self.map["entrances"]:
-            for entrance in self.map["entrances"][connectionType]:
+        # Only add entrances if they exist
+        if "entrances" in self.map.keys():
+            if connectionType in self.map["entrances"]:
+                for entrance in self.map["entrances"][connectionType]:
+                    index = int(entrance["location"] / 10)
+                    n = EntranceNode(self.game, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.layer.getSpriteRenderer().getClickManager())
+                    self.entrances.append(n)
 
-                print(entrance)
-
-                index = int(entrance["location"] / 10)
-                n = EntranceNode(self.game, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.layer.getSpriteRenderer().getClickManager())
-                self.entrances.append(n)
-
-                for node in self.nodes:
-                    if node.getNumber() == entrance["location"]:
-                        n1 = node
+                    for node in self.nodes:
+                        if node.getNumber() == entrance["location"]:
+                            n1 = node
 
 
-                self.addConnections(connectionType, n, n1)
+                    self.addConnections(connectionType, n, n1)
 
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
@@ -302,6 +301,8 @@ class GridManager:
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
                         t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running)
                         self.transports.append(t)
+                        t.addToPath(connection.getTo())
+                        t.addToPath(connection.getTo().getConnections()[0].getTo())
                         break
 
 

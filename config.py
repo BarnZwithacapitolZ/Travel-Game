@@ -36,6 +36,7 @@ CREAM = (246, 246, 238)
 RED = (255, 102, 102)
 YELLOW = (238, 220, 55)
 GREY = (201, 199, 209)
+HOVERGREY = (153, 153, 153)
 
 # dump config file to json for saving
 def dump(data):

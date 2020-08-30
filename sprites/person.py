@@ -6,6 +6,7 @@ import os
 import random
 import math
 
+from engine import ImageLoader
 from enum import Enum
 import node as NODE
 
@@ -56,8 +57,7 @@ class Person(pygame.sprite.Sprite):
 
         self.dirty = True
 
-        self.mouseOver = False
-        self.images = ["person", "personSelected", "personClicked"]
+        self.images = ["person", "personClicked"]
         self.currentImage = 0
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
@@ -316,9 +316,8 @@ class Person(pygame.sprite.Sprite):
             if self.currentNode.getMouseOver():
                 return
 
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True
-            self.currentImage = 1
-            self.dirty = True
         
         # If the player is clicked on, dont show hover effect
         if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getPerson() != self:
@@ -378,6 +377,9 @@ class Manager(Person):
         self.possibleDestinations = (NODE.Airport, NODE.Office)
         self.budget = 40
 
+        self.images = ["manager", "managerClicked"]
+
+
     # Office, airport
     # has a very high budget so can afford taxis etc.
 
@@ -389,7 +391,7 @@ class Commuter(Person):
 
     # Office, home?
     # has a small budget so cant rly afford many taxis etc.
-
+ 
 
 
 class StatusIndicator(pygame.sprite.Sprite):

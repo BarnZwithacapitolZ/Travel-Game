@@ -37,7 +37,7 @@ class Node(pygame.sprite.Sprite):
         self.dirty = True
 
         self.mouseOver = False
-        self.images = ["node", "nodeSelected"]
+        self.images = ["node"]
         self.currentImage = 0
 
 
@@ -155,7 +155,7 @@ class Node(pygame.sprite.Sprite):
                 self.clickManager.setNode(self)
                 self.game.clickManager.setClicked(False)
 
-
+        # Hover over
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
@@ -165,8 +165,7 @@ class Node(pygame.sprite.Sprite):
             # If the player is moving on a transport, dont show hovering over a node 
             if self.clickManager.getPerson().getStatus() != PERSON.Person.Status.MOVING and self.clickManager.getPerson().getStatus() != PERSON.Person.Status.DEPARTING:
                 self.mouseOver = True
-                self.currentImage = 1
-                self.dirty = True
+                self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
 
             # print(self.number)
             # print(self.people)
@@ -174,7 +173,7 @@ class Node(pygame.sprite.Sprite):
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
         
-        
+        # Hover out
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
             self.currentImage = 0
@@ -191,7 +190,7 @@ class EditorNode(Node):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
 
-        self.images = ["node", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["node", "nodeStart", "nodeEnd"]
 
 
     # Override the events function
@@ -225,8 +224,7 @@ class EditorNode(Node):
  
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.mouseOver = True
-            self.currentImage = 1
-            self.dirty = True
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)            
 
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
@@ -263,37 +261,37 @@ class Stop(Node):
 class BusStop(Stop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["busStation", "nodeSelected"]
+        self.images = ["busStation"]
 
 
 class EditorBusStop(EditorNode, BusStop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["busStation", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["busStation", "nodeStart", "nodeEnd"]
 
 
 class MetroStation(Stop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["metro", "nodeSelected"]
+        self.images = ["trainStation"]
 
 
 class EditorMetroStation(EditorNode, MetroStation):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["metro", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["trainStation", "nodeStart", "nodeEnd"]
 
 
 class TramStop(Stop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["tramStation", "nodeSelected"]
+        self.images = ["tramStation"]
 
 
 class EditorTramStop(EditorNode, TramStop):
     def __init__(self, game, groups, number, connectionType, x, y, clickManager):
         super().__init__(game, groups, number, connectionType, x, y, clickManager)
-        self.images = ["tramStation", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["tramStation", "nodeStart", "nodeEnd"]
 
 
 

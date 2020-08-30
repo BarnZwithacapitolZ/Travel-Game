@@ -1,0 +1,1 @@
+{"mapName": "make the bus stop", "deletable": true, "saved": true, "connections": {"layer 1": [[10, 20], [20, 30], [30, 40]]}, "transport": {"layer 1": [{"location": 20, "type": "bus"}]}, "stops": {"layer 1": [{"location": 40, "type": "bus"}, {"location": 20, "type": "bus"}]}, "destinations": {}, "entrances": {}}

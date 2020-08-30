@@ -130,6 +130,16 @@ class ImageLoader:
     def getImage(self, key):
         return self.images[key]
 
+    @staticmethod
+    def changeImageColor(image, newColor, oldColor = None):
+        for x in range(image.get_width()):
+            for y in range(image.get_height()):
+                pixel = image.get_at((x, y))
+                if pixel == oldColor or oldColor is None:
+                    newColor.a = pixel.a 
+                    image.set_at((x, y), newColor)
+
+
 
 class AudioLoader:
     def __init__(self):
