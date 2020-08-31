@@ -154,7 +154,27 @@ class Transport(pygame.sprite.Sprite):
 
     def clearPath(self, newPath):
         if len(self.path) <= 0 or len(newPath) <= 0:
+            # if the node the transport is currently heading towards is in the new path, then we dont need the first node 
+            if self.currentConnection.getTo() in newPath:
+                del newPath[0]  
+            # Heading in the opposite direction
+            else:
+                if len(newPath) == 1:
+                    connections = self.currentConnection.getTo().getConnections()
+                    for connection in connections:
+                        if connection.getFrom().getNumber() == self.currentConnection.getTo().getNumber() and connection.getTo().getNumber() == newPath[0].getNumber():
+                            self.currentConnection = connection
+                            break
+                    
+                    self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
+                    self.currentNode.removeTransport(self)
+                    self.currentNode = self.currentConnection.getFrom()
+                    self.currentNode.addTransport(self)
+
             return
+
+        if self.path[0] in newPath:
+            del newPath[0]
 
         self.path = []
 
@@ -171,8 +191,6 @@ class Transport(pygame.sprite.Sprite):
     def remove(self):
         self.kill()
     
-    
-
 
     # Add multiple people who are departing on the transportation
     def addPeople(self):
@@ -287,9 +305,7 @@ class Transport(pygame.sprite.Sprite):
 
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-
             self.clickManager.setTransport(self)
-
 
             self.game.clickManager.setClicked(False)
 
@@ -311,9 +327,10 @@ class Transport(pygame.sprite.Sprite):
             # Reset velocity to prevent infinate movement
             self.vel = vec(0, 0)
 
-            print(self.direction)
+            # print(self.direction)
             # print(self.moving)
             # print(self.clickManager.transport, self.clickManager.node)
+            # print(self.currentNode.getNumber())
 
             # if the path is set follow it, only if the transport is not stopped at a stop
             if len(self.path) > 0 and self.moving:
@@ -325,6 +342,7 @@ class Transport(pygame.sprite.Sprite):
                 if dis >= 0.5 and self.moving:
                     # if its the last node in the path, slow down if the last node is a stop
                     if len(self.path) <= 1: 
+                        # print(self.currentConnection.getTo().getNumber())
                         # Slow down when reaching a stop
                         # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
                         if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
@@ -352,7 +370,6 @@ class Transport(pygame.sprite.Sprite):
                         self.currentNode.removeTransport(self)
                         self.currentNode = self.currentConnection.getFrom()
                         self.currentNode.addTransport(self)
-                   
 
                     self.path.remove(path)
 
