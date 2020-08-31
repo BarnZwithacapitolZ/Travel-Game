@@ -64,6 +64,10 @@ class Transport(pygame.sprite.Sprite):
         return self.moving
 
 
+    def getCurrentNode(self):
+        return self.currentNode
+
+
     #### Setters ####
 
     def setSpeed(self, speed):
@@ -148,6 +152,13 @@ class Transport(pygame.sprite.Sprite):
         self.path.append(node)
 
 
+    def clearPath(self, newPath):
+        if len(self.path) <= 0 or len(newPath) <= 0:
+            return
+
+        self.path = []
+
+
     # Add a person to the transport
     def addPerson(self, person):
         self.people.append(person)
@@ -221,6 +232,27 @@ class Transport(pygame.sprite.Sprite):
             offx += 0.01
 
 
+    # Visualize the players path by drawing the connection between each node in the path
+    def drawPath(self):
+        if len(self.path) <= 0:
+            return
+
+        start = self.path[0]
+        scale = self.game.renderer.getScale()
+        thickness = 3
+
+        for previous, current in zip(self.path, self.path[1:]):
+            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
+            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
+
+            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, int(thickness * scale))
+            
+        # Connection from player to the first node in the path
+        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
+        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
+        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
+
+
     def __render(self):
         self.dirty = False
 
@@ -239,12 +271,19 @@ class Transport(pygame.sprite.Sprite):
         if self.timer > 0:
             #draw the time indicator
             self.drawTimer()
+        
+        if self.clickManager.getTransport() == self:
+            self.drawPath()
 
 
     def events(self):
         mx, my = pygame.mouse.get_pos()
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
+
+
+        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            self.clickManager.setTransport(None)
 
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
@@ -272,7 +311,12 @@ class Transport(pygame.sprite.Sprite):
             # Reset velocity to prevent infinate movement
             self.vel = vec(0, 0)
 
-            if len(self.path) > 0:
+            print(self.direction)
+            # print(self.moving)
+            # print(self.clickManager.transport, self.clickManager.node)
+
+            # if the path is set follow it, only if the transport is not stopped at a stop
+            if len(self.path) > 0 and self.moving:
                 path = self.path[0]
 
                 dxy = (path.pos - path.offset) - self.pos + self.offset
@@ -296,14 +340,19 @@ class Transport(pygame.sprite.Sprite):
                 else:
                     # set the current connection to be one of the paths connections (just pick a random one)
                     if len(self.path) > 1:
-                        connections = path.getConnections()
-                        connection = random.randint(0, len(connections) - 1)
-                        self.currentConnection = connections[connection]
-                        self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
+                        fromNode = path.getConnections()[0].getFrom().getNumber()
+                        toNode = self.path[1].getNumber()
 
+                        for connection in path.getConnections():
+                            if connection.getFrom().getNumber() == fromNode and connection.getTo().getNumber() == toNode:
+                                self.currentConnection = connection
+                                break
+
+                        self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
                         self.currentNode.removeTransport(self)
                         self.currentNode = self.currentConnection.getFrom()
                         self.currentNode.addTransport(self)
+                   
 
                     self.path.remove(path)
 

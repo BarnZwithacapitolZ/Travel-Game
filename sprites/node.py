@@ -144,6 +144,13 @@ class Node(pygame.sprite.Sprite):
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
+        # click event; setting the node for the transport
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.transportClickManager.getTransport() is not None:
+            
+            self.transportClickManager.setNode(self)
+
+            self.game.clickManager.setClicked(False)
+
 
         # Click event; setting the node for the person
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.personClickManager.getPerson() is not None:
@@ -157,7 +164,18 @@ class Node(pygame.sprite.Sprite):
                 self.personClickManager.setNode(self)
                 self.game.clickManager.setClicked(False)
 
-        # Hover over event
+
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.transportClickManager.getTransport() is not None:
+            self.mouseOver = True
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+
+            # for connection in self.connections:
+            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+        
+
+
+
+        # Hover over event; for person
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.personClickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
@@ -172,9 +190,6 @@ class Node(pygame.sprite.Sprite):
             # print(self.number)
             # print(self.people)
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
-        
         # Hover out event
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False

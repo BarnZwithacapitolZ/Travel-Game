@@ -268,17 +268,47 @@ class TransportClickManager(ClickManager):
         self.node = None
         self.transport = None
 
+    
+    def getTransport(self):
+        return self.transport
+
 
     def setNode(self, node):
         self.node = node
+        self.moveTransport()
 
 
     def setTransport(self, transport):
         self.transport = transport
+        self.moveTransport()
+
+
+    def pathFinding(self):
+        A = self.transport.getCurrentNode()
+        B = self.node
+        path = []
+
+        path = self.aStarPathFinding(A, B)
+        return path
+
 
 
     def moveTransport(self):
-        pass
+        # node is set but transport isnt
+        if self.node and self.transport is None:
+            self.node = None
+
+        if self.node is not None and self.transport is not None:
+            # only set the path if the bus is moving
+            path = self.pathFinding()
+
+            self.transport.clearPath(path)
+
+            for node in path:
+                self.transport.addToPath(node)
+
+            self.transport = None
+            self.node = None
 
 
 

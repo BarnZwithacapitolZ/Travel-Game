@@ -66,13 +66,12 @@ class Layer(pygame.sprite.Sprite):
 
     # Add a person to the layer
     def addPerson(self, destinations = None):
-        # No nodes in the layer to add the person to
-        if len(self.nodes) <= 0:
+        # No nodes in the layer to add the person to, or no entrances for person to come from
+        if len(self.nodes) <= 0 or len(self.grid.getEntrances()) <= 0:
             return 
 
         if destinations == None:
             destinations = self.grid.getDestinations() 
-
 
         # Add the person to a random node on the layer
         node = random.randint(0, len(self.grid.getEntrances()) - 1)
