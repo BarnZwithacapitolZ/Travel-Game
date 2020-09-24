@@ -309,16 +309,14 @@ class GridManager:
                 if connection.getFrom().getNumber() == transport["location"]:
                     # If the connection is the same as the direction, or its an end node (so theres only one direction)
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager())
+                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
                         self.transports.append(t)
-                        # t.addToPath(connection.getTo())
-                        # t.addToPath(connection.getTo().getConnections()[0].getTo())
                         break
 
 
     # Add a transport to the map within the map editor
     def addTransport(self, connectionType, connection, transport, running = True):
-        t = transport(self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager())
+        t = transport(self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
         self.transports.append(t)
 
 

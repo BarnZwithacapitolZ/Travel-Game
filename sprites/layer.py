@@ -80,7 +80,7 @@ class Layer(pygame.sprite.Sprite):
         peopleTypes = [Manager, Commuter]
         person = random.randint(0, len(peopleTypes) - 1)
 
-        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager())
+        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
         p.setDestination(destinations)
 
         # Put the player at a position outside of the map

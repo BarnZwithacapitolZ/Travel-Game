@@ -25,11 +25,12 @@ class Person(pygame.sprite.Sprite):
         FLAG = 6
         
 
-    def __init__(self, renderer, groups, currentNode, clickManager):
+    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
         self.groups = groups
         super().__init__(self.groups)
         self.renderer = renderer
         self.clickManager = clickManager
+        self.transportClickManager = transportClickManager
         self.game = self.renderer.game
         self.width = 20
         self.height = 20
@@ -53,12 +54,13 @@ class Person(pygame.sprite.Sprite):
         self.speed = 32
         self.path = []
 
+        self.travellingOn = None
+
         self.status = Person.Status.UNASSIGNED
 
         self.dirty = True
 
-        self.images = ["person", "personClicked"]
-        self.currentImage = 0
+        self.imageName = "person"
 
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
@@ -117,6 +119,14 @@ class Person(pygame.sprite.Sprite):
         return self.budget
 
 
+    def getDestination(self):
+        return self.destination
+
+
+    def getTravellingOn(self):
+        return self.travellingOn
+
+
     #### Setters ####
 
     # Set the persons status
@@ -129,15 +139,13 @@ class Person(pygame.sprite.Sprite):
         self.currentNode = node
 
 
-    # Set the current image of the person and change to that image
-    def setCurrentImage(self, currentImage):
-        self.currentImage = currentImage
-        self.dirty = True # Redraw the image to the new image
-
-
     def setPosition(self, pos):
         self.pos = pos
         self.dirty = True
+
+
+    def setTravellingOn(self, travellingOn):
+        self.travellingOn = travellingOn
 
 
     def setDestination(self, destinations = []):
@@ -172,6 +180,11 @@ class Person(pygame.sprite.Sprite):
             del newPath[0]
 
         self.path = []
+
+
+    def complete(self):
+        self.renderer.addToCompleted()
+        self.kill()
 
 
     # Switch the person and their status indicator from one layer to a new layer
@@ -218,7 +231,7 @@ class Person(pygame.sprite.Sprite):
         scale = self.game.renderer.getScale()
         thickness = 4
 
-        start = (self.pos - self.offset) + vec(5, -10)
+        start = (self.pos - self.offset) + vec(7, -10)
         middle = (self.pos + vec(30, -40)) 
         end = middle + vec(30, 0)
 
@@ -249,10 +262,20 @@ class Person(pygame.sprite.Sprite):
         # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
 
 
+    def drawOutline(self):
+        scale = self.game.renderer.getScale()
+
+        offx = 0.01
+        for x in range(6):
+            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x) * scale, (self.pos.y) * scale, (self.width) * scale, (self.height) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
+            
+            offx += 0.02
+
+
     def __render(self):
         self.dirty = False
 
-        self.image = self.game.imageLoader.getImage(self.images[self.currentImage])
+        self.image = self.game.imageLoader.getImage(self.imageName)
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
                                                             int(self.height * self.game.renderer.getScale())))
         self.rect = self.image.get_rect()
@@ -271,6 +294,7 @@ class Person(pygame.sprite.Sprite):
             self.drawPath()
             self.drawDestination()
             self.drawTimerTime()
+            self.game.renderer.addSurface(None, None, self.drawOutline)
             self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
 
@@ -280,16 +304,22 @@ class Person(pygame.sprite.Sprite):
         mx, my = pygame.mouse.get_pos()
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
+        
 
         # If the mouse is clicked, but not on a person, unset the person from the clickmanager (no one clicked)
         # Unlick event
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             self.clickManager.setPerson(None)
 
+
         # Click event
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             if self.currentNode.getMouseOver():
                 return
+
+            # Click off the transport (if selected)
+            if self.transportClickManager.getTransport() is not None:
+                self.transportClickManager.setTransport(None)
                 
             self.clickManager.setPerson(self)
 
@@ -313,20 +343,26 @@ class Person(pygame.sprite.Sprite):
 
             self.game.clickManager.setClicked(False)
             
-        # If the player is clicked on, dont show hover effect
         # Hover over event
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getPerson() != self:
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
+            # hover over a node when person is hovered over, unset the hover on the node
             if self.currentNode.getMouseOver():
-                return
+                self.currentNode.setMouseOver(False)
+
+            # hover over a transport when person is hovered over, unset the hover on the transport
+            for transport in self.currentNode.getTransports():
+                if transport.getMouseOver():
+                    transport.setMouseOver(False)
+
+            if self.travellingOn is not None:
+                self.travellingOn.setMouseOver(False)
 
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True
         
-        # If the player is clicked on, dont show hover effect
         # Hover out event
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getPerson() != self:
+        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
-            self.currentImage = 0
             self.dirty = True
 
 
@@ -344,6 +380,9 @@ class Person(pygame.sprite.Sprite):
                 
             if self.timer <= 0:
                 self.kill()
+
+            if self.currentNode.getNumber() == self.destination.getNumber():
+                self.complete()
 
 
             if len(self.path) > 0:
@@ -376,20 +415,20 @@ class Person(pygame.sprite.Sprite):
 
 
 class Manager(Person):
-    def __init__(self, renderer, groups, currentNode, clickManager):
-        super().__init__(renderer, groups, currentNode,clickManager)
+    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
+        super().__init__(renderer, groups, currentNode,clickManager, transportClickManager)
         self.possibleDestinations = (NODE.Airport, NODE.Office)
         self.budget = 40
 
-        self.images = ["manager", "managerClicked"]
+        self.imageName = "manager"
 
 
     # Office, airport
     # has a very high budget so can afford taxis etc.
 
 class Commuter(Person):
-    def __init__(self, renderer, groups, currentNode, clickManager):
-        super().__init__(renderer, groups, currentNode, clickManager)
+    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
+        super().__init__(renderer, groups, currentNode, clickManager, transportClickManager)
         self.possibleDestinations = (NODE.Office)
         self.budget = 12
 

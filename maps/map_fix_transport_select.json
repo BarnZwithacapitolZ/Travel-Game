@@ -1,0 +1,1 @@
+{"mapName": "fix transport select", "deletable": true, "saved": true, "connections": {"layer 1": [[42, 52], [52, 62], [62, 72]]}, "transport": {"layer 1": [{"location": 62, "type": "bus"}]}, "stops": {"layer 1": [{"location": 42, "type": "bus"}]}, "destinations": {}, "entrances": {}}

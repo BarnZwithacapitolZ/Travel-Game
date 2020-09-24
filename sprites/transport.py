@@ -15,7 +15,7 @@ vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
         self.groups = groups
         super().__init__(self.groups)
         
@@ -30,7 +30,7 @@ class Transport(pygame.sprite.Sprite):
         self.vel = vec(0, 0)
         self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
-        self.speed = float(decimal.Decimal(random.randrange(40, 50)))
+        self.speed = float(decimal.Decimal(random.randrange(50, 60)))
         self.direction = direction #0 forwards, 1 backwards
         
         self.mouseOver = False
@@ -42,6 +42,7 @@ class Transport(pygame.sprite.Sprite):
         self.timerLength = 300
 
         self.clickManager = clickManager
+        self.personClickManager = personClickManager
 
         #people travelling in the transport
         self.people = []
@@ -68,6 +69,10 @@ class Transport(pygame.sprite.Sprite):
         return self.currentNode
 
 
+    def getMouseOver(self):
+        return self.mouseOver
+
+
     #### Setters ####
 
     def setSpeed(self, speed):
@@ -78,6 +83,10 @@ class Transport(pygame.sprite.Sprite):
 
     def setMoving(self, moving):
         self.moving = moving
+
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
+        self.dirty = True
 
 
     # Set the connection that the transport will follow next
@@ -153,24 +162,23 @@ class Transport(pygame.sprite.Sprite):
 
 
     def clearPath(self, newPath):
+        if len(newPath) == 1:
+            connections = self.currentConnection.getTo().getConnections()
+            for connection in connections:
+                if connection.getFrom().getNumber() == self.currentConnection.getTo().getNumber() and connection.getTo().getNumber() == newPath[0].getNumber():
+                    self.currentConnection = connection
+                    break
+            
+            self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
+            self.currentNode.removeTransport(self)
+            self.currentNode = self.currentConnection.getFrom()
+            self.currentNode.addTransport(self)
+
         if len(self.path) <= 0 or len(newPath) <= 0:
             # if the node the transport is currently heading towards is in the new path, then we dont need the first node 
             if self.currentConnection.getTo() in newPath:
                 del newPath[0]  
-            # Heading in the opposite direction
-            else:
-                if len(newPath) == 1:
-                    connections = self.currentConnection.getTo().getConnections()
-                    for connection in connections:
-                        if connection.getFrom().getNumber() == self.currentConnection.getTo().getNumber() and connection.getTo().getNumber() == newPath[0].getNumber():
-                            self.currentConnection = connection
-                            break
-                    
-                    self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
-                    self.currentNode.removeTransport(self)
-                    self.currentNode = self.currentConnection.getFrom()
-                    self.currentNode.addTransport(self)
-
+                
             return
 
         if self.path[0] in newPath:
@@ -204,7 +212,7 @@ class Transport(pygame.sprite.Sprite):
                 self.addPerson(person)
                 self.currentNode.removePerson(person)
                 person.setStatus(PERSON.Person.Status.MOVING)
-
+                person.setTravellingOn(self)
                 # Make the person unclicked?
                 # self.game.clickManager.setPerson(None)
 
@@ -220,6 +228,7 @@ class Transport(pygame.sprite.Sprite):
                 self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
                 person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
+                person.setTravellingOn(None)
 
                 # Position the person offset to the node
                 person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
@@ -236,6 +245,11 @@ class Transport(pygame.sprite.Sprite):
             person.pos = self.pos + person.offset
             person.rect.topleft = person.pos * self.game.renderer.getScale()
             person.moveStatusIndicator()
+
+            # Check if the person has reached their destination and if they have remove
+            if person.getDestination().getNumber() == self.currentNode.getNumber():
+                person.complete()    
+                self.removePerson(person)            
 
 
     # Draw how long is left at each stop 
@@ -271,6 +285,16 @@ class Transport(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
+    def drawOutline(self):
+        scale = self.game.renderer.getScale()
+
+        offx = 0.01
+        for x in range(6):
+            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 2) * scale, (self.pos.y - 2) * scale, (self.width + 4) * scale, (self.height + 4) * scale), math.pi / 2 + offx, math.pi / 2, int(4 * scale))
+            
+            offx += 0.02
+
+
     def __render(self):
         self.dirty = False
 
@@ -292,6 +316,7 @@ class Transport(pygame.sprite.Sprite):
         
         if self.clickManager.getTransport() == self:
             self.drawPath()
+            self.game.renderer.addSurface(None, None, self.drawOutline)
 
 
     def events(self):
@@ -303,14 +328,30 @@ class Transport(pygame.sprite.Sprite):
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             self.clickManager.setTransport(None)
 
-
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            for person in self.currentNode.getPeople():
+                if person.getMouseOver():
+                    return
+
+            # Click off the person (if selected)
+            if self.personClickManager.getPerson() is not None:
+                self.personClickManager.setPerson(None)
+
             self.clickManager.setTransport(self)
 
             self.game.clickManager.setClicked(False)
 
         # Hover over event
         if self.rect.collidepoint((mx, my)) and not self.mouseOver:
+            # hover over a node when transport is hovered over, unset the hover on the node
+            if self.currentNode.getMouseOver():
+                self.currentNode.setMouseOver(False)
+
+            for person in self.currentNode.getPeople() + self.people:
+                if person.getMouseOver():
+                    return
+            
+
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True 
 
@@ -328,7 +369,6 @@ class Transport(pygame.sprite.Sprite):
             self.vel = vec(0, 0)
 
             # print(self.direction)
-            # print(self.moving)
             # print(self.clickManager.transport, self.clickManager.node)
             # print(self.currentNode.getNumber())
 
@@ -343,8 +383,6 @@ class Transport(pygame.sprite.Sprite):
                     # if its the last node in the path, slow down if the last node is a stop
                     if len(self.path) <= 1: 
                         # print(self.currentConnection.getTo().getNumber())
-                        # Slow down when reaching a stop
-                        # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
                         if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
                             self.vel = (dxy * (self.speed / 10)) * self.game.dt
                         else:
@@ -376,7 +414,6 @@ class Transport(pygame.sprite.Sprite):
                 self.pos += self.vel
                 self.rect.topleft = self.pos * self.game.renderer.getScale()
 
-
             else:
                 dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
                 dis = dxy.length()
@@ -406,8 +443,8 @@ class Transport(pygame.sprite.Sprite):
 
 
 class Taxi(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
 
         self.imageName = "taxi"
         self.stopType = NODE.Node
@@ -522,20 +559,20 @@ class Taxi(Transport):
 
 
 class Bus(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
         self.imageName = "bus"
         self.stopType = NODE.BusStop
 
 
 
 class Tram(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
         self.imageName = "tram"
         self.stopType = NODE.TramStop
 
 
 class Metro(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager)
+    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)

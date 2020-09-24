@@ -35,10 +35,12 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played 
         self.timer = 0
-        self.timeStep = 12.5
+        self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.timeSetMet = False
 
         self.setDefaultMap()
+
+        self.completed = 0
 
 
     def setDefaultMap(self):
@@ -59,6 +61,11 @@ class SpriteRenderer():
         self.hud.main() if self.rendering else self.hud.close()
 
 
+    def setCompleted(self, completed):
+        self.completed = completed
+        self.hud.setCompletedText(str(self.completed))
+
+
     def getHud(self):
         return self.hud
 
@@ -77,6 +84,13 @@ class SpriteRenderer():
     def getLayer(self):
         return self.currentLayer
 
+    def getCompleted(self):
+        return self.completed
+
+    def addToCompleted(self):
+        self.completed += 1
+        print(self.completed)
+        self.hud.setCompletedText(str(self.completed))
 
     def clearLevel(self):
         self.timer = 0
@@ -93,6 +107,7 @@ class SpriteRenderer():
 
     def createLevel(self, level, debug = False):
         self.clearLevel()
+        self.setCompleted(0) 
 
         if debug: 
             self.hud = PreviewHud(self.game)
@@ -126,7 +141,6 @@ class SpriteRenderer():
         layer2Destinations =  self.gridLayer2.getGrid().getDestinations() 
         layer3Destinations =  self.gridLayer3.getGrid().getDestinations() 
         self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
-
 
 
     def getGridLayer(self, connectionType):

@@ -316,6 +316,10 @@ class GameHudLayout(Menu):
     def updateLayerText(self):
         return
 
+    @abc.abstractmethod
+    def setCompletedText(self, text):
+        return
+
     
 
 class GameHud(GameHudLayout):
@@ -330,7 +334,8 @@ class GameHud(GameHudLayout):
         dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
         home = Image(self, "home", Color("white"), (50, 50), (20, 500))
         layers = Image(self, "layers", Color("white"), (50, 50), (20, 440))
-        
+        completed = Image(self, "walking", Color("white"), (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))   
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -340,13 +345,18 @@ class GameHud(GameHudLayout):
         home.addEvent(hideHome, 'onMouseOut')
         home.addEvent(goHome, 'onMouseClick')
 
-
         # self.add(topbar)
-        self.add(dropdown)
+        # self.add(dropdown)
         self.add(home)
         self.add(layers)
+        self.add(completed)
+        self.add(self.completedText)
 
 
+    def setCompletedText(self, text):
+        if hasattr(self, 'completedText'):
+            self.completedText.setText(text)
+            self.completedText.dirty = True
 
 
 class EditorHud(GameHudLayout):
@@ -775,6 +785,9 @@ class PreviewHud(GameHudLayout):
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         stop = Label(self, "Stop", 25, Color("white"), (20, 10))
+        completed = Image(self, "walkingWhite", Color("white"), (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
+
 
         stop.addEvent(hoverGreen, 'onMouseOver')
         stop.addEvent(hoverWhite, 'onMouseOut')
@@ -782,4 +795,12 @@ class PreviewHud(GameHudLayout):
 
         self.add(topbar)
         self.add(stop)
+        self.add(completed)
+        self.add(self.completedText)
+
+
+    def setCompletedText(self, text):
+        if hasattr(self, 'completedText'):
+            self.completedText.setText(text)
+            self.completedText.dirty = True
         

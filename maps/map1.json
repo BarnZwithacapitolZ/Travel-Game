@@ -121,6 +121,10 @@
             {
                 "location": 80,
                 "type": "bus"
+            },
+            {
+                "location": 79,
+                "type": "bus"
             }
         ], 
         "layer 3": [

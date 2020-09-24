@@ -91,6 +91,11 @@ class Node(pygame.sprite.Sprite):
     def setTransports(self, transports = []):
         self.transports = transports
 
+    
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
+        self.dirty = True
+
 
     # Add a transport to the node
     def addTransport(self, transport):
@@ -146,9 +151,7 @@ class Node(pygame.sprite.Sprite):
 
         # click event; setting the node for the transport
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.transportClickManager.getTransport() is not None:
-            
             self.transportClickManager.setNode(self)
-
             self.game.clickManager.setClicked(False)
 
 
@@ -156,15 +159,24 @@ class Node(pygame.sprite.Sprite):
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.personClickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
-                if person.getMouseOver() and person != self.personClickManager.getPerson():
+                if person.getMouseOver():
                     return
+
+            if len(self.transports) > 0:
+                # check the route returned is []
+                # If the route is impossible press the transport, otherwise press the node
+                if len(self.personClickManager.pathFinding(self.personClickManager.getPerson().getCurrentNode(), self)) <= 0:
+                    #prioratize pressing the transport instead of a node (if the transport is on a node)
+                    for transport in self.transports:
+                        if transport.getMouseOver():
+                            return
                     
             # If the player is moving on a transport, dont allow them to select a node
             if self.personClickManager.getPerson().getStatus() != PERSON.Person.Status.MOVING and self.personClickManager.getPerson().getStatus() != PERSON.Person.Status.DEPARTING:
                 self.personClickManager.setNode(self)
                 self.game.clickManager.setClicked(False)
-
-
+    
+        # Hover over event; for transport
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.transportClickManager.getTransport() is not None:
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
@@ -173,13 +185,11 @@ class Node(pygame.sprite.Sprite):
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
         
 
-
-
         # Hover over event; for person
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.personClickManager.getPerson() is not None:
             # Prevent the node and the player from being pressed at the same time
             for person in self.people:
-                if person.getMouseOver() and person != self.personClickManager.getPerson():
+                if person.getMouseOver():
                     return
 
             # If the player is moving on a transport, dont show hovering over a node 

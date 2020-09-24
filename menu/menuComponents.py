@@ -114,7 +114,6 @@ class Label(MenuComponent):
     def setText(self, text):
         self.text = text
 
-
     def setBold(self, bold):
         self.bold = bold
 

@@ -110,7 +110,7 @@ class ClickManager:
                 # Add the child to the open list
                 openList.append(child)
 
-        print("Route is impossible")
+        print("route is impossible")
         return [] # Return the empty path if route is impossible
 
 
@@ -152,13 +152,8 @@ class PersonClickManager(ClickManager):
     # Set the current selected person
     def setPerson(self, person):
         if self.person != person: # New person is different from current person
-            # Remove selected image from current person
-            if self.person is not None:
-                self.person.setCurrentImage(0)
-
             # Set selected image of new person
             if person is not None:
-                person.setCurrentImage(1)
                 self.personClicked = True
             else:
                 self.personClicked = False
@@ -174,9 +169,9 @@ class PersonClickManager(ClickManager):
                 Node B
         output: List path (empty if no path is found)
     '''
-    def pathFinding(self):
-        A = self.person.getCurrentNode() # Start (where we come from)
-        B = self.node # End (Where we are going)
+    def pathFinding(self, A = None, B = None):
+        A = self.person.getCurrentNode() if A is None else A # Start (where we come from)
+        B = self.node if B is None else B # End (Where we are going)
         finalNode = None
         path = []
 
@@ -253,7 +248,6 @@ class PersonClickManager(ClickManager):
                 for node in path:
                     self.person.addToPath(node)
 
-                self.person.setCurrentImage(0)
                 self.personClicked = False
 
                 #after the click is managed, clear the player and the node to allow for another click management
@@ -287,6 +281,9 @@ class TransportClickManager(ClickManager):
         A = self.transport.getCurrentNode()
         B = self.node
         path = []
+
+        if A == B and not self.transport.getMoving():
+            return path
 
         path = self.aStarPathFinding(A, B)
         return path
