@@ -159,6 +159,11 @@ class Person(pygame.sprite.Sprite):
         self.destination = possibleDestinations[destination]
 
 
+    def remove(self):
+        self.kill()
+        self.statusIndicator.kill()
+
+
     # Add a node to the persons path
     def addToPath(self, node):
         self.path.append(node)
@@ -184,7 +189,7 @@ class Person(pygame.sprite.Sprite):
 
     def complete(self):
         self.renderer.addToCompleted()
-        self.kill()
+        self.remove()
 
 
     # Switch the person and their status indicator from one layer to a new layer
@@ -379,7 +384,7 @@ class Person(pygame.sprite.Sprite):
                 self.step = -self.step
                 
             if self.timer <= 0:
-                self.kill()
+                self.remove()
 
             if self.currentNode.getNumber() == self.destination.getNumber():
                 self.complete()
@@ -454,10 +459,6 @@ class StatusIndicator(pygame.sprite.Sprite):
 
         self.images = [None, "walking", "waiting", "boarding", None, "departing", "flag"]
         self.currentState = self.currentPerson.getStatusValue()
-
-
-    def die(self):
-        self.kill()
 
 
     def __render(self):
