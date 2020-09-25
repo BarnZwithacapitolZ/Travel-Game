@@ -163,6 +163,10 @@ class Node(pygame.sprite.Sprite):
                     return
 
             if len(self.transports) > 0:
+                # if theres a person and a transport on the same node, press the transport
+                if len(self.people) > 0:
+                    return
+
                 # check the route returned is []
                 # If the route is impossible press the transport, otherwise press the node
                 if len(self.personClickManager.pathFinding(self.personClickManager.getPerson().getCurrentNode(), self)) <= 0:

@@ -190,7 +190,9 @@ class OptionMenu(Menu):
         self.game.mapEditor.getHud().setOpen(True)
 
         for component in self.components:
-            component.addAnimation(transitionLeftUnpause, 'onLoad')
+            # Can't close until previous animations stopped
+            if (transitionRight, 'onLoad') not in component.getAnimations() and (transitionRightBackground, 'onLoad') not in component.getAnimations():
+                component.addAnimation(transitionLeftUnpause, 'onLoad')
 
 
     def main(self):
@@ -216,7 +218,6 @@ class OptionMenu(Menu):
 
         # save.addEvent(hoverOver, 'onMouseOver')
         # save.addEvent(hoverOut, 'onMouseOut')
-        
 
         mainMenu.addEvent(showMainMenu, 'onMouseClick')
         mainMenu.addEvent(hoverOver, 'onMouseOver')
@@ -225,8 +226,6 @@ class OptionMenu(Menu):
         close.addEvent(unpause, 'onMouseClick')
         close.addEvent(hoverOver, 'onMouseOver')
         close.addEvent(hoverOut, 'onMouseOut')
-
-
 
         sidebar.addAnimation(transitionRightBackground, 'onLoad')
         animateComponents = [paused, options, new, save, mainMenu, close]
@@ -242,9 +241,6 @@ class OptionMenu(Menu):
         self.add(mainMenu)
         self.add(close)
         
-
-
-
 
     def options(self):
         self.open = True
@@ -262,8 +258,6 @@ class OptionMenu(Menu):
         back.addEvent(showMain, 'onMouseClick')
         back.addEvent(hoverOver, 'onMouseOver')
         back.addEvent(hoverOut, 'onMouseOut')
-
-
 
         self.add(sidebar)
         self.add(graphics)
@@ -283,23 +277,18 @@ class OptionMenu(Menu):
         fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, BLACK, (100, 260))
         back = Label(self, "Back", 50,  BLACK, (100, 380))
 
-
-
         antiAlias.addEvent(toggleAlias, 'onMouseClick')
         antiAlias.addEvent(hoverOver, 'onMouseOver')
         antiAlias.addEvent(hoverOut, 'onMouseOut')
-
 
         fullscreen.addEvent(toggleFullscreen, 'onMouseClick')
         fullscreen.addEvent(hoverOver, 'onMouseOver')
         fullscreen.addEvent(hoverOut, 'onMouseOut')
 
-
         back.addEvent(showOptions, 'onMouseClick')
         back.addEvent(hoverOver, 'onMouseOver')
         back.addEvent(hoverOut, 'onMouseOut')
         
-
         self.add(sidebar)
         self.add(antiAlias)
         self.add(fullscreen)
@@ -356,6 +345,8 @@ class GameHud(GameHudLayout):
     def setCompletedText(self, text):
         if hasattr(self, 'completedText'):
             self.completedText.setText(text)
+            self.completedText.setColor(YELLOW)
+            self.completedText.addAnimation(successAnimationUp, 'onLoad')
             self.completedText.dirty = True
 
 

@@ -93,7 +93,7 @@ class Game:
                 self.textHandler.events(e)
                 self.textHandler.setPressed(True)
 
-                if e.key == pygame.K_ESCAPE and not self.mainMenu.open:                                        
+                if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
                     if not self.paused: self.optionMenu.main()
                     else: self.optionMenu.closeTransition()
 

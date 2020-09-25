@@ -294,13 +294,15 @@ class Person(pygame.sprite.Sprite):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
 
+        if self.mouseOver or self.clickManager.getPerson() == self:
+            self.drawTimerTime()
+            self.game.renderer.addSurface(None, None, self.drawTimerOutline)
+
          # Visualize the players path
         if self.clickManager.getPerson() == self:
             self.drawPath()
             self.drawDestination()
-            self.drawTimerTime()
             self.game.renderer.addSurface(None, None, self.drawOutline)
-            self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
 
     def events(self):
@@ -434,7 +436,7 @@ class Manager(Person):
 class Commuter(Person):
     def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
         super().__init__(renderer, groups, currentNode, clickManager, transportClickManager)
-        self.possibleDestinations = (NODE.Office)
+        self.possibleDestinations = (NODE.Airport, NODE.Office)
         self.budget = 12
 
     # Office, home?
