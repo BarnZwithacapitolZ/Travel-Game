@@ -19,7 +19,7 @@ class Connection:
         self.fromNode = fromNode
         self.toNode = toNode
         self.direction = direction #0 forwards, 1 backwards
-        self.sideColor = TRUEBLACK
+        self.sideColor = BLACK
 
         self.setColor()
         self.setLength()
