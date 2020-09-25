@@ -24,10 +24,13 @@ def hoverBlack(obj, menu):
 
 
 def hoverOver(obj, menu):
-    obj.addAnimation(hoverOverAnimation, 'onMouseOver')
+    if (hoverOverAnimation, 'onLoad') not in obj.getAnimations():
+        obj.addAnimation(hoverOverAnimation, 'onMouseOver')
     obj.setColor(Color("white"))
 
 def hoverOut(obj, menu):
+    if (hoverOverAnimation, 'onLoad') in obj.getAnimations():
+        obj.removeAnimation(hoverOverAnimation, 'onMouseOver')
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
 

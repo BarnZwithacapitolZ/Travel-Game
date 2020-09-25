@@ -29,6 +29,7 @@ ASSETSFOLDER = os.path.join(GAMEFOLDER, 'assets')
 MAPSFOLDER = os.path.join(GAMEFOLDER, 'maps')
 
 # colours
+TRUEBLACK = (0, 0, 0)
 BLACK = (65, 62, 75)
 GREEN = (0, 169, 132)
 BLUE = (0, 89, 179)

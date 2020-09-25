@@ -93,6 +93,12 @@ class MenuComponent:
     def addAnimation(self, function, event):
         self.animations.append((function, event))
 
+    def removeAnimation(self, function, event):
+        self.animations.remove((function, event))
+
+    def getAnimations(self):
+        return self.animations
+
 
 
 class Label(MenuComponent):
@@ -107,6 +113,8 @@ class Label(MenuComponent):
         self.italic = False
         self.underline = False
 
+    def setFontSize(self, fontSize):
+        self.fontSize = fontSize
 
     def setFontName(self, fontName):
         self.fontName = fontName
