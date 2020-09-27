@@ -2,6 +2,8 @@
     "mapName": "London", 
     "deletable": false, 
     "saved": true, 
+    "width": 18,
+    "height": 10,
     "connections": {
         "layer 1": [
             [0, 11], 

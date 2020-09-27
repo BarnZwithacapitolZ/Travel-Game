@@ -2,6 +2,8 @@
     "mapName": "fun to watch", 
     "deletable": true, 
     "saved": true, 
+    "width": 18,
+    "height": 10,
     "connections": 
     {
         "layer 1": [

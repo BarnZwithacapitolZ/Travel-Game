@@ -38,6 +38,9 @@ class SpriteRenderer():
         self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.timeSetMet = False
 
+        self.dt = 1 # control the speed of whats on screen
+        self.fixedScale = 1 # control the size of whats on the screen
+
         self.setDefaultMap()
 
         self.completed = 0
@@ -48,6 +51,8 @@ class SpriteRenderer():
             "mapName": "", 
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before 
+            "width": 18,
+            "height": 10,
             "connections": {}, 
             "transport": {}, 
             "stops": {},
@@ -60,11 +65,22 @@ class SpriteRenderer():
         self.rendering = rendering
         self.hud.main() if self.rendering else self.hud.close()
 
-
     def setCompleted(self, completed):
         self.completed = completed
         self.hud.setCompletedText(str(self.completed))
 
+    def setDt(self, dt):
+        self.dt = dt
+
+    def setFixedScale(self, fixedScale):
+        self.fixedScale = fixedScale
+
+
+    def getDt(self):
+        return self.dt
+
+    def getFixedScale(self):
+        return self.fixedScale
 
     def getHud(self):
         return self.hud
@@ -89,7 +105,7 @@ class SpriteRenderer():
 
     def addToCompleted(self):
         self.completed += 1
-        print(self.completed)
+        # self.timeStep -= 0.5
         self.hud.setCompletedText(str(self.completed))
 
     def clearLevel(self):

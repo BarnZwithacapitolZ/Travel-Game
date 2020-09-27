@@ -19,7 +19,8 @@ class Renderer:
         self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE)
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
-        self.scale = 1
+        self.scale = 1 # control the scale of whats on screen
+        self.fixedScale = 1 # used to control the fixed scale, i.e to make things bigger on screen seperate from screen size
         self.surfaces = []
         self.dirtySurfaces = []
 
@@ -51,8 +52,16 @@ class Renderer:
         self.height = height
 
 
+    def setFixedScale(self, fixedScale):
+        self.fixedScale = fixedScale
+
+
     def getScale(self):
         return self.scale
+
+
+    def getFixedScale(self):
+        return self.fixedScale
 
 
     def getDifference(self):
@@ -78,7 +87,7 @@ class Renderer:
         if size[0] < config["graphics"]["minDisplayWidth"]: size[0] = config["graphics"]["minDisplayWidth"]
         if size[1] < config["graphics"]['minDisplayHeight']: size[1] = config["graphics"]["minDisplayHeight"]
 
-        self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1)
+        self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1) * self.fixedScale
 
         self.width = (config["graphics"]["displayWidth"] * self.scale)
         self.height = (config["graphics"]["displayHeight"] * self.scale)
@@ -94,7 +103,6 @@ class Renderer:
         self.gameDisplay = pygame.Surface((self.width, self.height))  
 
 
-
     # on tick function
     def render(self):
         for surface in self.surfaces:    
@@ -108,7 +116,8 @@ class Renderer:
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.scale(self.gameDisplay, (int(self.windowWidth), int(self.windowHeight))), (0, 0))
 
-        pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
+        # pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
+        pygame.display.update()
 
         self.surfaces = []
         self.dirtySurfaces = []

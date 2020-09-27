@@ -26,16 +26,20 @@ class GridManager:
         self.destinations = []
         self.entrances = []
 
-        self.nodePositions = GridManager.setNodePositions(spacing[0], spacing[1])
-
-        # Entry nodes
-        self.entryTopPositions = GridManager.setNodePositions(1.5, -0.5, 18, 1)
-        self.entryBottomPositions = GridManager.setNodePositions(1.5, 11.5, 18, 1)
-
+        self.width = 18
+        self.height = 10
 
         if self.level is not None:
             self.loadMap()
 
+        self.spriteRenderer.setFixedScale(min(18 / self.width, 10 / self.height))
+
+        self.nodePositions = self.setNodePositions(spacing[0], spacing[1], self.width, self.height)
+
+        # Entry nodes
+        self.entryTopPositions = self.setNodePositions(1.5, -0.5, 18, 1)
+        self.entryBottomPositions = self.setNodePositions(1.5, 11.5, 18, 1)
+        
         self.transportMappings = {"metro": Metro, "bus": Bus, "tram": Tram, "taxi": Taxi}
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
@@ -97,26 +101,26 @@ class GridManager:
         return self.map
         
 
-
     #### Setters ####
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
-    @staticmethod
-    def setNodePositions(offx = 1.5, offy = 1.5, width = 18, height = 10):
+    def setNodePositions(self, offx = 1.5, offy = 1.5, width = 18, height = 10):
         # Offset on the x coordinate
         # Offset on the y coordinate
         spacing = 50 #spacing between each node
         positions = []
 
+        scale = min(self.width / 18, self.height / 10) if min(self.width / 18, self.height / 10) > 1 else 1
+
         for i in range(width):
             for x in range(height):
-                positions.append(((i + offx) * spacing, (x + offy) * spacing))
+                positions.append(((i + offx * scale) * spacing, (x + offy * scale) * spacing))
         return positions
 
 
     def addConnections(self, connectionType, A, B):
-        c1 = Connection(self.game, connectionType, A, B, Connection.Direction.FORWARDS) 
-        c2 = Connection(self.game, connectionType, B, A, Connection.Direction.BACKWARDS) 
+        c1 = Connection(self.spriteRenderer, connectionType, A, B, Connection.Direction.FORWARDS) 
+        c2 = Connection(self.spriteRenderer, connectionType, B, A, Connection.Direction.BACKWARDS) 
         self.connections.append(c1) #forwards
         self.connections.append(c2) #backwards
 
@@ -144,7 +148,6 @@ class GridManager:
         return False
 
 
-
     # Load the .json map data into a dictionary
     def loadMap(self):
         if isinstance(self.level, dict):
@@ -154,6 +157,8 @@ class GridManager:
                 self.map = json.load(f)
 
         self.levelName = self.map["mapName"] # Get the name of the map
+        self.width = self.map["width"]
+        self.height = self.map["height"]
 
 
     # Add a node to the grid if the node is not already on the grid
@@ -165,7 +170,7 @@ class GridManager:
             n = self.addDestination(n, self.destinationMappings, connectionType, connection[direction], clickManagers)
 
             if n is None: #no stop was found at this node 
-                n = Node(self.game, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+                n = Node(self.spriteRenderer, self.groups, connection[direction], connectionType, self.nodePositions[connection[direction]][0], self.nodePositions[connection[direction]][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
 
             self.nodes.append(n)
             currentNodes.append(connection[direction])
@@ -183,9 +188,9 @@ class GridManager:
             for stop in self.map["stops"][connectionType]:
                 if stop["location"] == number:
                     if len(clickManagers) <= 2:
-                        n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
+                        n = mappings[stop["type"]](self.spriteRenderer, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
                     else:
-                        n = mappings[stop["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
+                        n = mappings[stop["type"]](self.spriteRenderer, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
                     break
         return n
 
@@ -198,9 +203,9 @@ class GridManager:
             for destination in self.map["destinations"][connectionType]:
                 if destination["location"] == number:
                     if len(clickManagers) <= 2:
-                        n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
+                        n = mappings[destination["type"]](self.spriteRenderer, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1])
                     else:
-                        n = mappings[destination["type"]](self.game, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
+                        n = mappings[destination["type"]](self.spriteRenderer, self.groups, number, connectionType, x, y, clickManagers[0], clickManagers[1], clickManagers[2])
                     self.destinations.append(n)
                     break
         return n
@@ -213,7 +218,7 @@ class GridManager:
         self.nodes.remove(node)
         node.remove()
 
-        n = nodeType(self.game, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.spriteRenderer.getClickManager(), self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+        n = nodeType(self.spriteRenderer, self.groups, number, connectionType, self.nodePositions[number][0], self.nodePositions[number][1], self.spriteRenderer.getClickManager(), self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
 
         # Need to replace the connection with the new node, otherwise it cant be deleted
         for connection in self.connections:
@@ -253,7 +258,7 @@ class GridManager:
             if connectionType in self.map["entrances"]:
                 for entrance in self.map["entrances"][connectionType]:
                     index = int(entrance["location"] / 10)
-                    n = EntranceNode(self.game, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+                    n = EntranceNode(self.spriteRenderer, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
                     self.entrances.append(n)
 
                     for node in self.nodes:
@@ -270,7 +275,7 @@ class GridManager:
         
         if self.level is None:
             for number, position in enumerate(self.nodePositions):
-                n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
+                n = EditorNode(self.spriteRenderer, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
                 self.nodes.append(n)
         else:
             # Loop through all the node positions
@@ -280,7 +285,7 @@ class GridManager:
                 n = self.addDestination(n, self.editorDestinationMappings, connectionType, number, clickManagers, position[0], position[1])
 
                 if n is None:
-                    n = EditorNode(self.game, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
+                    n = EditorNode(self.spriteRenderer, self.groups, number, connectionType, position[0], position[1], clickManagers[0], clickManagers[1], clickManagers[2])
                 self.nodes.append(n)
 
             if connectionType in self.map["connections"]:
@@ -309,14 +314,14 @@ class GridManager:
                 if connection.getFrom().getNumber() == transport["location"]:
                     # If the connection is the same as the direction, or its an end node (so theres only one direction)
                     if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        t = self.transportMappings[transport["type"]](self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+                        t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
                         self.transports.append(t)
                         break
 
 
     # Add a transport to the map within the map editor
     def addTransport(self, connectionType, connection, transport, running = True):
-        t = transport(self.game, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+        t = transport(self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
         self.transports.append(t)
 
 
