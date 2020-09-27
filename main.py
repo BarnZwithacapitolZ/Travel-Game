@@ -130,7 +130,15 @@ class Game:
                     self.spriteRenderer.resize()
 
             # Make left click set the destination on the click manager instead
-            self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1:
+                    self.clickManager.setClicked(True) 
+                elif e.button == 3:
+                    self.clickManager.setRightClicked(True)
+            else:
+                self.clickManager.setClicked(False)
+                self.clickManager.setRightClicked(False)
+                    
 
     
 

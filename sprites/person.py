@@ -295,12 +295,12 @@ class Person(pygame.sprite.Sprite):
 
         if self.mouseOver or self.clickManager.getPerson() == self:
             self.drawTimerTime()
+            self.drawDestination()
             self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
          # Visualize the players path
         if self.clickManager.getPerson() == self:
             self.drawPath()
-            self.drawDestination()
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
 

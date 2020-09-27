@@ -7,6 +7,7 @@ class ClickManager:
     def __init__(self, game):
         self.game = game
         self.clicked = False
+        self.rightClicked = False
 
     #### Getters
 
@@ -15,12 +16,19 @@ class ClickManager:
         return self.clicked
 
 
+    def getRightClicked(self):
+        return self.rightClicked
+
+
     #### Setters ####
 
     # Set the mouse pressed
     def setClicked(self, clicked):
         self.clicked = clicked
 
+    
+    def setRightClicked(self, rightClicked):
+        self.rightClicked = rightClicked
 
     
     # for a given node, return the adjacent nodes
