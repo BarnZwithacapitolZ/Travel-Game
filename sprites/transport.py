@@ -15,11 +15,12 @@ vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
+    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
         self.groups = groups
         super().__init__(self.groups)
         
-        self.game = game
+        self.spriteRenderer = spriteRenderer
+        self.game = self.spriteRenderer.game
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
         self.currentNode.addTransport(self)
@@ -232,7 +233,7 @@ class Transport(pygame.sprite.Sprite):
 
                 # Position the person offset to the node
                 person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
-                person.rect.topleft = person.pos * self.game.renderer.getScale()
+                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
                 person.moveStatusIndicator()
 
 
@@ -243,7 +244,7 @@ class Transport(pygame.sprite.Sprite):
 
         for person in self.people:
             person.pos = self.pos + person.offset
-            person.rect.topleft = person.pos * self.game.renderer.getScale()
+            person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
             person.moveStatusIndicator()
 
             # Check if the person has reached their destination and if they have remove
@@ -254,7 +255,7 @@ class Transport(pygame.sprite.Sprite):
 
     # Draw how long is left at each stop 
     def drawTimer(self):
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         # Arc Indicator 
         offx = 0.01
@@ -270,7 +271,7 @@ class Transport(pygame.sprite.Sprite):
             return
 
         start = self.path[0]
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         thickness = 3
 
         for previous, current in zip(self.path, self.path[1:]):
@@ -286,7 +287,7 @@ class Transport(pygame.sprite.Sprite):
 
 
     def drawOutline(self):
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
         for x in range(6):
@@ -299,10 +300,10 @@ class Transport(pygame.sprite.Sprite):
         self.dirty = False
 
         self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
+        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 
@@ -379,12 +380,12 @@ class Transport(pygame.sprite.Sprite):
                     # if its the last node in the path, slow down if the last node is a stop
                     if len(self.path) <= 1: 
                         if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                            self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
                         else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                             
                     else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     self.movePeople()
 
@@ -407,7 +408,7 @@ class Transport(pygame.sprite.Sprite):
                     self.path.remove(path)
 
                 self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale()
+                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
             else:
                 dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
@@ -418,15 +419,15 @@ class Transport(pygame.sprite.Sprite):
                     # Change the number taken away from the length of the connection for the length of the smooth starting 
                     # Change the other number to say when the smooth starting should begin (after how many pixels)
                     if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
-                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
+                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
 
                     # Slow down when reaching a stop
                     # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
                     elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                        self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
 
                     else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                     self.movePeople()
 
                 else: #its reached the node
@@ -434,12 +435,12 @@ class Transport(pygame.sprite.Sprite):
                     self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
                 self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale()
+                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 class Taxi(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
 
         self.imageName = "taxi"
         self.stopType = NODE.Node
@@ -532,15 +533,15 @@ class Taxi(Transport):
                     if len(self.path) <= 1: 
                         if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
                             if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
-                                self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                                self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
                             else:
-                                self.vel = dxy / dis * float(self.speed) * self.game.dt
+                                self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                        
                         else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                             
                     else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     self.movePeople()
 
@@ -562,7 +563,7 @@ class Taxi(Transport):
                     self.path.remove(path)
 
                 self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale()
+                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
             else:
                 dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
@@ -572,19 +573,19 @@ class Taxi(Transport):
                     # speed up when leaving
                     if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
                         if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
-                            self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt
+                            self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
                         else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     # slow down when stopping
                     elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
                         if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
-                            self.vel = (dxy * (self.speed / 10)) * self.game.dt
+                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
                         else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                             
                     else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     self.movePeople()
 
@@ -593,25 +594,25 @@ class Taxi(Transport):
                     self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
                 
                 self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale()
+                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 
 class Bus(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
         self.imageName = "bus"
         self.stopType = NODE.BusStop
 
 
 
 class Tram(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
         self.imageName = "tram"
         self.stopType = NODE.TramStop
 
 
 class Metro(Transport):
-    def __init__(self, game, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(game, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)

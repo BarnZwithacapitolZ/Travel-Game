@@ -119,8 +119,20 @@ class Game:
             else:
                 self.textHandler.setPressed(False)
 
+            # Just for fun :) 
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 4:
+                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
+                    self.spriteRenderer.resize()
+                    
+                elif e.button == 5: 
+                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
+                    self.spriteRenderer.resize()
+
+            # Make left click set the destination on the click manager instead
             self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
 
+    
 
     def run(self):
         #main menu

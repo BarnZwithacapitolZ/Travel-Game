@@ -31,6 +31,15 @@ class MapEditor(SpriteRenderer):
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
+
+
+    def setMapSize(self, size = (18, 10)):
+        if not hasattr(self, 'levelData'):
+            return
+
+        self.levelData["width"] = size[0]
+        self.levelData["height"] = size[1]
+    
     
     
     # Override creating the level

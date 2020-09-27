@@ -13,8 +13,9 @@ class Connection:
         FORWARDS = 0
         BACKWARDS = 1
 
-    def __init__(self, game, connectionType, fromNode, toNode, direction):
-        self.game = game
+    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, direction):
+        self.spriteRenderer = spriteRenderer
+        self.game = self.spriteRenderer.game
         self.connectionType = connectionType
         self.fromNode = fromNode
         self.toNode = toNode
@@ -109,7 +110,7 @@ class Connection:
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
 
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         buffer = 1
         d1 = ((vec(mx, my) - vec(10,10) * scale) - (self.fromNode.pos - self.fromNode.offset) * scale).length()
         d2 = ((vec(mx, my) - vec(10, 10) * scale) - (self.toNode.pos - self.toNode.offset) * scale).length()

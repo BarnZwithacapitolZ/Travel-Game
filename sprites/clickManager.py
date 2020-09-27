@@ -136,6 +136,11 @@ class PersonClickManager(ClickManager):
         return self.person
 
 
+    # Return the current selected node
+    def getNode(self):
+        return self.node
+
+
     #### Setters ####
 
     # Set the person has been selected
@@ -251,7 +256,7 @@ class PersonClickManager(ClickManager):
                 self.personClicked = False
 
                 #after the click is managed, clear the player and the node to allow for another click management
-                self.person = None
+                # self.person = None
                 self.node = None
 
 
@@ -265,6 +270,10 @@ class TransportClickManager(ClickManager):
     
     def getTransport(self):
         return self.transport
+
+    
+    def getNode(self):
+        return self.node
 
 
     def setNode(self, node):
@@ -304,7 +313,7 @@ class TransportClickManager(ClickManager):
             for node in path:
                 self.transport.addToPath(node)
 
-            self.transport = None
+            # self.transport = None
             self.node = None
 
 

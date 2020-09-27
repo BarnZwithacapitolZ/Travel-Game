@@ -209,6 +209,14 @@ def loadEditorMap(obj, menu):
     clearMenu(obj, menu)
 
 
+def toggleEditDropdown(obj, menu):
+    if not menu.editDropdownOpen:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+    else:
+        clearMenu(obj, menu)
+
+
 def toggleAddDropdown(obj, menu):
     if not menu.addDropdownOpen:
         clearMenu(obj, menu)
@@ -282,6 +290,16 @@ def saveMap(obj, menu):
         closeMapEditor(obj, menu)
 
 
+def toggleEditSizeDropdown(obj, menu):
+    if not menu.editSizeDropdownOpen:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+        menu.editSizeDropdown()
+    else:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+
+
 def toggleAddStopDropdown(obj, menu):
     if not menu.addStopDropdownOpen:
         clearMenu(obj, menu)
@@ -314,6 +332,40 @@ def toggleAddDestinationDropdown(obj, menu):
         clearMenu(obj, menu)
         menu.addDropdown()
 
+
+# Setting the different map sizes
+def setSize0(obj, menu):
+    menu.game.mapEditor.setMapSize((16, 9))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+    
+
+def setSize1(obj, menu):
+    menu.game.mapEditor.setMapSize((18, 10))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+
+
+def setSize2(obj, menu):
+    menu.game.mapEditor.setMapSize((20, 11))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+
+    
+
+def setSize3(obj, menu):
+    menu.game.mapEditor.setMapSize((22, 12))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+    
 
 
 def addConnection(obj, menu):
