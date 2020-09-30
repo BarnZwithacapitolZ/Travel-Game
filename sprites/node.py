@@ -286,7 +286,6 @@ class EditorNode(Node):
 class EntranceNode(Node):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
         super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        print(self.number)
 
     # Empty draw function so its a hidden node
     def draw(self):
