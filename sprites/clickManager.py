@@ -190,6 +190,8 @@ class PersonClickManager(ClickManager):
 
         # Selected a node different from the players layer
         if self.person.getStartingConnectionType() != B.getConnectionType():
+            print("it is going here")
+
             # The start and end nodes are on different layers, diferent to the players layer 
             if A.getConnectionType() != B.getConnectionType():
                 layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
@@ -201,7 +203,7 @@ class PersonClickManager(ClickManager):
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.Stop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node
 
@@ -216,7 +218,7 @@ class PersonClickManager(ClickManager):
                         A = node
 
                     if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
+                        if isinstance(B, NODE.Stop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node                        
 

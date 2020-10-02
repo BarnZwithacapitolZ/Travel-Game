@@ -3,6 +3,7 @@ from pygame.locals import *
 from config import *
 import os
 import json
+import random
 
 
 from layer import *
@@ -138,6 +139,7 @@ class SpriteRenderer():
         self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
         self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
         self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
+        self.allGridLayers = [self.gridLayer1, self.gridLayer2, self.gridLayer3]
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
@@ -157,6 +159,9 @@ class SpriteRenderer():
         layer2Destinations =  self.gridLayer2.getGrid().getDestinations() 
         layer3Destinations =  self.gridLayer3.getGrid().getDestinations() 
         self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
+
+        # Add the first player when the game starts
+        self.getRandomLayer(self.allGridLayers).addPerson(self.allDestinations)
 
 
     def getGridLayer(self, connectionType):
@@ -198,20 +203,32 @@ class SpriteRenderer():
             self.layer4.remove(node)
 
 
+    def getRandomLayer(self, layers):
+        layer = random.randint(0, len(layers) - 1)
+        return layers[layer]
+
+
+    def addPerson(self):
+        if self.rendering and hasattr(self, 'allDestinations') and hasattr(self, 'allGridLayers'):
+            layer = random.randint(0, len(self.allGridLayers) - 1)            
+            self.getRandomLayer(self.allGridLayers).addPerson(self.allDestinations)
+
+
     def update(self):
         if self.rendering:
             self.allSprites.update()
 
             self.timer += self.game.dt
-            if int(self.timer) % self.timeStep == 0:
-                if not self.timeSetMet:
-                    # print("is this called??")
-                    self.timeSetMet = True
+            # if int(self.timer) % self.timeStep == 0:
+            #     if not self.timeSetMet:
+            #         # print("is this called??")
+            #         self.timeSetMet = True
 
-                    # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
-                    self.gridLayer2.addPerson(self.allDestinations)
-            else:
-                self.timeSetMet = False            
+            #         # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
+            #         # TODO: Want to add people to different layers (not just 2)
+            #         self.gridLayer2.addPerson(self.allDestinations)
+            # else:
+            #     self.timeSetMet = False            
 
 
     def showLayer(self, layer):

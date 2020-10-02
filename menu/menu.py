@@ -724,7 +724,8 @@ class EditorHud(GameHudLayout):
         new = Label(self, "New", 25, Color("white"), (textX, 50))
         load = Label(self, "Open", 25, Color("white"), (textX, 85))
         save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 120)) 
-        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 155))
+        # saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 155))
+        saveAs = Label(self, "Save as", 25, Color("white"), (textX, 155))
 
         # Must be already saved and be a deletable map
         delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (textX, 190))
@@ -734,13 +735,15 @@ class EditorHud(GameHudLayout):
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
         close.addEvent(closeMapEditor, 'onMouseClick')
 
+        saveAs.addEvent(hoverGreen, 'onMouseOver')
+        saveAs.addEvent(hoverWhite, 'onMouseOut')
+        saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+
         if self.game.mapEditor.getDeletable():
             save.addEvent(hoverGreen, 'onMouseOver')
             save.addEvent(hoverWhite, 'onMouseOut')
             save.addEvent(toggleSaveBox, 'onMouseClick')
-            saveAs.addEvent(hoverGreen, 'onMouseOver')
-            saveAs.addEvent(hoverWhite, 'onMouseOut')
-            saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
+ 
 
             if self.game.mapEditor.getSaved(): 
                 delete.addEvent(hoverGreen, 'onMouseOver')

@@ -67,25 +67,37 @@ class Layer(pygame.sprite.Sprite):
     # Add a person to the layer
     def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
-        if len(self.nodes) <= 0 or len(self.grid.getEntrances()) <= 0:
+        if len(self.nodes) <= 0:
             return 
 
         if destinations == None:
             destinations = self.grid.getDestinations() 
 
-        # Add the person to a random node on the layer
-        node = random.randint(0, len(self.grid.getEntrances()) - 1)
-        currentNode = self.grid.getEntrances()[node]
-
+        node = random.randint(0, len(self.nodes) - 1)
         peopleTypes = [Manager, Commuter]
         person = random.randint(0, len(peopleTypes) - 1)
 
-        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+        p = peopleTypes[person](self.spriteRenderer, self.groups, self.nodes[node], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
         p.setDestination(destinations)
 
-        # Put the player at a position outside of the map
-        p.addToPath(currentNode.getConnections()[0].getTo())
+        #maybe people can walk from the screen to the node?
+
         return p
+
+
+        # # Add the person to a random node on the layer
+        # node = random.randint(0, len(self.grid.getEntrances()) - 1)
+        # currentNode = self.grid.getEntrances()[node]
+
+        # peopleTypes = [Manager, Commuter]
+        # person = random.randint(0, len(peopleTypes) - 1)
+
+        # p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
+        # p.setDestination(destinations)
+
+        # # Put the player at a position outside of the map
+        # p.addToPath(currentNode.getConnections()[0].getTo())
+        # return p
 
     
     # Create the connections by drawing them to the screen

@@ -65,9 +65,9 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
+        self.spawnTime = self.timer
         self.rad = 5
         self.step = 15
-
 
 
     #### Getters ####
@@ -155,6 +155,7 @@ class Person(pygame.sprite.Sprite):
             if isinstance(destination, self.possibleDestinations) and destination.getNumber() != self.currentNode.getNumber():
                 possibleDestinations.append(destination)
 
+        # pick a random destination of the list of possible destinations
         destination = random.randint(0, len(possibleDestinations) - 1)
         self.destination = possibleDestinations[destination]
 
@@ -267,6 +268,22 @@ class Person(pygame.sprite.Sprite):
         # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
 
 
+    def drawSpawn(self):
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        thickness = 4
+
+        pos = (self.pos - vec(self.rad, self.rad)) * scale 
+        size = vec(self.width + (self.rad * 2), self.height + (self.rad * 2)) * scale
+        rect = pygame.Rect(pos, size)
+
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.topleft + (vec(0, 10) * scale), rect.topleft, rect.topleft + (vec(10, 0) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.topright + (vec(-10, 0) * scale), rect.topright, rect.topright + (vec(0, 10) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.bottomleft + (vec(0, -10) * scale), rect.bottomleft, rect.bottomleft + (vec(10, 0) * scale)], int(thickness * scale))
+        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [rect.bottomright + (vec(-10, 0) * scale), rect.bottomright, rect.bottomright + (vec(0, -10) * scale)], int(thickness * scale))
+
+
+
+
     def drawOutline(self):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -302,6 +319,11 @@ class Person(pygame.sprite.Sprite):
         if self.clickManager.getPerson() == self:
             self.drawPath()
             self.game.renderer.addSurface(None, None, self.drawOutline)
+
+        if self.timer >= self.spawnTime - 2:
+            # draw the spawn animation here
+            self.game.renderer.addSurface(None, None, self.drawSpawn)
+
 
 
     def events(self):

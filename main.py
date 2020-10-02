@@ -55,6 +55,12 @@ class Game:
         self.setIcon()
         self.setCursor()
 
+        # events
+        self.SPAWN_PERSON = pygame.USEREVENT + 1   
+
+        # set this timer when the sprite renderer starts
+        pygame.time.set_timer(self.SPAWN_PERSON, 20000)
+
     # Set the games caption (name)
     def setCaption(self):
         pygame.display.set_caption(config["game"]["gameTitle"])
@@ -82,12 +88,15 @@ class Game:
             if e.type == pygame.QUIT:
                 self.__quit()
 
-            if e.type == pygame.VIDEORESIZE:
+            elif e.type == pygame.VIDEORESIZE:
                 self.renderer.setScale(e.size, self.fullscreen)
                 self.spriteRenderer.resize()
                 self.mapEditor.resize()
                 self.optionMenu.resize()
-                self.mainMenu.resize()               
+                self.mainMenu.resize()   
+
+            elif e.type == self.SPAWN_PERSON:
+                self.spriteRenderer.addPerson()
 
             if e.type == pygame.KEYDOWN:
                 self.textHandler.events(e)
@@ -119,15 +128,15 @@ class Game:
             else:
                 self.textHandler.setPressed(False)
 
-            # Just for fun :) 
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 4:
-                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
-                    self.spriteRenderer.resize()
+            # # Just for fun :) 
+            # if e.type == pygame.MOUSEBUTTONDOWN:
+            #     if e.button == 4:
+            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
+            #         self.spriteRenderer.resize()
                     
-                elif e.button == 5: 
-                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
-                    self.spriteRenderer.resize()
+            #     elif e.button == 5: 
+            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
+            #         self.spriteRenderer.resize()
 
             # Make left click set the destination on the click manager instead
             if e.type == pygame.MOUSEBUTTONDOWN:
