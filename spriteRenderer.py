@@ -39,6 +39,7 @@ class SpriteRenderer():
         self.timeSetMet = False
 
         self.dt = 1 # control the speed of whats on screen
+        self.startDt = self.dt
         self.fixedScale = 1 # control the size of whats on the screen
 
         self.setDefaultMap()
@@ -201,8 +202,9 @@ class SpriteRenderer():
     def update(self):
         if self.rendering:
             self.allSprites.update()
+            self.events()
 
-            self.timer += self.game.dt
+            self.timer += self.game.dt * self.dt # we want players to spawn in line with the in-game time
             if int(self.timer) % self.timeStep == 0:
                 if not self.timeSetMet:
                     # print("is this called??")
@@ -212,6 +214,14 @@ class SpriteRenderer():
                     self.gridLayer2.addPerson(self.allDestinations)
             else:
                 self.timeSetMet = False            
+
+    
+    def events(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            self.dt = 0.5
+        else:
+            self.dt = self.startDt
 
 
     def showLayer(self, layer):
