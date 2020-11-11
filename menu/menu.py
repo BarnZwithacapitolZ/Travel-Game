@@ -6,6 +6,7 @@ from transitionFunctions import *
 from menuComponents import *
 from clickManager import *
 import abc
+import random
 
 class Menu:
     def __init__(self, game):
@@ -30,7 +31,11 @@ class Menu:
 
     def add(self, obj):
         self.components.append(obj)
-    
+
+    def clickButton(self):  
+        click = random.randint(1, 2)
+        self.game.audioLoader.playSound("click%i" % click)    
+
 
     def resize(self):
         for component in self.components:
@@ -78,6 +83,7 @@ class Menu:
                 for event in component.events:
                     if event[1] == 'onMouseClick':
                         if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+                            self.clickButton()
                             self.game.clickManager.setClicked(False)
                             event[0](component, self)
                             component.dirty = True

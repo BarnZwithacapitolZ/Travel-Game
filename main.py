@@ -19,6 +19,8 @@ import cProfile
 
 class Game:
     def __init__(self):
+        pygame.mixer.pre_init(44100, -16, 2, 512)
+        pygame.init()
         pygame.key.set_repeat(500, 100)
         pygame.font.init()
         pygame.event.set_allowed([QUIT, VIDEORESIZE, KEYDOWN, MOUSEBUTTONDOWN])
@@ -121,6 +123,7 @@ class Game:
 
             # Just for fun :) 
             if e.type == pygame.MOUSEBUTTONDOWN:
+
                 if e.button == 4:
                     self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
                     self.spriteRenderer.resize()

@@ -4,6 +4,7 @@ from pygame.locals import *
 from config import *
 from clickManager import *
 from transitionFunctions import *
+import random
 
 
 def closeMenu(obj, menu, animation):
@@ -34,7 +35,10 @@ def hoverOut(obj, menu):
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
 
-    
+
+def clickButton(obj, menu):  
+    click = random.randint(2, 3)
+    menu.game.audioLoader.playSound("click%i" % click)
 
 
 ##### Main-Menu Functions #####

@@ -218,10 +218,15 @@ class SpriteRenderer():
     
     def events(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            self.dt = 0.5
+        key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
+
+        if len(key) == 1:
+            if key[0] == config["controls"]["dtDown"]: # slow down
+                self.dt = self.startDt - 0.5
+            elif key[0] == config["controls"]["dtUp"]: # speed up
+                self.dt = self.startDt + 0.5
         else:
-            self.dt = self.startDt
+                self.dt = self.startDt
 
 
     def showLayer(self, layer):

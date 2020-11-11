@@ -152,12 +152,31 @@ class ImageLoader:
 
 class AudioLoader:
     def __init__(self):
-        self.audios = {}
+        # pygame.mixer.set_num_channels(5)
 
-        self.loadAllAudios()
+        self.sounds = {}
+        self.music = {}
 
-    def loadAllAudios(self):
+        self.loadAllSounds()
+
+ 
+    def getSound(self, key):
+        return self.sounds[key]
+
+
+    def playSound(self, key):
+        self.sounds[key].play()
+
+
+    def setChannels(self):
         return
+
+
+    def loadAllSounds(self):
+        for key, audio in config["audio"]["sounds"].items():
+            a = pygame.mixer.Sound(os.path.join(AUDIOFOLDER, audio["file"]))
+            a.set_volume(audio["volume"])
+            self.sounds[key] = a
 
 
 class MapLoader:
@@ -166,11 +185,14 @@ class MapLoader:
 
         self.loadAllMaps()
         
+        
     def getMaps(self):
         return self.maps
     
+
     def getMap(self, key):
         return self.maps[key]
+
 
     def getLongestMapLength(self):
         longest = 0
@@ -179,11 +201,14 @@ class MapLoader:
                 longest = len(mapName)
         return longest
 
+
     def addMap(self, mapName, path):
         self.maps[mapName] = path
 
+
     def removeMap(self, mapName):
         del self.maps[mapName]
+
 
     def loadAllMaps(self):
         for key, level in config["maps"].items():
