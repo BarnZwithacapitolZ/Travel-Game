@@ -441,8 +441,6 @@ class EditorHud(GameHudLayout):
         currentWidth = self.game.mapEditor.getLevelData()["width"]
         currentHeight = self.game.mapEditor.getLevelData()["height"]
 
-        print(currentWidth, currentHeight)
-
         size0Selected = True if currentWidth == 16 and currentHeight == 9 else False
         size1Selected = True if currentWidth == 18 and currentHeight == 10 else False
         size2Selected = True if currentWidth == 20 and currentHeight == 11 else False

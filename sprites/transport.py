@@ -136,7 +136,7 @@ class Transport(pygame.sprite.Sprite):
             self.setPeopleBoarding()
 
             self.moving = False
-            self.timer += 100 * self.game.dt
+            self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
 
             # Leaving the station
             if self.timer > self.timerLength:
@@ -476,7 +476,7 @@ class Taxi(Transport):
             self.setPeopleBoarding()
 
             self.moving = False
-            self.timer += 100 * self.game.dt
+            self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
 
             # Leaving the station
             if self.timer > self.timerLength:

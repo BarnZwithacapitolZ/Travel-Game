@@ -377,7 +377,7 @@ class Person(pygame.sprite.Sprite):
             self.events()
             # print(self.status)
 
-            self.timer -= self.game.dt
+            self.timer -= self.game.dt * self.spriteRenderer.getDt()
             self.rad += self.step * self.game.dt
 
             # Increase the radius of the selector showing the destination
