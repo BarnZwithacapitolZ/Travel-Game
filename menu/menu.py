@@ -6,6 +6,7 @@ from transitionFunctions import *
 from menuComponents import *
 from clickManager import *
 import abc
+import random
 
 class Menu:
     def __init__(self, game):
@@ -30,7 +31,11 @@ class Menu:
 
     def add(self, obj):
         self.components.append(obj)
-    
+
+    def clickButton(self):  
+        click = random.randint(1, 2)
+        self.game.audioLoader.playSound("click%i" % click)    
+
 
     def resize(self):
         for component in self.components:
@@ -44,6 +49,7 @@ class Menu:
         for component in self.components:
             component.draw()
 
+            # only if the menu is open do we want to allow for interactions
             if self.open:
                 self.events(component)
                 self.animate(component)
@@ -52,17 +58,18 @@ class Menu:
     def animate(self, component):
         if hasattr(component, 'rect'):
             if len(component.animations) > 0:
-                for animation in component.animations:
-                    if animation[1] == 'onMouseOver':
-                        animation[0](component, self, animation)
+
+                for function, animation in list(component.animations.items()):
+                    if animation[0] == 'onMouseOver':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
-                    if animation[1] == 'onMouseOut':
-                        animation[0](component, self, animation)
+                    if animation[0] == 'onMouseOut':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
-                    if animation[1] == 'onLoad':
-                        animation[0](component, self, animation)
+                    if animation[0] == 'onLoad':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
                         
@@ -78,6 +85,7 @@ class Menu:
                 for event in component.events:
                     if event[1] == 'onMouseClick':
                         if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+                            self.clickButton()
                             self.game.clickManager.setClicked(False)
                             event[0](component, self)
                             component.dirty = True
@@ -190,7 +198,7 @@ class OptionMenu(Menu):
         self.game.mapEditor.getHud().setOpen(True)
 
         for component in self.components:
-            # Can't close until previous animations stopped
+            # Can't add animation until previous opening animations stopped
             if (transitionRight, 'onLoad') not in component.getAnimations() and (transitionRightBackground, 'onLoad') not in component.getAnimations():
                 component.addAnimation(transitionLeftUnpause, 'onLoad')
 
@@ -207,9 +215,9 @@ class OptionMenu(Menu):
         paused = Label(self, "Paused", 70, BLACK, (-400, 100))
 
         options = Label(self, "Options", 50,  BLACK, (-400, 200))
-        new = Label(self, "New Game", 50,  BLACK, (-400, 260))
-        save = Label(self, "Save Game", 50,  BLACK, (-400, 320))
-        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 380))
+        # new = Label(self, "New Game", 50,  BLACK, (-400, 260))
+        # save = Label(self, "Save Game", 50,  BLACK, (-400, 320))
+        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 260))
         close = Label(self, "Close", 30, BLACK, (-400, 440))
 
         options.addEvent(showOptions, 'onMouseClick')
@@ -228,7 +236,7 @@ class OptionMenu(Menu):
         close.addEvent(hoverOut, 'onMouseOut')
 
         sidebar.addAnimation(transitionRightBackground, 'onLoad')
-        animateComponents = [paused, options, new, save, mainMenu, close]
+        animateComponents = [paused, options, mainMenu, close]
         for component in animateComponents:
             component.addAnimation(transitionRight, 'onLoad')
 
@@ -236,8 +244,8 @@ class OptionMenu(Menu):
         self.add(sidebar)
         self.add(paused)
         self.add(options)
-        self.add(new)
-        self.add(save)
+        # self.add(new)
+        # self.add(save)
         self.add(mainMenu)
         self.add(close)
         
@@ -269,7 +277,6 @@ class OptionMenu(Menu):
         self.open = True
         sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
 
-
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
 
@@ -295,6 +302,77 @@ class OptionMenu(Menu):
         self.add(back)
 
 
+class LevelSelectMenu(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+    def main(self):
+        return
+
+
+class GameOpeningMenu(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+
+    def closeTransition(self):
+        self.game.audioLoader.playSound("swoopOut")
+        self.game.spriteRenderer.getHud().setOpen(True)
+
+        def callback(obj, menu, x):
+            menu.game.paused = False
+            menu.close()
+
+        for component in self.components:
+            component.addAnimation(transitionX, 'onLoad', speed = -40, transitionDirection = "right", x = -400, callback = callback)
+
+
+    def main(self):
+        self.open = True
+
+        # show this before the game is unpaused so we don't need this
+        self.game.paused = True
+        self.game.spriteRenderer.getHud().setOpen(False)
+        # self.game.mapEditor.getHud().setOpen(False)
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        totalText = "Transport " + str(self.game.spriteRenderer.getTotalToComplete()) + " people!"
+
+        background = Shape(self, GREEN, (width, height), (x - 400, y))
+        total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - 400, (y + height) / 2 + 20))
+        play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - 400, (config["graphics"]["displayHeight"] / 2) + 20))
+
+        # total.setItalic(True)
+
+        def callback(obj, menu, x):
+            obj.x = x
+
+        background.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = x, callback = callback)
+        total.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((x + width) / 2 - 110), callback = callback)
+        play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
+
+
+        play.addEvent(hoverBlack, 'onMouseOver')
+        play.addEvent(hoverWhite, 'onMouseOut')
+        play.addEvent(playGame, 'onMouseClick')
+
+        animateComponents = [background, total, play]
+
+
+        self.add(background)
+        self.add(total)
+        self.add(play)
+
+        self.game.audioLoader.playSound("swoopIn")    
+
+        
+
+
+
 
 # Anything that all the game huds will use
 class GameHudLayout(Menu):
@@ -315,14 +393,24 @@ class GameHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+    def updateSlowDownMeter(self, amount):
+        if hasattr(self, 'slowDownMeterAmount'):
+            self.slowDownMeterAmount.setSize((amount, 20))
+            self.slowDownMeterAmount.dirty = True
+
     def main(self):
         self.open = True
         self.dropdownOpen = False
         
+        meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
+
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
         home = Image(self, "home", Color("white"), (50, 50), (20, 500))
         layers = Image(self, "layers", Color("white"), (50, 50), (20, 440))
+        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
+        slowDownMeterOutline = Shape(self, BLACK, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
+        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
         completed = Image(self, "walking", Color("white"), (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))   
 
@@ -338,6 +426,9 @@ class GameHud(GameHudLayout):
         # self.add(dropdown)
         self.add(home)
         self.add(layers)
+        self.add(slowDownMeter)
+        self.add(self.slowDownMeterAmount)
+        self.add(slowDownMeterOutline)
         self.add(completed)
         self.add(self.completedText)
 
@@ -354,15 +445,42 @@ class EditorHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+        # Locations of each option
+        self.fileLocation = 20
+        self.editLocation = self.fileLocation + 70 # 90
+        self.addLocation = self.editLocation + 70 # 90
+        self.deleteLocation = self.addLocation + 75 # 170
+        self.runLocation = self.deleteLocation + 100 # 280
+
 
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
             self.currentLayer.setText("layer " + str(self.game.mapEditor.getLayer()))
 
 
+    def closeDropdowns(self):
+        self.close()
+        self.main()
+
+
+    def updateErrorText(self, text):
+        mx, my = pygame.mouse.get_pos()
+        # we divide by the scale so that when we multiply by it later we get the location of the mouse
+        mx = (mx - self.game.renderer.getDifference()[0]) / self.renderer.getScale()
+        my = (my - self.game.renderer.getDifference()[1]) / self.renderer.getScale()
+
+        if hasattr(self, 'error'):
+            self.error.setText(text)
+            self.error.setPos((mx, my))
+            self.error.dirty = True
+            if self.error not in self.components:
+                self.add(self.error)
+
+
     def main(self):
         self.open = True
         self.fileDropdownOpen = False
+        self.editDropdownOpen = False
         self.addDropdownOpen = False
         self.deleteDropdownOpen = False
 
@@ -370,10 +488,13 @@ class EditorHud(GameHudLayout):
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
 
-        fileSelect = Label(self, "File", 25, Color("white"), (20, 10))
-        add = Label(self, "Add", 25, Color("white"), (90, 10))
-        delete = Label(self, "Delete", 25, Color("white"), (170, 10))
-        run = Label(self, "Run", 25, Color("white"), (280, 10))
+        fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, 10))
+        edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, 10))
+        add = Label(self, "Add", 25, Color("white"), (self.addLocation, 10))
+        delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, 10))
+        run = Label(self, "Run", 25, Color("white"), (self.runLocation, 10))
+
+        self.error = Label(self, "there is an error probably", 25, RED, (0, 0))
 
         layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, 10))
         self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, 10))
@@ -387,16 +508,90 @@ class EditorHud(GameHudLayout):
         self.add(self.currentLayer)
 
         fileSelect.addEvent(toggleFileDropdown, 'onMouseClick')
+        edit.addEvent(toggleEditDropdown, 'onMouseClick')
         add.addEvent(toggleAddDropdown, 'onMouseClick')
         delete.addEvent(toggleDeleteDropdown, 'onMouseClick')
         run.addEvent(runMap, 'onMouseClick')
 
-
-        labels = [fileSelect, add, delete, run]
+        labels = [fileSelect, edit, add, delete, run]
         for label in labels:
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')
             self.add(label)
+
+
+    def editDropdown(self):
+        self.open = True
+        self.editDropdownOpen = True
+        self.editSizeDropdownOpen = False
+
+        self.game.mapEditor.setAllowEdits(False)
+
+        box = Shape(self, BLACK, (200, 150), (self.editLocation, 40))
+
+        textX = self.editLocation + 10
+
+        size = Label(self, "Map Size", 25, Color("white"), (textX, 50))
+        
+        self.add(box)
+
+        size.addEvent(toggleEditSizeDropdown, 'onMouseClick')
+
+        labels = [size]
+        for label in labels:
+            label.addEvent(hoverGreen, 'onMouseOver')
+            label.addEvent(hoverWhite, 'onMouseOut')
+            self.add(label)
+
+
+    def editSizeDropdown(self):
+        self.open = True
+        self.editSizeDropdownOpen = True
+
+        self.game.mapEditor.setAllowEdits(False)
+
+        currentWidth = self.game.mapEditor.getLevelData()["width"]
+        currentHeight = self.game.mapEditor.getLevelData()["height"]
+
+        size0Selected = True if currentWidth == 16 and currentHeight == 9 else False
+        size1Selected = True if currentWidth == 18 and currentHeight == 10 else False
+        size2Selected = True if currentWidth == 20 and currentHeight == 11 else False
+        size3Selected = True if currentWidth == 22 and currentHeight == 12 else False
+
+        boxX = self.editLocation + 200
+        textX = boxX + 10
+
+        box = Shape(self, BLACK, (110, 150), (boxX, 85))
+        size0Box = Shape(self, GREEN, (110, 33), (boxX, 90))
+        size1Box = Shape(self, GREEN, (110, 33), (boxX, 126))
+        size2Box = Shape(self, GREEN, (110, 33), (boxX, 161))
+        size3Box = Shape(self, GREEN, (110, 33), (boxX, 195))
+
+        size0 = Label(self, "16 x 9", 25, Color("white"), (textX, 95))
+        size1 = Label(self, "18 x 10", 25, Color("white"), (textX, 130))
+        size2 = Label(self, "20 x 11", 25, Color("white"), (textX, 165))
+        size3 = Label(self, "22 x 12", 25, Color("white"), (textX, 200))
+
+        size0.addEvent(setSize0, 'onMouseClick')
+        size1.addEvent(setSize1, 'onMouseClick')
+        size2.addEvent(setSize2, 'onMouseClick')
+        size3.addEvent(setSize3, 'onMouseClick')
+
+        self.add(box)
+        if size0Selected: self.add(size0Box)
+        elif size1Selected: self.add(size1Box)
+        elif size2Selected: self.add(size2Box)
+        elif size3Selected: self.add(size3Box)
+
+        labels = [(size0, size0Selected), (size1, size1Selected), (size2, size2Selected), (size3, size3Selected)]
+        for label in labels:
+            if label[1]:
+                label[0].addEvent(hoverBlack, 'onMouseOver')
+            else:
+                label[0].addEvent(hoverGreen, 'onMouseOver')
+            label[0].addEvent(hoverWhite, 'onMouseOut')
+            self.add(label[0])
+
 
 
     def addDropdown(self):
@@ -414,16 +609,18 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
         destinationSelected = True if clickType == EditorClickManager.ClickType.DESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (90, 40))
-        connectionBox = Shape(self, GREEN, (200, 33), (90, 45))
-        stopBox = Shape(self, GREEN, (200, 33), (90, 81))
-        transportBox = Shape(self, GREEN, (200, 33), (90, 116))
-        destinationBox = Shape(self, GREEN, (200, 33), (90, 151))
+        box = Shape(self, BLACK, (200, 150), (self.addLocation, 40))
+        connectionBox = Shape(self, GREEN, (200, 33), (self.addLocation, 45))
+        stopBox = Shape(self, GREEN, (200, 33), (self.addLocation, 81))
+        transportBox = Shape(self, GREEN, (200, 33), (self.addLocation, 116))
+        destinationBox = Shape(self, GREEN, (200, 33), (self.addLocation, 151))
 
-        connection = Label(self, "Connection", 25, Color("white"), (100, 50))
-        stop = Label(self, "Stop", 25, Color("white"), (100, 85))
-        transport = Label(self, "Transport", 25, Color("white"), (100, 120))
-        destination = Label(self, "Destination", 25, Color("white"), (100, 155))
+        textX = self.addLocation + 10 # x position of text within box
+
+        connection = Label(self, "Connection", 25, Color("white"), (textX, 50))
+        stop = Label(self, "Stop", 25, Color("white"), (textX, 85))
+        transport = Label(self, "Transport", 25, Color("white"), (textX, 120))
+        destination = Label(self, "Destination", 25, Color("white"), (textX, 155))
 
         connection.addEvent(addConnection, 'onMouseClick')
         stop.addEvent(toggleAddStopDropdown, 'onMouseClick')
@@ -457,14 +654,17 @@ class EditorHud(GameHudLayout):
         busSelected = True if addType == "bus" else False
         tramSelected = True if addType == "tram" else False
 
-        box = Shape(self, BLACK, (200, 114), (290, 85))
-        metroBox = Shape(self, GREEN, (200, 33), (290, 90))
-        busBox = Shape(self, GREEN, (200, 33), (290, 126))
-        tramBox = Shape(self, GREEN, (200, 33), (290, 161))
+        boxX = self.addLocation + 200
+        textX = boxX + 10
 
-        metroStation = Label(self, "Metro Station", 25, Color("white"), (300, 95))
-        busStop = Label(self, "Bus Stop", 25, Color("white"), (300, 130))
-        tramStop = Label(self, "Tram Stop", 25, Color("white"), (300, 165))
+        box = Shape(self, BLACK, (200, 114), (boxX, 85))
+        metroBox = Shape(self, GREEN, (200, 33), (boxX, 90))
+        busBox = Shape(self, GREEN, (200, 33), (boxX, 126))
+        tramBox = Shape(self, GREEN, (200, 33), (boxX, 161))
+
+        metroStation = Label(self, "Metro Station", 25, Color("white"), (textX, 95))
+        busStop = Label(self, "Bus Stop", 25, Color("white"), (textX, 130))
+        tramStop = Label(self, "Tram Stop", 25, Color("white"), (textX, 165))
 
         self.add(box)
         if metroSelected: self.add(metroBox)
@@ -497,16 +697,19 @@ class EditorHud(GameHudLayout):
         tramSelected = True if addType == "tram" else False
         taxiSelected = True if addType == "taxi" else False
 
-        box = Shape(self, BLACK, (110, 150), (290, 120))
-        metroBox = Shape(self, GREEN, (110, 33), (290, 125))
-        busBox = Shape(self, GREEN, (110, 33), (290, 161))
-        tramBox = Shape(self, GREEN, (110, 33), (290, 196))
-        taxiBox = Shape(self, GREEN, (110, 33), (290, 231))
+        boxX = self.addLocation + 200
+        textX = boxX + 10
 
-        metro = Label(self, "Metro", 25, Color("white"), (300, 130))
-        bus = Label(self, "Bus", 25, Color("white"), (300, 165))
-        tram = Label(self, "Tram", 25, Color("white"), (300, 200))
-        taxi = Label(self, "Taxi", 25, Color("white"), (300, 235))
+        box = Shape(self, BLACK, (110, 150), (boxX, 120))
+        metroBox = Shape(self, GREEN, (110, 33), (boxX, 125))
+        busBox = Shape(self, GREEN, (110, 33), (boxX, 161))
+        tramBox = Shape(self, GREEN, (110, 33), (boxX, 196))
+        taxiBox = Shape(self, GREEN, (110, 33), (boxX, 231))
+
+        metro = Label(self, "Metro", 25, Color("white"), (textX, 130))
+        bus = Label(self, "Bus", 25, Color("white"), (textX, 165))
+        tram = Label(self, "Tram", 25, Color("white"), (textX, 200))
+        taxi = Label(self, "Taxi", 25, Color("white"), (textX, 235))
 
         self.add(box)
         if metroSelected: self.add(metroBox)
@@ -541,12 +744,15 @@ class EditorHud(GameHudLayout):
         officeSelected = True if addType == 'office' else False
         # TO DO: Add other types of transportation    
 
-        box = Shape(self, BLACK, (200, 114), (290, 155))
-        airportBox = Shape(self, GREEN, (200, 33), (290, 160))
-        officeBox = Shape(self, GREEN, (200, 33), (290, 196))
+        boxX = self.addLocation + 200
+        textX = boxX + 10
+
+        box = Shape(self, BLACK, (200, 114), (boxX, 155))
+        airportBox = Shape(self, GREEN, (200, 33), (boxX, 160))
+        officeBox = Shape(self, GREEN, (200, 33), (boxX, 196))
         
-        airport = Label(self, "Airport", 25, Color("white"), (300, 165))
-        office = Label(self, "Office", 25, Color("white"), (300, 200))
+        airport = Label(self, "Airport", 25, Color("white"), (textX, 165))
+        office = Label(self, "Office", 25, Color("white"), (textX, 200))
 
         self.add(box)
         if airportSelected: self.add(airportBox)
@@ -580,16 +786,18 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
         destinationSelected = True if clickType == EditorClickManager.ClickType.DDESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (170, 40))
-        connectionBox = Shape(self, GREEN, (200, 33), (170, 45))
-        stopBox = Shape(self, GREEN, (200, 33), (170, 81))
-        transportBox = Shape(self, GREEN, (200, 33), (170, 116))
-        destinationBox = Shape(self, GREEN, (200, 33), (170, 151))
+        box = Shape(self, BLACK, (200, 150), (self.deleteLocation, 40))
+        connectionBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 45))
+        stopBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 81))
+        transportBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 116))
+        destinationBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 151))
 
-        connection = Label(self, "Connection", 25, Color("white"), (180, 50))
-        stop = Label(self, "Stop", 25, Color("white"), (180, 85))
-        transport = Label(self, "Transport", 25, Color("white"), (180, 120))
-        destination = Label(self, "Destination", 25, Color("white"), (180, 155))
+        textX = self.deleteLocation + 10
+
+        connection = Label(self, "Connection", 25, Color("white"), (textX, 50))
+        stop = Label(self, "Stop", 25, Color("white"), (textX, 85))
+        transport = Label(self, "Transport", 25, Color("white"), (textX, 120))
+        destination = Label(self, "Destination", 25, Color("white"), (textX, 155))
 
         connection.addEvent(deleteConnection, 'onMouseClick')
         stop.addEvent(deleteStop, 'onMouseClick')
@@ -621,15 +829,18 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (130, 220), (20, 40))
-        new = Label(self, "New", 25, Color("white"), (30, 50))
-        load = Label(self, "Open", 25, Color("white"), (30, 85))
-        save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (30, 120)) 
-        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (30, 155))
+        box = Shape(self, BLACK, (130, 220), (self.fileLocation, 40))
+
+        textX = self.fileLocation + 10
+        
+        new = Label(self, "New", 25, Color("white"), (textX, 50))
+        load = Label(self, "Open", 25, Color("white"), (textX, 85))
+        save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 120)) 
+        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 155))
 
         # Must be already saved and be a deletable map
-        delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (30, 190))
-        close = Label(self, "Exit", 25, Color("white"), (30, 225))
+        delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (textX, 190))
+        close = Label(self, "Exit", 25, Color("white"), (textX, 225))
 
         new.addEvent(newMap, 'onMouseClick')
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
@@ -671,15 +882,18 @@ class EditorHud(GameHudLayout):
         if self.game.mapLoader.getLongestMapLength() * 15 > width:
             width = self.game.mapLoader.getLongestMapLength() * 15
 
+        boxX = self.fileLocation + 130
+        textX = boxX + 10
+
         # make width equal to the longest map name
-        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (150, 85))
+        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
 
         self.add(box)
 
         # Temporarily load in the existing maps
         y = 95
         for mapName, path in self.game.mapLoader.getMaps().items():
-            m = Label(self, mapName, 25, Color("white"), (160, y))
+            m = Label(self, mapName, 25, Color("white"), (textX, y))
             m.addEvent(hoverGreen, 'onMouseOver')
             m.addEvent(hoverWhite, 'onMouseOut')
             m.addEvent(loadEditorMap, 'onMouseClick')
@@ -762,9 +976,6 @@ class EditorHud(GameHudLayout):
         self.add(confirm)
         self.add(cancelBox)
         self.add(cancel)
-
-
-    
 
 
 class PreviewHud(GameHudLayout):

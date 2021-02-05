@@ -25,13 +25,13 @@ class Person(pygame.sprite.Sprite):
         FLAG = 6
         
 
-    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
+    def __init__(self, spriteRenderer, groups, currentNode, clickManager, transportClickManager):
         self.groups = groups
         super().__init__(self.groups)
-        self.renderer = renderer
+        self.spriteRenderer = spriteRenderer
         self.clickManager = clickManager
         self.transportClickManager = transportClickManager
-        self.game = self.renderer.game
+        self.game = self.spriteRenderer.game
         self.width = 20
         self.height = 20
         
@@ -51,7 +51,7 @@ class Person(pygame.sprite.Sprite):
         self.vel = vec(0, 0)
 
         self.mouseOver = False
-        self.speed = 32
+        self.speed = 20
         self.path = []
 
         self.travellingOn = None
@@ -100,11 +100,11 @@ class Person(pygame.sprite.Sprite):
     # Return the layer, given the connection 
     def getLayer(self, connection):
         if connection == "layer 1":
-            return self.renderer.layer1
+            return self.spriteRenderer.layer1
         if connection == "layer 2":
-            return self.renderer.layer2
+            return self.spriteRenderer.layer2
         if connection == "layer 3":
-            return self.renderer.layer3
+            return self.spriteRenderer.layer3
 
 
     def getMouseOver(self):
@@ -188,7 +188,7 @@ class Person(pygame.sprite.Sprite):
 
 
     def complete(self):
-        self.renderer.addToCompleted()
+        self.spriteRenderer.addToCompleted()
         self.remove()
 
 
@@ -207,7 +207,7 @@ class Person(pygame.sprite.Sprite):
             return
 
         self.statusIndicator.pos = self.pos + self.statusIndicator.offset
-        self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale()
+        self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 
@@ -217,7 +217,7 @@ class Person(pygame.sprite.Sprite):
             return
 
         start = self.path[0]
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         thickness = 3
 
         for previous, current in zip(self.path, self.path[1:]):
@@ -232,27 +232,27 @@ class Person(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
-    def drawTimerOutline(self):
-        scale = self.game.renderer.getScale()
+    def drawTimerOutline(self, surface):
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         thickness = 4
 
         start = (self.pos - self.offset) + vec(7, -10)
         middle = (self.pos + vec(30, -40)) 
         end = middle + vec(30, 0)
 
-        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [start * scale, middle * scale, end * scale], int(thickness * scale))
+        pygame.draw.lines(surface, YELLOW, False, [start * scale, middle * scale, end * scale], int(thickness * scale))
 
 
     def drawTimerTime(self):
         self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, BLACK)
-        self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale())
+        self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())
 
 
     def drawDestination(self):
         if self.destination is None:
             return 
 
-        scale = self.game.renderer.getScale()
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         thickness = 4
 
         pos = (self.destination.pos - vec(self.rad, self.rad)) * scale 
@@ -267,13 +267,12 @@ class Person(pygame.sprite.Sprite):
         # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
 
 
-    def drawOutline(self):
-        scale = self.game.renderer.getScale()
+    def drawOutline(self, surface):
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x) * scale, (self.pos.y) * scale, (self.width) * scale, (self.height) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
-            
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x) * scale, (self.pos.y) * scale, (self.width) * scale, (self.height) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
             offx += 0.02
 
 
@@ -281,12 +280,12 @@ class Person(pygame.sprite.Sprite):
         self.dirty = False
 
         self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
+        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
-        self.timerFont = pygame.font.Font(pygame.font.get_default_font(), int(15 * self.game.renderer.getScale()))
+        self.timerFont = pygame.font.Font(pygame.font.get_default_font(), int(15 * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())) # do I need the fixed scale to change here?
 
 
 
@@ -296,12 +295,12 @@ class Person(pygame.sprite.Sprite):
 
         if self.mouseOver or self.clickManager.getPerson() == self:
             self.drawTimerTime()
+            self.drawDestination()
             self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
          # Visualize the players path
         if self.clickManager.getPerson() == self:
             self.drawPath()
-            self.drawDestination()
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
 
@@ -378,7 +377,7 @@ class Person(pygame.sprite.Sprite):
             self.events()
             # print(self.status)
 
-            self.timer -= self.game.dt
+            self.timer -= self.game.dt * self.spriteRenderer.getDt()
             self.rad += self.step * self.game.dt
 
             # Increase the radius of the selector showing the destination
@@ -400,7 +399,7 @@ class Person(pygame.sprite.Sprite):
 
                 if dis > 1:
                     self.status = Person.Status.WALKING
-                    self.vel = dxy / dis * float(self.speed) * self.game.dt
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                     self.moveStatusIndicator()
 
                 else:
@@ -417,7 +416,7 @@ class Person(pygame.sprite.Sprite):
                         self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
                 
                 self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale()
+                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 
@@ -450,6 +449,7 @@ class StatusIndicator(pygame.sprite.Sprite):
         super().__init__(self.groups)
         self.game = game
         self.currentPerson = currentPerson
+        self.spriteRenderer = self.currentPerson.spriteRenderer
 
         self.width = 10
         self.height = 10
@@ -467,10 +467,10 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.dirty = False
 
         self.image = self.game.imageLoader.getImage(self.images[self.currentState])
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
+        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos * self.game.renderer.getScale()
+        self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
     def draw(self):

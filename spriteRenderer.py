@@ -3,12 +3,13 @@ from pygame.locals import *
 from config import *
 import os
 import json
-
+import random
 
 from layer import *
 from clickManager import *
 from node import *
 from gridManager import *
+from meterController import *
 from menu import *
 
 
@@ -27,6 +28,7 @@ class SpriteRenderer():
 
         # Hud for when the game is running
         self.hud = GameHud(self.game)
+        self.openingMenu = GameOpeningMenu(self.game)
 
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
@@ -38,9 +40,18 @@ class SpriteRenderer():
         self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.timeSetMet = False
 
+        self.dt = 1 # control the speed of whats on screen
+        self.startDt = self.dt
+        self.fixedScale = 1 # control the size of whats on the screen
+
         self.setDefaultMap()
 
         self.completed = 0
+        self.totalToComplete = 0 # default is 0
+
+        self.slowDownMeterAmount = 75
+
+        self.debug = False
 
 
     def setDefaultMap(self):
@@ -48,6 +59,13 @@ class SpriteRenderer():
             "mapName": "", 
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before 
+            "width": 18,
+            "height": 10,
+            "completion": {
+                "total": 10,
+                "completed": False,
+                "time": 0
+            },
             "connections": {}, 
             "transport": {}, 
             "stops": {},
@@ -59,12 +77,35 @@ class SpriteRenderer():
     def setRendering(self, rendering):
         self.rendering = rendering
         self.hud.main() if self.rendering else self.hud.close()
-
+        if self.rendering and not self.debug: self.openingMenu.main()
 
     def setCompleted(self, completed):
         self.completed = completed
         self.hud.setCompletedText(str(self.completed))
 
+    def setTotalToComplete(self, totalToComplete):
+        self.totalToComplete = totalToComplete
+
+    def setSlowDownMeterAmount(self, slowDownMeterAmount):
+        self.slowDownMeterAmount = slowDownMeterAmount
+
+    def setDt(self, dt):
+        self.dt = dt
+
+    def setFixedScale(self, fixedScale):
+        self.fixedScale = fixedScale
+
+    def setDebug(self, debug):
+        self.debug = debug
+
+    def getStartDt(self):
+        return self.startDt
+
+    def getDt(self):
+        return self.dt
+
+    def getFixedScale(self):
+        return self.fixedScale
 
     def getHud(self):
         return self.hud
@@ -74,6 +115,9 @@ class SpriteRenderer():
 
     def getLevelData(self):
         return self.levelData
+
+    def getClickManager(self):
+        return self.clickManager
 
     def getPersonClickManager(self):
         return self.personClickManager
@@ -87,10 +131,24 @@ class SpriteRenderer():
     def getCompleted(self):
         return self.completed
 
+    def getTotalToComplete(self):
+        return self.totalToComplete
+
+    def getSlowDownMeterAmount(self):
+        return self.slowDownMeterAmount
+
+    def getMeterAmount(self):
+        return self.meterAmount
+
+    def getDebug(self):
+        return self.debug
+
     def addToCompleted(self):
         self.completed += 1
-        print(self.completed)
+        # self.timeStep -= 0.5
         self.hud.setCompletedText(str(self.completed))
+        self.meter.addToAmountToAdd(20)
+
 
     def clearLevel(self):
         self.timer = 0
@@ -108,10 +166,12 @@ class SpriteRenderer():
     def createLevel(self, level, debug = False):
         self.clearLevel()
         self.setCompleted(0) 
+        self.debug = debug
 
-        if debug: 
+        # for running the game in test mode (when testing a level)
+        if self.debug: 
             self.hud = PreviewHud(self.game)
-            spacing = (1.5, 1.5)
+            spacing = (1.5, 1.5) # push the level down since we have hud at the top
         else: 
             self.hud = GameHud(self.game)
             spacing = (1.5, 1)
@@ -141,6 +201,11 @@ class SpriteRenderer():
         layer2Destinations =  self.gridLayer2.getGrid().getDestinations() 
         layer3Destinations =  self.gridLayer3.getGrid().getDestinations() 
         self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
+
+        # set number of people to complete level
+        self.totalToComplete = random.randint(8, 12)
+
+        self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
 
 
     def getGridLayer(self, connectionType):
@@ -185,8 +250,9 @@ class SpriteRenderer():
     def update(self):
         if self.rendering:
             self.allSprites.update()
+            self.events()
 
-            self.timer += self.game.dt
+            self.timer += self.game.dt * self.dt # we want players to spawn in line with the in-game time
             if int(self.timer) % self.timeStep == 0:
                 if not self.timeSetMet:
                     # print("is this called??")
@@ -195,7 +261,18 @@ class SpriteRenderer():
                     # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
                     self.gridLayer2.addPerson(self.allDestinations)
             else:
-                self.timeSetMet = False            
+                self.timeSetMet = False      
+
+            
+    def events(self):
+        keys = pygame.key.get_pressed()
+        key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
+
+        if len(key) == 1:
+            if key[0] == config["controls"]["dtDown"]:
+                self.game.clickManager.setSpaceBar(True)
+        else:
+            self.game.clickManager.setSpaceBar(False)   
 
 
     def showLayer(self, layer):
@@ -212,6 +289,7 @@ class SpriteRenderer():
             self.gridLayer3.resize()    
             self.gridLayer4.resize()
             self.hud.resize()
+            self.openingMenu.resize()
 
             for sprite in self.allSprites:
                 sprite.dirty = True
@@ -233,4 +311,5 @@ class SpriteRenderer():
 
             # Render the hud above all the other sprites
             self.hud.display()
+            self.openingMenu.display()
             

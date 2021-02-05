@@ -4,6 +4,7 @@ from pygame.locals import *
 from config import *
 from clickManager import *
 from transitionFunctions import *
+import random
 
 
 def closeMenu(obj, menu, animation):
@@ -24,17 +25,15 @@ def hoverBlack(obj, menu):
 
 
 def hoverOver(obj, menu):
-    if (hoverOverAnimation, 'onLoad') not in obj.getAnimations():
+    if hoverOverAnimation not in obj.getAnimations():
         obj.addAnimation(hoverOverAnimation, 'onMouseOver')
     obj.setColor(Color("white"))
 
 def hoverOut(obj, menu):
-    if (hoverOverAnimation, 'onLoad') in obj.getAnimations():
-        obj.removeAnimation(hoverOverAnimation, 'onMouseOver')
+    if hoverOverAnimation in obj.getAnimations():
+        obj.removeAnimation(hoverOverAnimation)
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
-
-    
 
 
 ##### Main-Menu Functions #####
@@ -125,6 +124,12 @@ def toggleFullscreen(obj, menu):
 
 
 
+#### Opening Menu Functions ####
+
+def playGame(obj, menu):
+    menu.closeTransition()
+
+
 
 ##### Hud Functions #####
  
@@ -185,7 +190,7 @@ def runMap(obj, menu):
     level = menu.game.mapEditor.getLevelData()
     menu.game.mapEditor.setRendering(False)
 
-    menu.game.spriteRenderer.createLevel(level, True)
+    menu.game.spriteRenderer.createLevel(level, True) # run the map in debug mode
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 
 
@@ -207,6 +212,14 @@ def loadEditorMap(obj, menu):
     path = menu.game.mapLoader.getMap(obj.getText())
     menu.game.mapEditor.createLevel(path)
     clearMenu(obj, menu)
+
+
+def toggleEditDropdown(obj, menu):
+    if not menu.editDropdownOpen:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+    else:
+        clearMenu(obj, menu)
 
 
 def toggleAddDropdown(obj, menu):
@@ -282,6 +295,16 @@ def saveMap(obj, menu):
         closeMapEditor(obj, menu)
 
 
+def toggleEditSizeDropdown(obj, menu):
+    if not menu.editSizeDropdownOpen:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+        menu.editSizeDropdown()
+    else:
+        clearMenu(obj, menu)
+        menu.editDropdown()
+
+
 def toggleAddStopDropdown(obj, menu):
     if not menu.addStopDropdownOpen:
         clearMenu(obj, menu)
@@ -314,6 +337,40 @@ def toggleAddDestinationDropdown(obj, menu):
         clearMenu(obj, menu)
         menu.addDropdown()
 
+
+# Setting the different map sizes
+def setSize0(obj, menu):
+    menu.game.mapEditor.setMapSize((16, 9))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+    
+
+def setSize1(obj, menu):
+    menu.game.mapEditor.setMapSize((18, 10))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+
+
+def setSize2(obj, menu):
+    menu.game.mapEditor.setMapSize((20, 11))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+
+    
+
+def setSize3(obj, menu):
+    menu.game.mapEditor.setMapSize((22, 12))
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    clearMenu(obj, menu)
+    
 
 
 def addConnection(obj, menu):

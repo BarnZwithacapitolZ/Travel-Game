@@ -19,6 +19,8 @@ import cProfile
 
 class Game:
     def __init__(self):
+        pygame.mixer.pre_init(44100, -16, 2, 512)
+        pygame.init()
         pygame.key.set_repeat(500, 100)
         pygame.font.init()
         pygame.event.set_allowed([QUIT, VIDEORESIZE, KEYDOWN, MOUSEBUTTONDOWN])
@@ -54,6 +56,8 @@ class Game:
         self.setCaption()
         self.setIcon()
         self.setCursor()
+
+        # print(pygame.font.get_fonts())
 
     # Set the games caption (name)
     def setCaption(self):
@@ -93,10 +97,11 @@ class Game:
                 self.textHandler.events(e)
                 self.textHandler.setPressed(True)
 
+                # only open the option manu if the game isn't paused and the main menu isn't open
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
-                    if not self.paused: self.optionMenu.main()
-                    else: self.optionMenu.closeTransition()
-
+                    if not self.mapEditor.isDropdownsClosed():
+                        if not self.paused: self.optionMenu.main()
+                        else: self.optionMenu.closeTransition()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
@@ -116,11 +121,32 @@ class Game:
                     elif pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
+
             else:
                 self.textHandler.setPressed(False)
 
-            self.clickManager.setClicked(True) if e.type == pygame.MOUSEBUTTONDOWN else self.clickManager.setClicked(False)
+            # Just for fun :) 
+            # if e.type == pygame.MOUSEBUTTONDOWN:
+            #     if e.button == 4:
+            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
+            #         self.spriteRenderer.resize()
+                    
+            #     elif e.button == 5: 
+            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
+            #         self.spriteRenderer.resize()
 
+            # Make left click set the destination on the click manager instead
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1:
+                    self.clickManager.setClicked(True) 
+                elif e.button == 3:
+                    self.clickManager.setRightClicked(True)
+            else:
+                self.clickManager.setClicked(False)
+                self.clickManager.setRightClicked(False)
+                    
+
+    
 
     def run(self):
         #main menu
@@ -142,6 +168,7 @@ class Game:
         self.running = False
 
     def __update(self):
+        # print(self.paused)
         if not self.paused and not self.mainMenu.open:
             self.spriteRenderer.update()
             self.mapEditor.update()

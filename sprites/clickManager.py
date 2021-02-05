@@ -7,6 +7,8 @@ class ClickManager:
     def __init__(self, game):
         self.game = game
         self.clicked = False
+        self.rightClicked = False
+        self.spaceBar = False
 
     #### Getters
 
@@ -15,12 +17,26 @@ class ClickManager:
         return self.clicked
 
 
+    def getRightClicked(self):
+        return self.rightClicked
+
+    
+    def getSpaceBar(self):
+        return self.spaceBar
+
+
     #### Setters ####
 
     # Set the mouse pressed
     def setClicked(self, clicked):
         self.clicked = clicked
 
+    
+    def setRightClicked(self, rightClicked):
+        self.rightClicked = rightClicked
+
+    def setSpaceBar(self, spaceBar):
+        self.spaceBar = spaceBar
 
     
     # for a given node, return the adjacent nodes
@@ -134,6 +150,11 @@ class PersonClickManager(ClickManager):
     # Return the current selected person
     def getPerson(self):
         return self.person
+
+
+    # Return the current selected node
+    def getNode(self):
+        return self.node
 
 
     #### Setters ####
@@ -251,7 +272,7 @@ class PersonClickManager(ClickManager):
                 self.personClicked = False
 
                 #after the click is managed, clear the player and the node to allow for another click management
-                self.person = None
+                # self.person = None
                 self.node = None
 
 
@@ -265,6 +286,10 @@ class TransportClickManager(ClickManager):
     
     def getTransport(self):
         return self.transport
+
+    
+    def getNode(self):
+        return self.node
 
 
     def setNode(self, node):
@@ -304,10 +329,8 @@ class TransportClickManager(ClickManager):
             for node in path:
                 self.transport.addToPath(node)
 
-            self.transport = None
+            # self.transport = None
             self.node = None
-
-
 
 
 class EditorClickManager(ClickManager):
@@ -376,9 +399,9 @@ class EditorClickManager(ClickManager):
 
 
     def createConnection(self):
-        if self.startNode is not None and self.endNode is not None:
-            if self.startNode.getNumber() != self.endNode.getNumber():            
-                if self.startNode.getConnectionType() == self.endNode.getConnectionType():
+        if self.startNode is not None and self.endNode is not None: # check both start and end nodes are set
+            if self.startNode.getNumber() != self.endNode.getNumber(): # check the start node is not the same as the end node
+                if self.startNode.getConnectionType() == self.endNode.getConnectionType(): # check both nodes are on the same layer
                     # Create a new connection
                     self.game.mapEditor.createConnection(self.startNode.getConnectionType(), self.startNode, self.endNode)
                     

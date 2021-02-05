@@ -13,13 +13,18 @@ class Renderer:
         self.windowWidth = config["graphics"]["displayWidth"]
         self.windowHeight = config["graphics"]["displayHeight"]
 
-        self.monitorWidth = pygame.display.Info().current_w
+        # we can use these variables to set the resolution on fullscreen
+        self.monitorWidth = pygame.display.Info().current_w 
         self.monitorHeight = pygame.display.Info().current_h
+
+        # self.monitorWidth = 1280
+        # self.monitorHeight = 720
 
         self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE)
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
-        self.scale = 1
+        self.scale = 1 # control the scale of whats on screen
+        self.fixedScale = 1 # used to control the fixed scale, i.e to make things bigger on screen seperate from screen size
         self.surfaces = []
         self.dirtySurfaces = []
 
@@ -30,7 +35,8 @@ class Renderer:
 
     # Prepare the gamedisplay for blitting to, this means overriding it with a new color
     def prepareSurface(self, color):
-        self.gameDisplay.fill(color)
+        # self.gameDisplay.fill(color)
+        pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
         self.dirtySurfaces.append(self.gameDisplay.get_rect())
 
 
@@ -51,8 +57,16 @@ class Renderer:
         self.height = height
 
 
+    def setFixedScale(self, fixedScale):
+        self.fixedScale = fixedScale
+
+
     def getScale(self):
         return self.scale
+
+
+    def getFixedScale(self):
+        return self.fixedScale
 
 
     def getDifference(self):
@@ -78,7 +92,7 @@ class Renderer:
         if size[0] < config["graphics"]["minDisplayWidth"]: size[0] = config["graphics"]["minDisplayWidth"]
         if size[1] < config["graphics"]['minDisplayHeight']: size[1] = config["graphics"]["minDisplayHeight"]
 
-        self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1)
+        self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1) * self.fixedScale
 
         self.width = (config["graphics"]["displayWidth"] * self.scale)
         self.height = (config["graphics"]["displayHeight"] * self.scale)
@@ -91,15 +105,14 @@ class Renderer:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
-        self.gameDisplay = pygame.Surface((self.width, self.height))  
-
+        self.gameDisplay = pygame.Surface((self.width, self.height))
 
 
     # on tick function
     def render(self):
         for surface in self.surfaces:    
             if surface[2]:
-                surface[2]()
+                surface[2](self.gameDisplay)
             else:
                 self.gameDisplay.blit(surface[0], surface[1])
 
@@ -108,7 +121,8 @@ class Renderer:
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.scale(self.gameDisplay, (int(self.windowWidth), int(self.windowHeight))), (0, 0))
 
-        pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
+        # pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
+        pygame.display.update()
 
         self.surfaces = []
         self.dirtySurfaces = []
@@ -143,12 +157,31 @@ class ImageLoader:
 
 class AudioLoader:
     def __init__(self):
-        self.audios = {}
+        # pygame.mixer.set_num_channels(5)
 
-        self.loadAllAudios()
+        self.sounds = {}
+        self.music = {}
 
-    def loadAllAudios(self):
+        self.loadAllSounds()
+
+ 
+    def getSound(self, key):
+        return self.sounds[key]
+
+
+    def playSound(self, key):
+        self.sounds[key].play()
+
+
+    def setChannels(self):
         return
+
+
+    def loadAllSounds(self):
+        for key, audio in config["audio"]["sounds"].items():
+            a = pygame.mixer.Sound(os.path.join(AUDIOFOLDER, audio["file"]))
+            a.set_volume(audio["volume"])
+            self.sounds[key] = a
 
 
 class MapLoader:
@@ -157,11 +190,14 @@ class MapLoader:
 
         self.loadAllMaps()
         
+        
     def getMaps(self):
         return self.maps
     
+
     def getMap(self, key):
         return self.maps[key]
+
 
     def getLongestMapLength(self):
         longest = 0
@@ -170,11 +206,14 @@ class MapLoader:
                 longest = len(mapName)
         return longest
 
+
     def addMap(self, mapName, path):
         self.maps[mapName] = path
 
+
     def removeMap(self, mapName):
         del self.maps[mapName]
+
 
     def loadAllMaps(self):
         for key, level in config["maps"].items():

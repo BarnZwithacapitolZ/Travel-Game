@@ -25,12 +25,29 @@ class MapEditor(SpriteRenderer):
     def getAllowEdits(self):
         return self.allowEdits
 
-    def getClickManager(self):
-        return self.clickManager
-
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
+
+    def setMapSize(self, size = (18, 10)):
+        if not hasattr(self, 'levelData'):
+            return
+
+        self.levelData["width"] = size[0]
+        self.levelData["height"] = size[1]
+
+    # Override rendering function
+    def setRendering(self, rendering):
+        self.rendering = rendering
+        self.hud.main() if self.rendering else self.hud.close()    
+
+
+    # returns true if dropdowns have been closed, false otherwise
+    def isDropdownsClosed(self):
+        if self.rendering and not self.allowEdits:
+            self.hud.closeDropdowns()
+            return True
+        return False
     
     
     # Override creating the level
@@ -92,15 +109,30 @@ class MapEditor(SpriteRenderer):
             del config["maps"][self.levelData["mapName"]]
             dump(config)
 
+    # TODO: We want to create several connections for all the nodes in the same path as the created connections
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
-        newConnections = layer.getGrid().addConnections(connectionType, startNode, endNode)
+        distance = ((startNode.pos) - (endNode.pos)).length()
+        connections = []
 
-        # Only add the new connections to the nodes
-        layer.addConnections(newConnections)
+        for node in layer.getGrid().getNodes():
+            buffer = 0.1 # radius around the line to include nodes within
+            d1 = (node.pos - startNode.pos).length()
+            d2 = (node.pos - endNode.pos).length()
 
-        # Add the new connection to the level data
-        self.levelData["connections"].setdefault(connectionType, []).append([startNode.getNumber(), endNode.getNumber()])
+            if d1 + d2 >= distance - buffer and d1 + d2 <= distance + buffer:
+                connections.append(node)
+
+        for x in range(len(connections) - 1):
+            newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1])
+
+            # Only add the new connections to the nodes
+            layer.addConnections(newConnections)
+
+            # Add the new connection to the level data
+            connection = [connections[x].getNumber(), connections[x + 1].getNumber()]
+            if connection not in self.levelData["connections"].setdefault(connectionType, []):
+                self.levelData["connections"][connectionType].append(connection)
 
 
     def addTransport(self, connectionType, connection):
@@ -214,7 +246,11 @@ class MapEditor(SpriteRenderer):
     def updateConnection(self, layer, group):
         if self.currentLayer == layer:
             for connection in group.getGrid().getConnections():
-                connection.update()        
+                connection.update()    
+
+
+    def showErrorText(self, message):
+        self.hud.updateErrorText(message)
 
 
     def update(self):
