@@ -286,12 +286,12 @@ class Transport(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
-    def drawOutline(self):
+    def drawOutline(self, surface):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 2) * scale, (self.pos.y - 2) * scale, (self.width + 4) * scale, (self.height + 4) * scale), math.pi / 2 + offx, math.pi / 2, int(4 * scale))
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x - 2) * scale, (self.pos.y - 2) * scale, (self.width + 4) * scale, (self.height + 4) * scale), math.pi / 2 + offx, math.pi / 2, int(4 * scale))
             
             offx += 0.02
 

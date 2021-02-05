@@ -11,7 +11,13 @@
         "displayHeight": 576, 
         "antiAliasing": true, 
         "fullscreen": false, 
-        "resizeable": true
+        "resizeable": true,
+        "resolutions": {
+            "1920 x 1080": [1920, 1080],
+            "1600 x 900": [1600, 900],
+            "1366 x 768": [1366, 768],
+            "1280 x 720": [1280, 720]
+        }
     }, 
     "fonts": {
         "joystix": "joystix monospace.ttf"
@@ -55,6 +61,14 @@
             "click2": {
                 "file": "Menu-Selection-Change-H.wav",
                 "volume": 1.0
+            },
+            "swoopIn": {
+                "file": "swoopIn.wav",
+                "volume": 0.7
+            },
+            "swoopOut": {
+                "file": "swoopOut.wav",
+                "volume": 0.7
             }
         },
         "music": {

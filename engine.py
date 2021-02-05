@@ -13,8 +13,12 @@ class Renderer:
         self.windowWidth = config["graphics"]["displayWidth"]
         self.windowHeight = config["graphics"]["displayHeight"]
 
-        self.monitorWidth = pygame.display.Info().current_w
+        # we can use these variables to set the resolution on fullscreen
+        self.monitorWidth = pygame.display.Info().current_w 
         self.monitorHeight = pygame.display.Info().current_h
+
+        # self.monitorWidth = 1280
+        # self.monitorHeight = 720
 
         self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE)
         self.gameDisplay = pygame.Surface((self.width, self.height))
@@ -31,7 +35,8 @@ class Renderer:
 
     # Prepare the gamedisplay for blitting to, this means overriding it with a new color
     def prepareSurface(self, color):
-        self.gameDisplay.fill(color)
+        # self.gameDisplay.fill(color)
+        pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
         self.dirtySurfaces.append(self.gameDisplay.get_rect())
 
 
@@ -100,14 +105,14 @@ class Renderer:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
-        self.gameDisplay = pygame.Surface((self.width, self.height))  
+        self.gameDisplay = pygame.Surface((self.width, self.height))
 
 
     # on tick function
     def render(self):
         for surface in self.surfaces:    
             if surface[2]:
-                surface[2]()
+                surface[2](self.gameDisplay)
             else:
                 self.gameDisplay.blit(surface[0], surface[1])
 

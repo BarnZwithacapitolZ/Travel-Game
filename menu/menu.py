@@ -49,6 +49,7 @@ class Menu:
         for component in self.components:
             component.draw()
 
+            # only if the menu is open do we want to allow for interactions
             if self.open:
                 self.events(component)
                 self.animate(component)
@@ -57,17 +58,18 @@ class Menu:
     def animate(self, component):
         if hasattr(component, 'rect'):
             if len(component.animations) > 0:
-                for animation in component.animations:
-                    if animation[1] == 'onMouseOver':
-                        animation[0](component, self, animation)
+
+                for function, animation in list(component.animations.items()):
+                    if animation[0] == 'onMouseOver':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
-                    if animation[1] == 'onMouseOut':
-                        animation[0](component, self, animation)
+                    if animation[0] == 'onMouseOut':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
-                    if animation[1] == 'onLoad':
-                        animation[0](component, self, animation)
+                    if animation[0] == 'onLoad':
+                        function(component, self, function, **animation[1])
                         # component.dirty = True
 
                         
@@ -196,7 +198,7 @@ class OptionMenu(Menu):
         self.game.mapEditor.getHud().setOpen(True)
 
         for component in self.components:
-            # Can't close until previous animations stopped
+            # Can't add animation until previous opening animations stopped
             if (transitionRight, 'onLoad') not in component.getAnimations() and (transitionRightBackground, 'onLoad') not in component.getAnimations():
                 component.addAnimation(transitionLeftUnpause, 'onLoad')
 
@@ -213,9 +215,9 @@ class OptionMenu(Menu):
         paused = Label(self, "Paused", 70, BLACK, (-400, 100))
 
         options = Label(self, "Options", 50,  BLACK, (-400, 200))
-        new = Label(self, "New Game", 50,  BLACK, (-400, 260))
-        save = Label(self, "Save Game", 50,  BLACK, (-400, 320))
-        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 380))
+        # new = Label(self, "New Game", 50,  BLACK, (-400, 260))
+        # save = Label(self, "Save Game", 50,  BLACK, (-400, 320))
+        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 260))
         close = Label(self, "Close", 30, BLACK, (-400, 440))
 
         options.addEvent(showOptions, 'onMouseClick')
@@ -234,7 +236,7 @@ class OptionMenu(Menu):
         close.addEvent(hoverOut, 'onMouseOut')
 
         sidebar.addAnimation(transitionRightBackground, 'onLoad')
-        animateComponents = [paused, options, new, save, mainMenu, close]
+        animateComponents = [paused, options, mainMenu, close]
         for component in animateComponents:
             component.addAnimation(transitionRight, 'onLoad')
 
@@ -242,8 +244,8 @@ class OptionMenu(Menu):
         self.add(sidebar)
         self.add(paused)
         self.add(options)
-        self.add(new)
-        self.add(save)
+        # self.add(new)
+        # self.add(save)
         self.add(mainMenu)
         self.add(close)
         
@@ -275,7 +277,6 @@ class OptionMenu(Menu):
         self.open = True
         sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
 
-
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
 
@@ -301,6 +302,77 @@ class OptionMenu(Menu):
         self.add(back)
 
 
+class LevelSelectMenu(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+    def main(self):
+        return
+
+
+class GameOpeningMenu(Menu):
+    def __init__(self, renderer):
+        super().__init__(renderer)
+
+
+    def closeTransition(self):
+        self.game.audioLoader.playSound("swoopOut")
+        self.game.spriteRenderer.getHud().setOpen(True)
+
+        def callback(obj, menu, x):
+            menu.game.paused = False
+            menu.close()
+
+        for component in self.components:
+            component.addAnimation(transitionX, 'onLoad', speed = -40, transitionDirection = "right", x = -400, callback = callback)
+
+
+    def main(self):
+        self.open = True
+
+        # show this before the game is unpaused so we don't need this
+        self.game.paused = True
+        self.game.spriteRenderer.getHud().setOpen(False)
+        # self.game.mapEditor.getHud().setOpen(False)
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        totalText = "Transport " + str(self.game.spriteRenderer.getTotalToComplete()) + " people!"
+
+        background = Shape(self, GREEN, (width, height), (x - 400, y))
+        total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - 400, (y + height) / 2 + 20))
+        play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - 400, (config["graphics"]["displayHeight"] / 2) + 20))
+
+        # total.setItalic(True)
+
+        def callback(obj, menu, x):
+            obj.x = x
+
+        background.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = x, callback = callback)
+        total.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((x + width) / 2 - 110), callback = callback)
+        play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
+
+
+        play.addEvent(hoverBlack, 'onMouseOver')
+        play.addEvent(hoverWhite, 'onMouseOut')
+        play.addEvent(playGame, 'onMouseClick')
+
+        animateComponents = [background, total, play]
+
+
+        self.add(background)
+        self.add(total)
+        self.add(play)
+
+        self.game.audioLoader.playSound("swoopIn")    
+
+        
+
+
+
 
 # Anything that all the game huds will use
 class GameHudLayout(Menu):
@@ -321,14 +393,24 @@ class GameHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+    def updateSlowDownMeter(self, amount):
+        if hasattr(self, 'slowDownMeterAmount'):
+            self.slowDownMeterAmount.setSize((amount, 20))
+            self.slowDownMeterAmount.dirty = True
+
     def main(self):
         self.open = True
         self.dropdownOpen = False
         
+        meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
+
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
         home = Image(self, "home", Color("white"), (50, 50), (20, 500))
         layers = Image(self, "layers", Color("white"), (50, 50), (20, 440))
+        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
+        slowDownMeterOutline = Shape(self, BLACK, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
+        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
         completed = Image(self, "walking", Color("white"), (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))   
 
@@ -344,6 +426,9 @@ class GameHud(GameHudLayout):
         # self.add(dropdown)
         self.add(home)
         self.add(layers)
+        self.add(slowDownMeter)
+        self.add(self.slowDownMeterAmount)
+        self.add(slowDownMeterOutline)
         self.add(completed)
         self.add(self.completedText)
 
@@ -373,6 +458,25 @@ class EditorHud(GameHudLayout):
             self.currentLayer.setText("layer " + str(self.game.mapEditor.getLayer()))
 
 
+    def closeDropdowns(self):
+        self.close()
+        self.main()
+
+
+    def updateErrorText(self, text):
+        mx, my = pygame.mouse.get_pos()
+        # we divide by the scale so that when we multiply by it later we get the location of the mouse
+        mx = (mx - self.game.renderer.getDifference()[0]) / self.renderer.getScale()
+        my = (my - self.game.renderer.getDifference()[1]) / self.renderer.getScale()
+
+        if hasattr(self, 'error'):
+            self.error.setText(text)
+            self.error.setPos((mx, my))
+            self.error.dirty = True
+            if self.error not in self.components:
+                self.add(self.error)
+
+
     def main(self):
         self.open = True
         self.fileDropdownOpen = False
@@ -389,6 +493,8 @@ class EditorHud(GameHudLayout):
         add = Label(self, "Add", 25, Color("white"), (self.addLocation, 10))
         delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, 10))
         run = Label(self, "Run", 25, Color("white"), (self.runLocation, 10))
+
+        self.error = Label(self, "there is an error probably", 25, RED, (0, 0))
 
         layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, 10))
         self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, 10))

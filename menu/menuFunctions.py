@@ -25,20 +25,15 @@ def hoverBlack(obj, menu):
 
 
 def hoverOver(obj, menu):
-    if (hoverOverAnimation, 'onLoad') not in obj.getAnimations():
+    if hoverOverAnimation not in obj.getAnimations():
         obj.addAnimation(hoverOverAnimation, 'onMouseOver')
     obj.setColor(Color("white"))
 
 def hoverOut(obj, menu):
-    if (hoverOverAnimation, 'onLoad') in obj.getAnimations():
-        obj.removeAnimation(hoverOverAnimation, 'onMouseOver')
+    if hoverOverAnimation in obj.getAnimations():
+        obj.removeAnimation(hoverOverAnimation)
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
-
-
-def clickButton(obj, menu):  
-    click = random.randint(2, 3)
-    menu.game.audioLoader.playSound("click%i" % click)
 
 
 ##### Main-Menu Functions #####
@@ -129,6 +124,12 @@ def toggleFullscreen(obj, menu):
 
 
 
+#### Opening Menu Functions ####
+
+def playGame(obj, menu):
+    menu.closeTransition()
+
+
 
 ##### Hud Functions #####
  
@@ -189,7 +190,7 @@ def runMap(obj, menu):
     level = menu.game.mapEditor.getLevelData()
     menu.game.mapEditor.setRendering(False)
 
-    menu.game.spriteRenderer.createLevel(level, True)
+    menu.game.spriteRenderer.createLevel(level, True) # run the map in debug mode
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 
 

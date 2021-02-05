@@ -49,6 +49,10 @@ class GridManager:
 
 
     #### Getters ####
+    
+    def getNodePositions(self):
+        return self.nodePositions
+
 
     def getTransportMappings(self):
         return self.transportMappings
