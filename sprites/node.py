@@ -250,27 +250,33 @@ class EditorNode(Node):
             pass
 
         # Cant click on a node in the top layer
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getAllowEdits():
             self.game.clickManager.setClicked(False)
 
-            if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
-                self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:   # Add a transport
-                self.clickManager.addTransport(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
-                self.clickManager.addStop(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DESTINATION: # Add a destination
-                self.clickManager.addDestination(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
-                self.clickManager.deleteTransport(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
-                self.clickManager.deleteStop(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
-                self.clickManager.deleteDestination(self)
- 
+            if self.game.mapEditor.getLayer() != 4:
+                if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
+                    self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:   # Add a transport
+                    self.clickManager.addTransport(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
+                    self.clickManager.addStop(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DESTINATION: # Add a destination
+                    self.clickManager.addDestination(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
+                    self.clickManager.deleteTransport(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
+                    self.clickManager.deleteStop(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
+                    self.clickManager.deleteDestination(self)
+
+            else:
+                # TODO: implement notification saying you can't place items on the top layer
+                # print("you cannot place items on the top layer!")
+                self.spriteRenderer.showErrorText("Please Change layer to place items")
+         
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
             self.mouseOver = True
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)            
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)   
 
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())

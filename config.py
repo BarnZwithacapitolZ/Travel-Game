@@ -10,7 +10,6 @@ import os, sys
         --- dump config to json on save
 """
 
-pygame.init()
 
 def getFilePath():
     if getattr(sys, 'frozen', False): #for when .exe
@@ -27,6 +26,7 @@ GAMEFOLDER = getFilePath()
 FONTFOLDER = os.path.join(GAMEFOLDER, "fonts")
 ASSETSFOLDER = os.path.join(GAMEFOLDER, 'assets')
 MAPSFOLDER = os.path.join(GAMEFOLDER, 'maps')
+AUDIOFOLDER = os.path.join(GAMEFOLDER, 'audio')
 
 # colours
 TRUEBLACK = (0, 0, 0)

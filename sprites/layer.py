@@ -103,15 +103,22 @@ class Layer(pygame.sprite.Sprite):
     # Draw a connection to the screen
     def drawConnection(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-        dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset)
+        dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset) # change in direction
+        angle = math.atan2(dxy.x, dxy.y)
+        angle = abs(math.degrees(angle))
 
+        angleOffset = vec(offset, 10)
         if dxy.x != 0 and dxy.y != 0:
-            posx = ((fromNode.pos - fromNode.offset) + vec(offset, 10)) * scale
-            posy = ((toNode.pos - toNode.offset) + vec(offset, 10)) * scale
+            if (angle > 140 and angle < 180) or (angle > 0 and angle < 40):
+                angleOffset = vec(offset, 10)
+            elif angle > 40 and angle < 140:
+                angleOffset = vec(10, offset)
+        # 90, 180
         else:
-            posx = ((fromNode.pos - fromNode.offset) + vec(offset, offset)) * scale
-            posy = ((toNode.pos - toNode.offset) + vec(offset, offset)) * scale
-        
+            angleOffset = vec(offset, offset)
+
+        posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
+        posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
         pygame.draw.line(self.game.renderer.gameDisplay, color, posx, posy, int(thickness * scale))
 
 
@@ -156,7 +163,7 @@ class Layer4(Layer):
     def __init__(self, spriteRenderer, groups, level):
         super().__init__(spriteRenderer, groups, level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
-        self.addComponent(background)
+        # self.addComponent(background)
 
 
 

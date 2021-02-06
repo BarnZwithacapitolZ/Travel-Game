@@ -4,6 +4,7 @@ from pygame.locals import *
 from config import *
 from clickManager import *
 from transitionFunctions import *
+import random
 
 
 def closeMenu(obj, menu, animation):
@@ -24,17 +25,15 @@ def hoverBlack(obj, menu):
 
 
 def hoverOver(obj, menu):
-    if (hoverOverAnimation, 'onLoad') not in obj.getAnimations():
+    if hoverOverAnimation not in obj.getAnimations():
         obj.addAnimation(hoverOverAnimation, 'onMouseOver')
     obj.setColor(Color("white"))
 
 def hoverOut(obj, menu):
-    if (hoverOverAnimation, 'onLoad') in obj.getAnimations():
-        obj.removeAnimation(hoverOverAnimation, 'onMouseOver')
+    if hoverOverAnimation in obj.getAnimations():
+        obj.removeAnimation(hoverOverAnimation)
     obj.addAnimation(hoverOutAnimation, 'onMouseOut')
     obj.setColor(BLACK)
-
-    
 
 
 ##### Main-Menu Functions #####
@@ -125,6 +124,12 @@ def toggleFullscreen(obj, menu):
 
 
 
+#### Opening Menu Functions ####
+
+def playGame(obj, menu):
+    menu.closeTransition()
+
+
 
 ##### Hud Functions #####
  
@@ -185,7 +190,7 @@ def runMap(obj, menu):
     level = menu.game.mapEditor.getLevelData()
     menu.game.mapEditor.setRendering(False)
 
-    menu.game.spriteRenderer.createLevel(level, True)
+    menu.game.spriteRenderer.createLevel(level, True) # run the map in debug mode
     menu.game.spriteRenderer.setRendering(True) #Load the hud
 
 

@@ -53,9 +53,6 @@ class TextHandler:
                     self.text += event.unicode
 
 
-
-
-
 class MenuComponent:
     def __init__(self, menu, color, size = tuple(), pos = tuple()):
         self.menu = menu
@@ -68,7 +65,7 @@ class MenuComponent:
         self.pos = pos
 
         self.events = []
-        self.animations = []
+        self.animations = {}
 
         self.dirty = True
         self.responsive = True
@@ -90,11 +87,11 @@ class MenuComponent:
     def addEvent(self, function, event):
         self.events.append((function, event))
 
-    def addAnimation(self, function, event):
-        self.animations.append((function, event))
+    def addAnimation(self, function, event, **kwargs):
+        self.animations[function] = (event, kwargs)
 
-    def removeAnimation(self, function, event):
-        self.animations.remove((function, event))
+    def removeAnimation(self, function):
+        del self.animations[function]
 
     def getAnimations(self):
         return self.animations
@@ -131,7 +128,6 @@ class Label(MenuComponent):
     def setUnderline(self, underline):
         self.underline = underline
 
-
     def getText(self):
         return self.text
 
@@ -159,7 +155,6 @@ class Label(MenuComponent):
     def draw(self):
         if self.dirty or self.image is None: self.render()
         self.menu.renderer.addSurface(self.image, self.rect)
-
 
 
 class InputBox(Label):
@@ -200,7 +195,6 @@ class InputBox(Label):
         self.indicator.dirty = True
 
     
-
     def draw(self):
         if self.dirty or self.image is None: self.render()
         self.menu.renderer.addSurface(self.image, self.rect)
@@ -215,27 +209,31 @@ class InputBox(Label):
             self.setText()        
 
 
+
 class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0):   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, alpha = None):   
         super().__init__(menu, color, size, pos)
         self.shapeType = shapeType
         self.shapeOutline = shapeOutline
+        self.alpha = alpha
 
     def getShapeType(self):
         return self.shapeType
 
-
     def getShapeOutline(self):
         return self.shapeOutline
 
+    def getAlpha(self):
+        return self.alpha if self.alpha is not None else 0
     
     def setShapeType(self, shapeType):
         self.shapeType = shapeType
 
-
     def setShapeOutline(self, shapeOutline):
         self.shapeOutline = shapeOutline
 
+    def setAlpha(self, alpha):
+        self.alpha = alpha
 
     def __render(self):
         self.dirty = False
@@ -245,18 +243,28 @@ class Shape(MenuComponent):
         self.rect = pygame.Rect(pos, size)
         self.outline = self.shapeOutline * self.menu.renderer.getScale()
 
-    def drawShape(self):
+        if self.alpha is not None:
+            self.image = pygame.Surface((self.size)).convert()
+            self.image = pygame.transform.scale(self.image, (int(self.width * self.menu.renderer.getScale()), 
+                                                            int(self.height * self.menu.renderer.getScale())))
+            self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+            self.drawShape(self.image)
+
+            
+    def drawShape(self, surface):
         if self.shapeType == "rect":
-            pygame.draw.rect(self.menu.renderer.gameDisplay, self.color, self.rect, int(self.outline))
+            pygame.draw.rect(surface, self.color, self.rect, int(self.outline))
         elif self.shapeType == "ellipse":
             # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
-            pygame.draw.ellipse(self.menu.renderer.gameDisplay, self.color, self.rect, int(self.outline))
+            pygame.draw.ellipse(surface, self.color, self.rect, int(self.outline))
 
 
     def draw(self):
         if self.dirty or self.rect is None: self.__render()
-        self.menu.renderer.addSurface(None, None, self.drawShape)
-
+        if self.alpha is not None:
+            self.menu.renderer.addSurface(self.image, (self.rect))
+        else:
+            self.menu.renderer.addSurface(None, None, self.drawShape)
 
 
 class Image(MenuComponent):
@@ -265,9 +273,17 @@ class Image(MenuComponent):
         self.imageName = imageName
         self.alpha = alpha
 
+    def getImageName(self):
+        return self.imageName
+
+    def getAlpha(self):
+        return self.alpha if self.alpha is not None else 0
 
     def setImageName(self, imageName):
         self.imageName = imageName
+
+    def setAlpha(self, alpha):
+        self.alpha = alpha
         
 
     def __render(self):
@@ -279,6 +295,8 @@ class Image(MenuComponent):
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
+        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+
 
     def draw(self):
         if self.dirty or self.image is None: self.__render()

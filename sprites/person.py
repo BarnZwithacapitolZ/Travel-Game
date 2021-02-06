@@ -51,7 +51,7 @@ class Person(pygame.sprite.Sprite):
         self.vel = vec(0, 0)
 
         self.mouseOver = False
-        self.speed = 32
+        self.speed = 20
         self.path = []
 
         self.travellingOn = None
@@ -232,7 +232,7 @@ class Person(pygame.sprite.Sprite):
         pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
 
 
-    def drawTimerOutline(self):
+    def drawTimerOutline(self, surface):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         thickness = 4
 
@@ -240,7 +240,7 @@ class Person(pygame.sprite.Sprite):
         middle = (self.pos + vec(30, -40)) 
         end = middle + vec(30, 0)
 
-        pygame.draw.lines(self.game.renderer.gameDisplay, YELLOW, False, [start * scale, middle * scale, end * scale], int(thickness * scale))
+        pygame.draw.lines(surface, YELLOW, False, [start * scale, middle * scale, end * scale], int(thickness * scale))
 
 
     def drawTimerTime(self):
@@ -267,12 +267,12 @@ class Person(pygame.sprite.Sprite):
         # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
 
 
-    def drawOutline(self):
+    def drawOutline(self, surface):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x) * scale, (self.pos.y) * scale, (self.width) * scale, (self.height) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x) * scale, (self.pos.y) * scale, (self.width) * scale, (self.height) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
             offx += 0.02
 
 

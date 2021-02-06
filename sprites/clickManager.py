@@ -8,6 +8,7 @@ class ClickManager:
         self.game = game
         self.clicked = False
         self.rightClicked = False
+        self.spaceBar = False
 
     #### Getters
 
@@ -19,6 +20,10 @@ class ClickManager:
     def getRightClicked(self):
         return self.rightClicked
 
+    
+    def getSpaceBar(self):
+        return self.spaceBar
+
 
     #### Setters ####
 
@@ -29,6 +34,9 @@ class ClickManager:
     
     def setRightClicked(self, rightClicked):
         self.rightClicked = rightClicked
+
+    def setSpaceBar(self, spaceBar):
+        self.spaceBar = spaceBar
 
     
     # for a given node, return the adjacent nodes
@@ -325,8 +333,6 @@ class TransportClickManager(ClickManager):
             self.node = None
 
 
-
-
 class EditorClickManager(ClickManager):
     class ClickType(Enum):
         CONNECTION = 1
@@ -393,9 +399,9 @@ class EditorClickManager(ClickManager):
 
 
     def createConnection(self):
-        if self.startNode is not None and self.endNode is not None:
-            if self.startNode.getNumber() != self.endNode.getNumber():            
-                if self.startNode.getConnectionType() == self.endNode.getConnectionType():
+        if self.startNode is not None and self.endNode is not None: # check both start and end nodes are set
+            if self.startNode.getNumber() != self.endNode.getNumber(): # check the start node is not the same as the end node
+                if self.startNode.getConnectionType() == self.endNode.getConnectionType(): # check both nodes are on the same layer
                     # Create a new connection
                     self.game.mapEditor.createConnection(self.startNode.getConnectionType(), self.startNode, self.endNode)
                     
