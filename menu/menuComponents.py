@@ -280,29 +280,46 @@ class Shape(MenuComponent):
 
 
 class MessageBox(Shape):
-    def __init__(self, menu, message, color):   
-        self.message = Label(menu, message, 25, BLACK, (0, 0))
-        super().__init__(menu, color, (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
+    def __init__(self, menu, message, margin = tuple()):   
+        super().__init__(menu, Color("white"), (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
         self.timer = 0
+        self.messages = []
+        self.marginX = margin[0]
+        self.marginY = margin[1]
+        self.message = message
 
-    def add(self):
-        self.menu.add(self.message)
+        self.addLabels(message)
 
-    def __render(self):
-        self.dirty = False
+    def addMessages(self):
+        for message in self.messages:
+            self.menu.add(message)
 
-        print(self.message.rect)
+    def addLabels(self, message):
+        maxCharLimit = 25
+        curWord = 0
+        finalMessage = ['']
+        for word in message.split():
+            if len(finalMessage[curWord]) + len(word) < maxCharLimit:
+                finalMessage[curWord] += word + ' '
+            else:
+                finalMessage.append(word + ' ')
+                curWord += 1
 
-        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
-        size = vec(self.width, self.height) * self.menu.renderer.getScale()
-        self.rect = pygame.Rect(pos, size)
-        self.outline = self.shapeOutline * self.menu.renderer.getScale()
-        self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+        biggestWidth, totalHeight = 0, 0
+        for msg in finalMessage:
+            m = Label(self.menu, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
+            width, height = m.getFontSize()
+            m.setPos((config["graphics"]["displayWidth"] - (width + self.marginX), (self.marginY + totalHeight)))
+            # m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
+            totalHeight += height
 
+            if width > biggestWidth:
+                biggestWidth = width
 
-    def draw(self):
-        if self.dirty or self.rect is None: self.__render()
-        self.menu.renderer.addSurface(None, None, self.drawShape)
+            self.messages.append(m)
+
+        self.setSize((biggestWidth + 10, totalHeight + 10))
+        self.setPos(((config["graphics"]["displayWidth"] - (biggestWidth + self.marginX)) - 5, (self.marginY - 5)))
 
 
 

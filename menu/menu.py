@@ -1043,7 +1043,7 @@ class MessageHud(Menu):
             m = Label(self, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
             width, height = m.getFontSize()
             m.setPos((config["graphics"]["displayWidth"] - (width + x), (y + totalHeight) - 100))
-            m.addAnimation(transitionY, 'onLoad', speed = 3, transitionDirection = "down", y = y + totalHeight, callback = callback)
+            m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
             totalHeight += height
 
             if width > biggestWidth:
@@ -1052,7 +1052,7 @@ class MessageHud(Menu):
             messages.append(m)
 
         box = Shape(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
-        box.addAnimation(transitionY, 'onLoad', speed = 3, transitionDirection = "down", y = y - 5, callback = callback)
+        box.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y - 5, callback = callback)
 
         self.add(box)
         for msg in messages:
@@ -1063,4 +1063,7 @@ class MessageHud(Menu):
     def main(self):
         self.open = True
         
+        message = MessageBox(self, "this is a test", (30, 30))
+        self.add(message)
+        message.addMessages()
      
