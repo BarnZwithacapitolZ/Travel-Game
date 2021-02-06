@@ -58,6 +58,16 @@ def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
+def transitionY(obj, menu, animation, speed, transitionDirection, y, callback):
+    obj.y += speed * 100 * menu.game.dt
+
+    if (transitionDirection == "down" and obj.y >= y) or (transitionDirection == "up" and obj.y < y):
+        obj.removeAnimation(animation)
+        callback(obj, menu, y)
+
+    obj.rect.y = obj.y * menu.renderer.getScale()
+
+
 def transitionLeft(obj, menu, animation):
     obj.x -= transitionspeed * 100 * menu.game.dt
 

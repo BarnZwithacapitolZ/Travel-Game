@@ -88,10 +88,10 @@ class Game:
 
             if e.type == pygame.VIDEORESIZE:
                 self.renderer.setScale(e.size, self.fullscreen)
-                self.spriteRenderer.resize()
-                self.mapEditor.resize()
-                self.optionMenu.resize()
-                self.mainMenu.resize()               
+                # self.spriteRenderer.resize()
+                # self.mapEditor.resize()
+                # self.optionMenu.resize()
+                # self.mainMenu.resize()            
 
             if e.type == pygame.KEYDOWN:
                 self.textHandler.events(e)
@@ -124,6 +124,7 @@ class Game:
 
             else:
                 self.textHandler.setPressed(False)
+
 
             # Just for fun :) 
             # if e.type == pygame.MOUSEBUTTONDOWN:

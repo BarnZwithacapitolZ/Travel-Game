@@ -110,9 +110,14 @@ class Label(MenuComponent):
         self.bold = False
         self.italic = False
         self.underline = False
+        
+        self.font = pygame.font.Font(self.fontName, self.fontSize)
 
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
+
+    def getFontSize(self):
+        return self.font.size(self.text)
 
     def setFontName(self, fontName):
         self.fontName = fontName
@@ -210,12 +215,12 @@ class InputBox(Label):
             self.setText()        
 
 
-
 class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, alpha = None):   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
         super().__init__(menu, color, size, pos)
         self.shapeType = shapeType
         self.shapeOutline = shapeOutline
+        self.shapeBorderRadius = shapeBorderRadius
         self.alpha = alpha
 
     def getShapeType(self):
@@ -243,6 +248,7 @@ class Shape(MenuComponent):
         size = vec(self.width, self.height) * self.menu.renderer.getScale()
         self.rect = pygame.Rect(pos, size)
         self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
 
         if self.alpha is not None:
             self.image = pygame.Surface((self.size)).convert()
@@ -254,7 +260,11 @@ class Shape(MenuComponent):
             
     def drawShape(self, surface):
         if self.shapeType == "rect":
-            pygame.draw.rect(surface, self.color, self.rect, int(self.outline))
+            pygame.draw.rect(surface, self.color, self.rect, int(self.outline), 
+                border_top_left_radius = int(self.borderRadius[0]),
+                border_top_right_radius  = int(self.borderRadius[1]),
+                border_bottom_left_radius = int(self.borderRadius[2]),
+                border_bottom_right_radius = int(self.borderRadius[3]))
         elif self.shapeType == "ellipse":
             # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
             pygame.draw.ellipse(surface, self.color, self.rect, int(self.outline))
@@ -266,6 +276,34 @@ class Shape(MenuComponent):
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
             self.menu.renderer.addSurface(None, None, self.drawShape)
+
+
+
+class MessageBox(Shape):
+    def __init__(self, menu, message, color):   
+        self.message = Label(menu, message, 25, BLACK, (0, 0))
+        super().__init__(menu, color, (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
+        self.timer = 0
+
+    def add(self):
+        self.menu.add(self.message)
+
+    def __render(self):
+        self.dirty = False
+
+        print(self.message.rect)
+
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        self.rect = pygame.Rect(pos, size)
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+
+
+    def draw(self):
+        if self.dirty or self.rect is None: self.__render()
+        self.menu.renderer.addSurface(None, None, self.drawShape)
+
 
 
 class Image(MenuComponent):

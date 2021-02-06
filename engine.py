@@ -14,13 +14,13 @@ class Renderer:
         self.windowHeight = config["graphics"]["displayHeight"]
 
         # we can use these variables to set the resolution on fullscreen
-        self.monitorWidth = pygame.display.Info().current_w 
+        self.monitorWidth = pygame.display.Info().current_w
         self.monitorHeight = pygame.display.Info().current_h
 
         # self.monitorWidth = 1280
         # self.monitorHeight = 720
 
-        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF)
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
         self.scale = 1 # control the scale of whats on screen
@@ -73,7 +73,7 @@ class Renderer:
         difx = (self.windowWidth - self.width) / 2
         dify = (self.windowHeight - self.height) / 2
         return (difx, dify)
-    
+
 
     def getHeight(self):
         return self.height
@@ -105,12 +105,18 @@ class Renderer:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
+
         self.gameDisplay = pygame.Surface((self.width, self.height))
+
+        self.game.spriteRenderer.resize()
+        self.game.mapEditor.resize()
+        self.game.optionMenu.resize()
+        self.game.mainMenu.resize()       
 
 
     # on tick function
     def render(self):
-        for surface in self.surfaces:    
+        for surface in self.surfaces:
             if surface[2]:
                 surface[2](self.gameDisplay)
             else:
@@ -150,7 +156,7 @@ class ImageLoader:
             for y in range(image.get_height()):
                 pixel = image.get_at((x, y))
                 if pixel == oldColor or oldColor is None:
-                    newColor.a = pixel.a 
+                    newColor.a = pixel.a
                     image.set_at((x, y), newColor)
 
 
@@ -164,7 +170,7 @@ class AudioLoader:
 
         self.loadAllSounds()
 
- 
+
     def getSound(self, key):
         return self.sounds[key]
 
@@ -189,11 +195,11 @@ class MapLoader:
         self.maps = {}
 
         self.loadAllMaps()
-        
-        
+
+
     def getMaps(self):
         return self.maps
-    
+
 
     def getMap(self, key):
         return self.maps[key]
@@ -225,5 +231,5 @@ class MapLoader:
         if mapName in self.maps:
             return True
         return False
-            
+
 

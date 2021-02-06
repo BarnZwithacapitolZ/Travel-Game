@@ -68,4 +68,6 @@ class MeterController(pygame.sprite.Sprite):
 
     def update(self):
         self.events()
+
+        # print(self.game.clickManager.getSpaceBar())
     

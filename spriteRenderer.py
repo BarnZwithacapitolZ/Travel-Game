@@ -28,6 +28,7 @@ class SpriteRenderer():
 
         # Hud for when the game is running
         self.hud = GameHud(self.game)
+        self.messageSystem = MessageHud(self.game)
         self.openingMenu = GameOpeningMenu(self.game)
 
         self.personClickManager = PersonClickManager(self.game)
@@ -77,6 +78,7 @@ class SpriteRenderer():
     def setRendering(self, rendering):
         self.rendering = rendering
         self.hud.main() if self.rendering else self.hud.close()
+        self.messageSystem.main() if self.rendering else self.messageSystem.close()
         
     def runOpeningMenu(self):
         if self.rendering and not self.debug: 
@@ -112,6 +114,9 @@ class SpriteRenderer():
 
     def getHud(self):
         return self.hud
+
+    def getMessageSystem(self):
+        return self.messageSystem
 
     def getLevel(self):
         return self.level
@@ -268,14 +273,19 @@ class SpriteRenderer():
 
             
     def events(self):
-        keys = pygame.key.get_pressed()
-        key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
+        # keys = pygame.key.get_pressed()
+        # key = [pygame.key.name(k) for k, v in enumerate(keys) if v]
 
-        if len(key) == 1:
-            if key[0] == config["controls"]["dtDown"]:
-                self.game.clickManager.setSpaceBar(True)
+        # if len(key) == 1:
+        #     if key[0] == config["controls"]["dtDown"]:
+        #         self.game.clickManager.setSpaceBar(True)
+        # else:
+        #     self.game.clickManager.setSpaceBar(False)   
+        
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            self.game.clickManager.setSpaceBar(True)
         else:
-            self.game.clickManager.setSpaceBar(False)   
+            self.game.clickManager.setSpaceBar(False)
 
 
     def showLayer(self, layer):
@@ -292,6 +302,7 @@ class SpriteRenderer():
             self.gridLayer3.resize()    
             self.gridLayer4.resize()
             self.hud.resize()
+            self.messageSystem.resize()
             self.openingMenu.resize()
 
             for sprite in self.allSprites:
@@ -316,5 +327,6 @@ class SpriteRenderer():
 
             # Render the hud above all the other sprites
             self.hud.display()
+            self.messageSystem.display()
             self.openingMenu.display()
             
