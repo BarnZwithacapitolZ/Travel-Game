@@ -222,11 +222,19 @@ class SpriteRenderer():
 
         if len(key) == 1:
             if key[0] == config["controls"]["dtDown"]: # slow down
+                if self.dt != self.startDt -0.5:
+                    self.game.audioLoader.playSound("slowIn", 1)
+
                 self.dt = self.startDt - 0.5
             elif key[0] == config["controls"]["dtUp"]: # speed up
+
                 self.dt = self.startDt + 0.5
         else:
-                self.dt = self.startDt
+            if self.dt != self.startDt:
+                self.game.audioLoader.playSound("slowOut", 1)
+
+
+            self.dt = self.startDt
 
 
     def showLayer(self, layer):

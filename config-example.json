@@ -55,6 +55,14 @@
             "click2": {
                 "file": "Menu-Selection-Change-H.wav",
                 "volume": 1.0
+            },
+            "slowIn": {
+                "file": "slow-motion-in.wav",
+                "volume": 1.0
+            },
+            "slowOut": {
+                "file": "slow-motion-out.wav",
+                "volume": 1.0
             }
         },
         "music": {

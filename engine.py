@@ -152,11 +152,12 @@ class ImageLoader:
 
 class AudioLoader:
     def __init__(self):
-        # pygame.mixer.set_num_channels(5)
+        pygame.mixer.set_num_channels(3)
 
         self.sounds = {}
         self.music = {}
 
+        self.setChannels()
         self.loadAllSounds()
 
  
@@ -164,13 +165,16 @@ class AudioLoader:
         return self.sounds[key]
 
 
-    def playSound(self, key):
-        self.sounds[key].play()
+    def playSound(self, key, chan = 0):
+        self.channels[chan].play(self.sounds[key])
 
 
     def setChannels(self):
-        return
-
+        # Channel 0 reserved for hud sounds 
+        # Channel 1 reserved for game sounds
+        # Channel 2 reserved for extra game sounds
+        self.channels = [pygame.mixer.Channel(i) for i in range(3)]
+        
 
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():
