@@ -35,12 +35,7 @@ class MapEditor(SpriteRenderer):
 
         self.levelData["width"] = size[0]
         self.levelData["height"] = size[1]
-
-    # Override rendering function
-    def setRendering(self, rendering):
-        self.rendering = rendering
-        self.hud.main() if self.rendering else self.hud.close()    
-
+        
 
     # returns true if dropdowns have been closed, false otherwise
     def isDropdownsClosed(self):

@@ -64,7 +64,7 @@ class MenuComponent:
         self.size = size
         self.pos = pos
 
-        self.events = []
+        self.events = {}
         self.animations = {}
 
         self.dirty = True
@@ -84,8 +84,9 @@ class MenuComponent:
         self.x = pos[0]
         self.y = pos[1]
 
-    def addEvent(self, function, event):
-        self.events.append((function, event))
+    def addEvent(self, function, event, **kwargs):
+        # self.events.append((function, event))
+        self.events[function] = (event, kwargs)
 
     def addAnimation(self, function, event, **kwargs):
         self.animations[function] = (event, kwargs)
@@ -104,7 +105,7 @@ class Label(MenuComponent):
 
         self.text = text
         self.fontName = pygame.font.get_default_font()
-        # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["joystix"])
+        # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["openSans"])
         self.fontSize = fontSize
         self.bold = False
         self.italic = False

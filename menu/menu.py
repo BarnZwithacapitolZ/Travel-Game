@@ -58,7 +58,6 @@ class Menu:
     def animate(self, component):
         if hasattr(component, 'rect'):
             if len(component.animations) > 0:
-
                 for function, animation in list(component.animations.items()):
                     if animation[0] == 'onMouseOver':
                         function(component, self, function, **animation[1])
@@ -82,30 +81,30 @@ class Menu:
 
         if hasattr(component, 'rect'): # check the component has been drawn (if called before next tick)
             if len(component.events) > 0:
-                for event in component.events:
-                    if event[1] == 'onMouseClick':
+                for function, event in list(component.events.items()):
+                    if event[0] == 'onMouseClick':
                         if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
                             self.clickButton()
                             self.game.clickManager.setClicked(False)
-                            event[0](component, self)
+                            function(component, self, **event[1])
                             component.dirty = True
 
-                    if event[1] == 'onMouseOver':
+                    if event[0] == 'onMouseOver':
                         if component.rect.collidepoint((mx, my)) and not component.mouseOver:
                             component.mouseOver = True
-                            event[0](component, self)
+                            function(component, self, **event[1])
                             component.dirty = True
 
-                    if event[1] == 'onMouseOut':
+                    if event[0] == 'onMouseOut':
                         if not component.rect.collidepoint((mx, my)) and component.mouseOver:
                             component.mouseOver = False
-                            event[0](component, self)
+                            function(component, self, **event[1])
                             component.dirty = True
 
-                    if event[1] == 'onKeyPress':
+                    if event[0] == 'onKeyPress':
                         if self.game.textHandler.getPressed():
                             self.game.textHandler.setPressed(False)
-                            event[0](component, self)
+                            function(component, self, **event[1])
                             component.dirty = True
 
 
@@ -140,33 +139,38 @@ class MainMenu(Menu):
 
     def main(self):
         self.open = True
-        sidebar = Shape(self, (0, 169, 132), (config["graphics"]["displayWidth"] / 2, config["graphics"]["displayHeight"]), (0, 0))
-        otherbar = Shape(self, CREAM, (config["graphics"]["displayWidth"] / 2, config["graphics"]["displayHeight"]), (config["graphics"]["displayWidth"] / 2, 0))
+        sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
 
-        title1 = Label(self, "Transport", 70, Color("white"), (100, 100))
-        title2 = Label(self, "The", 30, Color("white"), (100, 170))
-        title3 = Label(self, "Public", 70, Color("white"), (100, 200))
+        x = (config["graphics"]["displayWidth"] / 2) - 180
+
+        title1 = Label(self, "Transport", 70, Color("white"), (x, 80))
+        title2 = Label(self, "The", 30, Color("white"), (x, title1.y + 70))
+        title3 = Label(self, "Public", 70, Color("white"), (x, title2.y + 30))
 
         title1.setItalic(True)
         title2.setItalic(True)
         title3.setItalic(True)
 
-        cont = Label(self, "Continue", 50,  BLACK, (100, 320))
-        editor = Label(self, "Level editor", 50, BLACK, (100, 380))
-        end = Label(self, "Quit", 50, BLACK, (100, 440))
+        cont = Label(self, "Continue", 50,  BLACK, (x, 290))
+        editor = Label(self, "Level editor", 50, BLACK, (x, cont.y + 60))
+        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60))
+        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
 
 
         cont.addEvent(continueGame, 'onMouseClick')
-        cont.addEvent(hoverOver, 'onMouseOver')
-        cont.addEvent(hoverOut, 'onMouseOut')
+        cont.addEvent(hoverOver, 'onMouseOver', x = x + 10)
+        cont.addEvent(hoverOut, 'onMouseOut', x = x)
 
-        editor.addEvent(hoverOver, 'onMouseOver')
-        editor.addEvent(hoverOut, 'onMouseOut')
         editor.addEvent(openMapEditor, 'onMouseClick')
+        editor.addEvent(hoverOver, 'onMouseOver', x = x + 10)
+        editor.addEvent(hoverOut, 'onMouseOut', x = x)
+
+        options.addEvent(hoverOver, 'onMouseOver', x = x + 10)
+        options.addEvent(hoverOut, 'onMouseOut', x = x)
 
         end.addEvent(closeGame, 'onMouseClick')
-        end.addEvent(hoverOver, 'onMouseOver')
-        end.addEvent(hoverOut, 'onMouseOut')
+        end.addEvent(hoverOver, 'onMouseOver', x = x + 10)
+        end.addEvent(hoverOut, 'onMouseOut', x = x)
 
         self.add(sidebar)
         # self.add(otherbar)
@@ -176,15 +180,16 @@ class MainMenu(Menu):
         self.add(title3)
         self.add(cont)
         self.add(editor)
+        self.add(options)
         self.add(end)
 
         # Temporarily load in the existing maps
-        y = 100
-        for mapName, path in self.game.mapLoader.getMaps().items():
-            m = Label(self, mapName, 30, BLACK, (600, y))
-            m.addEvent(loadMap, 'onMouseClick')
-            self.add(m)
-            y += 40
+        # y = 100
+        # for mapName, path in self.game.mapLoader.getMaps().items():
+        #     m = Label(self, mapName, 30, BLACK, (600, y))
+        #     m.addEvent(loadMap, 'onMouseClick')
+        #     self.add(m)
+        #     y += 40
     
 
 
@@ -210,7 +215,7 @@ class OptionMenu(Menu):
         self.game.spriteRenderer.getHud().setOpen(False)
         self.game.mapEditor.getHud().setOpen(False)
 
-        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (-500, 0))
+        sidebar = Shape(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
 
         paused = Label(self, "Paused", 70, BLACK, (-400, 100))
 

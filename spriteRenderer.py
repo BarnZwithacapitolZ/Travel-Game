@@ -77,7 +77,10 @@ class SpriteRenderer():
     def setRendering(self, rendering):
         self.rendering = rendering
         self.hud.main() if self.rendering else self.hud.close()
-        if self.rendering and not self.debug: self.openingMenu.main()
+        
+    def runOpeningMenu(self):
+        if self.rendering and not self.debug: 
+            self.openingMenu.main()
 
     def setCompleted(self, completed):
         self.completed = completed
@@ -301,8 +304,10 @@ class SpriteRenderer():
                 sprite.draw()
 
 
-    def render(self):
+    def render(self, color = None):
         if self.rendering:
+            if color is not None: self.game.renderer.prepareSurface(color)
+
             self.renderLayer(1, self.layer1)
             self.renderLayer(2, self.layer2)
             self.renderLayer(3, self.layer3)

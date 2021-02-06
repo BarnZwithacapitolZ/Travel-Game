@@ -20,7 +20,8 @@
         }
     }, 
     "fonts": {
-        "joystix": "joystix monospace.ttf"
+        "joystix": "joystix monospace.ttf",
+        "openSans": "open-sans/OpenSans-Bold.ttf"
     }, 
     "images": {
         "icon": "Icon.png", 

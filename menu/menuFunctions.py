@@ -24,15 +24,15 @@ def hoverBlack(obj, menu):
     obj.setColor(BLACK)
 
 
-def hoverOver(obj, menu):
+def hoverOver(obj, menu, speed = 1, x = 110):
     if hoverOverAnimation not in obj.getAnimations():
-        obj.addAnimation(hoverOverAnimation, 'onMouseOver')
+        obj.addAnimation(hoverOverAnimation, 'onMouseOver', speed = speed, x = x)
     obj.setColor(Color("white"))
 
-def hoverOut(obj, menu):
+def hoverOut(obj, menu, speed = 1, x = 100):
     if hoverOverAnimation in obj.getAnimations():
         obj.removeAnimation(hoverOverAnimation)
-    obj.addAnimation(hoverOutAnimation, 'onMouseOut')
+    obj.addAnimation(hoverOutAnimation, 'onMouseOut', speed = speed, x = x)
     obj.setColor(BLACK)
 
 
@@ -40,7 +40,14 @@ def hoverOut(obj, menu):
 def continueGame(obj, menu):
     menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
     menu.game.spriteRenderer.setRendering(True) #Load the hud
-    closeMenu(obj, menu, transitionLeft)
+    # closeMenu(obj, menu, transitionLeft)
+    
+    def callback(obj, menu, x):
+        menu.close()
+        menu.game.spriteRenderer.runOpeningMenu()
+
+    for component in menu.components:
+        component.addAnimation(transitionX, 'onLoad', speed = -50, transitionDirection = "right", x = -config["graphics"]["displayWidth"], callback = callback)
 
 
 def closeGame(obj, menu):
