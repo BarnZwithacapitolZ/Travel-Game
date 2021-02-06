@@ -103,18 +103,18 @@ def transitionRightBackground(obj, menu, animation):
 #### Text hover animations ####
 hoverspeed = 10
 
-def hoverOverAnimation(obj, menu, animation):
-    obj.x += hoverspeed * 10 * menu.game.dt
+def hoverOverAnimation(obj, menu, animation, speed, x):
+    obj.x += speed * 100 * menu.game.dt
 
-    if obj.x >= 110:
+    if obj.x >= x:
         obj.removeAnimation(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
-def hoverOutAnimation(obj, menu, animation):
-    obj.x -= hoverspeed * 10 * menu.game.dt
+def hoverOutAnimation(obj, menu, animation, speed, x):
+    obj.x -= speed * 100 * menu.game.dt
 
-    if obj.x <= 100:
+    if obj.x <= x:
         obj.removeAnimation(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()
 
