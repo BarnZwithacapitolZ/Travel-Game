@@ -154,7 +154,6 @@ class Game:
 
         # Game loop
         while self.playing:
-            self.renderer.prepareSurface(CREAM)
             self.__events()
             self.dt = self.clock.tick() / 1000
 
@@ -176,8 +175,9 @@ class Game:
 
     def __draw(self):
         #add sprites
-        self.spriteRenderer.render()
-        self.mapEditor.render()
+        # self.renderer.prepareSurface(LIGHTGREEN)
+        self.spriteRenderer.render(LIGHTGREEN)
+        self.mapEditor.render(CREAM)
 
         #add menus when not paused
         if self.paused: self.optionMenu.display() #To Do: Different option menus for sprite renderer and level editor
