@@ -28,6 +28,7 @@ class Layer(pygame.sprite.Sprite):
         self.connections = self.grid.getConnections()
 
         self.components = []
+        self.lines = []
 
 
     #### Getters ####
@@ -90,18 +91,19 @@ class Layer(pygame.sprite.Sprite):
     
     # Create the connections by drawing them to the screen
     def createConnections(self):
+        self.lines = []
         for connection in self.connections:
             if connection.getDraw():
-                self.drawConnection(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
+                self.createLines(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
 
                 if connection.getSideColor() is not None:
-                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
-                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
+                    self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
+                    self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
 
 
     # THESE DONT NEED TO BE DRAWN EACH FRAME, BLIT TO A SURFACE AND JUST DRAW THAT SURFACE
     # Draw a connection to the screen
-    def drawConnection(self, color, fromNode, toNode, thickness, offset):
+    def createLines(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset) # change in direction
         angle = math.atan2(dxy.x, dxy.y)
@@ -119,12 +121,18 @@ class Layer(pygame.sprite.Sprite):
 
         posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
         posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
-        pygame.draw.line(self.game.renderer.gameDisplay, color, posx, posy, int(thickness * scale))
+        self.lines.append({
+            "posx": posx,
+            "posy": posy,
+            "color": color,
+            "thickness": thickness * scale
+        })
 
 
     def resize(self):
         for component in self.components:
             component.dirty = True
+        self.createConnections()
 
 
     def draw(self):
@@ -132,7 +140,9 @@ class Layer(pygame.sprite.Sprite):
             component.draw()
 
         # does not need to be drawn each and every frame
-        self.createConnections()
+        # self.createConnections()
+        for line in self.lines:
+            pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
 
 
 
@@ -141,6 +151,7 @@ class Layer1(Layer):
         super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 1")
         self.addConnections()  
+        self.createConnections()
 
 
 class Layer2(Layer):
@@ -148,6 +159,7 @@ class Layer2(Layer):
         super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 2")
         self.addConnections()     
+        self.createConnections()
 
 
 
@@ -155,7 +167,8 @@ class Layer3(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
         super().__init__(spriteRenderer, groups, level, spacing)
         self.grid.createGrid("layer 3")
-        self.addConnections()            
+        self.addConnections()        
+        self.createConnections()
 
 
 
@@ -172,6 +185,7 @@ class EditorLayer1(Layer):
         super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 1")
         self.addConnections()
+        self.createConnections()
 
 
 
@@ -180,6 +194,7 @@ class EditorLayer2(Layer):
         super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 2")
         self.addConnections()
+        self.createConnections()
 
 
 class EditorLayer3(Layer):
@@ -187,6 +202,7 @@ class EditorLayer3(Layer):
         super().__init__(spriteRenderer, groups, level)
         self.grid.createFullGrid("layer 3")
         self.addConnections()
+        self.createConnections()
 
 
 class EditorLayer4(Layer):
