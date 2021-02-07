@@ -268,11 +268,7 @@ class EditorNode(Node):
                     self.clickManager.deleteStop(self)
                 elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
                     self.clickManager.deleteDestination(self)
-
             else:
-                # TODO: implement notification saying you can't place items on the top layer
-                # print("you cannot place items on the top layer!")
-                # self.spriteRenderer.showErrorText("Please Change layer to place items")
                 self.spriteRenderer.messageSystem.addMessage("You cannot place items on the top layer!")
          
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():

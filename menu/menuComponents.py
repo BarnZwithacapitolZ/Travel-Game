@@ -1,6 +1,7 @@
 import pygame 
 from pygame.locals import *
 from config import *
+from transitionFunctions import transitionMessageRight
 import string
 
 vec = pygame.math.Vector2
@@ -249,7 +250,7 @@ class Shape(MenuComponent):
     def setAlpha(self, alpha):
         self.alpha = alpha
 
-    def __render(self):
+    def render(self):
         self.dirty = False
 
         pos = vec(self.x, self.y) * self.menu.renderer.getScale()
@@ -279,7 +280,7 @@ class Shape(MenuComponent):
 
 
     def draw(self):
-        if self.dirty or self.rect is None: self.__render()
+        if self.dirty or self.rect is None: self.render()
         if self.alpha is not None:
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
@@ -295,7 +296,7 @@ class MessageBox(Shape):
         self.marginX = margin[0]
         self.marginY = margin[1]
         self.message = message
-        self.offset = vec(5, 5)
+        self.offset = vec(10, 10)
 
         self.addLabels(message)
 
@@ -331,6 +332,8 @@ class MessageBox(Shape):
                 finalMessage.append(word + ' ')
                 curWord += 1
 
+        del maxCharLimit, curWord
+
         biggestWidth, totalHeight = 0, 0
         for msg in finalMessage:
             m = Label(self.menu, msg, 25, Color("white"), (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
@@ -349,6 +352,26 @@ class MessageBox(Shape):
         #   y = 0 - the total height of the message box + height of the offset * 2 (for both sides)
         self.setPos((config["graphics"]["displayWidth"] - (biggestWidth + self.marginX + (self.offset.x * 2)) , 0 - (totalHeight + (self.offset.y * 2))))
 
+
+    def remove(self):
+        self.menu.components.remove(self)
+        for message in self.messages:
+            self.menu.components.remove(message)
+
+        del self
+
+
+    def draw(self):
+        if self.dirty or self.rect is None: self.render()
+        self.menu.renderer.addSurface(None, None, self.drawShape)
+
+        self.timer += self.menu.game.dt
+
+        if self.timer > 4:
+            self.addAnimation(transitionMessageRight, 'onLoad', speed = 18, x = config["graphics"]["displayWidth"])
+            # self.menu.components.remove(self)
+            # for message in self.messages:
+            #     self.menu.components.remove(message)
 
 
 class Image(MenuComponent):

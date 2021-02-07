@@ -124,9 +124,6 @@ class SpriteRenderer():
     def getLevelData(self):
         return self.levelData
 
-    def getClickManager(self):
-        return self.clickManager
-
     def getPersonClickManager(self):
         return self.personClickManager
 
@@ -144,9 +141,6 @@ class SpriteRenderer():
 
     def getSlowDownMeterAmount(self):
         return self.slowDownMeterAmount
-
-    def getMeterAmount(self):
-        return self.meterAmount
 
     def getDebug(self):
         return self.debug

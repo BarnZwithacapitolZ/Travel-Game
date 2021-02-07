@@ -292,10 +292,15 @@ def saveMap(obj, menu):
     text = text.replace(" ", "")
 
     # No input
-    if len(text) <= 0 or menu.game.mapLoader.checkMapExists(text):
+    if len(text) <= 0:
         # Maybe show some text explaining the error?
         menu.inputBox.setColor(RED)
         menu.inputBox.dirty = True
+        menu.game.mapEditor.getMessageSystem().addMessage("Map name cannot be empty!")
+    elif menu.game.mapLoader.checkMapExists(text):
+        menu.inputBox.setColor(RED)
+        menu.inputBox.dirty = True
+        menu.game.mapEditor.getMessageSystem().addMessage("Map name already exists!")
     else:
         # Save and close
         menu.game.mapEditor.saveLevelAs()

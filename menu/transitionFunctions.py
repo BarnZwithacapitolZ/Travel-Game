@@ -74,9 +74,18 @@ def transitionMessageDown(obj, menu, animation, speed, transitionDirection, y):
 
     if (transitionDirection == "down" and obj.y >= y) or (transitionDirection == "up" and obj.y < y):
         obj.removeAnimation(animation)
-        obj.y = y
+        obj.setPos((obj.x, y))
 
     # obj.rect.y = obj.y * menu.renderer.getScale()
+    obj.setRectPos()
+
+def transitionMessageRight(obj, menu, animation, speed, x):
+    obj.setPos((obj.x + speed * 100 * menu.game.dt, obj.y))
+
+    if obj.x >= x:
+        obj.removeAnimation(animation)
+        obj.remove()
+
     obj.setRectPos()
 
 def transitionLeft(obj, menu, animation):

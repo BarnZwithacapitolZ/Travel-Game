@@ -46,7 +46,7 @@ class Menu:
                 
 
     def display(self):    
-        for component in self.components:
+        for component in list(self.components): # we use list so we can delete from the array whilst looping through it (without causing flicking with double blits)
             component.draw()
 
             # only if the menu is open do we want to allow for interactions
@@ -200,6 +200,7 @@ class OptionMenu(Menu):
 
     def closeTransition(self):
         self.game.spriteRenderer.getHud().setOpen(True)
+        # self.game.mapEditor.getMessageSystem().setOpen(True)
         self.game.mapEditor.getHud().setOpen(True)
 
         for component in self.components:
@@ -213,6 +214,7 @@ class OptionMenu(Menu):
         
         self.game.paused = True
         self.game.spriteRenderer.getHud().setOpen(False)
+        # self.game.mapEditor.getMessageSystem().setOpen(False) 
         self.game.mapEditor.getHud().setOpen(False)
 
         sidebar = Shape(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
@@ -468,20 +470,6 @@ class EditorHud(GameHudLayout):
         self.main()
 
 
-    def updateErrorText(self, text):
-        mx, my = pygame.mouse.get_pos()
-        # we divide by the scale so that when we multiply by it later we get the location of the mouse
-        mx = (mx - self.game.renderer.getDifference()[0]) / self.renderer.getScale()
-        my = (my - self.game.renderer.getDifference()[1]) / self.renderer.getScale()
-
-        if hasattr(self, 'error'):
-            self.error.setText(text)
-            self.error.setPos((mx, my))
-            self.error.dirty = True
-            if self.error not in self.components:
-                self.add(self.error)
-
-
     def main(self):
         self.open = True
         self.fileDropdownOpen = False
@@ -498,8 +486,6 @@ class EditorHud(GameHudLayout):
         add = Label(self, "Add", 25, Color("white"), (self.addLocation, 10))
         delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, 10))
         run = Label(self, "Run", 25, Color("white"), (self.runLocation, 10))
-
-        self.error = Label(self, "there is an error probably", 25, RED, (0, 0))
 
         layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, 10))
         self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, 10))
@@ -532,7 +518,7 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (200, 150), (self.editLocation, 40))
+        box = Shape(self, BLACK, (200, 150), (self.editLocation, 40), 'rect', 0, [0, 0, 10, 10])
 
         textX = self.editLocation + 10
 
@@ -614,7 +600,7 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
         destinationSelected = True if clickType == EditorClickManager.ClickType.DESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (self.addLocation, 40))
+        box = Shape(self, BLACK, (200, 150), (self.addLocation, 40), 'rect', 0, [0, 0, 10, 10])
         connectionBox = Shape(self, GREEN, (200, 33), (self.addLocation, 45))
         stopBox = Shape(self, GREEN, (200, 33), (self.addLocation, 81))
         transportBox = Shape(self, GREEN, (200, 33), (self.addLocation, 116))
@@ -791,7 +777,7 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
         destinationSelected = True if clickType == EditorClickManager.ClickType.DDESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (self.deleteLocation, 40))
+        box = Shape(self, BLACK, (200, 150), (self.deleteLocation, 40), 'rect', 0, [0, 0, 10, 10])
         connectionBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 45))
         stopBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 81))
         transportBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 116))
@@ -834,7 +820,7 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (130, 220), (self.fileLocation, 40))
+        box = Shape(self, BLACK, (130, 220), (self.fileLocation, 40), 'rect', 0, [0, 0, 10, 10])
 
         textX = self.fileLocation + 10
         
@@ -1060,21 +1046,18 @@ class MessageHud(Menu):
 
 
     def addMessage(self, message):
-
-        if sum(isinstance(component, MessageBox) for component in self.components) > 0:
-            for component in self.components:
-                if isinstance(component, MessageBox):
-                    component.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = (component.y + component.height) + component.marginY)
-
-
         messageBox = MessageBox(self, message, (25, 25))
         messageBox.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = messageBox.marginY)
         self.add(messageBox)
         messageBox.addMessages()
 
-     
-        
+        if sum(isinstance(component, MessageBox) for component in self.components) > 0:
+            for component in self.components:
+                if isinstance(component, MessageBox):
+                    if transitionMessageDown not in component.getAnimations():
+                        component.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = (component.y + messageBox.height) + component.marginY)
 
+     
     def main(self):
         self.open = True
         
