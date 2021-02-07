@@ -311,7 +311,7 @@ class GridManager:
         # For each transportation in the map
         for transport in self.map["transport"][connectionType]:      
             possibleConnections = []
-            
+
             # for each connection, find the connection of the transportation
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
@@ -319,9 +319,10 @@ class GridManager:
                     possibleConnections.append(connection)
 
             # pick a random connection to change the direction
-            connection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
-            t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
-            self.transports.append(t)
+            if len(possibleConnections) > 0:
+                connection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
+                t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+                self.transports.append(t)
 
 
     # Add a transport to the map within the map editor
