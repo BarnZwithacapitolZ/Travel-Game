@@ -308,6 +308,8 @@ class GridManager:
         if len(self.connections) <= 0 or connectionType not in self.map["transport"]:
             return 
 
+        print(self.map["transport"][connectionType])
+
         # For each transportation in the map
         for transport in self.map["transport"][connectionType]:
             direction = random.randint(0, 1)
@@ -316,11 +318,13 @@ class GridManager:
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
                 if connection.getFrom().getNumber() == transport["location"]:
-                    # If the connection is the same as the direction, or its an end node (so theres only one direction)
-                    if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
-                        self.transports.append(t)
-                        break
+                    print(f"connection from: {connection.getFrom().getNumber()}, connection to: {connection.getTo().getNumber()}, connection direction: {connection.getDirection().value}, transport direction: {direction}")
+
+                    # # If the connection is the same as the direction, or its an end node (so theres only one direction)
+                    # if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
+                    t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+                    self.transports.append(t)
+                    break
 
 
     # Add a transport to the map within the map editor

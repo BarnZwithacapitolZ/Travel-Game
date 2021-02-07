@@ -94,23 +94,45 @@ class Transport(pygame.sprite.Sprite):
     def setConnection(self, nextNode):
         possibleNodes = []
         backwardsNodes = []
+        possibleConnections = []
+
+        # for connection in nextNode.getConnections():
+        #     print(connection.getFrom().getNumber(), connection.getTo().getNumber(), connection.getDirection())
+        #     if connection.getConnectionType() == self.currentConnection.getConnectionType():
+        #         if not isinstance(connection.getTo(), NODE.EntranceNode):
+        #             if connection.getDirection() == self.direction:
+        #                 possibleNodes.append(connection)
+        #             else:
+        #                 backwardsNodes.append(connection)
+
+        # #it can keep going the same direction
+        # if len(possibleNodes) > 0:
+        #     # if theres multiple possible nodes, pick a random one                          
+        #     self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
+        # else:
+        #     # self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
+        #     self.currentConnection = backwardsNodes[random.randint(0, len(backwardsNodes) - 1)]
+        #     self.direction = self.currentConnection.getDirection()
 
         for connection in nextNode.getConnections():
             if connection.getConnectionType() == self.currentConnection.getConnectionType():
                 if not isinstance(connection.getTo(), NODE.EntranceNode):
-                    if connection.getDirection() == self.direction:
-                        possibleNodes.append(connection)
-                    else:
-                        backwardsNodes.append(connection)
+                    possibleNodes.append(connection)
 
-        #it can keep going the same direction
-        if len(possibleNodes) > 0:
-            # if theres multiple possible nodes, pick a random one                          #TO DO - make transports follow specific path
-            self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
+        if len(possibleNodes) <= 1:
+            self.currentConnection = possibleNodes[0]
         else:
-            # self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
-            self.currentConnection = backwardsNodes[0]
-            self.direction = self.currentConnection.getDirection()
+            print("--------------")
+            print(self.currentConnection.getFrom().getNumber(), self.currentConnection.getTo().getNumber())
+            for connection in possibleNodes:
+                print("possible connections")
+                print(connection.getFrom().getNumber(), connection.getTo().getNumber())
+                if not (connection.getFrom().getNumber() == self.currentConnection.getFrom().getNumber() and connection.getTo().getNumber() == self.currentConnection.getTo().getNumber() \
+                    or connection.getFrom().getNumber() == self.currentConnection.getTo().getNumber() and connection.getTo().getNumber() == self.currentConnection.getFrom().getNumber()):
+                    possibleConnections.append(connection)
+        
+            self.currentConnection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
+
 
 
         self.currentNode.removeTransport(self)
