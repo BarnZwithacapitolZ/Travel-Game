@@ -101,8 +101,7 @@ class Layer(pygame.sprite.Sprite):
                     self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
 
 
-    # THESE DONT NEED TO BE DRAWN EACH FRAME, BLIT TO A SURFACE AND JUST DRAW THAT SURFACE
-    # Draw a connection to the screen
+    # Word out the x and y of each connection and append it to the list
     def createLines(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset) # change in direction
@@ -121,6 +120,7 @@ class Layer(pygame.sprite.Sprite):
 
         posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
         posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
+        
         self.lines.append({
             "posx": posx,
             "posy": posy,

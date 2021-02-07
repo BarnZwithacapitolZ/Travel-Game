@@ -23,6 +23,8 @@ class Connection:
         self.mouseOver = False
 
 
+
+
     #### Getters ####
     
     # Return the colour of the connection
@@ -99,7 +101,15 @@ class Connection:
         self.toNode = toNode
 
 
+    def updateConnections(self):
+        if self.draw:
+            layer = self.game.mapEditor.getGridLayer(self.connectionType)
+            layer.createConnections()
+
+
+
     def update(self):
+
         mx, my = pygame.mouse.get_pos()
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
@@ -112,13 +122,16 @@ class Connection:
         if d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and self.game.clickManager.getClicked():
             self.game.mapEditor.getClickManager().deleteConnection(self)
             self.game.clickManager.setClicked(False)
+            self.updateConnections()
 
         elif d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and not self.mouseOver:
             self.color = YELLOW
             self.mouseOver = True
+            self.updateConnections()
         
         elif not (d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer) and self.mouseOver:
             self.mouseOver = False
             self.setColor()
+            self.updateConnections()
 
 
