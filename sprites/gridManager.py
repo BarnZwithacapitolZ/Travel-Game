@@ -123,8 +123,8 @@ class GridManager:
 
 
     def addConnections(self, connectionType, A, B):
-        c1 = Connection(self.spriteRenderer, connectionType, A, B, Connection.Direction.FORWARDS) 
-        c2 = Connection(self.spriteRenderer, connectionType, B, A, Connection.Direction.BACKWARDS) 
+        c1 = Connection(self.spriteRenderer, connectionType, A, B, True) # only need to draw one of the connections
+        c2 = Connection(self.spriteRenderer, connectionType, B, A) 
         self.connections.append(c1) #forwards
         self.connections.append(c2) #backwards
 
@@ -308,28 +308,26 @@ class GridManager:
         if len(self.connections) <= 0 or connectionType not in self.map["transport"]:
             return 
 
-        print(self.map["transport"][connectionType])
-
         # For each transportation in the map
-        for transport in self.map["transport"][connectionType]:
-            direction = random.randint(0, 1)
-            
+        for transport in self.map["transport"][connectionType]:      
+            possibleConnections = []
+
             # for each connection, find the connection of the transportation
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
                 if connection.getFrom().getNumber() == transport["location"]:
-                    print(f"connection from: {connection.getFrom().getNumber()}, connection to: {connection.getTo().getNumber()}, connection direction: {connection.getDirection().value}, transport direction: {direction}")
+                    possibleConnections.append(connection)
 
-                    # # If the connection is the same as the direction, or its an end node (so theres only one direction)
-                    # if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                    t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
-                    self.transports.append(t)
-                    break
+            # pick a random connection to change the direction
+            connection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
+            t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+            self.transports.append(t)
+            break
 
 
     # Add a transport to the map within the map editor
     def addTransport(self, connectionType, connection, transport, running = True):
-        t = transport(self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+        t = transport(self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
         self.transports.append(t)
 
 

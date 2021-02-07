@@ -91,7 +91,7 @@ class Layer(pygame.sprite.Sprite):
     # Create the connections by drawing them to the screen
     def createConnections(self):
         for connection in self.connections:
-            if connection.getDirection() == Connection.Direction.FORWARDS: # From node
+            if connection.getDraw():
                 self.drawConnection(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
 
                 if connection.getSideColor() is not None:

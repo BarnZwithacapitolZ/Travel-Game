@@ -5,22 +5,17 @@ from config import *
 import os
 import random
 import math
-from enum import Enum
 vec = pygame.math.Vector2
 
 class Connection:
-    class Direction(Enum):
-        FORWARDS = 0
-        BACKWARDS = 1
-
-    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, direction):
+    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, draw = False):
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
         self.fromNode = fromNode
         self.toNode = toNode
-        self.direction = direction #0 forwards, 1 backwards
         self.sideColor = BLACK
+        self.draw = draw
 
         self.setColor()
         self.setLength()
@@ -65,13 +60,12 @@ class Connection:
         return self.connectionType
 
 
-    # Return the direction of the connection
-    def getDirection(self):
-        return self.direction
-
-
     def getConnectionType(self):
         return self.connectionType
+
+    # should the connection be drawn or not
+    def getDraw(self):
+        return self.draw
 
 
     #### Setters ####
