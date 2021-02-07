@@ -394,6 +394,10 @@ class GameHudLayout(Menu):
     def setCompletedText(self, text):
         return
 
+    @abc.abstractmethod
+    def updateSlowDownMeter(self, amount):
+        return
+
     
 
 class GameHud(GameHudLayout):
@@ -973,14 +977,25 @@ class PreviewHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+
+    def updateSlowDownMeter(self, amount):
+        if hasattr(self, 'slowDownMeterAmount'):
+            self.slowDownMeterAmount.setSize((amount, 20))
+            self.slowDownMeterAmount.dirty = True
+
+
     def main(self):
         self.open = True
 
+        meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
+
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         stop = Label(self, "Stop", 25, Color("white"), (20, 10))
+        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
+        slowDownMeterOutline = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12), 'rect', 2)
+        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
         completed = Image(self, "walkingWhite", Color("white"), (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
-
 
         stop.addEvent(hoverGreen, 'onMouseOver')
         stop.addEvent(hoverWhite, 'onMouseOut')
@@ -988,6 +1003,9 @@ class PreviewHud(GameHudLayout):
 
         self.add(topbar)
         self.add(stop)
+        self.add(slowDownMeter)
+        self.add(self.slowDownMeterAmount)
+        self.add(slowDownMeterOutline)
         self.add(completed)
         self.add(self.completedText)
 
