@@ -15,7 +15,7 @@ vec = pygame.math.Vector2
 
 
 class Transport(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
         self.groups = groups
         super().__init__(self.groups)
         
@@ -32,7 +32,6 @@ class Transport(pygame.sprite.Sprite):
         self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
         self.speed = float(decimal.Decimal(random.randrange(50, 60)))
-        self.direction = direction #0 forwards, 1 backwards
         
         self.mouseOver = False
         self.dirty = True
@@ -79,9 +78,6 @@ class Transport(pygame.sprite.Sprite):
     def setSpeed(self, speed):
         self.speed = speed
 
-    def setDirection(self, direction):
-        self.direction = direction
-
     def setMoving(self, moving):
         self.moving = moving
 
@@ -92,26 +88,23 @@ class Transport(pygame.sprite.Sprite):
 
     # Set the connection that the transport will follow next
     def setConnection(self, nextNode):
-        possibleNodes = []
-        backwardsNodes = []
+        totalConnections = []
+        possibleConnections = []
 
         for connection in nextNode.getConnections():
             if connection.getConnectionType() == self.currentConnection.getConnectionType():
                 if not isinstance(connection.getTo(), NODE.EntranceNode):
-                    if connection.getDirection() == self.direction:
-                        possibleNodes.append(connection)
-                    else:
-                        backwardsNodes.append(connection)
+                    totalConnections.append(connection)
 
-        #it can keep going the same direction
-        if len(possibleNodes) > 0:
-            # if theres multiple possible nodes, pick a random one                          #TO DO - make transports follow specific path
-            self.currentConnection = possibleNodes[random.randint(0, len(possibleNodes) - 1)]
+        if len(totalConnections) <= 1:
+            self.currentConnection = totalConnections[0]
         else:
-            # self.direction = CONNECTION.Connection.Direction(not self.direction.value) # Go the opposite direction
-            self.currentConnection = backwardsNodes[0]
-            self.direction = self.currentConnection.getDirection()
-
+            for connection in totalConnections:
+                if not (connection.getFrom().getNumber() == self.currentConnection.getFrom().getNumber() and connection.getTo().getNumber() == self.currentConnection.getTo().getNumber() \
+                    or connection.getFrom().getNumber() == self.currentConnection.getTo().getNumber() and connection.getTo().getNumber() == self.currentConnection.getFrom().getNumber()):
+                    possibleConnections.append(connection)
+        
+            self.currentConnection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
 
         self.currentNode.removeTransport(self)
         self.currentNode = self.currentConnection.getFrom()
@@ -170,7 +163,6 @@ class Transport(pygame.sprite.Sprite):
                     self.currentConnection = connection
                     break
             
-            self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
             self.currentNode.removeTransport(self)
             self.currentNode = self.currentConnection.getFrom()
             self.currentNode.addTransport(self)
@@ -400,7 +392,6 @@ class Transport(pygame.sprite.Sprite):
                                 self.currentConnection = connection
                                 break
 
-                        self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
                         self.currentNode.removeTransport(self)
                         self.currentNode = self.currentConnection.getFrom()
                         self.currentNode.addTransport(self)
@@ -439,8 +430,8 @@ class Transport(pygame.sprite.Sprite):
 
 
 class Taxi(Transport):
-    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
 
         self.imageName = "taxi"
         self.stopType = NODE.Node
@@ -555,7 +546,6 @@ class Taxi(Transport):
                                 self.currentConnection = connection
                                 break
 
-                        self.direction = self.currentConnection.getDirection() #make the transport move in the direction of the connection
                         self.currentNode.removeTransport(self)
                         self.currentNode = self.currentConnection.getFrom()
                         self.currentNode.addTransport(self)
@@ -599,20 +589,20 @@ class Taxi(Transport):
 
 
 class Bus(Transport):
-    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
         self.imageName = "bus"
         self.stopType = NODE.BusStop
 
 
 
 class Tram(Transport):
-    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
         self.imageName = "tram"
         self.stopType = NODE.TramStop
 
 
 class Metro(Transport):
-    def __init__(self, spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager):
-        super().__init__(spriteRenderer, groups, currentConnection, direction, running, clickManager, personClickManager)
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)

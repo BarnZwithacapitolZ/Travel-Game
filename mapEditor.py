@@ -25,6 +25,9 @@ class MapEditor(SpriteRenderer):
     def getAllowEdits(self):
         return self.allowEdits
 
+    def getClickManager(self):
+        return self.clickManager
+
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
@@ -66,6 +69,7 @@ class MapEditor(SpriteRenderer):
             self.levelData = self.gridLayer4.getGrid().getMap()
 
 
+
     # Save As function
     def saveLevelAs(self):
         # Name of the map
@@ -104,7 +108,7 @@ class MapEditor(SpriteRenderer):
             del config["maps"][self.levelData["mapName"]]
             dump(config)
 
-    # TODO: We want to create several connections for all the nodes in the same path as the created connections
+  
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
         distance = ((startNode.pos) - (endNode.pos)).length()
@@ -118,11 +122,13 @@ class MapEditor(SpriteRenderer):
             if d1 + d2 >= distance - buffer and d1 + d2 <= distance + buffer:
                 connections.append(node)
 
+
         for x in range(len(connections) - 1):
             newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1])
 
             # Only add the new connections to the nodes
             layer.addConnections(newConnections)
+            layer.createConnections()
 
             # Add the new connection to the level data
             connection = [connections[x].getNumber(), connections[x + 1].getNumber()]
@@ -242,10 +248,6 @@ class MapEditor(SpriteRenderer):
         if self.currentLayer == layer:
             for connection in group.getGrid().getConnections():
                 connection.update()    
-
-
-    def showErrorText(self, message):
-        self.hud.updateErrorText(message)
 
 
     def update(self):

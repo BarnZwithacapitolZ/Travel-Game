@@ -440,10 +440,13 @@ class EditorClickManager(ClickManager):
         if len(fromNode.getConnections()) <= 0:
             self.deleteTransport(fromNode)
             self.deleteStop(fromNode)
+            self.deleteDestination(fromNode)
         
         if len(toNode.getConnections()) <= 0:
             self.deleteTransport(toNode)
             self.deleteStop(toNode)
+            self.deleteDestination(toNode)
+
 
 
     def deleteTransport(self, node):

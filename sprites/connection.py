@@ -5,27 +5,24 @@ from config import *
 import os
 import random
 import math
-from enum import Enum
 vec = pygame.math.Vector2
 
 class Connection:
-    class Direction(Enum):
-        FORWARDS = 0
-        BACKWARDS = 1
-
-    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, direction):
+    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, draw = False):
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
         self.fromNode = fromNode
         self.toNode = toNode
-        self.direction = direction #0 forwards, 1 backwards
         self.sideColor = BLACK
+        self.draw = draw
 
         self.setColor()
         self.setLength()
 
         self.mouseOver = False
+
+
 
 
     #### Getters ####
@@ -65,13 +62,12 @@ class Connection:
         return self.connectionType
 
 
-    # Return the direction of the connection
-    def getDirection(self):
-        return self.direction
-
-
     def getConnectionType(self):
         return self.connectionType
+
+    # should the connection be drawn or not
+    def getDraw(self):
+        return self.draw
 
 
     #### Setters ####
@@ -105,7 +101,15 @@ class Connection:
         self.toNode = toNode
 
 
+    def updateConnections(self):
+        if self.draw:
+            layer = self.game.mapEditor.getGridLayer(self.connectionType)
+            layer.createConnections()
+
+
+
     def update(self):
+
         mx, my = pygame.mouse.get_pos()
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
@@ -118,13 +122,16 @@ class Connection:
         if d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and self.game.clickManager.getClicked():
             self.game.mapEditor.getClickManager().deleteConnection(self)
             self.game.clickManager.setClicked(False)
+            self.updateConnections()
 
         elif d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and not self.mouseOver:
             self.color = YELLOW
             self.mouseOver = True
+            self.updateConnections()
         
         elif not (d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer) and self.mouseOver:
             self.mouseOver = False
             self.setColor()
+            self.updateConnections()
 
 
