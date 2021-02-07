@@ -86,7 +86,7 @@ class Game:
             if e.type == pygame.QUIT:
                 self.__quit()
 
-            if e.type == pygame.VIDEORESIZE:
+            elif e.type == pygame.VIDEORESIZE:
                 self.renderer.setScale(e.size, self.fullscreen)
                 # self.spriteRenderer.resize()
                 # self.mapEditor.resize()

@@ -63,6 +63,8 @@ class MenuComponent:
         self.y = pos[1]
         self.size = size
         self.pos = pos
+        self.offset = vec(0, 0)
+
 
         self.events = {}
         self.animations = {}
@@ -84,6 +86,9 @@ class MenuComponent:
         self.x = pos[0]
         self.y = pos[1]
 
+    def setOffset(self, offset):
+        self.offset = offset
+
     def addEvent(self, function, event, **kwargs):
         # self.events.append((function, event))
         self.events[function] = (event, kwargs)
@@ -96,6 +101,10 @@ class MenuComponent:
 
     def getAnimations(self):
         return self.animations
+
+    def getOffset(self):
+        return self.offset
+
 
 
 
@@ -111,13 +120,12 @@ class Label(MenuComponent):
         self.italic = False
         self.underline = False
         
-        self.font = pygame.font.Font(self.fontName, self.fontSize)
-
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
 
     def getFontSize(self):
-        return self.font.size(self.text)
+        # we don't want to use self.font since this is multiplied by the display size, which we don't want
+        return pygame.font.Font(self.fontName, self.fontSize).size(self.text)
 
     def setFontName(self, fontName):
         self.fontName = fontName
@@ -281,14 +289,32 @@ class Shape(MenuComponent):
 
 class MessageBox(Shape):
     def __init__(self, menu, message, margin = tuple()):   
-        super().__init__(menu, Color("white"), (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
+        super().__init__(menu, GREEN, (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
         self.timer = 0
         self.messages = []
         self.marginX = margin[0]
         self.marginY = margin[1]
         self.message = message
+        self.offset = vec(5, 5)
 
         self.addLabels(message)
+
+    def setPos(self, pos = tuple()):
+        self.x = pos[0]
+        self.y = pos[1]
+        for message in self.messages:
+            width = message.getFontSize()[0]
+            message.setPos(((pos[0] + self.width) - (width + self.offset.x), (pos[1] + self.offset.y) + message.offset.y))
+
+
+    def setRectPos(self):
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+        for message in self.messages:
+            if hasattr(message, 'rect'):
+                message.rect.x = message.x * self.menu.renderer.getScale()
+                message.rect.y = message.y * self.menu.renderer.getScale()
+
 
     def addMessages(self):
         for message in self.messages:
@@ -307,10 +333,9 @@ class MessageBox(Shape):
 
         biggestWidth, totalHeight = 0, 0
         for msg in finalMessage:
-            m = Label(self.menu, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
+            m = Label(self.menu, msg, 25, Color("white"), (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
             width, height = m.getFontSize()
-            m.setPos((config["graphics"]["displayWidth"] - (width + self.marginX), (self.marginY + totalHeight)))
-            # m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
+            m.setOffset(vec(0, totalHeight))
             totalHeight += height
 
             if width > biggestWidth:
@@ -318,8 +343,11 @@ class MessageBox(Shape):
 
             self.messages.append(m)
 
-        self.setSize((biggestWidth + 10, totalHeight + 10))
-        self.setPos(((config["graphics"]["displayWidth"] - (biggestWidth + self.marginX)) - 5, (self.marginY - 5)))
+        self.setSize((biggestWidth + (self.offset.x * 2), totalHeight + (self.offset.y * 2)))
+        # pos: 
+        #   x = displaywidth - (width of the biggest message + width of the margin + width of the offset * 2 (for both sides)
+        #   y = 0 - the total height of the message box + height of the offset * 2 (for both sides)
+        self.setPos((config["graphics"]["displayWidth"] - (biggestWidth + self.marginX + (self.offset.x * 2)) , 0 - (totalHeight + (self.offset.y * 2))))
 
 
 

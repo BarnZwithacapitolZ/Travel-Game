@@ -1018,52 +1018,63 @@ class MessageHud(Menu):
         super().__init__(renderer)
         self.messages = []
 
+    # def addMessage(self, message):
+    #     # add the message to the top of the stack
+    #     # message is displayed in a message box object
+    #     # message box object has animation to come from top right hand corner; starts timer in message box object
+    #     # shift down all other boxes in the messages
+    #     def callback(obj, menu, y):
+    #         obj.y = y
+
+    #     maxCharLimit = 25
+    #     curWord = 0
+    #     finalMessage = ['']
+    #     for word in message.split():
+    #         if len(finalMessage[curWord]) + len(word) < maxCharLimit:
+    #             finalMessage[curWord] += word + ' '
+    #         else:
+    #             finalMessage.append(word + ' ')
+    #             curWord += 1
+
+    #     messages = []
+    #     x, y = 30, 30,
+    #     biggestWidth, totalHeight = 0, 0
+    #     for msg in finalMessage:
+    #         m = Label(self, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
+    #         width, height = m.getFontSize()
+    #         m.setPos((config["graphics"]["displayWidth"] - (width + x), (y + totalHeight) - 100))
+    #         m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
+    #         totalHeight += height
+
+    #         if width > biggestWidth:
+    #             biggestWidth = width
+
+    #         messages.append(m)
+
+    #     box = Shape(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
+    #     box.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y - 5, callback = callback)
+
+    #     self.add(box)
+    #     for msg in messages:
+    #         self.add(msg)
+
+
     def addMessage(self, message):
-        # add the message to the top of the stack
-        # message is displayed in a message box object
-        # message box object has animation to come from top right hand corner; starts timer in message box object
-        # shift down all other boxes in the messages
-        def callback(obj, menu, y):
-            obj.y = y
 
-        maxCharLimit = 25
-        curWord = 0
-        finalMessage = ['']
-        for word in message.split():
-            if len(finalMessage[curWord]) + len(word) < maxCharLimit:
-                finalMessage[curWord] += word + ' '
-            else:
-                finalMessage.append(word + ' ')
-                curWord += 1
+        if sum(isinstance(component, MessageBox) for component in self.components) > 0:
+            for component in self.components:
+                if isinstance(component, MessageBox):
+                    component.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = (component.y + component.height) + component.marginY)
 
-        messages = []
-        x, y = 30, 30,
-        biggestWidth, totalHeight = 0, 0
-        for msg in finalMessage:
-            m = Label(self, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
-            width, height = m.getFontSize()
-            m.setPos((config["graphics"]["displayWidth"] - (width + x), (y + totalHeight) - 100))
-            m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
-            totalHeight += height
 
-            if width > biggestWidth:
-                biggestWidth = width
+        messageBox = MessageBox(self, message, (25, 25))
+        messageBox.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = messageBox.marginY)
+        self.add(messageBox)
+        messageBox.addMessages()
 
-            messages.append(m)
-
-        box = Shape(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
-        box.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y - 5, callback = callback)
-
-        self.add(box)
-        for msg in messages:
-            self.add(msg)
-
+     
         
 
     def main(self):
         self.open = True
         
-        message = MessageBox(self, "this is a test", (30, 30))
-        self.add(message)
-        message.addMessages()
-     
