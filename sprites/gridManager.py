@@ -22,6 +22,7 @@ class GridManager:
 
         self.nodes = []
         self.connections = []
+        self.tempConnections = []
         self.transports = []
         self.destinations = []
         self.entrances = []
@@ -88,6 +89,10 @@ class GridManager:
         return self.connections
 
 
+    def getTempConnections(self):
+        return self.tempConnections
+
+
     # Return the transportations, in a list for each layer
     def getTransports(self):
         return self.transports
@@ -122,11 +127,16 @@ class GridManager:
         return positions
 
 
-    def addConnections(self, connectionType, A, B):
-        c1 = Connection(self.spriteRenderer, connectionType, A, B, True) # only need to draw one of the connections
-        c2 = Connection(self.spriteRenderer, connectionType, B, A) 
-        self.connections.append(c1) #forwards
-        self.connections.append(c2) #backwards
+    def addConnections(self, connectionType, A, B, temp = False):
+        c1 = Connection(self.spriteRenderer, connectionType, A, B, temp, True) # only need to draw one of the connections
+        c2 = Connection(self.spriteRenderer, connectionType, B, A, temp) 
+
+        if temp:
+            self.tempConnections.append(c1)
+            self.tempConnections.append(c2)
+        else:
+            self.connections.append(c1) #forwards
+            self.connections.append(c2) #backwards
 
         return c1, c2
 
@@ -134,6 +144,10 @@ class GridManager:
     def removeConnections(self, connections = []):
         for connection in connections:
             self.connections.remove(connection)
+
+
+    def removeTempConnections(self):
+        self.tempConnections = []
 
 
     def getOppositeConnection(self, currentConnection):

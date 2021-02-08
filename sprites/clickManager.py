@@ -351,6 +351,7 @@ class EditorClickManager(ClickManager):
         super().__init__(game)
         self.startNode = None # A
         self.endNode = None # B
+        self.tempEndNode = None # used for visualizing path
 
         self.clickType = EditorClickManager.ClickType.CONNECTION
         self.addType = "metro"
@@ -361,6 +362,9 @@ class EditorClickManager(ClickManager):
 
     def getEndNode(self):
         return self.endNode
+
+    def getTempEndNode(self):
+        return self.tempEndNode
 
     def getClickType(self):
         return self.clickType
@@ -386,6 +390,7 @@ class EditorClickManager(ClickManager):
         self.startNode.setCurrentImage(1)
         self.createConnection()
 
+
     def setEndNode(self, node):
         # If the end node is on a different layer to the start node, make it be the start node
         if node.getConnectionType() != self.startNode.getConnectionType():
@@ -397,6 +402,28 @@ class EditorClickManager(ClickManager):
         self.endNode.setCurrentImage(2)
         self.createConnection()
 
+
+    def setTempEndNode(self, node):
+        # if its not on the same layer we can't visualize it 
+        if node.getConnectionType() != self.startNode.getConnectionType():
+            return
+
+        self.tempEndNode = node
+        self.visualizeConnection()
+        
+
+    def removeTempEndNode(self):
+        self.game.mapEditor.removeVisualization(self.tempEndNode.getConnectionType())
+        self.tempEndNode = None
+    
+
+    def visualizeConnection(self):
+        if self.startNode is not None and self.tempEndNode is not None:
+            if self.startNode.getNumber() != self.tempEndNode.getNumber():
+                if self.startNode.getConnectionType() == self.tempEndNode.getConnectionType():
+                    self.game.mapEditor.visualizeConnection(self.startNode.getConnectionType(), self.startNode, self.tempEndNode)
+
+            # self.tempEndNode = None
 
     def createConnection(self):
         if self.startNode is not None and self.endNode is not None: # check both start and end nodes are set

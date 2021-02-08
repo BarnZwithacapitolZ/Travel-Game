@@ -108,7 +108,36 @@ class MapEditor(SpriteRenderer):
             del config["maps"][self.levelData["mapName"]]
             dump(config)
 
-  
+
+    def visualizeConnection(self, connectionType, startNode, endNode):
+        layer = self.getGridLayer(connectionType)
+        distance = ((startNode.pos) - (endNode.pos)).length()
+        connections = []
+
+        for node in layer.getGrid().getNodes():
+            buffer = 0.1 # radius around the line to include nodes within
+            d1 = (node.pos - startNode.pos).length()
+            d2 = (node.pos - endNode.pos).length()
+
+            if d1 + d2 >= distance - buffer and d1 + d2 <= distance + buffer:
+                connections.append(node)
+
+        for x in range(len(connections) - 1):
+            newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1], True)
+
+            # Only add the new connections to the nodes
+            layer.addTempConnections(newConnections)
+            layer.createConnections()
+
+
+    def removeVisualization(self, connectionType):
+        layer = self.getGridLayer(connectionType)
+
+        layer.removeTempConnections()
+        layer.getGrid().removeTempConnections()
+        layer.createConnections()
+
+
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
         distance = ((startNode.pos) - (endNode.pos)).length()
@@ -125,6 +154,7 @@ class MapEditor(SpriteRenderer):
 
         for x in range(len(connections) - 1):
             newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1])
+
 
             # Only add the new connections to the nodes
             layer.addConnections(newConnections)

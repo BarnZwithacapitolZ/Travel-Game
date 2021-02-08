@@ -250,7 +250,7 @@ class EditorNode(Node):
             pass
 
         # Cant click on a node in the top layer
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getAllowEdits():
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getAllowEdits(): # click event
             self.game.clickManager.setClicked(False)
 
             if self.game.mapEditor.getLayer() != 4:
@@ -271,17 +271,23 @@ class EditorNode(Node):
             else:
                 self.spriteRenderer.messageSystem.addMessage("You cannot place items on the top layer!")
          
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
+        elif self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits(): #hover over event
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)   
+
+            if self.clickManager.getStartNode() is not None:
+                self.clickManager.setTempEndNode(self)
 
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4: #hover out event
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
+
+            if self.clickManager.getTempEndNode() is not None:
+                self.clickManager.removeTempEndNode()
 
 
 

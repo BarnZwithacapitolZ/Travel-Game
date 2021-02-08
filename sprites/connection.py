@@ -8,21 +8,25 @@ import math
 vec = pygame.math.Vector2
 
 class Connection:
-    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, draw = False):
+    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, temp, draw = False):
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
         self.fromNode = fromNode
         self.toNode = toNode
         self.sideColor = BLACK
+        self.temp = temp
         self.draw = draw
+
+        self.colors = [RED, GREY, GREEN]
+
+        if self.temp:
+            self.colors = [TEMPRED, TEMPGREY, TEMPGREEN]
 
         self.setColor()
         self.setLength()
 
         self.mouseOver = False
-
-
 
 
     #### Getters ####
@@ -75,11 +79,11 @@ class Connection:
     # Set the colour of the connection depending on the type 
     def setColor(self):
         if self.connectionType == 1 or self.connectionType == "layer 1":
-            self.color = RED
+            self.color = self.colors[0]
         elif self.connectionType == 2 or self.connectionType == "layer 2":
-            self.color = GREY
+            self.color = self.colors[1]
         elif self.connectionType == 3 or self.connectionType == "layer 3":
-            self.color = GREEN
+            self.color = self.colors[2]
 
 
     # Set the length and distance of the connection from point A (from) to B (to)

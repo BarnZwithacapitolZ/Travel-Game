@@ -65,6 +65,16 @@ class Layer(pygame.sprite.Sprite):
             connection.getFrom().removeConnection(connection)
 
 
+    def addTempConnections(self, connections):
+        for connection in connections:
+            connection.getFrom().addConnection(connection)
+
+
+    def removeTempConnections(self):
+        for connection in self.grid.getTempConnections():
+            connection.getFrom().removeConnection(connection)
+
+
     # Add a person to the layer
     def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
@@ -91,8 +101,9 @@ class Layer(pygame.sprite.Sprite):
     
     # Create the connections by drawing them to the screen
     def createConnections(self):
+        connections = self.grid.getTempConnections() + self.connections
         self.lines = []
-        for connection in self.connections:
+        for connection in connections:
             if connection.getDraw():
                 self.createLines(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
 
