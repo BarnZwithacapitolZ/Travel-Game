@@ -356,6 +356,10 @@ class EditorClickManager(ClickManager):
         self.clickType = EditorClickManager.ClickType.CONNECTION
         self.addType = "metro"
 
+    def clearNodes(self):
+        self.startNode = None
+        self.endNode = None
+        self.tempEndNode = None
 
     def getStartNode(self):
         return self.startNode

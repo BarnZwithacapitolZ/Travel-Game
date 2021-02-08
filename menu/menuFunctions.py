@@ -190,6 +190,8 @@ def toggleFileDropdown(obj, menu):
 
 def newMap(obj, menu):
     menu.game.mapEditor.createLevel() # no level creates an empty, clear map    
+    menu.game.mapEditor.getClickManager().clearNodes()
+    menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
     clearMenu(obj, menu)
 
 
