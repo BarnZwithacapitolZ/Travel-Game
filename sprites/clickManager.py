@@ -413,21 +413,21 @@ class EditorClickManager(ClickManager):
             return
 
         self.tempEndNode = node
-        self.visualizeConnection()
+        self.createTempConnection()
         
 
     def removeTempEndNode(self):
-        self.game.mapEditor.removeVisualization(self.tempEndNode.getConnectionType())
+        self.game.mapEditor.removeAllTempConnections(self.tempEndNode.getConnectionType())
         self.tempEndNode = None
     
 
-    def visualizeConnection(self):
-        if self.startNode is not None and self.tempEndNode is not None:
-            if self.startNode.getNumber() != self.tempEndNode.getNumber():
-                if self.startNode.getConnectionType() == self.tempEndNode.getConnectionType():
-                    self.game.mapEditor.visualizeConnection(self.startNode.getConnectionType(), self.startNode, self.tempEndNode)
+    def createTempConnection(self):
+        if self.startNode is not None and self.tempEndNode is not None: # check both start and end nodes are set
+            if self.startNode.getNumber() != self.tempEndNode.getNumber(): # check the start node is not the same as the end node
+                if self.startNode.getConnectionType() == self.tempEndNode.getConnectionType(): # check both nodes are on the same layer
+                    # create a new temporary connection
+                    self.game.mapEditor.createTempConnection(self.startNode.getConnectionType(), self.startNode, self.tempEndNode)
 
-            # self.tempEndNode = None
 
     def createConnection(self):
         if self.startNode is not None and self.endNode is not None: # check both start and end nodes are set

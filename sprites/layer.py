@@ -23,9 +23,6 @@ class Layer(pygame.sprite.Sprite):
         self.level = level
    
         self.grid = GridManager(self, self.groups, self.level, spacing) # each layer has its own grid manager
-        
-        self.nodes = self.grid.getNodes()
-        self.connections = self.grid.getConnections()
 
         self.components = []
         self.lines = []
@@ -51,7 +48,7 @@ class Layer(pygame.sprite.Sprite):
     # Add the connections to each of the nodes in each connection, given a set of connections
     def addConnections(self, connections = None):
         if connections is None:
-            connections = self.connections
+            connections = self.grid.getConnections()
 
         for connection in connections:
             connection.getFrom().addConnection(connection)
@@ -59,7 +56,7 @@ class Layer(pygame.sprite.Sprite):
     
     def removeConnections(self, connections = None):
         if connections is None:
-            connections = self.connections
+            connections = self.grid.getConnections()
 
         for connection in connections:
             connection.getFrom().removeConnection(connection)
@@ -78,7 +75,7 @@ class Layer(pygame.sprite.Sprite):
     # Add a person to the layer
     def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
-        if len(self.nodes) <= 0 or len(self.grid.getEntrances()) <= 0:
+        if len(self.grid.getNodes()) <= 0 or len(self.grid.getEntrances()) <= 0:
             return 
 
         if destinations == None:
@@ -101,7 +98,7 @@ class Layer(pygame.sprite.Sprite):
     
     # Create the connections by drawing them to the screen
     def createConnections(self):
-        connections = self.grid.getTempConnections() + self.connections
+        connections = self.grid.getTempConnections() + self.grid.getConnections()
         self.lines = []
         for connection in connections:
             if connection.getDraw():
@@ -180,7 +177,6 @@ class Layer3(Layer):
         self.grid.createGrid("layer 3")
         self.addConnections()        
         self.createConnections()
-
 
 
 class Layer4(Layer):
