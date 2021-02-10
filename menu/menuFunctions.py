@@ -295,16 +295,17 @@ def saveMap(obj, menu):
 
     # No input
     if len(text) <= 0:
-        # Maybe show some text explaining the error?
         menu.inputBox.setColor(RED)
         menu.inputBox.dirty = True
         menu.game.mapEditor.getMessageSystem().addMessage("Map name cannot be empty!")
+    # name already exists
     elif menu.game.mapLoader.checkMapExists(text):
         menu.inputBox.setColor(RED)
         menu.inputBox.dirty = True
         menu.game.mapEditor.getMessageSystem().addMessage("Map name already exists!")
     else:
         # Save and close
+        print(menu.game.mapEditor.getLevelData())
         menu.game.mapEditor.saveLevelAs()
         closeMapEditor(obj, menu)
 

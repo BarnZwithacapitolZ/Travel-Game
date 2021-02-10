@@ -143,8 +143,13 @@ class ImageLoader:
         self.loadAllImages()
 
     def loadAllImages(self):
-        for key, image in config["images"].items():
-            i = pygame.image.load(os.path.join(ASSETSFOLDER, image)).convert_alpha()
+        for key, data in config["images"].items():
+            if data["alpha"]:
+                i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert_alpha()
+            else:
+                i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert()
+                # i.set_colorkey()
+
             self.images[key] = i
 
     def getImage(self, key):

@@ -177,7 +177,7 @@ class Game:
     def __draw(self):
         #add sprites
         # self.renderer.prepareSurface(LIGHTGREEN)
-        self.spriteRenderer.render(LIGHTGREEN)
+        self.spriteRenderer.render(CREAM)
         self.mapEditor.render(CREAM)
 
         #add menus when not paused
