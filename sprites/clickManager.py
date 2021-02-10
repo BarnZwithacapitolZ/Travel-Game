@@ -391,8 +391,9 @@ class EditorClickManager(ClickManager):
 
     def setStartNode(self, node):
         self.startNode = node
-        self.startNode.setCurrentImage(1)
-        self.createConnection()
+        if self.startNode is not None:
+            self.startNode.setCurrentImage(1)
+            self.createConnection()
 
 
     def setEndNode(self, node):

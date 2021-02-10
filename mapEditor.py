@@ -69,6 +69,14 @@ class MapEditor(SpriteRenderer):
             self.levelData = self.gridLayer4.getGrid().getMap()
 
 
+    # check the user can save the level by meeting the criteria
+    def canSaveLevel(self):
+        if 'layer 1' not in self.levelData['connections'] and 'layer 2' not in self.levelData['connections'] and 'layer 3' not in self.levelData['connections']:
+            return False, "You haven't added anything to the map!"
+        elif 'layer 2' not in self.levelData['connections'] or len(self.levelData['connections']['layer 2']) <= 0: # no layer 2 connections for the player to spawn on
+            return False, "There must be a road connection for people to spawn on!"
+
+        return True
 
     # Save As function
     def saveLevelAs(self):
@@ -277,6 +285,12 @@ class MapEditor(SpriteRenderer):
     def update(self):
         if self.rendering:
             self.allSprites.update()
+
+            # if there is a click and a connection is not set, remove the start node
+            if self.clickManager.getStartNode() is not None and self.game.clickManager.getClicked():
+                self.clickManager.setStartNode(None)
+                self.game.clickManager.setClicked(False)
+
 
             if self.clickManager.getClickType() == EditorClickManager.ClickType.DCONNECTION:
                 self.updateConnection(1, self.gridLayer1)

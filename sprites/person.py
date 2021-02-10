@@ -317,7 +317,6 @@ class Person(pygame.sprite.Sprite):
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             self.clickManager.setPerson(None)
 
-
         # Click event
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
             if self.currentNode.getMouseOver():

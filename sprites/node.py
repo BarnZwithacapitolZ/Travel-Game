@@ -244,10 +244,7 @@ class EditorNode(Node):
         mx, my = pygame.mouse.get_pos()
         mx -= self.game.renderer.getDifference()[0]
         my -= self.game.renderer.getDifference()[1]
-
-        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-            # Unset the clicked on node
-            pass
+          
 
         # Cant click on a node in the top layer
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getAllowEdits(): # click event
@@ -271,9 +268,10 @@ class EditorNode(Node):
             else:
                 self.spriteRenderer.messageSystem.addMessage("You cannot place items on the top layer!")
          
+        # hover over event
         elif self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits(): #hover over event
             self.mouseOver = True
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)   
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)  
 
             if self.clickManager.getStartNode() is not None:
                 self.clickManager.setTempEndNode(self)
@@ -281,6 +279,7 @@ class EditorNode(Node):
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
+        # hover out event
         elif not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4: #hover out event
             self.mouseOver = False
             self.currentImage = 0
@@ -288,7 +287,6 @@ class EditorNode(Node):
 
             if self.clickManager.getTempEndNode() is not None:
                 self.clickManager.removeTempEndNode()
-
 
 
 
