@@ -10,6 +10,7 @@
         "displayWidth": 1024, 
         "displayHeight": 576, 
         "antiAliasing": true, 
+        "smoothCorners": true,
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {

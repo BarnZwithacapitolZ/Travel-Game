@@ -38,17 +38,13 @@ def hoverOut(obj, menu, speed = 1, x = 100):
 
 ##### Main-Menu Functions #####
 def continueGame(obj, menu):
-    menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
-    menu.game.spriteRenderer.setRendering(True) #Load the hud
-    # closeMenu(obj, menu, transitionLeft)
-    
-    def callback(obj, menu, x):
+    def callback(obj, menu):
+        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
+        menu.game.spriteRenderer.setRendering(True, True) #Load the hud
         menu.close()
-        menu.game.spriteRenderer.runOpeningMenu()
+        obj.y = 0
 
-    for component in menu.components:
-        component.addAnimation(transitionX, 'onLoad', speed = -50, transitionDirection = "right", x = -config["graphics"]["displayWidth"], callback = callback)
-
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 def closeGame(obj, menu):
     menu.close()
@@ -56,10 +52,14 @@ def closeGame(obj, menu):
 
 
 def openMapEditor(obj, menu):
-    menu.game.mapEditor.createLevel()
-    menu.game.mapEditor.setRendering(True)
-    addConnection(obj, menu) # Set the default hud option to adding a connection
-    closeMenu(obj, menu, transitionLeft)
+    def callback(obj, menu):
+        menu.game.mapEditor.createLevel()
+        menu.game.mapEditor.setRendering(True, True) #Load the hud
+        addConnection(obj, menu)
+        menu.close()
+        obj.y = 0
+
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 
 def loadMap(obj, menu):
@@ -74,12 +74,24 @@ def loadMap(obj, menu):
 
 # Game option menu
 def showMainMenu(obj, menu):
-    menu.close()
-    menu.game.paused = False
-    menu.game.spriteRenderer.setRendering(False) # Always close the Game
-    menu.game.mapEditor.setRendering(False) # Always close the Editor
-    menu.game.textHandler.setActive(False) # Always close any open inputs
-    menu.game.mainMenu.main()
+    # menu.close()
+    # menu.game.paused = False
+    # menu.game.spriteRenderer.setRendering(False) # Always close the Game
+    # menu.game.mapEditor.setRendering(False) # Always close the Editor
+    # menu.game.textHandler.setActive(False) # Always close any open inputs
+    # menu.game.mainMenu.main()
+
+    def callback(obj, menu):
+        menu.game.paused = False
+        menu.game.spriteRenderer.setRendering(False) # Always close the Game
+        menu.game.mapEditor.setRendering(False) # Always close the Editor
+        menu.game.textHandler.setActive(False) # Always close any open inputs
+        menu.game.mainMenu.main(True)
+        menu.close()
+        obj.y = 0
+
+    menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
+
 
 
 def unpause(obj, menu):

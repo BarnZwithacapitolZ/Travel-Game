@@ -171,3 +171,31 @@ def successAnimationDown(obj, menu, animation):
         obj.removeAnimation(animation)
         obj.setColor(BLACK)
     obj.dirty = True
+
+
+
+
+
+def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDirection = 'up'):
+    obj.y += speed * 100 * menu.game.dt
+
+    if transitionDirection == 'up':
+        if (half == 'first' and obj.y <= 0) or (half == 'second' and obj.y + obj.height <= 0):
+            obj.removeAnimation(animation)
+            callback(obj, menu)
+    else:
+        if (half == 'first' and obj.y >= 0) or (half == 'second' and obj.y >= config["graphics"]["displayHeight"]):
+            obj.removeAnimation(animation)
+            callback(obj, menu)
+
+    obj.rect.y = obj.y * menu.renderer.getScale()
+
+
+def slideTransitionX(obj, menu, animation, speed, half, callback):
+    obj.x += speed * 100 * menu.game.dt
+
+    if (half == 'first' and obj.x >= 0) or (half == 'second' and obj.x >= config["graphics"]["displayWidth"]):
+        obj.removeAnimation(animation)
+        callback(obj, menu)
+
+    obj.rect.x = obj.x * menu.renderer.getScale()

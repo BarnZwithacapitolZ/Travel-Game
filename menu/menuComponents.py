@@ -155,7 +155,7 @@ class Label(MenuComponent):
         self.font.set_italic(self.italic)
         self.font.set_underline(self.underline)
 
-        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color)
+        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color).convert_alpha()
 
         self.rect = self.image.get_rect()
 
@@ -228,9 +228,12 @@ class Shape(MenuComponent):
     def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
         super().__init__(menu, color, size, pos)
         self.shapeType = shapeType
-        self.shapeOutline = shapeOutline
+        self.shapeOutline = shapeOutline        
         self.shapeBorderRadius = shapeBorderRadius
         self.alpha = alpha
+
+        if not config["graphics"]["smoothCorners"]:
+            self.shapeBorderRadius = [0, 0, 0, 0]
 
     def getShapeType(self):
         return self.shapeType

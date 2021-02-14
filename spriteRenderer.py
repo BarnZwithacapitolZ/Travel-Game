@@ -39,6 +39,7 @@ class SpriteRenderer():
         # Game timer to keep track of how long has been played 
         self.timer = 0
         self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        # self.timeStep = 8
         self.timeSetMet = False
 
         self.dt = 1 # control the speed of whats on screen
@@ -75,9 +76,9 @@ class SpriteRenderer():
         } # Level data to be stored, for export to JSON
 
 
-    def setRendering(self, rendering):
+    def setRendering(self, rendering, transition = False):
         self.rendering = rendering
-        self.hud.main() if self.rendering else self.hud.close()
+        self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
         
     def runOpeningMenu(self):

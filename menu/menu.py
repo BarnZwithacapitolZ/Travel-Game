@@ -32,6 +32,13 @@ class Menu:
     def add(self, obj):
         self.components.append(obj)
 
+    def remove(self, obj):
+        if obj not in self.components:
+            return
+
+        self.components.remove(obj)
+        del obj
+
     def clickButton(self):  
         click = random.randint(1, 2)
         self.game.audioLoader.playSound("click%i" % click)    
@@ -133,11 +140,22 @@ class Menu:
         self.add(test)
 
 
+    def slideTransitionY(self, pos, half, speed = -40, callback = None, direction = 'up'):
+        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition.addAnimation(slideTransitionY, 'onLoad', speed = speed, half = half, callback = callback, transitionDirection = direction)
+        self.add(transition)
+
+    def slideTransitionX(self, pos, half, speed = -70, callback = None):
+        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
+        self.add(transition)
+
+
 class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
 
-    def main(self):
+    def main(self, transition = False):
         self.open = True
         # sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
         sidebar = Image(self, "example", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
@@ -191,6 +209,14 @@ class MainMenu(Menu):
         #     m.addEvent(loadMap, 'onMouseClick')
         #     self.add(m)
         #     y += 40
+
+        if transition:
+            # set the up transition
+            def callback(obj, menu):
+                menu.remove(obj)
+        
+            self.slideTransitionY((0, 0), 'second', speed = 40, callback = callback, direction = 'down')
+
     
 
 
@@ -410,10 +436,10 @@ class GameHud(GameHudLayout):
             self.slowDownMeterAmount.setSize((amount, 20))
             self.slowDownMeterAmount.dirty = True
 
-    def main(self):
+    def main(self, transition = False):
         self.open = True
         self.dropdownOpen = False
-        
+
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
@@ -443,6 +469,14 @@ class GameHud(GameHudLayout):
         self.add(slowDownMeterOutline)
         self.add(completed)
         self.add(self.completedText)
+
+        if transition:
+            # set the up transition
+            def callback(obj, menu):
+                menu.game.spriteRenderer.runOpeningMenu()
+                menu.remove(obj)
+        
+            self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
     def setCompletedText(self, text):
@@ -475,7 +509,7 @@ class EditorHud(GameHudLayout):
         self.main()
 
 
-    def main(self):
+    def main(self, transition = False):
         self.open = True
         self.fileDropdownOpen = False
         self.editDropdownOpen = False
@@ -514,6 +548,14 @@ class EditorHud(GameHudLayout):
             label.addEvent(hoverGreen, 'onMouseOver')
             label.addEvent(hoverWhite, 'onMouseOut')
             self.add(label)
+
+
+        if transition:
+            # Show the up transition
+            def callback(obj, menu):
+                menu.remove(obj)
+        
+            self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
     def editDropdown(self):
@@ -985,7 +1027,7 @@ class PreviewHud(GameHudLayout):
             self.slowDownMeterAmount.dirty = True
 
 
-    def main(self):
+    def main(self, transition = False):
         self.open = True
 
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()

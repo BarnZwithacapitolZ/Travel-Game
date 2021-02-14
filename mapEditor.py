@@ -76,7 +76,7 @@ class MapEditor(SpriteRenderer):
         elif 'layer 2' not in self.levelData['connections'] or len(self.levelData['connections']['layer 2']) <= 0: # no layer 2 connections for the player to spawn on
             return False, "There must be a road connection for people to spawn on!"
 
-        return True
+        return [True]
 
     # Save As function
     def saveLevelAs(self):
