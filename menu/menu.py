@@ -1,9 +1,13 @@
 import pygame
 from pygame.locals import *
 from config import *
+
+from generalFunctions import *
 from menuFunctions import *
+from hudFunctions import *
 from transitionFunctions import *
 from menuComponents import *
+
 from clickManager import *
 import abc
 import random
@@ -33,11 +37,9 @@ class Menu:
         self.components.append(obj)
 
     def remove(self, obj):
-        if obj not in self.components:
-            return
-
-        self.components.remove(obj)
-        del obj
+        if obj in self.components:
+            self.components.remove(obj)
+            del obj
 
     def clickButton(self):  
         click = random.randint(1, 2)
@@ -88,30 +90,30 @@ class Menu:
 
         if hasattr(component, 'rect'): # check the component has been drawn (if called before next tick)
             if len(component.events) > 0:
-                for function, event in list(component.events.items()):
-                    if event[0] == 'onMouseClick':
+                for e in list(component.events):
+                    if e['event'] == 'onMouseClick':
                         if component.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
                             self.clickButton()
                             self.game.clickManager.setClicked(False)
-                            function(component, self, **event[1])
+                            e['function'](component, self, e, **e['kwargs'])
                             component.dirty = True
 
-                    if event[0] == 'onMouseOver':
+                    if e['event'] == 'onMouseOver':
                         if component.rect.collidepoint((mx, my)) and not component.mouseOver:
                             component.mouseOver = True
-                            function(component, self, **event[1])
+                            e['function'](component, self, e, **e['kwargs'])
                             component.dirty = True
 
-                    if event[0] == 'onMouseOut':
+                    if e['event'] == 'onMouseOut':
                         if not component.rect.collidepoint((mx, my)) and component.mouseOver:
                             component.mouseOver = False
-                            function(component, self, **event[1])
+                            e['function'](component, self, e, **e['kwargs'])
                             component.dirty = True
 
-                    if event[0] == 'onKeyPress':
+                    if e['event'] == 'onKeyPress':
                         if self.game.textHandler.getPressed():
                             self.game.textHandler.setPressed(False)
-                            function(component, self, **event[1])
+                            e['function'](component, self, e, **e['kwargs'])
                             component.dirty = True
 
 
@@ -202,7 +204,7 @@ class MainMenu(Menu):
         self.add(options)
         self.add(end)
 
-        # Temporarily load in the existing maps
+        # # Temporarily load in the existing maps
         # y = 100
         # for mapName, path in self.game.mapLoader.getMaps().items():
         #     m = Label(self, mapName, 30, BLACK, (600, y))
@@ -232,7 +234,7 @@ class OptionMenu(Menu):
 
         for component in self.components:
             # Can't add animation until previous opening animations stopped
-            if (transitionRight, 'onLoad') not in component.getAnimations() and (transitionRightBackground, 'onLoad') not in component.getAnimations():
+            if transitionRight not in component.getAnimations() and transitionRightBackground not in component.getAnimations():
                 component.addAnimation(transitionLeftUnpause, 'onLoad')
 
 
@@ -390,9 +392,9 @@ class GameOpeningMenu(Menu):
         play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
 
 
-        play.addEvent(hoverBlack, 'onMouseOver')
-        play.addEvent(hoverWhite, 'onMouseOut')
-        play.addEvent(playGame, 'onMouseClick')
+        play.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        play.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        play.addEvent(unpause, 'onMouseClick')
 
         animateComponents = [background, total, play]
 
@@ -505,6 +507,7 @@ class EditorHud(GameHudLayout):
 
 
     def closeDropdowns(self):
+        self.game.textHandler.setActive(False) # we always want to disable text inputs when we close the menus
         self.close()
         self.main()
 
@@ -545,8 +548,8 @@ class EditorHud(GameHudLayout):
 
         labels = [fileSelect, edit, add, delete, run]
         for label in labels:
-            label.addEvent(hoverGreen, 'onMouseOver')
-            label.addEvent(hoverWhite, 'onMouseOut')
+            label.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label)
 
 
@@ -577,8 +580,8 @@ class EditorHud(GameHudLayout):
 
         labels = [size]
         for label in labels:
-            label.addEvent(hoverGreen, 'onMouseOver')
-            label.addEvent(hoverWhite, 'onMouseOut')
+            label.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label)
 
 
@@ -624,10 +627,10 @@ class EditorHud(GameHudLayout):
         labels = [(size0, size0Selected), (size1, size1Selected), (size2, size2Selected), (size3, size3Selected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -674,10 +677,10 @@ class EditorHud(GameHudLayout):
         labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -716,10 +719,10 @@ class EditorHud(GameHudLayout):
         labels = [(metroStation, metroSelected), (busStop, busSelected), (tramStop, tramSelected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -763,10 +766,10 @@ class EditorHud(GameHudLayout):
         labels = [(metro, metroSelected), (bus, busSelected), (tram, tramSelected), (taxi, taxiSelected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -802,10 +805,10 @@ class EditorHud(GameHudLayout):
         labels = [(airport, airportSelected), (office, officeSelected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -851,10 +854,10 @@ class EditorHud(GameHudLayout):
         labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
-                label[0].addEvent(hoverBlack, 'onMouseOver')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
             else:
-                label[0].addEvent(hoverGreen, 'onMouseOver')
-            label[0].addEvent(hoverWhite, 'onMouseOut')
+                label[0].addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label[0].addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label[0])
 
 
@@ -885,16 +888,16 @@ class EditorHud(GameHudLayout):
         close.addEvent(closeMapEditor, 'onMouseClick')
 
         if self.game.mapEditor.getDeletable():
-            save.addEvent(hoverGreen, 'onMouseOver')
-            save.addEvent(hoverWhite, 'onMouseOut')
+            save.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            save.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             save.addEvent(toggleSaveBox, 'onMouseClick')
-            saveAs.addEvent(hoverGreen, 'onMouseOver')
-            saveAs.addEvent(hoverWhite, 'onMouseOut')
+            saveAs.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            saveAs.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             saveAs.addEvent(toggleSaveAsBox, 'onMouseClick')
 
             if self.game.mapEditor.getSaved(): 
-                delete.addEvent(hoverGreen, 'onMouseOver')
-                delete.addEvent(hoverWhite, 'onMouseOut')
+                delete.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+                delete.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
                 delete.addEvent(toggleConfirmBox, 'onMouseClick')                   
 
         self.add(box)
@@ -905,8 +908,8 @@ class EditorHud(GameHudLayout):
         # Add each of the labels
         labels = [new, load, close]
         for label in labels:
-            label.addEvent(hoverGreen, 'onMouseOver')
-            label.addEvent(hoverWhite, 'onMouseOut')
+            label.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            label.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label)
 
 
@@ -932,8 +935,8 @@ class EditorHud(GameHudLayout):
         y = 95
         for mapName, path in self.game.mapLoader.getMaps().items():
             m = Label(self, mapName, 25, Color("white"), (textX, y))
-            m.addEvent(hoverGreen, 'onMouseOver')
-            m.addEvent(hoverWhite, 'onMouseOut')
+            m.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            m.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             m.addEvent(loadEditorMap, 'onMouseClick')
             self.add(m)
             y += 30
@@ -957,14 +960,14 @@ class EditorHud(GameHudLayout):
         cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
-        self.inputBox.addEvent(hoverWhite, 'onKeyPress')
+        self.inputBox.addEvent(hoverColor, 'onKeyPress', color = Color("white"))
 
-        save.addEvent(hoverGreen, 'onMouseOver')
-        save.addEvent(hoverWhite, 'onMouseOut')
+        save.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+        save.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         save.addEvent(saveMap, 'onMouseClick')
 
-        cancel.addEvent(hoverGreen, 'onMouseOver')
-        cancel.addEvent(hoverWhite, 'onMouseOut')
+        cancel.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+        cancel.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         cancel.addEvent(toggleSaveBox, 'onMouseClick')
 
         self.add(box)
@@ -990,7 +993,7 @@ class EditorHud(GameHudLayout):
         title = Label(self, "Delete", 30, Color("white"), (x + 20, y + 20))
         title.setUnderline(True)
         confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 92))
-        confirm2 = Label(self, "this map?", 30, Color("white"), (x + 40, y + 125))
+        confirm2 = Label(self, "delete this map?", 30, Color("white"), (x + 40, y + 125))
 
         confirmBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
@@ -998,12 +1001,12 @@ class EditorHud(GameHudLayout):
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
 
-        confirm.addEvent(hoverGreen, 'onMouseOver')
-        confirm.addEvent(hoverWhite, 'onMouseOut')
+        confirm.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+        confirm.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         confirm.addEvent(deleteMap, 'onMouseClick')
 
-        cancel.addEvent(hoverGreen, 'onMouseOver')
-        cancel.addEvent(hoverWhite, 'onMouseOut')
+        cancel.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+        cancel.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         cancel.addEvent(toggleConfirmBox, 'onMouseClick')
 
         self.add(box)
@@ -1040,8 +1043,8 @@ class PreviewHud(GameHudLayout):
         completed = Image(self, "walkingWhite", Color("white"), (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
 
-        stop.addEvent(hoverGreen, 'onMouseOver')
-        stop.addEvent(hoverWhite, 'onMouseOut')
+        stop.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+        stop.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         stop.addEvent(stopMap, 'onMouseClick')
 
         self.add(topbar)

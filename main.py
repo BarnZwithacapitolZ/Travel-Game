@@ -4,6 +4,7 @@ import os
 
 #insert directory paths
 sys.path.insert(0, 'menu')
+sys.path.insert(0, 'menu/functions')
 sys.path.insert(0, 'sprites')
 
 from config import *

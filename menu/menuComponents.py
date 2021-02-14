@@ -67,7 +67,7 @@ class MenuComponent:
         self.offset = vec(0, 0)
 
 
-        self.events = {}
+        self.events = []
         self.animations = {}
 
         self.dirty = True
@@ -91,14 +91,22 @@ class MenuComponent:
         self.offset = offset
 
     def addEvent(self, function, event, **kwargs):
-        # self.events.append((function, event))
-        self.events[function] = (event, kwargs)
+        self.events.append({
+            'function': function,
+            'event': event,
+            'kwargs': kwargs
+        })
 
     def addAnimation(self, function, event, **kwargs):
         self.animations[function] = (event, kwargs)
 
     def removeAnimation(self, function):
         del self.animations[function]
+
+
+    def removeEvent(self, event):
+        if event in self.events:
+            self.events.remove(event)
 
     def getAnimations(self):
         return self.animations
