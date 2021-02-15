@@ -33,7 +33,7 @@ class TextHandler:
         self.pressed = pressed
 
     def setText(self, text):
-        self.text = text#
+        self.text = text
 
     def setLengthReached(self, lengthReached):
         self.lengthReached = lengthReached
@@ -132,9 +132,10 @@ class Label(MenuComponent):
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
 
-    def getFontSize(self):
+    def getFontSize(self, text = None):
+        text = self.text if text is None else text
         # we don't want to use self.font since this is multiplied by the display size, which we don't want
-        return pygame.font.Font(self.fontName, self.fontSize).size(self.text)
+        return pygame.font.Font(self.fontName, self.fontSize).size(text)
 
     def setFontName(self, fontName):
         self.fontName = fontName
@@ -181,21 +182,25 @@ class Label(MenuComponent):
 
 
 class InputBox(Label):
-    def __init__(self, menu, fontSize, color, pos = tuple(), maxLength = 40):
+    def __init__(self, menu, fontSize, color, width, pos = tuple()):
         super().__init__(menu, "", fontSize, color, pos)
         self.menu.game.textHandler.setText("")
-        self.maxLength = maxLength
+        self.inputWidth = width # max length of text input 
 
         self.flashing = True
         self.timer = 0
         self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
 
 
-    def setText(self):        
-        if len(self.menu.game.textHandler.getText()) < self.maxLength:
+    def setText(self):   
+        width = self.getFontSize(self.menu.game.textHandler.getText())[0] # we want to check the width with the newly inputted character
+                
+        if width < self.inputWidth:
             self.menu.game.textHandler.setLengthReached(False)
         else:
             self.menu.game.textHandler.setLengthReached(True)
+            self.menu.game.textHandler.setText(self.menu.game.textHandler.getText()[:-1]) # if its greater, remove the last character
+            return
 
         if self.text != self.menu.game.textHandler.getText():
             self.text = self.menu.game.textHandler.getText()

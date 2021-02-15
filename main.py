@@ -123,7 +123,7 @@ class Game:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
 
-            else:
+            elif e.type == pygame.KEYUP:
                 self.textHandler.setPressed(False)
 
 

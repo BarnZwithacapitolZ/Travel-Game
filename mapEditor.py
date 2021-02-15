@@ -75,6 +75,8 @@ class MapEditor(SpriteRenderer):
             return False, "You haven't added anything to the map!"
         elif 'layer 2' not in self.levelData['connections'] or len(self.levelData['connections']['layer 2']) <= 0: # no layer 2 connections for the player to spawn on
             return False, "There must be a road connection for people to spawn on!"
+        elif len(self.levelData['destinations']) <= 0:
+            return False, "There is no destinations for people to reach!"
 
         return [True]
 
