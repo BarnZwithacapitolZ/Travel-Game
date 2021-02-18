@@ -84,9 +84,9 @@ class Menu:
 
     def events(self, component):
         mx, my = pygame.mouse.get_pos()
-        #apply difference from screen size
-        mx -= self.renderer.getDifference()[0]
-        my -= self.renderer.getDifference()[1]
+        difference = self.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
         if hasattr(component, 'rect'): # check the component has been drawn (if called before next tick)
             if len(component.events) > 0:
@@ -919,27 +919,26 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        width = 130
-        if self.game.mapLoader.getLongestMapLength() * 15 > width:
-            width = self.game.mapLoader.getLongestMapLength() * 15
-
         boxX = self.fileLocation + 130
         textX = boxX + 10
-
-        # make width equal to the longest map name
-        box = Shape(self, BLACK, (width, 20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
-
-        self.add(box)
-
-        # Temporarily load in the existing maps
         y = 95
+        maxWidth = 130 # min width
+        maps = []
         for mapName, path in self.game.mapLoader.getMaps().items():
             m = Label(self, mapName, 25, Color("white"), (textX, y))
             m.addEvent(hoverColor, 'onMouseOver', color = GREEN)
             m.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             m.addEvent(loadEditorMap, 'onMouseClick')
-            self.add(m)
+            if m.getFontSize()[0] > maxWidth:
+                maxWidth = m.getFontSize()[0]
+            maps.append(m)
             y += 30
+
+        box = Shape(self, BLACK, (maxWidth + 20, 20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
+        self.add(box)
+
+        for m in maps:
+            self.add(m)
 
 
     def saveBox(self):
@@ -1068,6 +1067,12 @@ class MessageHud(Menu):
         super().__init__(renderer)
         self.messages = []
 
+    def addMessage(self, message):
+        self.messages.append(message)
+
+    def removeMessage(self, message):
+        self.messages.remove(message)
+
     # def addMessage(self, message):
     #     # add the message to the top of the stack
     #     # message is displayed in a message box object
@@ -1110,10 +1115,14 @@ class MessageHud(Menu):
 
 
     def addMessage(self, message):
+        if message in self.messages:
+            return
+
         messageBox = MessageBox(self, message, (25, 25))
         messageBox.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = messageBox.marginY)
         self.add(messageBox)
         messageBox.addMessages()
+        self.messages.append(message)
 
         if sum(isinstance(component, MessageBox) for component in self.components) > 0:
             for component in self.components:

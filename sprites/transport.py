@@ -199,7 +199,7 @@ class Transport(pygame.sprite.Sprite):
         if len(self.currentNode.getPeople()) <= 0:
             return
 
-        for person in self.currentNode.getPeople():
+        for person in list(self.currentNode.getPeople()):
             # Only remove people from the station once the train is moving
             if person.getStatus() == PERSON.Person.Status.BOARDING:
                 self.addPerson(person)
@@ -215,18 +215,25 @@ class Transport(pygame.sprite.Sprite):
         if len(self.people) <= 0:
             return
 
-        for person in self.people:
+        for person in list(self.people):
             if person.getStatus() == PERSON.Person.Status.DEPARTING:
+                person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
+                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                person.moveStatusIndicator()
+
+
                 self.removePerson(person) # Remove the person from the transport
                 self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
                 person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
                 person.setTravellingOn(None)
 
-                # Position the person offset to the node
-                person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
-                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-                person.moveStatusIndicator()
+                # # Position the person offset to the node
+                # person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
+                # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                # # person.width, person.height = 20, 20
+                # # person.dirty = True
+                # person.moveStatusIndicator()
 
 
     #move all the people within the transport relative to its location
@@ -234,9 +241,14 @@ class Transport(pygame.sprite.Sprite):
         if len(self.people) <= 0:
             return
 
-        for person in self.people:
-            person.pos = self.pos + person.offset
+        offset = vec(0, 0)
+        for person in list(self.people):
+            person.pos = self.pos + person.offset + offset
             person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            # person.width, person.height = 18, 18
+            # person.dirty = True
+
+            offset.x += person.width + 1#padding
             person.moveStatusIndicator()
 
             # Check if the person has reached their destination and if they have remove
@@ -293,7 +305,7 @@ class Transport(pygame.sprite.Sprite):
 
         self.image = self.game.imageLoader.getImage(self.imageName)
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -314,8 +326,9 @@ class Transport(pygame.sprite.Sprite):
 
     def events(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
 
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():

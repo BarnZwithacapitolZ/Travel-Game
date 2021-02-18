@@ -176,11 +176,6 @@
     "saves": [], 
     "maps": {
         "London": "map1.json", 
-        "Test": "map2.json", 
-        "fun to watch": "map_fun_to_watch.json", 
-        "22 x 12 size": "map_22_x_12_size.json", 
-        "20 x 11 size": "map_20_x_11_size.json", 
-        "16 x 9 size": "map_16_x_9_size.json", 
-        "click test": "map_click_test.json"
+        "Test": "map2.json"
     } 
 }

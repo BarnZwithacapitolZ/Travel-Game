@@ -278,7 +278,7 @@ class Shape(MenuComponent):
         if self.alpha is not None:
             self.image = pygame.Surface((self.size)).convert()
             self.image = pygame.transform.scale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                            int(self.height * self.menu.renderer.getScale())))
+                                                            int(self.height * self.menu.renderer.getScale()))).convert()
             self.image.set_alpha(self.alpha, pygame.RLEACCEL)
             self.drawShape(self.image)
 
@@ -371,6 +371,7 @@ class MessageBox(Shape):
 
     def remove(self):
         self.menu.components.remove(self)
+        self.menu.removeMessage(self.message)
         for message in self.messages:
             self.menu.components.remove(message)
 

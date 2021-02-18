@@ -25,6 +25,7 @@ class Renderer:
 
         self.scale = 1 # control the scale of whats on screen
         self.fixedScale = 1 # used to control the fixed scale, i.e to make things bigger on screen seperate from screen size
+        self.diff = vec(0, 0)
         self.surfaces = []
         self.dirtySurfaces = []
 
@@ -37,7 +38,7 @@ class Renderer:
     def prepareSurface(self, color):
         # self.gameDisplay.fill(color)
         pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
-        self.dirtySurfaces.append(self.gameDisplay.get_rect())
+        # self.dirtySurfaces.append(self.gameDisplay.get_rect())
 
 
     # Add a surface to the gameDisplay
@@ -70,9 +71,7 @@ class Renderer:
 
 
     def getDifference(self):
-        difx = (self.windowWidth - self.width) / 2
-        dify = (self.windowHeight - self.height) / 2
-        return (difx, dify)
+        return self.diff
 
 
     def getHeight(self):
@@ -98,6 +97,8 @@ class Renderer:
         self.height = (config["graphics"]["displayHeight"] * self.scale)
         self.windowWidth = size[0]
         self.windowHeight = size[1]
+        self.diff.x = (self.windowWidth - self.width) / 2
+        self.diff.y = (self.windowHeight - self.height) / 2
 
         # print((self.width, self.height), (self.windowWidth, self.windowHeight))
 
@@ -106,7 +107,7 @@ class Renderer:
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
 
-        self.gameDisplay = pygame.Surface((self.width, self.height))
+        self.gameDisplay = pygame.Surface((self.width, self.height)) #.convert() ??
 
         self.game.spriteRenderer.resize()
         self.game.mapEditor.resize()
@@ -125,7 +126,7 @@ class Renderer:
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
-        # self.screen.blit(pygame.transform.scale(self.gameDisplay, (int(self.windowWidth), int(self.windowHeight))), (0, 0))
+        # self.screen.blit(pygame.transform.smoothscale(self.gameDisplay, (int(self.width), int(self.height))), (0, 0))
 
         # pygame.display.update(self.dirtySurfaces) #self.screen.get_rect() ?
         pygame.display.update()
@@ -139,7 +140,6 @@ class Renderer:
 class ImageLoader:
     def __init__(self):
         self.images = {}
-
         self.loadAllImages()
 
     def loadAllImages(self):
@@ -148,12 +148,12 @@ class ImageLoader:
                 i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert_alpha()
             else:
                 i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert()
-                # i.set_colorkey()
 
             self.images[key] = i
 
     def getImage(self, key):
         return self.images[key]
+
 
     @staticmethod
     def changeImageColor(image, newColor, oldColor = None):

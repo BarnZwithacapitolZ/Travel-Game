@@ -65,6 +65,7 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
+        # self.timer = 10000
         self.rad = 5
         self.step = 15
 
@@ -281,7 +282,7 @@ class Person(pygame.sprite.Sprite):
 
         self.image = self.game.imageLoader.getImage(self.imageName)
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -308,8 +309,9 @@ class Person(pygame.sprite.Sprite):
         self.vel = vec(0, 0)
 
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
         
 
         # If the mouse is clicked, but not on a person, unset the person from the clickmanager (no one clicked)
@@ -334,7 +336,13 @@ class Person(pygame.sprite.Sprite):
                 elif isinstance(self.currentNode, NODE.Node):
                     self.status = Person.Status.FLAG
 
-            elif self.status == Person.Status.WAITING or self.status == Person.Status.FLAG:
+            elif self.status == Person.Status.WAITING:
+                if isinstance(self.currentNode, NODE.BusStop): # toggle between waiting for a bus and flagging a taxi
+                    self.status = Person.Status.FLAG
+                else:
+                    self.status = Person.Status.UNASSIGNED
+                    
+            elif self.status == Person.Status.FLAG:
                 self.status = Person.Status.UNASSIGNED
             
             elif self.status == Person.Status.BOARDING:

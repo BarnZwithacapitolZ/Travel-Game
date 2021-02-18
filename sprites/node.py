@@ -105,7 +105,22 @@ class Node(pygame.sprite.Sprite):
 
     # Add a person to the node
     def addPerson(self, person):
+        # print(person.path)
+        # print(f"added to: {self.number}")
+
+        # if len(person.path) > 1 and person.path[0] == self:
+        #     return
         self.people.append(person)
+
+
+        if len(self.people) > 1:
+            print(len(self.people), "why is this not called?")
+            offset = vec(0, 0)
+            for person in list(self.people):
+                person.pos = (self.pos - self.offset) + person.offset + offset
+                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                offset.x += person.width + 1
+                person.moveStatusIndicator()
 
 
     def remove(self):
@@ -117,7 +132,19 @@ class Node(pygame.sprite.Sprite):
         if person not in self.people:
             return
 
+        # print(f"removed from: {self.number}")
+
         self.people.remove(person)
+
+        # # if there is someone left on the node we need to reshuffle them
+        # if len(self.people) >= 1:
+        #     offset = vec(0, 0)
+        #     for key, person in enumerate(self.people):
+        #         print(person)
+        #         person.pos += offset
+        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        #         offset.x += person.width
+
 
     def removeTransport(self, transport):
         if transport not in self.transports:
@@ -144,7 +171,7 @@ class Node(pygame.sprite.Sprite):
 
         self.image = self.game.imageLoader.getImage(self.images[self.currentImage])
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
+                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -159,8 +186,9 @@ class Node(pygame.sprite.Sprite):
 
     def events(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
         # click event; setting the node for the transport
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getRightClicked() and self.transportClickManager.getTransport() is not None:
@@ -242,8 +270,9 @@ class EditorNode(Node):
     # Override the events function
     def events(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
           
 
         # Cant click on a node in the top layer

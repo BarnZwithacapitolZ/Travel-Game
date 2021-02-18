@@ -113,10 +113,10 @@ class Connection:
 
 
     def update(self):
-
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         buffer = 1
