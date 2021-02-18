@@ -91,7 +91,7 @@ class Renderer:
         if size[0] < config["graphics"]["minDisplayWidth"]: size[0] = config["graphics"]["minDisplayWidth"]
         if size[1] < config["graphics"]['minDisplayHeight']: size[1] = config["graphics"]["minDisplayHeight"]
 
-        self.scale = round(min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]), 1) * self.fixedScale
+        self.scale = min(size[1] / config["graphics"]["displayHeight"], size[0] / config["graphics"]["displayWidth"]) * self.fixedScale
 
         self.width = (config["graphics"]["displayWidth"] * self.scale)
         self.height = (config["graphics"]["displayHeight"] * self.scale)
@@ -99,8 +99,6 @@ class Renderer:
         self.windowHeight = size[1]
         self.diff.x = (self.windowWidth - self.width) / 2
         self.diff.y = (self.windowHeight - self.height) / 2
-
-        # print((self.width, self.height), (self.windowWidth, self.windowHeight))
 
         if fullscreen:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
