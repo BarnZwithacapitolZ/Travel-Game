@@ -136,21 +136,31 @@ class Renderer:
 
 
 class ImageLoader:
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
         self.images = {}
         self.loadAllImages()
 
     def loadAllImages(self):
         for key, data in config["images"].items():
-            if data["alpha"]:
-                i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert_alpha()
-            else:
-                i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"])).convert()
+            i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"]))
+            i = i.convert_alpha() if data["alpha"] else i.convert()
 
-            self.images[key] = i
+            self.images[key] = {
+                "image": i,
+                "data": data
+            }
 
-    def getImage(self, key):
-        return self.images[key]
+    def getImage(self, key, scale = tuple()):
+        image = self.images[key]["image"]
+        data = self.images[key]["data"]
+
+        if scale: # if there is a scale
+            image = pygame.transform.smoothscale(image, (int(scale[0] * self.game.renderer.getScale()),
+                                                        int(scale[1] * self.game.renderer.getScale())))
+            image = image.convert_alpha() if data["alpha"] else image.convert()
+
+        return image
 
 
     @staticmethod

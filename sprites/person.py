@@ -279,10 +279,7 @@ class Person(pygame.sprite.Sprite):
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))).convert_alpha()
+        self.image = self.game.imageLoader.getImage(self.imageName, (self.width * self.spriteRenderer.getFixedScale(), self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -472,10 +469,7 @@ class StatusIndicator(pygame.sprite.Sprite):
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.images[self.currentState])
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
+        self.image = self.game.imageLoader.getImage(self.images[self.currentState], (self.width * self.spriteRenderer.getFixedScale(), self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 

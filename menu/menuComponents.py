@@ -412,10 +412,7 @@ class Image(MenuComponent):
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.menu.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                            int(self.height * self.menu.renderer.getScale())))
+        self.image = self.menu.game.imageLoader.getImage(self.imageName, (self.width, self.height))
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()

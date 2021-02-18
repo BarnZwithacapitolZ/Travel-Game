@@ -186,7 +186,6 @@ class Layer4(Layer):
         # self.addComponent(background)
 
 
-
 class EditorLayer1(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
         super().__init__(spriteRenderer, groups, level)
@@ -233,10 +232,7 @@ class Background():
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
+        self.image = self.game.imageLoader.getImage(self.imageName, (self.width, self.height))
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.game.renderer.getScale()
         self.rect.y = self.y * self.game.renderer.getScale()

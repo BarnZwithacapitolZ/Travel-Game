@@ -161,17 +161,14 @@ class Node(pygame.sprite.Sprite):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
-        for x in range(6):
+        for x in range(1):
             pygame.draw.arc(self.game.renderer.gameDisplay, color, ((self.pos.x - 1) * scale, (self.pos.y - 1) * scale, (self.width + 2) * scale, (self.height + 2) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
             offx += 0.02
 
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.images[self.currentImage])
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))).convert_alpha()
+        self.image = self.game.imageLoader.getImage(self.images[self.currentImage], (self.width * self.spriteRenderer.getFixedScale(), self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 

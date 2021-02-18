@@ -39,7 +39,7 @@ class Game:
         self.textHandler = TextHandler()
 
         # Loaders
-        self.imageLoader = ImageLoader()
+        self.imageLoader = ImageLoader(self)
         self.mapLoader = MapLoader()
         self.audioLoader = AudioLoader()
         
@@ -128,14 +128,14 @@ class Game:
 
 
             # Just for fun :) 
-            # if e.type == pygame.MOUSEBUTTONDOWN:
-            #     if e.button == 4:
-            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
-            #         self.spriteRenderer.resize()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 4:
+                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
+                    self.spriteRenderer.resize()
                     
-            #     elif e.button == 5: 
-            #         self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
-            #         self.spriteRenderer.resize()
+                elif e.button == 5: 
+                    self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() - 0.1)
+                    self.spriteRenderer.resize()
 
             # Make left click set the destination on the click manager instead
             if e.type == pygame.MOUSEBUTTONDOWN:
