@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 from gridManager import *
 from node import *
@@ -32,12 +33,77 @@ class MapEditor(SpriteRenderer):
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
 
+
+    def getMapValues(self, width, height, reverse = False):
+        mapValues = {}
+        nodes = 0
+        for x in range(0, width):
+            for y in range(0, height):
+                if reverse:
+                    mapValues[(x, y)] = nodes
+                else:
+                    mapValues[nodes] = (x, y)
+                nodes += 1
+        return mapValues
+
+
+    def translateConnections(self, layer, oldMapPos, newMapPos):
+        if layer not in self.levelData["connections"]:
+            return
+
+        newConnections = []
+        for connection in self.levelData["connections"][layer]:
+            c1 = oldMapPos[connection[0]]
+            c2 = oldMapPos[connection[1]]
+            
+            if c1 in newMapPos and c2 in newMapPos:
+                n1 = newMapPos[c1]
+                n2 = newMapPos[c2]
+                newConnections.append([n1, n2])
+            
+        self.levelData["connections"][layer] = newConnections
+
+
+    def translateNodes(self, nodeType, layer, oldMapPos, newMapPos):
+        if layer not in self.levelData[nodeType]:
+            return
+
+        for key, node in list(enumerate(self.levelData[nodeType][layer])):
+            n1 = oldMapPos[node["location"]]
+            if n1 in newMapPos:
+                n2 = newMapPos[n1]
+                node["location"] = n2
+            else:
+                del self.levelData[nodeType][layer][key]
+
+
     def setMapSize(self, size = (18, 10)):
         if not hasattr(self, 'levelData'):
             return
 
+        oldMapPos = self.getMapValues(self.levelData["width"], self.levelData["height"])
+        newMapPos = self.getMapValues(size[0], size[1], True)
+    
+        self.translateConnections("layer 1", oldMapPos, newMapPos)
+        self.translateConnections("layer 2", oldMapPos, newMapPos)
+        self.translateConnections("layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("transport", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("transport", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("transport", "layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("stops", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("stops", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("stops", "layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("destinations", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("destinations", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("destinations", "layer 3", oldMapPos, newMapPos)
+     
         self.levelData["width"] = size[0]
         self.levelData["height"] = size[1]
+
+        
         
 
     # returns true if dropdowns have been closed, false otherwise
