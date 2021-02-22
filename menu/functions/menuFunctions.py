@@ -25,7 +25,7 @@ def continueGame(obj, menu, event):
 # load the map editor and show transition
 def openMapEditor(obj, menu, event):
     def callback(obj, menu):
-        menu.game.mapEditor.createLevel()
+        menu.game.mapEditor.createLevel(clearChanges = True)
         menu.game.mapEditor.setRendering(True, True) #Load the hud
         hudFunctions.addConnection(obj, menu, event) # default option to add connection
         menu.close()

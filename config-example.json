@@ -171,7 +171,9 @@
         "layer3": "3", 
         "layer4": "4",
         "dtDown": "space",
-        "dtUp": "s"
+        "dtUp": "s",
+        "left": "left",
+        "right": "right"
     }, 
     "saves": [], 
     "maps": {

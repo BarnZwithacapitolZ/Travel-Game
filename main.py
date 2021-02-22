@@ -123,6 +123,17 @@ class Game:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
 
+                if e.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
+                    self.mapEditor.undoChange()
+                    level = self.mapEditor.getLevelData()
+                    self.mapEditor.createLevel(level) #reload the level
+
+                elif e.key == pygame.K_y and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
+                    self.mapEditor.redoChange()
+                    level = self.mapEditor.getLevelData()
+                    self.mapEditor.createLevel(level) #reload the level
+
+
             elif e.type == pygame.KEYUP:
                 self.textHandler.setPressed(False)
 

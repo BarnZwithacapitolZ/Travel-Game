@@ -1,5 +1,5 @@
 import pygame
-import numpy as np
+import copy
 
 from gridManager import *
 from node import *
@@ -14,7 +14,9 @@ class MapEditor(SpriteRenderer):
         # Hud for when the game is running
         self.hud = EditorHud(self.game)
         self.clickManager = EditorClickManager(self.game)
-
+        self.levelChanges = [] # array to hold all the changes made to the map. TODO: should this have a limit on the size (otherwise it could get huge and be slow??)
+        self.poppedLevelChanged = []
+    
         self.allowEdits = True
 
     def getSaved(self):
@@ -34,17 +36,25 @@ class MapEditor(SpriteRenderer):
         self.allowEdits = allowEdits
 
 
-    def getMapValues(self, width, height, reverse = False):
-        mapValues = {}
-        nodes = 0
-        for x in range(0, width):
-            for y in range(0, height):
-                if reverse:
-                    mapValues[(x, y)] = nodes
-                else:
-                    mapValues[nodes] = (x, y)
-                nodes += 1
-        return mapValues
+    def undoChange(self):
+        if self.rendering:
+            if len(self.levelChanges) > 1:
+                popped = self.levelChanges.pop()
+                self.poppedLevelChanged.append(popped)
+                self.levelData = copy.deepcopy(self.levelChanges[-1])
+    
+    
+    def redoChange(self):
+        if self.rendering:
+            if len(self.poppedLevelChanged) > 0:                
+                popped = self.poppedLevelChanged.pop()
+                self.levelChanges.append(popped)
+                self.levelData = copy.deepcopy(popped)
+
+
+    def addChange(self):
+        change = copy.deepcopy(self.levelData)
+        self.levelChanges.append(change)
 
 
     def translateConnections(self, layer, oldMapPos, newMapPos):
@@ -81,8 +91,8 @@ class MapEditor(SpriteRenderer):
         if not hasattr(self, 'levelData'):
             return
 
-        oldMapPos = self.getMapValues(self.levelData["width"], self.levelData["height"])
-        newMapPos = self.getMapValues(size[0], size[1], True)
+        oldMapPos = GridManager.getMapValues(self.levelData["width"], self.levelData["height"])
+        newMapPos = GridManager.getMapValues(size[0], size[1], True)
     
         self.translateConnections("layer 1", oldMapPos, newMapPos)
         self.translateConnections("layer 2", oldMapPos, newMapPos)
@@ -103,6 +113,7 @@ class MapEditor(SpriteRenderer):
         self.levelData["width"] = size[0]
         self.levelData["height"] = size[1]
 
+        self.addChange()
         
         
 
@@ -115,7 +126,7 @@ class MapEditor(SpriteRenderer):
     
     
     # Override creating the level
-    def createLevel(self, level = None):
+    def createLevel(self, level = None, clearChanges = False):
         self.clearLevel()
 
         self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), level) 
@@ -133,6 +144,11 @@ class MapEditor(SpriteRenderer):
         # Set the level data equal to the maps config file
         if level is not None:
             self.levelData = self.gridLayer4.getGrid().getMap()
+        
+        # creating a new level
+        if clearChanges:
+            self.levelChanges = [copy.deepcopy(self.levelData)]
+            self.poppedLevelChanged = []
 
 
     # check the user can save the level by meeting the criteria
@@ -149,22 +165,22 @@ class MapEditor(SpriteRenderer):
     # Save As function
     def saveLevelAs(self):
         # Name of the map
-        self.levelData["mapName"] = self.game.textHandler.getText()
+        self.levelData["mapName"] = self.game.textHandler.getString()
         self.levelData["deletable"] = True
         self.levelData["saved"] = True
 
         # saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
-        saveName = "map_" + self.game.textHandler.getText().replace(" ", "_") + '.json'
+        saveName = "map_" + self.game.textHandler.getString().replace(" ", "_") + '.json'
         path = os.path.join(MAPSFOLDER, saveName)
 
         with open(path, "w") as f:
             json.dump(self.levelData, f)
         f.close()
 
-        config["maps"][self.game.textHandler.getText()] = saveName
+        config["maps"][self.game.textHandler.getString()] = saveName
         dump(config)
 
-        self.game.mapLoader.addMap(self.game.textHandler.getText(), path)
+        self.game.mapLoader.addMap(self.game.textHandler.getString(), path)
 
     
     # Save function, for when the level has already been created before (and is being edited)
@@ -229,6 +245,8 @@ class MapEditor(SpriteRenderer):
             if connection not in self.levelData["connections"].setdefault(connectionType, []):
                 self.levelData["connections"][connectionType].append(connection)
 
+        self.addChange()
+
 
     def addTransport(self, connectionType, connection):
         layer = self.getGridLayer(connectionType)
@@ -242,6 +260,8 @@ class MapEditor(SpriteRenderer):
                 "location": connection.getFrom().getNumber(),
                 "type": str(key)
             })
+
+        self.addChange()
 
 
     # TO DO: Maybe let the user select the stop type they want to add so there can be different types of stops on each layer?
@@ -258,6 +278,8 @@ class MapEditor(SpriteRenderer):
                 "type": str(key)
             })
 
+        self.addChange()
+
 
     def addDestination(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
@@ -271,6 +293,8 @@ class MapEditor(SpriteRenderer):
                 "location": newNode.getNumber(),
                 "type": str(key)
             })
+
+        self.addChange()
 
 
     def deleteDestination(self, connectionType, node):
@@ -286,6 +310,8 @@ class MapEditor(SpriteRenderer):
                 "location": newNode.getNumber(),
                 "type": str(key)
             })
+
+        self.addChange()
 
 
     def deleteTransport(self, connectionType, node):
@@ -304,7 +330,9 @@ class MapEditor(SpriteRenderer):
             self.levelData["transport"][connectionType].remove({
                 "location": node.getNumber(),
                 "type": str(key)
-            })        
+            })      
+
+        self.addChange()
 
 
     def deleteStop(self, connectionType, node):
@@ -321,6 +349,8 @@ class MapEditor(SpriteRenderer):
                 "type": str(key)
             })
 
+        self.addChange()
+
 
     def deleteConnection(self, connectionType, connection):
         layer = self.getGridLayer(connectionType)
@@ -332,6 +362,7 @@ class MapEditor(SpriteRenderer):
             layer.removeConnections(connections)
 
             self.levelData["connections"][connectionType].remove([connection.getFrom().getNumber(), connection.getTo().getNumber()])
+            self.addChange()
         else:
             return
 

@@ -392,7 +392,7 @@ class Destination(Node):
 class Airport(Destination):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
         super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["airport", "nodeSelected"]
+        self.images = ["airport"]
 
 
 class EditorAirport(EditorNode, Airport):
@@ -400,13 +400,13 @@ class EditorAirport(EditorNode, Airport):
         # super().__init__(game, groups, number, connectionType, x, y, personClickManager)
         EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
         Airport.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["airport", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["airport", "nodeStart", "nodeEnd"]
 
 
 class Office(Destination):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
         super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["office", "nodeSelected"]
+        self.images = ["office"]
         
 class EditorOffice(EditorNode, Office):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
@@ -414,7 +414,7 @@ class EditorOffice(EditorNode, Office):
         EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
         Office.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
 
-        self.images = ["office", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["office", "nodeStart", "nodeEnd"]
 
 
 

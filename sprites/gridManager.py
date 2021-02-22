@@ -352,3 +352,15 @@ class GridManager:
 
         
            
+    @staticmethod
+    def getMapValues(width, height, reverse = False):
+        mapValues = {}
+        nodes = 0
+        for x in range(0, width):
+            for y in range(0, height):
+                if reverse:
+                    mapValues[(x, y)] = nodes
+                else:
+                    mapValues[nodes] = (x, y)
+                nodes += 1
+        return mapValues

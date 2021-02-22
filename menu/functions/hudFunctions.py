@@ -66,7 +66,7 @@ def toggleFileDropdown(obj, menu, event):
 
 
 def newMap(obj, menu, event):
-    menu.game.mapEditor.createLevel() # no level creates an empty, clear map    
+    menu.game.mapEditor.createLevel(clearChanges = True) # no level creates an empty, clear map    
     menu.game.mapEditor.getClickManager().clearNodes()
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)
     generalFunctions.clearMenu(obj, menu)
@@ -96,7 +96,7 @@ def changeEditorLayer(obj, menu, event):
 
 def loadEditorMap(obj, menu, event):
     path = menu.game.mapLoader.getMap(obj.getText())
-    menu.game.mapEditor.createLevel(path)
+    menu.game.mapEditor.createLevel(path, clearChanges = True)
     generalFunctions.clearMenu(obj, menu)
 
 
@@ -176,7 +176,7 @@ def toggleConfirmBox(obj, menu, event):
 
 def saveMap(obj, menu, event):
     # Make sure the input is not blank
-    text = menu.game.textHandler.getText()
+    text = menu.game.textHandler.getString()
     text = text.replace(" ", "")
 
     # issue with map itself
@@ -275,6 +275,19 @@ def setSize3(obj, menu, event):
     generalFunctions.clearMenu(obj, menu)
     
 
+def undoChange(obj, menu, event):
+    menu.game.mapEditor.undoChange()
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+
+
+def redoChange(obj, menu, next):
+    menu.game.mapEditor.redoChange()
+
+    level = menu.game.mapEditor.getLevelData()
+    menu.game.mapEditor.createLevel(level) #reload the level
+    
 
 def addConnection(obj, menu, event):
     menu.game.mapEditor.getClickManager().setClickType(EditorClickManager.ClickType.CONNECTION)

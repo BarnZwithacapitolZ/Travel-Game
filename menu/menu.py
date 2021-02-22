@@ -573,12 +573,16 @@ class EditorHud(GameHudLayout):
         textX = self.editLocation + 10
 
         size = Label(self, "Map Size", 25, Color("white"), (textX, 50))
+        undo = Label(self, "Undo", 25, Color("white"), (textX, 85))
+        redo = Label(self, "Redo", 25, Color("white"), (textX, 120))
         
         self.add(box)
 
         size.addEvent(toggleEditSizeDropdown, 'onMouseClick')
+        undo.addEvent(undoChange, 'onMouseClick')
+        redo.addEvent(redoChange, 'onMouseClick')
 
-        labels = [size]
+        labels = [size, undo, redo]
         for label in labels:
             label.addEvent(hoverColor, 'onMouseOver', color = GREEN)
             label.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
@@ -953,7 +957,7 @@ class EditorHud(GameHudLayout):
         box = Shape(self, GREEN, (width, height), (x, y))
         title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
         self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
-        mapName = InputBox(self, 30, BLACK, self.inputBox.width - 50, (x + 40, y + 92))
+        mapName = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (x + 40, y + 92)) # we pass through the background instead of defining it in the InputBox so we can customize it better (e.g with image ect)
         saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
         cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
