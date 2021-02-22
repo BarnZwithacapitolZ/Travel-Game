@@ -417,4 +417,18 @@ class EditorOffice(EditorNode, Office):
         self.images = ["office", "nodeStart", "nodeEnd"]
 
 
+class House(Destination):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
+        super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+        self.images = ["house"]
+        
+class EditorHouse(EditorNode, House):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
+        # super().__init__(game, groups, number, connectionType, x, y, personClickManager)
+        EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
+        House.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+
+        self.images = ["house", "nodeStart", "nodeEnd"]
+
+
 

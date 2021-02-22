@@ -25,7 +25,6 @@ class GridManager:
         self.tempConnections = []
         self.transports = []
         self.destinations = []
-        self.entrances = []
 
         self.width = 18
         self.height = 10
@@ -44,9 +43,8 @@ class GridManager:
         self.transportMappings = {"metro": Metro, "bus": Bus, "tram": Tram, "taxi": Taxi}
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
-        self.destinationMappings = {"airport": Airport, "office": Office}
-        self.editorDestinationMappings = {"airport": EditorAirport, "office": EditorOffice}
-        self.entranceMappings = {"top": self.entryTopPositions, "bottom": self.entryBottomPositions}
+        self.destinationMappings = {"airport": Airport, "office": Office, "house": House}
+        self.editorDestinationMappings = {"airport": EditorAirport, "office": EditorOffice, "house": EditorHouse}
 
 
     #### Getters ####
@@ -100,10 +98,6 @@ class GridManager:
 
     def getDestinations(self):
         return self.destinations
-
-
-    def getEntrances(self):
-        return self.entrances
 
 
     def getMap(self):
@@ -270,21 +264,6 @@ class GridManager:
 
                 # Create the connection with the nodes
                 self.addConnections(connectionType, n1, n2)
-        
-        # Only add entrances if they exist
-        if "entrances" in self.map.keys():
-            if connectionType in self.map["entrances"]:
-                for entrance in self.map["entrances"][connectionType]:
-                    index = int(entrance["location"] / 10)
-                    n = EntranceNode(self.spriteRenderer, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
-                    self.entrances.append(n)
-
-                    for node in self.nodes:
-                        if node.getNumber() == entrance["location"]:
-                            n1 = node
-
-
-                    self.addConnections(connectionType, n, n1)
 
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)

@@ -157,21 +157,5 @@
                 "type": "airport"
             }
         ]
-    },
-    "entrances": {
-        "layer 2": [
-            {
-                "location": 10,
-                "type": "top"
-            },
-            {
-                "location": 70,
-                "type": "top"
-            },
-            {
-                "location": 79,
-                "type": "bottom"
-            }
-        ]
     }
 }

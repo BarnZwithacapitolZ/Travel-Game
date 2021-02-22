@@ -137,6 +137,10 @@
             "image": "Office.png",
             "alpha": true
         },
+        "house": {
+            "image": "House.png",
+            "alpha": true
+        },
         "example": {
             "image": "example.png",
             "alpha": false

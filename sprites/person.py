@@ -41,7 +41,8 @@ class Person(pygame.sprite.Sprite):
         self.currentNode.addPerson(self)
 
         #List of possible destinations that the player can have (different player types might have different destinatiosn that they go to)
-        self.possibleDestinations = (NODE.Airport, NODE.Office) # Default is to accept all types
+        self.possibleDestinations = (NODE.Airport, NODE.Office, NODE.House) # Default is to accept all types
+        self.possibleSpawns = (NODE.Airport, NODE.Office, NODE.House)
         self.destination = None
 
         self.budget = 20
@@ -158,6 +159,10 @@ class Person(pygame.sprite.Sprite):
 
         destination = random.randint(0, len(possibleDestinations) - 1)
         self.destination = possibleDestinations[destination]
+
+
+    def setSpawn(self, spawns = []):
+        return
 
 
     def remove(self):
@@ -427,6 +432,7 @@ class Person(pygame.sprite.Sprite):
 class Manager(Person):
     def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
         super().__init__(renderer, groups, currentNode,clickManager, transportClickManager)
+        self.possibleSpawns = (NODE.House, NODE.Office)
         self.possibleDestinations = (NODE.Airport, NODE.Office)
         self.budget = 40
 
@@ -439,7 +445,8 @@ class Manager(Person):
 class Commuter(Person):
     def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
         super().__init__(renderer, groups, currentNode, clickManager, transportClickManager)
-        self.possibleDestinations = (NODE.Airport, NODE.Office)
+        self.possibleSpawns = (NODE.House, NODE.Airport)
+        self.possibleDestinations = (NODE.Airport, NODE.Office, NODE.House)
         self.budget = 12
 
     # Office, home?
