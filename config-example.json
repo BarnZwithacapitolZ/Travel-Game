@@ -11,6 +11,7 @@
         "displayHeight": 576, 
         "antiAliasing": true, 
         "smoothCorners": true,
+        "smoothscale": true, 
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {
@@ -141,6 +142,10 @@
             "image": "House.png",
             "alpha": true
         },
+        "filter": {
+            "image": "Filter.png",
+            "alpha": true
+        },
         "example": {
             "image": "example.png",
             "alpha": false
@@ -182,6 +187,8 @@
     "saves": [], 
     "maps": {
         "London": "map1.json", 
-        "Test": "map2.json"
+        "Test": "map2.json",
+        "Another test": "map_Another_test.json",
+        "this is a test of movement": "map_this_is_a_test_of_movement.json"
     } 
 }
