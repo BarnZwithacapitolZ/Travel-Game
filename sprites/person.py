@@ -25,7 +25,7 @@ class Person(pygame.sprite.Sprite):
         FLAG = 6
         
 
-    def __init__(self, spriteRenderer, groups, currentNode, clickManager, transportClickManager):
+    def __init__(self, spriteRenderer, groups, clickManager, transportClickManager, spawnDestinations, possibleSpawns, possibleDestinations):
         self.groups = groups
         super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
@@ -34,29 +34,34 @@ class Person(pygame.sprite.Sprite):
         self.game = self.spriteRenderer.game
         self.width = 20
         self.height = 20
-        
-        self.currentNode = currentNode
-        self.startingConnectionType = self.currentNode.connectionType
-        self.currentConnectionType = self.currentNode.connectionType
-        self.currentNode.addPerson(self)
 
         #List of possible destinations that the player can have (different player types might have different destinatiosn that they go to)
-        self.possibleDestinations = (NODE.Airport, NODE.Office, NODE.House) # Default is to accept all types
-        self.possibleSpawns = (NODE.Airport, NODE.Office, NODE.House)
+        self.possibleSpawns = possibleSpawns
+        self.possibleDestinations = possibleDestinations
+        self.spawnDestinations = spawnDestinations
         self.destination = None
+        self.spawn = None
+        
+        self.setSpawn(self.spawnDestinations)
+        self.setDestination(self.spawnDestinations)
 
-        self.budget = 20
+        self.currentNode = self.spawn
+        self.startingConnectionType = "layer 2" #  always start on the second layer 
+        self.currentConnectionType = self.currentNode.connectionType
 
         self.offset = vec(-10, -15) #-10, -20 # Move it back 10 pixels x, 20 pixels y
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
         self.vel = vec(0, 0)
 
-        self.mouseOver = False
+        self.currentNode.addPerson(self)
+
         self.speed = 20
+        self.budget = 20
         self.path = []
 
         self.travellingOn = None
 
+        self.mouseOver = False
         self.status = Person.Status.UNASSIGNED
 
         self.dirty = True
@@ -70,6 +75,35 @@ class Person(pygame.sprite.Sprite):
         self.rad = 5
         self.step = 15
 
+        # Switch to the layer that the player spawned on
+        self.switchLayer(self.getLayer(self.startingConnectionType), self.getLayer(self.currentConnectionType))
+
+
+    # static function to check which player types can spawn on the map dependent on the desitations available
+    @staticmethod
+    def checkPeopleTypes(peopleTypes, spawnDestinations):
+        possiblePlayerTypes = {}
+        finalPlayerTypes = []
+
+        for person in peopleTypes:
+            possiblePlayerTypes[person] = {}
+            for node in spawnDestinations:
+                if isinstance(node, person.getPossibleSpawns()):
+                    possiblePlayerTypes[person].setdefault('spawns', []).append(node)
+
+                elif isinstance(node, person.getPossibleDestinations()):
+                    possiblePlayerTypes[person].setdefault('destinations', []).append(node)
+  
+
+        for person, spawnDestinations in possiblePlayerTypes.items():
+            if 'spawns' in spawnDestinations and len(spawnDestinations['spawns']) > 1:
+                finalPlayerTypes.append(person)
+                continue 
+            elif 'spawns' in spawnDestinations and 'destinations' in spawnDestinations:
+                finalPlayerTypes.append(person)
+                continue
+
+        return finalPlayerTypes
 
 
     #### Getters ####
@@ -152,17 +186,31 @@ class Person(pygame.sprite.Sprite):
 
     def setDestination(self, destinations = []):
         possibleDestinations = []
+        betterDestinations = []
         for destination in destinations:
             # If the destination is one of the persons possible destinations and not the node the player is currently on
-            if isinstance(destination, self.possibleDestinations) and destination.getNumber() != self.currentNode.getNumber():
+            if isinstance(destination, self.possibleDestinations) and destination.getNumber() != self.spawn.getNumber():
                 possibleDestinations.append(destination)
+
+        for desintation in possibleDestinations:
+            if not isinstance(desintation, type(self.spawn)):
+                betterDestinations.append(desintation)
+
+        if len(betterDestinations) > 0:
+            possibleDestinations = betterDestinations
 
         destination = random.randint(0, len(possibleDestinations) - 1)
         self.destination = possibleDestinations[destination]
 
 
     def setSpawn(self, spawns = []):
-        return
+        possibleSpawns = []
+        for spawn in spawns:
+            if isinstance(spawn, self.possibleSpawns):
+                possibleSpawns.append(spawn)
+
+        spawn = random.randint(0, len(possibleSpawns) - 1)
+        self.spawn = possibleSpawns[spawn]
 
 
     def remove(self):
@@ -333,13 +381,14 @@ class Person(pygame.sprite.Sprite):
             self.clickManager.setPerson(self)
 
             if self.status == Person.Status.UNASSIGNED:
-                if isinstance(self.currentNode, NODE.Stop):
+                if isinstance(self.currentNode, NODE.Stop) or isinstance(self.currentNode, NODE.Destination):
                     self.status = Person.Status.WAITING
                 elif isinstance(self.currentNode, NODE.Node):
                     self.status = Person.Status.FLAG
 
             elif self.status == Person.Status.WAITING:
-                if isinstance(self.currentNode, NODE.BusStop): # toggle between waiting for a bus and flagging a taxi
+                # or if its a desintation on layer 2
+                if isinstance(self.currentNode, NODE.BusStop) or (isinstance(self.currentNode, NODE.Destination) and self.currentNode.getConnectionType() == "layer 2"): # toggle between waiting for a bus and flagging a taxi
                     self.status = Person.Status.FLAG
                 else:
                     self.status = Person.Status.UNASSIGNED
@@ -430,24 +479,36 @@ class Person(pygame.sprite.Sprite):
 
 
 class Manager(Person):
-    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
-        super().__init__(renderer, groups, currentNode,clickManager, transportClickManager)
-        self.possibleSpawns = (NODE.House, NODE.Office)
-        self.possibleDestinations = (NODE.Airport, NODE.Office)
+    def __init__(self, renderer, groups, clickManager, transportClickManager, spawnDestinations):
+        super().__init__(renderer, groups, clickManager, transportClickManager, spawnDestinations, Manager.getPossibleSpawns(), Manager.getPossibleDestinations())
         self.budget = 40
-
         self.imageName = "manager"
+
+    @staticmethod
+    def getPossibleSpawns():
+        return (NODE.House, NODE.Office)
+
+    @staticmethod
+    def getPossibleDestinations():
+        return (NODE.Office, NODE.House) 
 
 
     # Office, airport
     # has a very high budget so can afford taxis etc.
 
 class Commuter(Person):
-    def __init__(self, renderer, groups, currentNode, clickManager, transportClickManager):
-        super().__init__(renderer, groups, currentNode, clickManager, transportClickManager)
-        self.possibleSpawns = (NODE.House, NODE.Airport)
-        self.possibleDestinations = (NODE.Airport, NODE.Office, NODE.House)
+    def __init__(self, renderer, groups, clickManager, transportClickManager, spawnDestinations):
+        super().__init__(renderer, groups, clickManager, transportClickManager, spawnDestinations, Commuter.getPossibleSpawns(), Commuter.getPossibleDestinations())
         self.budget = 12
+        self.imageName = "person"
+
+    @staticmethod
+    def getPossibleSpawns():
+        return (NODE.House, NODE.Airport)
+
+    @staticmethod
+    def getPossibleDestinations():
+        return (NODE.Airport, NODE.House)
 
     # Office, home?
     # has a small budget so cant rly afford many taxis etc.

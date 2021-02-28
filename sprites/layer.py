@@ -80,14 +80,11 @@ class Layer(pygame.sprite.Sprite):
         if len(self.grid.getNodes()) <= 0 or len(destinations) <= 0:
             return 
 
-        node = random.randint(0, len(self.grid.getNodes()) - 1)
-        currentNode = self.grid.getNodes()[node]
-
         peopleTypes = [Manager, Commuter]
-        person = random.randint(0, len(peopleTypes) - 1)
+        peopleTypes = Person.checkPeopleTypes(peopleTypes, destinations)
 
-        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
-        p.setDestination(destinations)
+        person = random.randint(0, len(peopleTypes) - 1)
+        p = peopleTypes[person](self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
 
         return p
 
@@ -143,9 +140,10 @@ class Layer(pygame.sprite.Sprite):
             component.draw()
 
         # does not need to be drawn each and every frame
-        # self.createConnections()
+        # self.game.renderer.gameDisplay.lock()
         for line in self.lines:
             pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+        # self.game.renderer.gameDisplay.unlock()   
 
 
 
