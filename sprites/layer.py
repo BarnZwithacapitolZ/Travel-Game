@@ -26,6 +26,7 @@ class Layer(pygame.sprite.Sprite):
 
         self.components = []
         self.lines = []
+        self.previousPeopleTypes = []
 
 
     #### Getters ####
@@ -81,10 +82,11 @@ class Layer(pygame.sprite.Sprite):
             return 
 
         peopleTypes = [Manager, Commuter]
-        peopleTypes = Person.checkPeopleTypes(peopleTypes, destinations)
+        peopleTypes, weights = Person.checkPeopleTypes(peopleTypes, self.previousPeopleTypes, destinations)
+        picks = [v for v, w in zip(peopleTypes, weights) for x in range(w)]
 
-        person = random.randint(0, len(peopleTypes) - 1)
-        p = peopleTypes[person](self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
+        p = random.choice(picks)(self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
+        self.previousPeopleTypes.append(type(p))
 
         return p
 

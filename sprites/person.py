@@ -5,6 +5,7 @@ from config import *
 import os
 import random
 import math
+import numpy
 
 from engine import ImageLoader
 from enum import Enum
@@ -81,9 +82,10 @@ class Person(pygame.sprite.Sprite):
 
     # static function to check which player types can spawn on the map dependent on the desitations available
     @staticmethod
-    def checkPeopleTypes(peopleTypes, spawnDestinations):
+    def checkPeopleTypes(peopleTypes, previousPeopleTypes, spawnDestinations):
         possiblePlayerTypes = {}
         finalPlayerTypes = []
+        finalPlayerWeights = []
 
         for person in peopleTypes:
             possiblePlayerTypes[person] = {}
@@ -94,7 +96,6 @@ class Person(pygame.sprite.Sprite):
                 elif isinstance(node, person.getPossibleDestinations()):
                     possiblePlayerTypes[person].setdefault('destinations', []).append(node)
   
-
         for person, spawnDestinations in possiblePlayerTypes.items():
             if 'spawns' in spawnDestinations and len(spawnDestinations['spawns']) > 1:
                 finalPlayerTypes.append(person)
@@ -103,7 +104,15 @@ class Person(pygame.sprite.Sprite):
                 finalPlayerTypes.append(person)
                 continue
 
-        return finalPlayerTypes
+        weights = numpy.full(shape = len(finalPlayerTypes), fill_value = 100 / len(finalPlayerTypes), dtype = numpy.int)
+        for i in range(len(finalPlayerTypes)):
+            occurances = previousPeopleTypes.count(finalPlayerTypes[i])
+            weights[i] -= (occurances * 10)
+            indexes = [j for j, x in enumerate(weights) if j != i]
+            for k in indexes:
+                weights[k] += (occurances * 10) / (len(finalPlayerTypes) - 1)
+
+        return finalPlayerTypes, weights
 
 
     #### Getters ####
