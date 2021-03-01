@@ -112,15 +112,14 @@ class Node(pygame.sprite.Sprite):
         #     return
         self.people.append(person)
 
-
-        if len(self.people) > 1:
-            print(len(self.people), "why is this not called?")
-            offset = vec(0, 0)
-            for person in list(self.people):
-                person.pos = (self.pos - self.offset) + person.offset + offset
-                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-                offset.x += person.width + 1
-                person.moveStatusIndicator()
+        # if len(self.people) > 1:
+        #     print(len(self.people), "why is this not called?")
+        #     offset = vec(0, 0)
+        #     for person in list(self.people):
+        #         person.pos = (self.pos - self.offset) + person.offset + offset
+        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        #         offset.x += person.width + 1
+        #         person.moveStatusIndicator()
 
 
     def remove(self):
@@ -223,8 +222,7 @@ class Node(pygame.sprite.Sprite):
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+            #     print(self.getNumber())
         
 
         # Hover over event; for person

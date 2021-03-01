@@ -452,7 +452,9 @@ class GameHud(GameHudLayout):
         slowDownMeterOutline = Shape(self, BLACK, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
         self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
         completed = Image(self, "walking", Color("white"), (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))   
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))  
+        filterImage = Image(self, "filter", Color("white"), (config['graphics']["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
+        border = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"] + 60, config["graphics"]["displayHeight"] + 60), (-30, -30), shapeOutline = 30, shapeBorderRadius = [80, 80, 80, 80]) 
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -479,6 +481,9 @@ class GameHud(GameHudLayout):
                 menu.remove(obj)
         
             self.slideTransitionY((0, 0), 'second', callback = callback)
+
+        # self.add(filterImage)
+        # self.add(border)
 
 
     def setCompletedText(self, text):
