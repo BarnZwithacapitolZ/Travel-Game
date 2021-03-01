@@ -48,9 +48,10 @@ class Transport(pygame.sprite.Sprite):
         self.people = []
 
         self.imageName = "train"
-        self.stopType = NODE.MetroStation
+        self.stopType = (NODE.MetroStation, NODE.Destination)
 
         self.path = []
+        self.firstPathNode = None # store the first node in the path, before it might be removed
 
 
     #### Getters ####
@@ -78,12 +79,22 @@ class Transport(pygame.sprite.Sprite):
     def setSpeed(self, speed):
         self.speed = speed
 
+
     def setMoving(self, moving):
         self.moving = moving
+
 
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+    
+    def setFirstPathNode(self, path):
+        # if there is nodes in the path and the firstpathnode isn't already set and the transport is at a station
+        if len(path) >= 1 and self.firstPathNode is None and not self.moving:
+            self.firstPathNode = path[0]
+        else:
+            self.firstPathNode = None
 
 
     # Set the connection that the transport will follow next
@@ -251,10 +262,10 @@ class Transport(pygame.sprite.Sprite):
             offset.x += person.width + 1#padding
             person.moveStatusIndicator()
 
-            # Check if the person has reached their destination and if they have remove
-            if person.getDestination().getNumber() == self.currentNode.getNumber():
-                person.complete()    
-                self.removePerson(person)            
+            # # Check if the person has reached their destination and if they have remove
+            # if person.getDestination().getNumber() == self.currentNode.getNumber():
+            #     person.complete()    
+            #     self.removePerson(person)            
 
 
     # Draw how long is left at each stop 
@@ -265,7 +276,7 @@ class Transport(pygame.sprite.Sprite):
         offx = 0.01
         step = self.timer / (self.timerLength / 2) + 0.02
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, 8)
+            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, int(8 * scale))
             offx += 0.01
 
 
@@ -378,13 +389,12 @@ class Transport(pygame.sprite.Sprite):
                 dis = dxy.length()
 
                 if dis >= 0.5 and self.moving:
-                    # if its the last node in the path, slow down if the last node is a stop
-                    if len(self.path) <= 1: 
-                        if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                        else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                            
+                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
+                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
+
+                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
+                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
@@ -405,6 +415,8 @@ class Transport(pygame.sprite.Sprite):
                         self.currentNode = self.currentConnection.getFrom()
                         self.currentNode.addTransport(self)
 
+                    if self.firstPathNode is not None and path.getNumber() != self.firstPathNode.getNumber():
+                        self.firstPathNode = None
                     self.path.remove(path)
 
                 self.pos += self.vel
@@ -601,7 +613,7 @@ class Bus(Transport):
     def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
         super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
         self.imageName = "bus"
-        self.stopType = NODE.BusStop
+        self.stopType = (NODE.BusStop, NODE.Destination)
 
 
 
@@ -609,7 +621,7 @@ class Tram(Transport):
     def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
         super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
         self.imageName = "tram"
-        self.stopType = NODE.TramStop
+        self.stopType = (NODE.TramStop, NODE.Destination)
 
 
 class Metro(Transport):

@@ -71,8 +71,7 @@ class SpriteRenderer():
             "connections": {}, 
             "transport": {}, 
             "stops": {},
-            "destinations": {},
-            "entrances": {}
+            "destinations": {}
         } # Level data to be stored, for export to JSON
 
 
@@ -237,7 +236,6 @@ class SpriteRenderer():
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, Stop))
         allnodes = sorted(allnodes, key=lambda x:isinstance(x, Destination))
         allnodes = allnodes[::-1] # Reverse the list so they're at the front
-
 
         for node in allnodes:
             if node.getNumber() not in seen:

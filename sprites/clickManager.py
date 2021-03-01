@@ -324,6 +324,7 @@ class TransportClickManager(ClickManager):
             # only set the path if the bus is moving
             path = self.pathFinding()
 
+            self.transport.setFirstPathNode(path)
             self.transport.clearPath(path)
 
             for node in path:

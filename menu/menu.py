@@ -787,6 +787,7 @@ class EditorHud(GameHudLayout):
         addType = self.game.mapEditor.getClickManager().getAddType()
         airportSelected = True if addType == 'airport' else False
         officeSelected = True if addType == 'office' else False
+        houseSelected = True if addType == 'house' else False
         # TO DO: Add other types of transportation    
 
         boxX = self.addLocation + 200
@@ -795,18 +796,22 @@ class EditorHud(GameHudLayout):
         box = Shape(self, BLACK, (200, 114), (boxX, 155))
         airportBox = Shape(self, GREEN, (200, 33), (boxX, 160))
         officeBox = Shape(self, GREEN, (200, 33), (boxX, 196))
+        houseBox = Shape(self, GREEN, (200, 33), (boxX, 228))
         
         airport = Label(self, "Airport", 25, Color("white"), (textX, 165))
         office = Label(self, "Office", 25, Color("white"), (textX, 200))
+        house = Label(self, "House", 25, Color("white"), (textX, 233))
 
         self.add(box)
         if airportSelected: self.add(airportBox)
         elif officeSelected: self.add(officeBox)
+        elif houseSelected: self.add(houseBox)
 
         airport.addEvent(addAirport, 'onMouseClick')
         office.addEvent(addOffice, 'onMouseClick')
+        house.addEvent(addHouse, 'onMouseClick')
 
-        labels = [(airport, airportSelected), (office, officeSelected)]
+        labels = [(airport, airportSelected), (office, officeSelected), (house, houseSelected)]
         for label in labels:
             if label[1]:
                 label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)

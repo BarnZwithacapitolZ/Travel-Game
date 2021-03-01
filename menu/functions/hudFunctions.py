@@ -338,6 +338,9 @@ def addOffice(obj, menu, event):
     generalFunctions.clearMenu(obj, menu)
 
 
+def addHouse(obj, menu, event):
+    menu.game.mapEditor.getClickManager().setAddType("house")
+    generalFunctions.clearMenu(obj, menu)
 
 
 

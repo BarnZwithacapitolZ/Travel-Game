@@ -26,6 +26,7 @@ class Layer(pygame.sprite.Sprite):
 
         self.components = []
         self.lines = []
+        self.previousPeopleTypes = []
 
 
     #### Getters ####
@@ -75,27 +76,20 @@ class Layer(pygame.sprite.Sprite):
     # Add a person to the layer
     def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
-        if len(self.grid.getNodes()) <= 0 or len(self.grid.getEntrances()) <= 0:
+        destinations = destinations if destinations is not None else self.grid.getDestinations()
+
+        if len(self.grid.getNodes()) <= 0 or len(destinations) <= 0:
             return 
 
-        if destinations == None:
-            destinations = self.grid.getDestinations() 
-
-        # Add the person to a random node on the layer
-        node = random.randint(0, len(self.grid.getEntrances()) - 1)
-        currentNode = self.grid.getEntrances()[node]
-
         peopleTypes = [Manager, Commuter]
-        person = random.randint(0, len(peopleTypes) - 1)
+        peopleTypes, weights = Person.checkPeopleTypes(peopleTypes, self.previousPeopleTypes, destinations)
+        picks = [v for v, w in zip(peopleTypes, weights) for x in range(w)]
 
-        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
-        p.setDestination(destinations)
+        p = random.choice(picks)(self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
+        self.previousPeopleTypes.append(type(p))
 
-        # Put the player at a position outside of the map
-        p.addToPath(currentNode.getConnections()[0].getTo())
         return p
 
-    
     # Create the connections by drawing them to the screen
     def createConnections(self):
         connections = self.grid.getTempConnections() + self.grid.getConnections()
@@ -148,9 +142,10 @@ class Layer(pygame.sprite.Sprite):
             component.draw()
 
         # does not need to be drawn each and every frame
-        # self.createConnections()
+        # self.game.renderer.gameDisplay.lock()
         for line in self.lines:
             pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+        # self.game.renderer.gameDisplay.unlock()   
 
 
 
