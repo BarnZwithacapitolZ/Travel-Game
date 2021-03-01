@@ -26,6 +26,7 @@ class Renderer:
         self.scale = 1 # control the scale of whats on screen
         self.fixedScale = 1 # used to control the fixed scale, i.e to make things bigger on screen seperate from screen size
         self.diff = vec(0, 0)
+        self.offset = vec(0, 0)
         self.surfaces = []
         self.dirtySurfaces = []
 
@@ -46,7 +47,7 @@ class Renderer:
         self.scanlines = pygame.Surface((self.width, self.height)).convert()
         self.scanlines.fill(SCANLINES)
         self.drawScanlines(self.scanlines)
-        self.scanlines.set_alpha(45)
+        self.scanlines.set_alpha(40)
 
 
 
@@ -139,8 +140,10 @@ class Renderer:
                 self.gameDisplay.blit(surface[0], surface[1])
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
-        self.gameDisplay.blit(self.scanlines, (0, 0))
-        pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
+
+        if config["graphics"]["scanlines"]:
+            self.gameDisplay.blit(self.scanlines, (0, 0))
+            pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
 
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))

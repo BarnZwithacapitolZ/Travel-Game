@@ -12,6 +12,7 @@
         "antiAliasing": true, 
         "smoothCorners": true,
         "smoothscale": true, 
+        "scanlines": true,
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {
