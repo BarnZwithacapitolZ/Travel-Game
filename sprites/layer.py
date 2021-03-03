@@ -230,7 +230,7 @@ class EditorLayer2(Layer):
 
 class EditorLayer3(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
-        super().__init__(spriteRenderer, groups, "layer3", level)
+        super().__init__(spriteRenderer, groups, "layer 3", level)
         self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()

@@ -159,8 +159,8 @@ class MainMenu(Menu):
 
     def main(self, transition = False):
         self.open = True
-        # sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
-        sidebar = Image(self, "example", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
+        sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
+        # sidebar = Image(self, "monitor", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
 
         x = (config["graphics"]["displayWidth"] / 2) - 180
 

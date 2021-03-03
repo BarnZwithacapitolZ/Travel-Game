@@ -153,6 +153,10 @@
         "example": {
             "image": "example.png",
             "alpha": false
+        },
+        "monitor": {
+            "image": "Monitor.png",
+            "alpha": false
         }
     }, 
     "audio": {
