@@ -14,15 +14,16 @@ from person import *
 vec = pygame.math.Vector2
 
 class Layer(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups, level = None, spacing = (1.5, 1.5)):
+    def __init__(self, spriteRenderer, groups, spriteGroups, level = None, spacing = (1.5, 1.5)):
         self.groups = groups
+        self.spriteGroups = groups
         #layer added to sprite group first
         super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.level = level
    
-        self.grid = GridManager(self, self.groups, self.level, spacing) # each layer has its own grid manager
+        self.grid = GridManager(self, spriteGroups, self.level, spacing) # each layer has its own grid manager
 
         self.components = []
         self.lines = []
@@ -137,10 +138,12 @@ class Layer(pygame.sprite.Sprite):
         })
 
 
-    def resize(self):
+    def resize(self, redrawLines = True):
         for component in self.components:
             component.dirty = True
-        self.createConnections()
+        if redrawLines:
+            self.createConnections()
+            self.drawLines()
 
 
     def drawLines(self):
@@ -158,44 +161,44 @@ class Layer(pygame.sprite.Sprite):
 
         # does not need to be drawn each and every frame
         # self.game.renderer.gameDisplay.lock()
-        for line in self.lines:
-            pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
-        # self.game.renderer.addSurface(self.lineSurface, (0, 0))
+        # for line in self.lines:
+        #     pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+        self.game.renderer.addSurface(self.lineSurface, (0, 0))
         # self.game.renderer.gameDisplay.unlock()   
 
 
 
 class Layer1(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
+    def __init__(self, spriteRenderer, groups, spriteGroups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, spriteGroups, level, spacing)
         self.grid.createGrid("layer 1")
         self.addConnections()  
         self.createConnections()
-        # self.drawLines()
+        self.drawLines()
 
 
 class Layer2(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
+    def __init__(self, spriteRenderer, groups, spriteGroups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, spriteGroups, level, spacing)
         self.grid.createGrid("layer 2")
         self.addConnections()     
         self.createConnections()
-        # self.drawLines()
+        self.drawLines()
 
 
 
 class Layer3(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
+    def __init__(self, spriteRenderer, groups, spriteGroups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, spriteGroups, level, spacing)
         self.grid.createGrid("layer 3")
         self.addConnections()        
         self.createConnections()
-        # self.drawLines()
+        self.drawLines()
 
 
 class Layer4(Layer):
     def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, level)
+        super().__init__(spriteRenderer, groups, groups, level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
         # self.addComponent(background)
         # self.grid.createGrid("layer 3")
