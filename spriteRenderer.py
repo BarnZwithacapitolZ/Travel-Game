@@ -184,12 +184,7 @@ class SpriteRenderer():
         self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), CREAM, level, spacing)
         self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), CREAM, level, spacing)
         self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), CREAM, level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
-        layer1Lines = self.gridLayer1.getLines()
-        layer2Lines = self.gridLayer2.getLines()
-        layer3Lines = self.gridLayer3.getLines()
-        layer4Lines = layer1Lines + layer2Lines + layer3Lines
-        self.gridLayer4.setLines(layer4Lines)
-        self.gridLayer4.drawLines()
+        self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
@@ -298,7 +293,12 @@ class SpriteRenderer():
             self.gridLayer1.resize()
             self.gridLayer2.resize()
             self.gridLayer3.resize()    
-            self.gridLayer4.resize()
+            self.gridLayer4.resize() # only need to do this if it has components
+
+            # we want to reset the layer 4 lines with the new ones (resized) from the other layers
+            self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3) 
+            
+            # resize huds and menus
             self.hud.resize()
             self.messageSystem.resize()
             self.openingMenu.resize()

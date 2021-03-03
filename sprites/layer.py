@@ -108,7 +108,7 @@ class Layer():
                 if connection.getSideColor() is not None:
                     self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
                     self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
-        self.drawLines()
+        self.render()
 
 
     # Word out the x and y of each connection and append it to the list
@@ -140,36 +140,29 @@ class Layer():
 
 
     def resize(self):
+        # resize all the layer components
         for component in self.components:
             component.dirty = True
         self.createConnections()
 
 
-    def drawLines(self):
+    def render(self):
         self.lineSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
                                             int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
         self.lineSurface.fill(self.backgroundColor)
+
+        for component in self.components:
+            component.draw(self.lineSurface)
 
         for line in self.lines:
             pygame.draw.line(self.lineSurface, line["color"], line["posx"], line["posy"], int(line["thickness"]))
 
 
     def draw(self):
-        for component in self.components:
-            component.draw()
-
-        # does not need to be drawn each and every frame
-        # self.game.renderer.gameDisplay.lock()
-        # for line in self.lines:
-        #     pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
-        # self.game.renderer.addSurface(self.lineSurface, (0, 0))
         if len(self.lines) > 0:
             self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
         else:
             pygame.draw.rect(self.game.renderer.gameDisplay, self.backgroundColor, (0, 0, config["graphics"]["displayWidth"] * self.game.renderer.getScale(), config["graphics"]["displayHeight"] * self.game.renderer.getScale()))
-
-        # self.game.renderer.gameDisplay.unlock()   
-
 
 
 class Layer1(Layer):
@@ -200,19 +193,12 @@ class Layer4(Layer):
     def __init__(self, spriteRenderer, groups, background, level):
         super().__init__(spriteRenderer, groups, background, level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
-        # self.addComponent(background)
-        # self.grid.createGrid("layer 3")
-        # self.grid.createGrid("layer 1")
-        # self.grid.createGrid("layer 2")
-        # self.addConnections()        
-        # self.createConnections()
-        # self.drawLines()
+        self.addComponent(background)
 
-    def resize(self):
-        for component in self.components:
-            component.dirty = True
-
-        self.drawLines()
+    def addLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        self.lines = lines
+        self.render()
 
 
 class EditorLayer1(Layer):
@@ -243,11 +229,10 @@ class EditorLayer4(Layer):
     def __init__(self, spriteRenderer, groups, background, level = None):
         super().__init__(spriteRenderer, groups, background, level)
 
-    def resize(self):
-        for component in self.components:
-            component.dirty = True
-
-        self.drawLines()
+    def addLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        self.lines = lines
+        self.render()
 
     
 class Background():
@@ -270,6 +255,6 @@ class Background():
         self.rect.y = self.y * self.game.renderer.getScale()
 
 
-    def draw(self):
+    def draw(self, surface):
         if self.dirty or self.image is None: self.__render()
-        self.game.renderer.gameDisplay.blit(self.image, self.rect)
+        surface.blit(self.image, self.rect)
