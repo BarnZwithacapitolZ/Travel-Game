@@ -44,7 +44,7 @@ class Renderer:
             
 
     def createScanlines(self):
-        self.scanlines = pygame.Surface((self.width, self.height)).convert()
+        self.scanlines = pygame.Surface((self.width, self.height))
         self.scanlines.fill(SCANLINES)
         self.drawScanlines(self.scanlines)
         self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])

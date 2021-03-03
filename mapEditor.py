@@ -123,16 +123,26 @@ class MapEditor(SpriteRenderer):
             self.hud.closeDropdowns()
             return True
         return False
+
+    
+    def createLayer4Lines(self):
+        layer1Lines = self.gridLayer1.getLines()
+        layer2Lines = self.gridLayer2.getLines()
+        layer3Lines = self.gridLayer3.getLines()
+        layer4Lines = layer1Lines + layer2Lines + layer3Lines
+        self.gridLayer4.setLines(layer4Lines)
+        self.gridLayer4.drawLines()
     
     
     # Override creating the level
     def createLevel(self, level = None, clearChanges = False):
         self.clearLevel()
 
-        self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), level) 
-        self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), level)
-        self.gridLayer1 = EditorLayer1(self, (self.allSprites, self.layer1, self.layer4), level)
-        self.gridLayer2 = EditorLayer2(self, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), CREAM, level) 
+        self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), CREAM, level)
+        self.gridLayer1 = EditorLayer1(self, (self.allSprites, self.layer1, self.layer4), CREAM, level)
+        self.gridLayer2 = EditorLayer2(self, (self.allSprites, self.layer2, self.layer4), CREAM, level)
+        self.createLayer4Lines()
 
         # Add the transport not running (so it doesnt move)
         self.gridLayer1.grid.loadTransport("layer 1", False)
@@ -239,6 +249,7 @@ class MapEditor(SpriteRenderer):
             # Only add the new connections to the nodes
             layer.addConnections(newConnections)
             layer.createConnections()
+            self.createLayer4Lines()
 
             # Add the new connection to the level data
             connection = [connections[x].getNumber(), connections[x + 1].getNumber()]

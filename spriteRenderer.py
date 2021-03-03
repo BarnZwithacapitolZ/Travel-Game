@@ -180,10 +180,10 @@ class SpriteRenderer():
 
 
         # ordering matters -> stack
-        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
-        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
-        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
-        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
+        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), CREAM, level)
+        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), CREAM, level, spacing)
+        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), CREAM, level, spacing)
+        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), CREAM, level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
         layer1Lines = self.gridLayer1.getLines()
         layer2Lines = self.gridLayer2.getLines()
         layer3Lines = self.gridLayer3.getLines()
