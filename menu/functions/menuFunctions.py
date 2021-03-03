@@ -14,7 +14,7 @@ from transitionFunctions import *
 # load the level and show transition
 def continueGame(obj, menu, event):
     def callback(obj, menu):
-        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
+        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("Another test"))
         menu.game.spriteRenderer.setRendering(True, True) #Load the hud
         menu.close()
         obj.y = 0

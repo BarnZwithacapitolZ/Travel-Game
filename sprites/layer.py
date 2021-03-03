@@ -163,7 +163,11 @@ class Layer():
         # for line in self.lines:
         #     pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
         # self.game.renderer.addSurface(self.lineSurface, (0, 0))
-        self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
+        if len(self.lines) > 0:
+            self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
+        else:
+            pygame.draw.rect(self.game.renderer.gameDisplay, self.backgroundColor, (0, 0, config["graphics"]["displayWidth"] * self.game.renderer.getScale(), config["graphics"]["displayHeight"] * self.game.renderer.getScale()))
+
         # self.game.renderer.gameDisplay.unlock()   
 
 

@@ -145,7 +145,7 @@ class Renderer:
         if config["graphics"]["scanlines"]["enabled"]:
             self.gameDisplay.blit(self.scanlines, (0, 0))
         pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
-
+    
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.smoothscale(self.gameDisplay, (int(self.width), int(self.height))), (0, 0))
