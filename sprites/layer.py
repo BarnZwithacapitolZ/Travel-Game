@@ -38,8 +38,14 @@ class Layer(pygame.sprite.Sprite):
     def getSpriteRenderer(self):
         return self.spriteRenderer
 
+    def getLines(self):
+        return self.lines
+
 
     #### Setters ####
+
+    def setLines(self, lines):
+        self.lines = lines
 
     # Add a component to the layer
     def addComponent(self, component):
@@ -137,6 +143,15 @@ class Layer(pygame.sprite.Sprite):
         self.createConnections()
 
 
+    def drawLines(self):
+        self.lineSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
+                                            int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
+        self.lineSurface.fill(CREAM)
+
+        for line in self.lines:
+            pygame.draw.line(self.lineSurface, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+
+
     def draw(self):
         for component in self.components:
             component.draw()
@@ -145,6 +160,7 @@ class Layer(pygame.sprite.Sprite):
         # self.game.renderer.gameDisplay.lock()
         for line in self.lines:
             pygame.draw.line(self.game.renderer.gameDisplay, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+        # self.game.renderer.addSurface(self.lineSurface, (0, 0))
         # self.game.renderer.gameDisplay.unlock()   
 
 
@@ -155,6 +171,7 @@ class Layer1(Layer):
         self.grid.createGrid("layer 1")
         self.addConnections()  
         self.createConnections()
+        # self.drawLines()
 
 
 class Layer2(Layer):
@@ -163,6 +180,7 @@ class Layer2(Layer):
         self.grid.createGrid("layer 2")
         self.addConnections()     
         self.createConnections()
+        # self.drawLines()
 
 
 
@@ -172,6 +190,7 @@ class Layer3(Layer):
         self.grid.createGrid("layer 3")
         self.addConnections()        
         self.createConnections()
+        # self.drawLines()
 
 
 class Layer4(Layer):
@@ -179,6 +198,13 @@ class Layer4(Layer):
         super().__init__(spriteRenderer, groups, level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
         # self.addComponent(background)
+        # self.grid.createGrid("layer 3")
+        # self.grid.createGrid("layer 1")
+        # self.grid.createGrid("layer 2")
+        # self.addConnections()        
+        # self.createConnections()
+        # self.drawLines()
+
 
 
 class EditorLayer1(Layer):

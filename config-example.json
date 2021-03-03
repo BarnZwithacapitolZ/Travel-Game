@@ -12,7 +12,10 @@
         "antiAliasing": true, 
         "smoothCorners": true,
         "smoothscale": true, 
-        "scanlines": true,
+        "scanlines": {
+            "enabled": true,
+            "opacity": 40
+        },
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {
@@ -24,7 +27,10 @@
     }, 
     "fonts": {
         "joystix": "joystix monospace.ttf",
-        "openSans": "open-sans/OpenSans-Bold.ttf"
+        "openSans": "open-sans/OpenSans-Bold.ttf",
+        "whiteRabbit": "whitrabt.ttf",
+        "bitwise": "Bitwise-m19x.ttf"
+        
     }, 
     "images": {
         "icon": {

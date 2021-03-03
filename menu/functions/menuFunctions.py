@@ -14,7 +14,7 @@ from transitionFunctions import *
 # load the level and show transition
 def continueGame(obj, menu, event):
     def callback(obj, menu):
-        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("London"))
+        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("Another test"))
         menu.game.spriteRenderer.setRendering(True, True) #Load the hud
         menu.close()
         obj.y = 0
@@ -116,4 +116,16 @@ def toggleFullscreen(obj, menu, event):
     obj.setText("Fullscreen: " + text)
 
     config["graphics"]["fullscreen"] = menu.game.fullscreen
+    dump(config)
+
+
+# Toggle scanlines effect on and off in the graphics menu
+def toggleScanlines(obj, menu, event):
+    toggle = not config["graphics"]["scanlines"]["enabled"]
+    config["graphics"]["scanlines"]["enabled"] = toggle
+
+    text = "On" if toggle else "Off"
+
+    obj.setText("Scanlines: " + text)
+
     dump(config)

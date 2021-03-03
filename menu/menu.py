@@ -143,12 +143,12 @@ class Menu:
 
 
     def slideTransitionY(self, pos, half, speed = -40, callback = None, direction = 'up'):
-        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionY, 'onLoad', speed = speed, half = half, callback = callback, transitionDirection = direction)
         self.add(transition)
 
     def slideTransitionX(self, pos, half, speed = -70, callback = None):
-        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
         self.add(transition)
 
@@ -293,7 +293,7 @@ class OptionMenu(Menu):
 
         graphics = Label(self, "Graphics", 50, BLACK, (100, 200))
         controls = Label(self, "Controls", 50, BLACK, (100, 260))
-        back = Label(self, "Back", 50,  BLACK, (100, 380))
+        back = Label(self, "Back", 30,  BLACK, (100, 440))
 
         graphics.addEvent(showGraphics, 'onMouseClick')
         graphics.addEvent(hoverOver, 'onMouseOver')
@@ -315,10 +315,12 @@ class OptionMenu(Menu):
 
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
+        scanlinesText = "On" if config["graphics"]["scanlines"]["enabled"] else "Off"
 
         antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, BLACK, (100, 200))
         fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, BLACK, (100, 260))
-        back = Label(self, "Back", 50,  BLACK, (100, 380))
+        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, BLACK, (100, 320))
+        back = Label(self, "Back", 30,  BLACK, (100, 440))
 
         antiAlias.addEvent(toggleAlias, 'onMouseClick')
         antiAlias.addEvent(hoverOver, 'onMouseOver')
@@ -328,6 +330,10 @@ class OptionMenu(Menu):
         fullscreen.addEvent(hoverOver, 'onMouseOver')
         fullscreen.addEvent(hoverOut, 'onMouseOut')
 
+        scanlines.addEvent(toggleScanlines, 'onMouseClick')
+        scanlines.addEvent(hoverOver, 'onMouseOver')
+        scanlines.addEvent(hoverOut, 'onMouseOut')
+
         back.addEvent(showOptions, 'onMouseClick')
         back.addEvent(hoverOver, 'onMouseOver')
         back.addEvent(hoverOut, 'onMouseOut')
@@ -335,6 +341,7 @@ class OptionMenu(Menu):
         self.add(sidebar)
         self.add(antiAlias)
         self.add(fullscreen)
+        self.add(scanlines)
         self.add(back)
 
 
