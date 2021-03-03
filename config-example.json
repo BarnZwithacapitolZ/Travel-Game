@@ -26,11 +26,8 @@
         }
     }, 
     "fonts": {
-        "joystix": "joystix monospace.ttf",
-        "openSans": "open-sans/OpenSans-Bold.ttf",
         "whiteRabbit": "whitrabt.ttf",
         "bitwise": "Bitwise-m19x.ttf"
-        
     }, 
     "images": {
         "icon": {
