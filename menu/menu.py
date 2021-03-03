@@ -143,12 +143,12 @@ class Menu:
 
 
     def slideTransitionY(self, pos, half, speed = -40, callback = None, direction = 'up'):
-        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionY, 'onLoad', speed = speed, half = half, callback = callback, transitionDirection = direction)
         self.add(transition)
 
     def slideTransitionX(self, pos, half, speed = -70, callback = None):
-        transition = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
         self.add(transition)
 
@@ -293,7 +293,7 @@ class OptionMenu(Menu):
 
         graphics = Label(self, "Graphics", 50, BLACK, (100, 200))
         controls = Label(self, "Controls", 50, BLACK, (100, 260))
-        back = Label(self, "Back", 50,  BLACK, (100, 380))
+        back = Label(self, "Back", 30,  BLACK, (100, 440))
 
         graphics.addEvent(showGraphics, 'onMouseClick')
         graphics.addEvent(hoverOver, 'onMouseOver')
@@ -315,10 +315,12 @@ class OptionMenu(Menu):
 
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
+        scanlinesText = "On" if config["graphics"]["scanlines"]["enabled"] else "Off"
 
         antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, BLACK, (100, 200))
         fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, BLACK, (100, 260))
-        back = Label(self, "Back", 50,  BLACK, (100, 380))
+        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, BLACK, (100, 320))
+        back = Label(self, "Back", 30,  BLACK, (100, 440))
 
         antiAlias.addEvent(toggleAlias, 'onMouseClick')
         antiAlias.addEvent(hoverOver, 'onMouseOver')
@@ -328,6 +330,10 @@ class OptionMenu(Menu):
         fullscreen.addEvent(hoverOver, 'onMouseOver')
         fullscreen.addEvent(hoverOut, 'onMouseOut')
 
+        scanlines.addEvent(toggleScanlines, 'onMouseClick')
+        scanlines.addEvent(hoverOver, 'onMouseOver')
+        scanlines.addEvent(hoverOut, 'onMouseOut')
+
         back.addEvent(showOptions, 'onMouseClick')
         back.addEvent(hoverOver, 'onMouseOver')
         back.addEvent(hoverOut, 'onMouseOut')
@@ -335,6 +341,7 @@ class OptionMenu(Menu):
         self.add(sidebar)
         self.add(antiAlias)
         self.add(fullscreen)
+        self.add(scanlines)
         self.add(back)
 
 
@@ -452,7 +459,9 @@ class GameHud(GameHudLayout):
         slowDownMeterOutline = Shape(self, BLACK, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
         self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
         completed = Image(self, "walking", Color("white"), (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))   
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))  
+        filterImage = Image(self, "filter", Color("white"), (config['graphics']["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
+        border = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"] + 60, config["graphics"]["displayHeight"] + 60), (-30, -30), shapeOutline = 30, shapeBorderRadius = [80, 80, 80, 80]) 
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayers, 'onMouseOut')
@@ -479,6 +488,9 @@ class GameHud(GameHudLayout):
                 menu.remove(obj)
         
             self.slideTransitionY((0, 0), 'second', callback = callback)
+
+        # self.add(filterImage)
+        # self.add(border)
 
 
     def setCompletedText(self, text):

@@ -117,3 +117,15 @@ def toggleFullscreen(obj, menu, event):
 
     config["graphics"]["fullscreen"] = menu.game.fullscreen
     dump(config)
+
+
+# Toggle scanlines effect on and off in the graphics menu
+def toggleScanlines(obj, menu, event):
+    toggle = not config["graphics"]["scanlines"]["enabled"]
+    config["graphics"]["scanlines"]["enabled"] = toggle
+
+    text = "On" if toggle else "Off"
+
+    obj.setText("Scanlines: " + text)
+
+    dump(config)

@@ -184,6 +184,11 @@ class SpriteRenderer():
         self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
         self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
         self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
+        # layer1Lines = self.gridLayer1.getLines()
+        # layer2Lines = self.gridLayer2.getLines()
+        # layer3Lines = self.gridLayer3.getLines()
+        # layer4Lines = layer1Lines + layer2Lines + layer3Lines
+        # self.gridLayer4.setLines(layer4Lines)
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")

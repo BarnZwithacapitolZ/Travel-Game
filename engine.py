@@ -26,11 +26,28 @@ class Renderer:
         self.scale = 1 # control the scale of whats on screen
         self.fixedScale = 1 # used to control the fixed scale, i.e to make things bigger on screen seperate from screen size
         self.diff = vec(0, 0)
+        self.offset = vec(0, 0)
         self.surfaces = []
         self.dirtySurfaces = []
 
         self.fpsFont = pygame.font.Font(pygame.font.get_default_font(), 30)
         self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
+        self.createScanlines()
+    
+
+    def drawScanlines(self, surface):
+        step = int(2 * self.scale) if int(2 * self.scale) >= 2 else 2
+        for i in range(0, int(self.height), step):
+            pos1 = (0, i)
+            pos2 = (int(self.width), i)
+            pygame.draw.line(surface, (0, 0, 0, 60), pos1, pos2, 1)
+            
+
+    def createScanlines(self):
+        self.scanlines = pygame.Surface((self.width, self.height)).convert()
+        self.scanlines.fill(SCANLINES)
+        self.drawScanlines(self.scanlines)
+        self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])
 
 
 
@@ -105,12 +122,13 @@ class Renderer:
         else:
             self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
 
-        self.gameDisplay = pygame.Surface((self.width, self.height)) #.convert() ??
+        self.gameDisplay = pygame.Surface((self.width, self.height)) #.convert()
 
         self.game.spriteRenderer.resize()
         self.game.mapEditor.resize()
         self.game.optionMenu.resize()
         self.game.mainMenu.resize()       
+        self.createScanlines()
 
 
     # on tick function
@@ -122,6 +140,11 @@ class Renderer:
                 self.gameDisplay.blit(surface[0], surface[1])
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
+
+        if config["graphics"]["scanlines"]["enabled"]:
+            self.gameDisplay.blit(self.scanlines, (0, 0))
+        pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
+
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.smoothscale(self.gameDisplay, (int(self.width), int(self.height))), (0, 0))
@@ -156,8 +179,12 @@ class ImageLoader:
         data = self.images[key]["data"]
 
         if scale: # if there is a scale
-            image = pygame.transform.smoothscale(image, (int(scale[0] * self.game.renderer.getScale()),
-                                                        int(scale[1] * self.game.renderer.getScale())))
+            if config["graphics"]["smoothscale"]:
+                image = pygame.transform.smoothscale(image, (int(scale[0] * self.game.renderer.getScale()),
+                                                            int(scale[1] * self.game.renderer.getScale())))
+            else:
+                image = pygame.transform.scale(image, (int(scale[0] * self.game.renderer.getScale()),
+                                                            int(scale[1] * self.game.renderer.getScale())))
             image = image.convert_alpha() if data["alpha"] else image.convert()
 
         return image

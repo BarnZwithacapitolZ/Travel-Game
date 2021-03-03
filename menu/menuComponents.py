@@ -150,8 +150,8 @@ class Label(MenuComponent):
         super().__init__(menu, color, (1, 1), pos)
 
         self.text = text
-        self.fontName = pygame.font.get_default_font()
-        # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["openSans"])
+        # self.fontName = pygame.font.get_default_font()
+        self.fontName = os.path.join(FONTFOLDER, config["fonts"]["whiteRabbit"])
         self.fontSize = fontSize
         self.bold = False
         self.italic = False

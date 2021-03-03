@@ -44,6 +44,12 @@ GREY = (201, 199, 209)
 TEMPGREY = (228, 227, 232)
 HOVERGREY = (153, 153, 153)
 
+
+
+SCANLINESGREEN = (38, 127, 0, 20)
+SCANLINESBLUE = (0, 102, 255, 20)
+SCANLINES = SCANLINESGREEN
+
 # dump config file to json for saving
 def dump(data):
     with open('config.json', 'w') as f:
