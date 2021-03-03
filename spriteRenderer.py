@@ -68,6 +68,12 @@ class SpriteRenderer():
                 "completed": False,
                 "time": 0
             },
+            "backgrounds": {
+                "layer 1": CREAM,
+                "layer 2": CREAM,
+                "layer 3": CREAM,
+                "layer 4": CREAM
+            },
             "connections": {}, 
             "transport": {}, 
             "stops": {},
@@ -180,10 +186,10 @@ class SpriteRenderer():
 
 
         # ordering matters -> stack
-        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), CREAM, level)
-        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), CREAM, level, spacing)
-        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), CREAM, level, spacing)
-        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), CREAM, level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
+        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
+        self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
+        self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
+        self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
         self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         self.gridLayer1.grid.loadTransport("layer 1")

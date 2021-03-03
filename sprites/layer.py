@@ -14,13 +14,13 @@ from person import *
 vec = pygame.math.Vector2
 
 class Layer():
-    def __init__(self, spriteRenderer, groups, background, level = None, spacing = (1.5, 1.5)):
+    def __init__(self, spriteRenderer, groups, connectionType, level = None, spacing = (1.5, 1.5)):
         self.groups = groups
         #layer added to sprite group first
         # super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
-        self.backgroundColor = background
+        self.connectionType = connectionType
         self.level = level
    
         self.grid = GridManager(self, self.groups, self.level, spacing) # each layer has its own grid manager
@@ -28,6 +28,8 @@ class Layer():
         self.components = []
         self.lines = []
         self.previousPeopleTypes = []
+
+        self.loadBackgroundColor(CREAM)
 
 
     #### Getters ####
@@ -146,6 +148,15 @@ class Layer():
         self.createConnections()
 
 
+    def loadBackgroundColor(self, default):
+        levelData = self.grid.getMap()
+
+        if "backgrounds" in levelData and self.connectionType in levelData["backgrounds"]:
+            self.backgroundColor = levelData["backgrounds"][self.connectionType]
+        else:
+            self.backgroundColor = default
+
+
     def render(self):
         self.lineSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
                                             int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
@@ -166,34 +177,34 @@ class Layer():
 
 
 class Layer1(Layer):
-    def __init__(self, spriteRenderer, groups,background, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, background, level, spacing)
-        self.grid.createGrid("layer 1")
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, "layer 1", level, spacing)
+        self.grid.createGrid(self.connectionType)
         self.addConnections()  
         self.createConnections()
 
 
 class Layer2(Layer):
-    def __init__(self, spriteRenderer, groups, background, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, background, level, spacing)
-        self.grid.createGrid("layer 2")
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, "layer 2", level, spacing)
+        self.grid.createGrid(self.connectionType)
         self.addConnections()     
         self.createConnections()
 
 
 class Layer3(Layer):
-    def __init__(self, spriteRenderer, groups, background, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, background, level, spacing)
-        self.grid.createGrid("layer 3")
+    def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
+        super().__init__(spriteRenderer, groups, "layer 3", level, spacing)
+        self.grid.createGrid(self.connectionType)
         self.addConnections()        
         self.createConnections()
 
 
 class Layer4(Layer):
-    def __init__(self, spriteRenderer, groups, background, level):
-        super().__init__(spriteRenderer, groups, background, level)
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, "layer 4", level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
-        self.addComponent(background)
+        # self.addComponent(background)
 
     def addLayerLines(self, layer1, layer2, layer3):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
@@ -202,32 +213,32 @@ class Layer4(Layer):
 
 
 class EditorLayer1(Layer):
-    def __init__(self, spriteRenderer, groups, background, level = None):
-        super().__init__(spriteRenderer, groups, background, level)
-        self.grid.createFullGrid("layer 1")
+    def __init__(self, spriteRenderer, groups, level = None):
+        super().__init__(spriteRenderer, groups, "layer 1", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
 
 
 class EditorLayer2(Layer):
-    def __init__(self, spriteRenderer, groups, background, level = None):
-        super().__init__(spriteRenderer, groups, background, level)
-        self.grid.createFullGrid("layer 2")
+    def __init__(self, spriteRenderer, groups, level = None):
+        super().__init__(spriteRenderer, groups, "layer 2", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
 
 
 class EditorLayer3(Layer):
-    def __init__(self, spriteRenderer, groups, background, level = None):
-        super().__init__(spriteRenderer, groups, background, level)
-        self.grid.createFullGrid("layer 3")
+    def __init__(self, spriteRenderer, groups, level = None):
+        super().__init__(spriteRenderer, groups, "layer3", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
 
 
 class EditorLayer4(Layer):
-    def __init__(self, spriteRenderer, groups, background, level = None):
-        super().__init__(spriteRenderer, groups, background, level)
+    def __init__(self, spriteRenderer, groups, level = None):
+        super().__init__(spriteRenderer, groups, "layer 4", level)
 
     def addLayerLines(self, layer1, layer2, layer3):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
