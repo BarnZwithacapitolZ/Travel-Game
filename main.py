@@ -188,9 +188,8 @@ class Game:
 
     def __draw(self):
         #add sprites
-        # self.renderer.prepareSurface(LIGHTGREEN)
-        self.spriteRenderer.render(CREAM)
-        self.mapEditor.render(CREAM)
+        self.spriteRenderer.render()
+        self.mapEditor.render()
 
         #add menus when not paused
         if self.paused: self.optionMenu.display() #To Do: Different option menus for sprite renderer and level editor

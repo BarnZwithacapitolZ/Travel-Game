@@ -314,10 +314,8 @@ class SpriteRenderer():
                 sprite.draw()
 
 
-    def render(self, color = None):
-        if self.rendering:
-            if color is not None: self.game.renderer.prepareSurface(color)
-    
+    def render(self):
+        if self.rendering:    
             self.renderLayer(1, self.gridLayer1, self.layer1)
             self.renderLayer(2, self.gridLayer2, self.layer2)
             self.renderLayer(3, self.gridLayer3, self.layer3)
