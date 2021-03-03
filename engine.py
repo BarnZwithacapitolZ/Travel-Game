@@ -54,8 +54,9 @@ class Renderer:
     # Prepare the gamedisplay for blitting to, this means overriding it with a new color
     def prepareSurface(self, color):
         # self.gameDisplay.fill(color)
-        pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
+        # pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
         # self.dirtySurfaces.append(self.gameDisplay.get_rect())
+        pass
 
 
     # Add a surface to the gameDisplay
