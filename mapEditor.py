@@ -133,6 +133,7 @@ class MapEditor(SpriteRenderer):
         self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), level)
         self.gridLayer1 = EditorLayer1(self, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = EditorLayer2(self, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # Add the transport not running (so it doesnt move)
         self.gridLayer1.grid.loadTransport("layer 1", False)

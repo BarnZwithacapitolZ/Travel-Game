@@ -26,11 +26,8 @@
         }
     }, 
     "fonts": {
-        "joystix": "joystix monospace.ttf",
-        "openSans": "open-sans/OpenSans-Bold.ttf",
         "whiteRabbit": "whitrabt.ttf",
         "bitwise": "Bitwise-m19x.ttf"
-        
     }, 
     "images": {
         "icon": {
@@ -155,6 +152,10 @@
         },
         "example": {
             "image": "example.png",
+            "alpha": false
+        },
+        "monitor": {
+            "image": "Monitor.png",
             "alpha": false
         }
     }, 

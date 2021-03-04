@@ -159,8 +159,8 @@ class MainMenu(Menu):
 
     def main(self, transition = False):
         self.open = True
-        # sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
-        sidebar = Image(self, "example", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
+        sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
+        # sidebar = Image(self, "monitor", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
 
         x = (config["graphics"]["displayWidth"] / 2) - 180
 
@@ -507,9 +507,10 @@ class EditorHud(GameHudLayout):
 
         # Locations of each option
         self.fileLocation = 20
-        self.editLocation = self.fileLocation + 70 # 90
-        self.addLocation = self.editLocation + 70 # 90
-        self.deleteLocation = self.addLocation + 75 # 170
+        self.textY = 12
+        self.editLocation = self.fileLocation + 75 # 90
+        self.addLocation = self.editLocation + 75 # 90
+        self.deleteLocation = self.addLocation + 65 # 170
         self.runLocation = self.deleteLocation + 100 # 280
 
 
@@ -535,14 +536,14 @@ class EditorHud(GameHudLayout):
 
         topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
 
-        fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, 10))
-        edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, 10))
-        add = Label(self, "Add", 25, Color("white"), (self.addLocation, 10))
-        delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, 10))
-        run = Label(self, "Run", 25, Color("white"), (self.runLocation, 10))
+        fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, self.textY))
+        edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, self.textY))
+        add = Label(self, "Add", 25, Color("white"), (self.addLocation, self.textY))
+        delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, self.textY))
+        run = Label(self, "Run", 25, Color("white"), (self.runLocation, self.textY))
 
-        layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, 10))
-        self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, 10))
+        layers = Image(self, "layersWhite", Color("white"), (25, 25), (880, self.textY - 3))
+        self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, self.textY))
 
         layers.addEvent(showLayers, 'onMouseOver')
         layers.addEvent(hideLayersWhite, 'onMouseOut')

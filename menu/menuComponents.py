@@ -152,6 +152,7 @@ class Label(MenuComponent):
         self.text = text
         # self.fontName = pygame.font.get_default_font()
         self.fontName = os.path.join(FONTFOLDER, config["fonts"]["whiteRabbit"])
+        # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["bitwise"])
         self.fontSize = fontSize
         self.bold = False
         self.italic = False
@@ -241,7 +242,7 @@ class InputBox(Label):
         self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
 
     def setText(self):   
-        width = self.getFontSize(self.menu.game.textHandler.getString())[0]
+        width = (self.getFontSizeScaled(self.menu.game.textHandler.getString())[0] / self.menu.renderer.getScale())
                 
         if width < self.inputWidth:
             self.menu.game.textHandler.setLengthReached(False)
@@ -257,7 +258,7 @@ class InputBox(Label):
 
     def setFlashing(self):
         if hasattr(self.indicator, 'rect'):
-            self.indicator.x = self.x + self.getFontSize(self.menu.game.textHandler.getString(True))[0]
+            self.indicator.x = self.x + self.getFontSizeScaled(self.menu.game.textHandler.getString(True))[0] / self.menu.renderer.getScale()
             self.indicator.rect.x = self.indicator.x * self.menu.renderer.getScale()
 
             self.timer += 60 * self.menu.game.dt

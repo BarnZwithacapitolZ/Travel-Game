@@ -101,7 +101,9 @@ class GridManager:
 
 
     def getMap(self):
-        return self.map
+        if hasattr(self, 'map'):
+            return self.map
+        return {}
         
 
     #### Setters ####
