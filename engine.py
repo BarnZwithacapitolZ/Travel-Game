@@ -36,7 +36,8 @@ class Renderer:
     
 
     def drawScanlines(self, surface):
-        step = int(2 * self.scale) if int(2 * self.scale) >= 2 else 2
+        # step = int(2 * self.scale) if int(2 * self.scale) >= 2 else 2
+        step = 5
         for i in range(0, int(self.height), step):
             pos1 = (0, i)
             pos2 = (int(self.width), i)
@@ -195,11 +196,12 @@ class ImageLoader:
 
 class AudioLoader:
     def __init__(self):
-        # pygame.mixer.set_num_channels(5)
+        pygame.mixer.set_num_channels(3)
 
         self.sounds = {}
         self.music = {}
 
+        self.setChannels()
         self.loadAllSounds()
 
 
@@ -207,13 +209,16 @@ class AudioLoader:
         return self.sounds[key]
 
 
-    def playSound(self, key):
-        self.sounds[key].play()
+    def playSound(self, key, chan = 0):
+        self.channels[chan].play(self.sounds[key])
 
 
     def setChannels(self):
-        return
-
+        # Channel 0 reserved for hud sounds 
+        # Channel 1 reserved for game sounds
+        # Channel 2 reserved for extra game sounds
+        self.channels = [pygame.mixer.Channel(i) for i in range(3)]
+        
 
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():
@@ -225,6 +230,8 @@ class AudioLoader:
 class MapLoader:
     def __init__(self):
         self.maps = {}
+        self.builtInMaps = {}
+        self.customMaps = {}
 
         self.loadAllMaps()
 
@@ -233,8 +240,22 @@ class MapLoader:
         return self.maps
 
 
+    def getBuiltInMaps(self):
+        return self.builtInMaps
+
+
+    def getCustomMaps(self):
+        return self.customMaps
+
+
     def getMap(self, key):
         return self.maps[key]
+
+    
+    def getMapData(self, key):
+        level = self.maps[key]
+        with open(level) as f:
+            return json.load(f)
 
 
     def getLongestMapLength(self):
@@ -253,10 +274,17 @@ class MapLoader:
         del self.maps[mapName]
 
 
-    def loadAllMaps(self):
-        for key, level in config["maps"].items():
+    def loadMaps(self, maps, mapDict):
+        for key, level in maps.items():
             m = os.path.join(MAPSFOLDER, level)
             self.maps[key] = m
+            mapDict[key] = m
+
+
+
+    def loadAllMaps(self):
+        self.loadMaps(config["maps"]["builtIn"], self.builtInMaps) # Load built-in levels
+        self.loadMaps(config["maps"]["custom"], self.customMaps) # Load custom levels
 
 
     def checkMapExists(self, mapName):

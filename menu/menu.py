@@ -156,6 +156,8 @@ class Menu:
 class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
+        self.currentLevel = 0
+
 
     def main(self, transition = False):
         self.open = True
@@ -205,12 +207,12 @@ class MainMenu(Menu):
         self.add(end)
 
         # # Temporarily load in the existing maps
-        # y = 100
-        # for mapName, path in self.game.mapLoader.getMaps().items():
-        #     m = Label(self, mapName, 30, BLACK, (600, y))
-        #     m.addEvent(loadMap, 'onMouseClick')
-        #     self.add(m)
-        #     y += 40
+        y = 100
+        for mapName, path in self.game.mapLoader.getMaps().items():
+            m = Label(self, mapName, 30, BLACK, (800, y))
+            m.addEvent(loadMap, 'onMouseClick')
+            self.add(m)
+            y += 40
 
         if transition:
             # set the up transition
@@ -218,6 +220,11 @@ class MainMenu(Menu):
                 menu.remove(obj)
         
             self.slideTransitionY((0, 0), 'second', speed = 40, callback = callback, direction = 'down')
+
+
+    def levelSelect(self):
+        self.open = True
+
 
     
 
@@ -343,14 +350,6 @@ class OptionMenu(Menu):
         self.add(fullscreen)
         self.add(scanlines)
         self.add(back)
-
-
-class LevelSelectMenu(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
-
-    def main(self):
-        return
 
 
 class GameOpeningMenu(Menu):

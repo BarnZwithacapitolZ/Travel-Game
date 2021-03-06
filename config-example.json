@@ -169,6 +169,14 @@
                 "file": "Menu-Selection-Change-H.wav",
                 "volume": 1.0
             },
+            "slowIn": {
+                "file": "slow-motion-in.wav",
+                "volume": 1.0
+            },
+            "slowOut": {
+                "file": "slow-motion-out.wav",
+                "volume": 1.0
+            },
             "swoopIn": {
                 "file": "swoopIn.wav",
                 "volume": 0.7
@@ -194,9 +202,14 @@
     }, 
     "saves": [], 
     "maps": {
-        "London": "map1.json", 
-        "Test": "map2.json",
-        "Another test": "map_Another_test.json",
-        "this is a test of movement": "map_this_is_a_test_of_movement.json"
+        "builtIn": {
+            "London": "map1.json", 
+            "Test": "map2.json"
+        },
+        "custom": {
+            "Another test": "map_Another_test.json",
+            "player spawn test": "map_player_spawn_test.json",
+            "leveltest": "map_leveltest.json"
+        }
     } 
 }

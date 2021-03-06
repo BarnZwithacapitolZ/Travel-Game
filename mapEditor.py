@@ -192,7 +192,7 @@ class MapEditor(SpriteRenderer):
             json.dump(self.levelData, f)
         f.close()
 
-        config["maps"][self.game.textHandler.getString()] = saveName
+        config["maps"]["custom"][self.game.textHandler.getString()] = saveName
         dump(config)
 
         self.game.mapLoader.addMap(self.game.textHandler.getString(), path)
@@ -212,7 +212,7 @@ class MapEditor(SpriteRenderer):
         if os.path.exists(path):
             os.remove(path) # Delete the level
             self.game.mapLoader.removeMap(self.levelData["mapName"])
-            del config["maps"][self.levelData["mapName"]]
+            del config["maps"]["custom"][self.levelData["mapName"]]
             dump(config)
 
 

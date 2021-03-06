@@ -61,6 +61,7 @@ class SpriteRenderer():
     def setDefaultMap(self):
         self.levelData = {
             "mapName": "", 
+            "locked": False,
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before 
             "width": 18,
@@ -299,6 +300,24 @@ class SpriteRenderer():
 
             
     def events(self):
+        keys = pygame.key.get_pressed()
+        key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
+
+        # if len(key) == 1:
+        #     if key[0] == config["controls"]["dtDown"]: # slow down
+        #         if self.dt != self.startDt -0.5:
+        #             self.game.audioLoader.playSound("slowIn", 1)
+
+        #         self.dt = self.startDt - 0.5
+        #     elif key[0] == config["controls"]["dtUp"]: # speed up
+
+        #         self.dt = self.startDt + 0.5
+        # else:
+        #     if self.dt != self.startDt:
+        #         self.game.audioLoader.playSound("slowOut", 1)
+
+
+        #     self.dt = self.startDt
         # keys = pygame.key.get_pressed()
         # key = [pygame.key.name(k) for k, v in enumerate(keys) if v]
 
@@ -310,7 +329,13 @@ class SpriteRenderer():
         
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.game.clickManager.setSpaceBar(True)
+
+            if self.dt != self.startDt -0.5:
+                self.game.audioLoader.playSound("slowIn", 1)
         else:
+            if self.dt != self.startDt:
+                self.game.audioLoader.playSound("slowOut", 1)
+                
             self.game.clickManager.setSpaceBar(False)
 
 
