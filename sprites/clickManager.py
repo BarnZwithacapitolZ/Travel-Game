@@ -196,10 +196,12 @@ class PersonClickManager(ClickManager):
         finalNode = None
         path = []
 
+
         # Selected a node different from the players layer
         if self.person.getStartingConnectionType() != B.getConnectionType():
+            startingConnectionAFound, startingConnectionBFound = False, False
             # The start and end nodes are on different layers, diferent to the players layer 
-            if A.getConnectionType() != B.getConnectionType():
+            if A.getConnectionType() != B.getConnectionType() or A.getConnectionType() == B.getConnectionType():
                 layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
                 nodes = layer.getGrid().getNodes()
 
@@ -207,26 +209,19 @@ class PersonClickManager(ClickManager):
                 for node in nodes:
                     if node.getNumber() == A.getNumber():
                         A = node
+                        startingConnectionAFound = True
 
                     if node.getNumber() == B.getNumber():
                         if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node
+                        startingConnectionBFound = True
 
-            # The start and end nodes are on the same layer (but different from the players layer)
-            elif A.getConnectionType() == B.getConnectionType():
-                layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
-                nodes = layer.getGrid().getNodes()
+            # A path can only be formed if there is startingConnectionType nodes at the start and end of the player path (even if they are on a different layer), otherwise empty path
+            if not startingConnectionAFound or not startingConnectionBFound:
+                return path
+                      
 
-                # Set the start and end node to be the equivelant node on the players layer 
-                for node in nodes:
-                    if node.getNumber() == A.getNumber():
-                        A = node
-
-                    if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
-                            finalNode = B
-                        B = node                        
 
         # Within the same layer 
         if self.person.getStartingConnectionType() == B.getConnectionType():
