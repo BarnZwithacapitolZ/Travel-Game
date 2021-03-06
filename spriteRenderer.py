@@ -61,6 +61,7 @@ class SpriteRenderer():
     def setDefaultMap(self):
         self.levelData = {
             "mapName": "", 
+            "locked": False,
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before 
             "width": 18,

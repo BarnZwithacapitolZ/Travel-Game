@@ -202,9 +202,14 @@
     }, 
     "saves": [], 
     "maps": {
-        "London": "map1.json", 
-        "Test": "map2.json",
-        "Another test": "map_Another_test.json",
-        "this is a test of movement": "map_this_is_a_test_of_movement.json"
+        "builtIn": {
+            "London": "map1.json", 
+            "Test": "map2.json"
+        },
+        "custom": {
+            "Another test": "map_Another_test.json",
+            "player spawn test": "map_player_spawn_test.json",
+            "leveltest": "map_leveltest.json"
+        }
     } 
 }
