@@ -328,7 +328,13 @@ class SpriteRenderer():
         
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.game.clickManager.setSpaceBar(True)
+
+            if self.dt != self.startDt -0.5:
+                self.game.audioLoader.playSound("slowIn", 1)
         else:
+            if self.dt != self.startDt:
+                self.game.audioLoader.playSound("slowOut", 1)
+                
             self.game.clickManager.setSpaceBar(False)
 
 
