@@ -105,7 +105,21 @@ class Node(pygame.sprite.Sprite):
 
     # Add a person to the node
     def addPerson(self, person):
+        # print(person.path)
+        # print(f"added to: {self.number}")
+
+        # if len(person.path) > 1 and person.path[0] == self:
+        #     return
         self.people.append(person)
+
+        # if len(self.people) > 1:
+        #     print(len(self.people), "why is this not called?")
+        #     offset = vec(0, 0)
+        #     for person in list(self.people):
+        #         person.pos = (self.pos - self.offset) + person.offset + offset
+        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        #         offset.x += person.width + 1
+        #         person.moveStatusIndicator()
 
 
     def remove(self):
@@ -117,7 +131,19 @@ class Node(pygame.sprite.Sprite):
         if person not in self.people:
             return
 
+        # print(f"removed from: {self.number}")
+
         self.people.remove(person)
+
+        # # if there is someone left on the node we need to reshuffle them
+        # if len(self.people) >= 1:
+        #     offset = vec(0, 0)
+        #     for key, person in enumerate(self.people):
+        #         print(person)
+        #         person.pos += offset
+        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        #         offset.x += person.width
+
 
     def removeTransport(self, transport):
         if transport not in self.transports:
@@ -134,17 +160,14 @@ class Node(pygame.sprite.Sprite):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         offx = 0.01
-        for x in range(6):
+        for x in range(1):
             pygame.draw.arc(self.game.renderer.gameDisplay, color, ((self.pos.x - 1) * scale, (self.pos.y - 1) * scale, (self.width + 2) * scale, (self.height + 2) * scale), math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
             offx += 0.02
 
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.images[self.currentImage])
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), 
-                                                            int(self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())))
+        self.image = self.game.imageLoader.getImage(self.images[self.currentImage], (self.width * self.spriteRenderer.getFixedScale(), self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
@@ -159,8 +182,9 @@ class Node(pygame.sprite.Sprite):
 
     def events(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
         # click event; setting the node for the transport
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getRightClicked() and self.transportClickManager.getTransport() is not None:
@@ -198,8 +222,7 @@ class Node(pygame.sprite.Sprite):
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
 
-            # for connection in self.connections:
-            #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()))
+            #     print(self.getNumber())
         
 
         # Hover over event; for person
@@ -242,44 +265,52 @@ class EditorNode(Node):
     # Override the events function
     def events(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
-
-        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
-            # Unset the clicked on node
-            pass
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
+          
 
         # Cant click on a node in the top layer
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.game.mapEditor.getAllowEdits(): # click event
             self.game.clickManager.setClicked(False)
 
-            if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
-                self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:   # Add a transport
-                self.clickManager.addTransport(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
-                self.clickManager.addStop(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DESTINATION: # Add a destination
-                self.clickManager.addDestination(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
-                self.clickManager.deleteTransport(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
-                self.clickManager.deleteStop(self)
-            elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
-                self.clickManager.deleteDestination(self)
- 
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits():
+            if self.game.mapEditor.getLayer() != 4:
+                if self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.CONNECTION:    # Add a connection
+                    self.clickManager.setStartNode(self) if self.clickManager.getStartNode() is None else self.clickManager.setEndNode(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT:   # Add a transport
+                    self.clickManager.addTransport(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.STOP:        # Add a stop                       
+                    self.clickManager.addStop(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DESTINATION: # Add a destination
+                    self.clickManager.addDestination(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT:  # Delete a transport
+                    self.clickManager.deleteTransport(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DSTOP:       # Delete a stop
+                    self.clickManager.deleteStop(self)
+                elif self.clickManager.getClickType() == CLICKMANAGER.EditorClickManager.ClickType.DDESTINATION:# Delete a destination
+                    self.clickManager.deleteDestination(self)
+            else:
+                self.spriteRenderer.messageSystem.addMessage("You cannot place items on the top layer!")
+         
+        # hover over event
+        elif self.rect.collidepoint((mx, my)) and not self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4 and self.game.mapEditor.getAllowEdits(): #hover over event
             self.mouseOver = True
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)            
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)  
+
+            if self.clickManager.getStartNode() is not None:
+                self.clickManager.setTempEndNode(self)
 
             # for connection in self.connections:
             #     print("From " + str(connection.getFrom().number) + ", To " + str(connection.getTo().number) + ", Length " + str(connection.getDistance()) + ', direction ' + str(connection.getDirection()) + ", Layer " + connection.getType())
 
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4:
+        # hover out event
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver and self.clickManager.getStartNode() != self and self.game.mapEditor.getLayer() != 4: #hover out event
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
 
+            if self.clickManager.getTempEndNode() is not None:
+                self.clickManager.removeTempEndNode()
 
 
 
@@ -359,7 +390,7 @@ class Destination(Node):
 class Airport(Destination):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
         super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["airport", "nodeSelected"]
+        self.images = ["airport"]
 
 
 class EditorAirport(EditorNode, Airport):
@@ -367,13 +398,13 @@ class EditorAirport(EditorNode, Airport):
         # super().__init__(game, groups, number, connectionType, x, y, personClickManager)
         EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
         Airport.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["airport", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["airport", "nodeStart", "nodeEnd"]
 
 
 class Office(Destination):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
         super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-        self.images = ["office", "nodeSelected"]
+        self.images = ["office"]
         
 class EditorOffice(EditorNode, Office):
     def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
@@ -381,7 +412,21 @@ class EditorOffice(EditorNode, Office):
         EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
         Office.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
 
-        self.images = ["office", "nodeSelected", "nodeStart", "nodeEnd"]
+        self.images = ["office", "nodeStart", "nodeEnd"]
+
+
+class House(Destination):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
+        super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+        self.images = ["house"]
+        
+class EditorHouse(EditorNode, House):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
+        # super().__init__(game, groups, number, connectionType, x, y, personClickManager)
+        EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
+        House.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+
+        self.images = ["house", "nodeStart", "nodeEnd"]
 
 
 

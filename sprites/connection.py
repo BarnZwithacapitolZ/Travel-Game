@@ -5,22 +5,23 @@ from config import *
 import os
 import random
 import math
-from enum import Enum
 vec = pygame.math.Vector2
 
 class Connection:
-    class Direction(Enum):
-        FORWARDS = 0
-        BACKWARDS = 1
-
-    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, direction):
+    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, temp, draw = False):
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
         self.fromNode = fromNode
         self.toNode = toNode
-        self.direction = direction #0 forwards, 1 backwards
-        self.sideColor = TRUEBLACK
+        self.sideColor = BLACK
+        self.temp = temp
+        self.draw = draw
+
+        self.colors = [RED, GREY, GREEN]
+
+        if self.temp:
+            self.colors = [TEMPRED, TEMPGREY, TEMPGREEN]
 
         self.setColor()
         self.setLength()
@@ -65,13 +66,12 @@ class Connection:
         return self.connectionType
 
 
-    # Return the direction of the connection
-    def getDirection(self):
-        return self.direction
-
-
     def getConnectionType(self):
         return self.connectionType
+
+    # should the connection be drawn or not
+    def getDraw(self):
+        return self.draw
 
 
     #### Setters ####
@@ -79,11 +79,11 @@ class Connection:
     # Set the colour of the connection depending on the type 
     def setColor(self):
         if self.connectionType == 1 or self.connectionType == "layer 1":
-            self.color = RED
+            self.color = self.colors[0]
         elif self.connectionType == 2 or self.connectionType == "layer 2":
-            self.color = GREY
+            self.color = self.colors[1]
         elif self.connectionType == 3 or self.connectionType == "layer 3":
-            self.color = GREEN
+            self.color = self.colors[2]
 
 
     # Set the length and distance of the connection from point A (from) to B (to)
@@ -105,10 +105,18 @@ class Connection:
         self.toNode = toNode
 
 
+    def updateConnections(self):
+        if self.draw:
+            layer = self.game.mapEditor.getGridLayer(self.connectionType)
+            layer.createConnections()
+
+
+
     def update(self):
         mx, my = pygame.mouse.get_pos()
-        mx -= self.game.renderer.getDifference()[0]
-        my -= self.game.renderer.getDifference()[1]
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
 
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
         buffer = 1
@@ -118,13 +126,16 @@ class Connection:
         if d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and self.game.clickManager.getClicked():
             self.game.mapEditor.getClickManager().deleteConnection(self)
             self.game.clickManager.setClicked(False)
+            self.updateConnections()
 
         elif d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer and not self.mouseOver:
             self.color = YELLOW
             self.mouseOver = True
+            self.updateConnections()
         
         elif not (d1 + d2 >= self.distance * scale - buffer and d1 + d2 <= self.distance * scale + buffer) and self.mouseOver:
             self.mouseOver = False
             self.setColor()
+            self.updateConnections()
 
 

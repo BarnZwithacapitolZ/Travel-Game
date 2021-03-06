@@ -13,21 +13,23 @@ from person import *
 
 vec = pygame.math.Vector2
 
-class Layer(pygame.sprite.Sprite):
-    def __init__(self, spriteRenderer, groups, level = None, spacing = (1.5, 1.5)):
+class Layer():
+    def __init__(self, spriteRenderer, groups, connectionType, level = None, spacing = (1.5, 1.5)):
         self.groups = groups
         #layer added to sprite group first
-        super().__init__(self.groups)
+        # super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
+        self.connectionType = connectionType
         self.level = level
    
         self.grid = GridManager(self, self.groups, self.level, spacing) # each layer has its own grid manager
-        
-        self.nodes = self.grid.getNodes()
-        self.connections = self.grid.getConnections()
 
         self.components = []
+        self.lines = []
+        self.previousPeopleTypes = []
+
+        self.loadBackgroundColor(CREAM)
 
 
     #### Getters ####
@@ -39,8 +41,14 @@ class Layer(pygame.sprite.Sprite):
     def getSpriteRenderer(self):
         return self.spriteRenderer
 
+    def getLines(self):
+        return self.lines
+
 
     #### Setters ####
+
+    def setLines(self, lines):
+        self.lines = lines
 
     # Add a component to the layer
     def addComponent(self, component):
@@ -50,7 +58,7 @@ class Layer(pygame.sprite.Sprite):
     # Add the connections to each of the nodes in each connection, given a set of connections
     def addConnections(self, connections = None):
         if connections is None:
-            connections = self.connections
+            connections = self.grid.getConnections()
 
         for connection in connections:
             connection.getFrom().addConnection(connection)
@@ -58,135 +66,189 @@ class Layer(pygame.sprite.Sprite):
     
     def removeConnections(self, connections = None):
         if connections is None:
-            connections = self.connections
+            connections = self.grid.getConnections()
 
         for connection in connections:
+            connection.getFrom().removeConnection(connection)
+
+
+    def addTempConnections(self, connections):
+        for connection in connections:
+            connection.getFrom().addConnection(connection)
+
+
+    def removeTempConnections(self):
+        for connection in self.grid.getTempConnections():
             connection.getFrom().removeConnection(connection)
 
 
     # Add a person to the layer
     def addPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
-        if len(self.nodes) <= 0 or len(self.grid.getEntrances()) <= 0:
+        destinations = destinations if destinations is not None else self.grid.getDestinations()
+
+        if len(self.grid.getNodes()) <= 0 or len(destinations) <= 0:
             return 
 
-        if destinations == None:
-            destinations = self.grid.getDestinations() 
-
-        # Add the person to a random node on the layer
-        node = random.randint(0, len(self.grid.getEntrances()) - 1)
-        currentNode = self.grid.getEntrances()[node]
-
         peopleTypes = [Manager, Commuter]
-        person = random.randint(0, len(peopleTypes) - 1)
+        peopleTypes, weights = Person.checkPeopleTypes(peopleTypes, self.previousPeopleTypes, destinations)
 
-        p = peopleTypes[person](self.spriteRenderer, self.groups, currentNode, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
-        p.setDestination(destinations)
+        # no people can spawn, return
+        if len(peopleTypes) <= 0 or len(weights) <= 0:
+            return
 
-        # Put the player at a position outside of the map
-        p.addToPath(currentNode.getConnections()[0].getTo())
+        picks = [v for v, w in zip(peopleTypes, weights) for x in range(w)]
+
+        p = random.choice(picks)(self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
+        self.previousPeopleTypes.append(type(p))
+
         return p
 
-    
     # Create the connections by drawing them to the screen
     def createConnections(self):
-        for connection in self.connections:
-            if connection.getDirection() == Connection.Direction.FORWARDS: # From node
-                self.drawConnection(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
+        connections = self.grid.getTempConnections() + self.grid.getConnections()
+        self.lines = []
+        for connection in connections:
+            if connection.getDraw():
+                self.createLines(connection.getColor(), connection.getFrom(), connection.getTo(), 10, 10)
 
                 if connection.getSideColor() is not None:
-                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
-                    self.drawConnection(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
+                    self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 6)
+                    self.createLines(connection.getSideColor(), connection.getFrom(), connection.getTo(), 3, 14)
+        self.render()
 
 
-    # THESE DONT NEED TO BE DRAWN EACH FRAME, BLIT TO A SURFACE AND JUST DRAW THAT SURFACE
-    # Draw a connection to the screen
-    def drawConnection(self, color, fromNode, toNode, thickness, offset):
+    # Word out the x and y of each connection and append it to the list
+    def createLines(self, color, fromNode, toNode, thickness, offset):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-        dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset)
+        dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset) # change in direction
+        angle = math.atan2(dxy.x, dxy.y)
+        angle = abs(math.degrees(angle))
 
+        angleOffset = vec(offset, 10)
         if dxy.x != 0 and dxy.y != 0:
-            posx = ((fromNode.pos - fromNode.offset) + vec(offset, 10)) * scale
-            posy = ((toNode.pos - toNode.offset) + vec(offset, 10)) * scale
+            if (angle > 140 and angle < 180) or (angle > 0 and angle < 40):
+                angleOffset = vec(offset, 10)
+            elif angle > 40 and angle < 140:
+                angleOffset = vec(10, offset)
+        # 90, 180
         else:
-            posx = ((fromNode.pos - fromNode.offset) + vec(offset, offset)) * scale
-            posy = ((toNode.pos - toNode.offset) + vec(offset, offset)) * scale
+            angleOffset = vec(offset, offset)
+
+        posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
+        posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
         
-        pygame.draw.line(self.game.renderer.gameDisplay, color, posx, posy, int(thickness * scale))
+        self.lines.append({
+            "posx": posx,
+            "posy": posy,
+            "color": color,
+            "thickness": thickness * scale
+        })
 
 
     def resize(self):
+        # resize all the layer components
         for component in self.components:
             component.dirty = True
+        self.createConnections()
+
+
+    def loadBackgroundColor(self, default):
+        levelData = self.grid.getMap()
+
+        if "backgrounds" in levelData and self.connectionType in levelData["backgrounds"]:
+            self.backgroundColor = levelData["backgrounds"][self.connectionType]
+        else:
+            self.backgroundColor = default
+
+
+    def render(self):
+        self.lineSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
+                                            int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
+        self.lineSurface.fill(self.backgroundColor)
+
+        for component in self.components:
+            component.draw(self.lineSurface)
+
+        for line in self.lines:
+            pygame.draw.line(self.lineSurface, line["color"], line["posx"], line["posy"], int(line["thickness"]))
 
 
     def draw(self):
-        for component in self.components:
-            component.draw()
-
-        # does not need to be drawn each and every frame
-        self.createConnections()
-
+        if len(self.lines) > 0:
+            self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
+        else:
+            pygame.draw.rect(self.game.renderer.gameDisplay, self.backgroundColor, (0, 0, config["graphics"]["displayWidth"] * self.game.renderer.getScale(), config["graphics"]["displayHeight"] * self.game.renderer.getScale()))
 
 
 class Layer1(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
-        self.grid.createGrid("layer 1")
+        super().__init__(spriteRenderer, groups, "layer 1", level, spacing)
+        self.grid.createGrid(self.connectionType)
         self.addConnections()  
+        self.createConnections()
 
 
 class Layer2(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
-        self.grid.createGrid("layer 2")
+        super().__init__(spriteRenderer, groups, "layer 2", level, spacing)
+        self.grid.createGrid(self.connectionType)
         self.addConnections()     
-
+        self.createConnections()
 
 
 class Layer3(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
-        super().__init__(spriteRenderer, groups, level, spacing)
-        self.grid.createGrid("layer 3")
-        self.addConnections()            
-
+        super().__init__(spriteRenderer, groups, "layer 3", level, spacing)
+        self.grid.createGrid(self.connectionType)
+        self.addConnections()        
+        self.createConnections()
 
 
 class Layer4(Layer):
     def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, level)
+        super().__init__(spriteRenderer, groups, "layer 4", level)
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
-        self.addComponent(background)
+        # self.addComponent(background)
 
+    def addLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        self.lines = lines
+        self.render()
 
 
 class EditorLayer1(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
-        super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 1")
+        super().__init__(spriteRenderer, groups, "layer 1", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
-
+        self.createConnections()
 
 
 class EditorLayer2(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
-        super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 2")
+        super().__init__(spriteRenderer, groups, "layer 2", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
+        self.createConnections()
 
 
 class EditorLayer3(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
-        super().__init__(spriteRenderer, groups, level)
-        self.grid.createFullGrid("layer 3")
+        super().__init__(spriteRenderer, groups, "layer 3", level)
+        self.grid.createFullGrid(self.connectionType)
         self.addConnections()
+        self.createConnections()
 
 
 class EditorLayer4(Layer):
     def __init__(self, spriteRenderer, groups, level = None):
-        super().__init__(spriteRenderer, groups, level)
+        super().__init__(spriteRenderer, groups, "layer 4", level)
 
-
+    def addLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        self.lines = lines
+        self.render()
 
     
 class Background():
@@ -203,15 +265,12 @@ class Background():
 
     def __render(self):
         self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(self.imageName)
-        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.game.renderer.getScale()), 
-                                                            int(self.height * self.game.renderer.getScale())))
+        self.image = self.game.imageLoader.getImage(self.imageName, (self.width, self.height))
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.game.renderer.getScale()
         self.rect.y = self.y * self.game.renderer.getScale()
 
 
-    def draw(self):
+    def draw(self, surface):
         if self.dirty or self.image is None: self.__render()
-        self.game.renderer.gameDisplay.blit(self.image, self.rect)
+        surface.blit(self.image, self.rect)

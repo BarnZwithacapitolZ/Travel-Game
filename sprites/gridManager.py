@@ -22,9 +22,9 @@ class GridManager:
 
         self.nodes = []
         self.connections = []
+        self.tempConnections = []
         self.transports = []
         self.destinations = []
-        self.entrances = []
 
         self.width = 18
         self.height = 10
@@ -43,12 +43,15 @@ class GridManager:
         self.transportMappings = {"metro": Metro, "bus": Bus, "tram": Tram, "taxi": Taxi}
         self.stopMappings = {"metro": MetroStation, "bus": BusStop, "tram": TramStop}
         self.editorStopMappings = {"metro": EditorMetroStation, "bus": EditorBusStop, "tram": EditorTramStop}
-        self.destinationMappings = {"airport": Airport, "office": Office}
-        self.editorDestinationMappings = {"airport": EditorAirport, "office": EditorOffice}
-        self.entranceMappings = {"top": self.entryTopPositions, "bottom": self.entryBottomPositions}
+        self.destinationMappings = {"airport": Airport, "office": Office, "house": House}
+        self.editorDestinationMappings = {"airport": EditorAirport, "office": EditorOffice, "house": EditorHouse}
 
 
     #### Getters ####
+    
+    def getNodePositions(self):
+        return self.nodePositions
+
 
     def getTransportMappings(self):
         return self.transportMappings
@@ -84,6 +87,10 @@ class GridManager:
         return self.connections
 
 
+    def getTempConnections(self):
+        return self.tempConnections
+
+
     # Return the transportations, in a list for each layer
     def getTransports(self):
         return self.transports
@@ -93,12 +100,10 @@ class GridManager:
         return self.destinations
 
 
-    def getEntrances(self):
-        return self.entrances
-
-
     def getMap(self):
-        return self.map
+        if hasattr(self, 'map'):
+            return self.map
+        return {}
         
 
     #### Setters ####
@@ -118,11 +123,16 @@ class GridManager:
         return positions
 
 
-    def addConnections(self, connectionType, A, B):
-        c1 = Connection(self.spriteRenderer, connectionType, A, B, Connection.Direction.FORWARDS) 
-        c2 = Connection(self.spriteRenderer, connectionType, B, A, Connection.Direction.BACKWARDS) 
-        self.connections.append(c1) #forwards
-        self.connections.append(c2) #backwards
+    def addConnections(self, connectionType, A, B, temp = False):
+        c1 = Connection(self.spriteRenderer, connectionType, A, B, temp, True) # only need to draw one of the connections
+        c2 = Connection(self.spriteRenderer, connectionType, B, A, temp) 
+
+        if temp:
+            self.tempConnections.append(c1)
+            self.tempConnections.append(c2)
+        else:
+            self.connections.append(c1) #forwards
+            self.connections.append(c2) #backwards
 
         return c1, c2
 
@@ -130,6 +140,10 @@ class GridManager:
     def removeConnections(self, connections = []):
         for connection in connections:
             self.connections.remove(connection)
+
+
+    def removeTempConnections(self):
+        self.tempConnections = []
 
 
     def getOppositeConnection(self, currentConnection):
@@ -252,21 +266,6 @@ class GridManager:
 
                 # Create the connection with the nodes
                 self.addConnections(connectionType, n1, n2)
-        
-        # Only add entrances if they exist
-        if "entrances" in self.map.keys():
-            if connectionType in self.map["entrances"]:
-                for entrance in self.map["entrances"][connectionType]:
-                    index = int(entrance["location"] / 10)
-                    n = EntranceNode(self.spriteRenderer, self.groups, -(index + 1), connectionType, self.entranceMappings[entrance["type"]][index][0], self.entranceMappings[entrance["type"]][index][1], self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager())
-                    self.entrances.append(n)
-
-                    for node in self.nodes:
-                        if node.getNumber() == entrance["location"]:
-                            n1 = node
-
-
-                    self.addConnections(connectionType, n, n1)
 
 
     # Create a full grid with all the nodes populated and no connections (for the map editor)
@@ -305,23 +304,25 @@ class GridManager:
             return 
 
         # For each transportation in the map
-        for transport in self.map["transport"][connectionType]:
-            direction = random.randint(0, 1)
-            
+        for transport in self.map["transport"][connectionType]:      
+            possibleConnections = []
+
             # for each connection, find the connection of the transportation
             for connection in self.connections:
                 # Ensure it is on the right connection going in the right direction
                 if connection.getFrom().getNumber() == transport["location"]:
-                    # If the connection is the same as the direction, or its an end node (so theres only one direction)
-                    if connection.getDirection().value == direction or len(connection.getFrom().getConnections()) <= 1:
-                        t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
-                        self.transports.append(t)
-                        break
+                    possibleConnections.append(connection)
+
+            # pick a random connection to change the direction
+            if len(possibleConnections) > 0:
+                connection = possibleConnections[random.randint(0, len(possibleConnections) - 1)]
+                t = self.transportMappings[transport["type"]](self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+                self.transports.append(t)
 
 
     # Add a transport to the map within the map editor
     def addTransport(self, connectionType, connection, transport, running = True):
-        t = transport(self.spriteRenderer, self.groups, connection, connection.getDirection(), running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
+        t = transport(self.spriteRenderer, self.groups, connection, running, self.spriteRenderer.getTransportClickManager(), self.spriteRenderer.getPersonClickManager())
         self.transports.append(t)
 
 
@@ -332,3 +333,15 @@ class GridManager:
 
         
            
+    @staticmethod
+    def getMapValues(width, height, reverse = False):
+        mapValues = {}
+        nodes = 0
+        for x in range(0, width):
+            for y in range(0, height):
+                if reverse:
+                    mapValues[(x, y)] = nodes
+                else:
+                    mapValues[nodes] = (x, y)
+                nodes += 1
+        return mapValues

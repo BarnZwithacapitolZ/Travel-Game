@@ -8,6 +8,7 @@ class ClickManager:
         self.game = game
         self.clicked = False
         self.rightClicked = False
+        self.spaceBar = False
 
     #### Getters
 
@@ -19,6 +20,10 @@ class ClickManager:
     def getRightClicked(self):
         return self.rightClicked
 
+    
+    def getSpaceBar(self):
+        return self.spaceBar
+
 
     #### Setters ####
 
@@ -29,6 +34,9 @@ class ClickManager:
     
     def setRightClicked(self, rightClicked):
         self.rightClicked = rightClicked
+
+    def setSpaceBar(self, spaceBar):
+        self.spaceBar = spaceBar
 
     
     # for a given node, return the adjacent nodes
@@ -188,10 +196,12 @@ class PersonClickManager(ClickManager):
         finalNode = None
         path = []
 
+
         # Selected a node different from the players layer
         if self.person.getStartingConnectionType() != B.getConnectionType():
+            startingConnectionAFound, startingConnectionBFound = False, False
             # The start and end nodes are on different layers, diferent to the players layer 
-            if A.getConnectionType() != B.getConnectionType():
+            if A.getConnectionType() != B.getConnectionType() or A.getConnectionType() == B.getConnectionType():
                 layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
                 nodes = layer.getGrid().getNodes()
 
@@ -199,26 +209,19 @@ class PersonClickManager(ClickManager):
                 for node in nodes:
                     if node.getNumber() == A.getNumber():
                         A = node
+                        startingConnectionAFound = True
 
                     if node.getNumber() == B.getNumber():
                         if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
                             finalNode = B
                         B = node
+                        startingConnectionBFound = True
 
-            # The start and end nodes are on the same layer (but different from the players layer)
-            elif A.getConnectionType() == B.getConnectionType():
-                layer = self.game.spriteRenderer.getGridLayer(self.person.getStartingConnectionType())
-                nodes = layer.getGrid().getNodes()
+            # A path can only be formed if there is startingConnectionType nodes at the start and end of the player path (even if they are on a different layer), otherwise empty path
+            if not startingConnectionAFound or not startingConnectionBFound:
+                return path
+                      
 
-                # Set the start and end node to be the equivelant node on the players layer 
-                for node in nodes:
-                    if node.getNumber() == A.getNumber():
-                        A = node
-
-                    if node.getNumber() == B.getNumber():
-                        if isinstance(B, NODE.MetroStation) or isinstance(B, NODE.TramStop): # If its a stop on a different layer, switch to that layer at the end of the path
-                            finalNode = B
-                        B = node                        
 
         # Within the same layer 
         if self.person.getStartingConnectionType() == B.getConnectionType():
@@ -316,6 +319,7 @@ class TransportClickManager(ClickManager):
             # only set the path if the bus is moving
             path = self.pathFinding()
 
+            self.transport.setFirstPathNode(path)
             self.transport.clearPath(path)
 
             for node in path:
@@ -323,8 +327,6 @@ class TransportClickManager(ClickManager):
 
             # self.transport = None
             self.node = None
-
-
 
 
 class EditorClickManager(ClickManager):
@@ -345,16 +347,24 @@ class EditorClickManager(ClickManager):
         super().__init__(game)
         self.startNode = None # A
         self.endNode = None # B
+        self.tempEndNode = None # used for visualizing path
 
         self.clickType = EditorClickManager.ClickType.CONNECTION
         self.addType = "metro"
 
+    def clearNodes(self):
+        self.startNode = None
+        self.endNode = None
+        self.tempEndNode = None
 
     def getStartNode(self):
         return self.startNode
 
     def getEndNode(self):
         return self.endNode
+
+    def getTempEndNode(self):
+        return self.tempEndNode
 
     def getClickType(self):
         return self.clickType
@@ -377,8 +387,10 @@ class EditorClickManager(ClickManager):
 
     def setStartNode(self, node):
         self.startNode = node
-        self.startNode.setCurrentImage(1)
-        self.createConnection()
+        if self.startNode is not None:
+            self.startNode.setCurrentImage(1)
+            self.createConnection()
+
 
     def setEndNode(self, node):
         # If the end node is on a different layer to the start node, make it be the start node
@@ -392,10 +404,32 @@ class EditorClickManager(ClickManager):
         self.createConnection()
 
 
+    def setTempEndNode(self, node):
+        # if its not on the same layer we can't visualize it 
+        if node.getConnectionType() != self.startNode.getConnectionType():
+            return
+
+        self.tempEndNode = node
+        self.createTempConnection()
+        
+
+    def removeTempEndNode(self):
+        self.game.mapEditor.removeAllTempConnections(self.tempEndNode.getConnectionType())
+        self.tempEndNode = None
+    
+
+    def createTempConnection(self):
+        if self.startNode is not None and self.tempEndNode is not None: # check both start and end nodes are set
+            if self.startNode.getNumber() != self.tempEndNode.getNumber(): # check the start node is not the same as the end node
+                if self.startNode.getConnectionType() == self.tempEndNode.getConnectionType(): # check both nodes are on the same layer
+                    # create a new temporary connection
+                    self.game.mapEditor.createTempConnection(self.startNode.getConnectionType(), self.startNode, self.tempEndNode)
+
+
     def createConnection(self):
-        if self.startNode is not None and self.endNode is not None:
-            if self.startNode.getNumber() != self.endNode.getNumber():            
-                if self.startNode.getConnectionType() == self.endNode.getConnectionType():
+        if self.startNode is not None and self.endNode is not None: # check both start and end nodes are set
+            if self.startNode.getNumber() != self.endNode.getNumber(): # check the start node is not the same as the end node
+                if self.startNode.getConnectionType() == self.endNode.getConnectionType(): # check both nodes are on the same layer
                     # Create a new connection
                     self.game.mapEditor.createConnection(self.startNode.getConnectionType(), self.startNode, self.endNode)
                     
@@ -434,10 +468,13 @@ class EditorClickManager(ClickManager):
         if len(fromNode.getConnections()) <= 0:
             self.deleteTransport(fromNode)
             self.deleteStop(fromNode)
+            self.deleteDestination(fromNode)
         
         if len(toNode.getConnections()) <= 0:
             self.deleteTransport(toNode)
             self.deleteStop(toNode)
+            self.deleteDestination(toNode)
+
 
 
     def deleteTransport(self, node):

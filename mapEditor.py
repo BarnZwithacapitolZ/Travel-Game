@@ -1,4 +1,5 @@
 import pygame
+import copy
 
 from gridManager import *
 from node import *
@@ -13,8 +14,13 @@ class MapEditor(SpriteRenderer):
         # Hud for when the game is running
         self.hud = EditorHud(self.game)
         self.clickManager = EditorClickManager(self.game)
-
+        self.levelChanges = [] # array to hold all the changes made to the map. TODO: should this have a limit on the size (otherwise it could get huge and be slow??)
+        self.poppedLevelChanges = []
+    
         self.allowEdits = True
+
+        self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
+
 
     def getSaved(self):
         return self.levelData["saved"]
@@ -28,28 +34,116 @@ class MapEditor(SpriteRenderer):
     def getClickManager(self):
         return self.clickManager
 
+    def getLevelChanges(self):
+        return self.levelChanges
+
+    def getPoppedLevelChanges(self):
+        return self.poppedLevelChanges
+
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
+
+
+    def undoChange(self):
+        if self.rendering:
+            if len(self.levelChanges) > 1:
+                popped = self.levelChanges.pop()
+                self.poppedLevelChanges.append(popped)
+                self.levelData = copy.deepcopy(self.levelChanges[-1])
+    
+    
+    def redoChange(self):
+        if self.rendering:
+            if len(self.poppedLevelChanges) > 0:                
+                popped = self.poppedLevelChanges.pop()
+                self.levelChanges.append(popped)
+                self.levelData = copy.deepcopy(popped)
+
+
+    def addChange(self):
+        change = copy.deepcopy(self.levelData)
+        self.levelChanges.append(change)
+
+
+    def translateConnections(self, layer, oldMapPos, newMapPos):
+        if layer not in self.levelData["connections"]:
+            return
+
+        newConnections = []
+        for connection in self.levelData["connections"][layer]:
+            c1 = oldMapPos[connection[0]]
+            c2 = oldMapPos[connection[1]]
+            
+            if c1 in newMapPos and c2 in newMapPos:
+                n1 = newMapPos[c1]
+                n2 = newMapPos[c2]
+                newConnections.append([n1, n2])
+            
+        self.levelData["connections"][layer] = newConnections
+
+
+    def translateNodes(self, nodeType, layer, oldMapPos, newMapPos):
+        if layer not in self.levelData[nodeType]:
+            return
+
+        for key, node in list(enumerate(self.levelData[nodeType][layer])):
+            n1 = oldMapPos[node["location"]]
+            if n1 in newMapPos:
+                n2 = newMapPos[n1]
+                node["location"] = n2
+            else:
+                del self.levelData[nodeType][layer][key]
 
 
     def setMapSize(self, size = (18, 10)):
         if not hasattr(self, 'levelData'):
             return
 
+        oldMapPos = GridManager.getMapValues(self.levelData["width"], self.levelData["height"])
+        newMapPos = GridManager.getMapValues(size[0], size[1], True)
+    
+        self.translateConnections("layer 1", oldMapPos, newMapPos)
+        self.translateConnections("layer 2", oldMapPos, newMapPos)
+        self.translateConnections("layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("transport", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("transport", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("transport", "layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("stops", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("stops", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("stops", "layer 3", oldMapPos, newMapPos)
+
+        self.translateNodes("destinations", "layer 1", oldMapPos, newMapPos)
+        self.translateNodes("destinations", "layer 2", oldMapPos, newMapPos)
+        self.translateNodes("destinations", "layer 3", oldMapPos, newMapPos)
+     
         self.levelData["width"] = size[0]
         self.levelData["height"] = size[1]
-    
+
+        self.addChange()
+        
+        
+
+    # returns true if dropdowns have been closed, false otherwise
+    def isDropdownsClosed(self):
+        if self.rendering and not self.allowEdits:
+            self.hud.closeDropdowns()
+            return True
+        return False
     
     
     # Override creating the level
-    def createLevel(self, level = None):
+    def createLevel(self, level = None, clearChanges = False, layer = None):
         self.clearLevel()
+        self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
         self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), level) 
         self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), level)
         self.gridLayer1 = EditorLayer1(self, (self.allSprites, self.layer1, self.layer4), level)
         self.gridLayer2 = EditorLayer2(self, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # Add the transport not running (so it doesnt move)
         self.gridLayer1.grid.loadTransport("layer 1", False)
@@ -61,27 +155,47 @@ class MapEditor(SpriteRenderer):
         # Set the level data equal to the maps config file
         if level is not None:
             self.levelData = self.gridLayer4.getGrid().getMap()
+        
+        # creating a new level
+        if clearChanges:
+            self.levelChanges = [copy.deepcopy(self.levelData)]
+            self.poppedLevelChanges = []
 
+        # load the level on a specific layer (for undoing / redoing changes)
+        if layer is not None:
+            self.showLayer(layer)
+
+
+    # check the user can save the level by meeting the criteria
+    def canSaveLevel(self):
+        if 'layer 1' not in self.levelData['connections'] and 'layer 2' not in self.levelData['connections'] and 'layer 3' not in self.levelData['connections']:
+            return False, "You haven't added anything to the map!"
+        elif 'layer 2' not in self.levelData['connections'] or len(self.levelData['connections']['layer 2']) <= 0: # no layer 2 connections for the player to spawn on
+            return False, "There must be a road for people to travel on!"
+        elif len(self.levelData['destinations']) <= 0:
+            return False, "There is no destinations for people to reach!"
+
+        return [True]
 
     # Save As function
     def saveLevelAs(self):
         # Name of the map
-        self.levelData["mapName"] = self.game.textHandler.getText()
+        self.levelData["mapName"] = self.game.textHandler.getString()
         self.levelData["deletable"] = True
         self.levelData["saved"] = True
 
         # saveName = "map" + str(len(self.game.mapLoader.getMaps()) + 1) + '.json'
-        saveName = "map_" + self.game.textHandler.getText().replace(" ", "_") + '.json'
+        saveName = "map_" + self.game.textHandler.getString().replace(" ", "_") + '.json'
         path = os.path.join(MAPSFOLDER, saveName)
 
         with open(path, "w") as f:
             json.dump(self.levelData, f)
         f.close()
 
-        config["maps"][self.game.textHandler.getText()] = saveName
+        config["maps"][self.game.textHandler.getString()] = saveName
         dump(config)
 
-        self.game.mapLoader.addMap(self.game.textHandler.getText(), path)
+        self.game.mapLoader.addMap(self.game.textHandler.getString(), path)
 
     
     # Save function, for when the level has already been created before (and is being edited)
@@ -101,15 +215,52 @@ class MapEditor(SpriteRenderer):
             del config["maps"][self.levelData["mapName"]]
             dump(config)
 
+
+    # given two nodes A & B, work out all intersecting child connecting nodes along the parent connection between A & B
+    def getIntersetingConnections(self, layer, startNode, endNode):
+        distance = ((startNode.pos) - (endNode.pos)).length()
+        connections = []
+
+        for node in layer.getGrid().getNodes():
+            buffer = 0.1 # radius around the line to include nodes within
+            d1 = (node.pos - startNode.pos).length()
+            d2 = (node.pos - endNode.pos).length()
+
+            if d1 + d2 >= distance - buffer and d1 + d2 <= distance + buffer:
+                connections.append(node)
+
+        return connections
+
+
+    def createTempConnection(self, connectionType, startNode, endNode):
+        layer = self.getGridLayer(connectionType)  
+        connections = self.getIntersetingConnections(layer, startNode, endNode)
+
+        for x in range(len(connections) - 1):
+            newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1], True)
+
+            # Only add the new connections to the nodes
+            layer.addTempConnections(newConnections)
+            layer.createConnections()
+
+
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
-        newConnections = layer.getGrid().addConnections(connectionType, startNode, endNode)
+        connections = self.getIntersetingConnections(layer, startNode, endNode)
+      
+        for x in range(len(connections) - 1):
+            newConnections = layer.getGrid().addConnections(connectionType, connections[x], connections[x + 1])
 
-        # Only add the new connections to the nodes
-        layer.addConnections(newConnections)
+            # Only add the new connections to the nodes
+            layer.addConnections(newConnections)
+            layer.createConnections()
 
-        # Add the new connection to the level data
-        self.levelData["connections"].setdefault(connectionType, []).append([startNode.getNumber(), endNode.getNumber()])
+            # Add the new connection to the level data
+            connection = [connections[x].getNumber(), connections[x + 1].getNumber()]
+            if connection not in self.levelData["connections"].setdefault(connectionType, []):
+                self.levelData["connections"][connectionType].append(connection)
+
+        self.addChange()
 
 
     def addTransport(self, connectionType, connection):
@@ -124,7 +275,8 @@ class MapEditor(SpriteRenderer):
                 "location": connection.getFrom().getNumber(),
                 "type": str(key)
             })
-        
+
+        self.addChange()
 
 
     # TO DO: Maybe let the user select the stop type they want to add so there can be different types of stops on each layer?
@@ -141,6 +293,8 @@ class MapEditor(SpriteRenderer):
                 "type": str(key)
             })
 
+        self.addChange()
+
 
     def addDestination(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
@@ -154,6 +308,8 @@ class MapEditor(SpriteRenderer):
                 "location": newNode.getNumber(),
                 "type": str(key)
             })
+
+        self.addChange()
 
 
     def deleteDestination(self, connectionType, node):
@@ -169,6 +325,8 @@ class MapEditor(SpriteRenderer):
                 "location": newNode.getNumber(),
                 "type": str(key)
             })
+
+        self.addChange()
 
 
     def deleteTransport(self, connectionType, node):
@@ -187,7 +345,9 @@ class MapEditor(SpriteRenderer):
             self.levelData["transport"][connectionType].remove({
                 "location": node.getNumber(),
                 "type": str(key)
-            })        
+            })      
+
+        self.addChange()
 
 
     def deleteStop(self, connectionType, node):
@@ -204,6 +364,8 @@ class MapEditor(SpriteRenderer):
                 "type": str(key)
             })
 
+        self.addChange()
+
 
     def deleteConnection(self, connectionType, connection):
         layer = self.getGridLayer(connectionType)
@@ -215,20 +377,36 @@ class MapEditor(SpriteRenderer):
             layer.removeConnections(connections)
 
             self.levelData["connections"][connectionType].remove([connection.getFrom().getNumber(), connection.getTo().getNumber()])
-
+            if len(self.levelData["connections"][connectionType]) <= 0:
+                del self.levelData["connections"][connectionType]
+            self.addChange()
         else:
             return
+
+
+    def removeAllTempConnections(self, connectionType):
+        layer = self.getGridLayer(connectionType)
+
+        layer.removeTempConnections()
+        layer.getGrid().removeTempConnections()
+        layer.createConnections()
 
 
     def updateConnection(self, layer, group):
         if self.currentLayer == layer:
             for connection in group.getGrid().getConnections():
-                connection.update()        
+                connection.update()    
 
 
     def update(self):
         if self.rendering:
             self.allSprites.update()
+
+            # if there is a click and a connection is not set, remove the start node
+            if self.clickManager.getStartNode() is not None and self.game.clickManager.getClicked():
+                self.clickManager.setStartNode(None)
+                self.game.clickManager.setClicked(False)
+
 
             if self.clickManager.getClickType() == EditorClickManager.ClickType.DCONNECTION:
                 self.updateConnection(1, self.gridLayer1)

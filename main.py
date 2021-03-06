@@ -4,6 +4,7 @@ import os
 
 #insert directory paths
 sys.path.insert(0, 'menu')
+sys.path.insert(0, 'menu/functions')
 sys.path.insert(0, 'sprites')
 
 from config import *
@@ -38,7 +39,7 @@ class Game:
         self.textHandler = TextHandler()
 
         # Loaders
-        self.imageLoader = ImageLoader()
+        self.imageLoader = ImageLoader(self)
         self.mapLoader = MapLoader()
         self.audioLoader = AudioLoader()
         
@@ -56,6 +57,8 @@ class Game:
         self.setCaption()
         self.setIcon()
         self.setCursor()
+
+        # print(pygame.font.get_fonts())
 
     # Set the games caption (name)
     def setCaption(self):
@@ -84,21 +87,18 @@ class Game:
             if e.type == pygame.QUIT:
                 self.__quit()
 
-            if e.type == pygame.VIDEORESIZE:
-                self.renderer.setScale(e.size, self.fullscreen)
-                self.spriteRenderer.resize()
-                self.mapEditor.resize()
-                self.optionMenu.resize()
-                self.mainMenu.resize()               
+            elif e.type == pygame.VIDEORESIZE:
+                self.renderer.setScale(e.size, self.fullscreen)      
 
             if e.type == pygame.KEYDOWN:
                 self.textHandler.events(e)
                 self.textHandler.setPressed(True)
 
+                # only open the option manu if the game isn't paused and the main menu isn't open
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
-                    if not self.paused: self.optionMenu.main()
-                    else: self.optionMenu.closeTransition()
-
+                    if not self.mapEditor.isDropdownsClosed():
+                        if not self.paused: self.optionMenu.main()
+                        else: self.optionMenu.closeTransition()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
@@ -118,12 +118,26 @@ class Game:
                     elif pygame.key.name(e.key) == config["controls"]["layer4"]:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
-            else:
+
+                if e.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
+                    self.mapEditor.undoChange()
+                    level = self.mapEditor.getLevelData()
+                    layer = self.mapEditor.getLayer()
+                    self.mapEditor.createLevel(level, layer = layer) #reload the level
+
+                elif e.key == pygame.K_y and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
+                    self.mapEditor.redoChange()
+                    level = self.mapEditor.getLevelData()
+                    layer = self.mapEditor.getLayer()
+                    self.mapEditor.createLevel(level, layer = layer) #reload the level
+
+
+            elif e.type == pygame.KEYUP:
                 self.textHandler.setPressed(False)
+
 
             # Just for fun :) 
             if e.type == pygame.MOUSEBUTTONDOWN:
-
                 if e.button == 4:
                     self.spriteRenderer.setFixedScale(self.spriteRenderer.getFixedScale() + 0.1)
                     self.spriteRenderer.resize()
@@ -151,7 +165,6 @@ class Game:
 
         # Game loop
         while self.playing:
-            self.renderer.prepareSurface(CREAM)
             self.__events()
             self.dt = self.clock.tick() / 1000
 
@@ -165,6 +178,7 @@ class Game:
         self.running = False
 
     def __update(self):
+        # print(self.paused)
         if not self.paused and not self.mainMenu.open:
             self.spriteRenderer.update()
             self.mapEditor.update()

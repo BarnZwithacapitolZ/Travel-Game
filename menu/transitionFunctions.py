@@ -2,11 +2,12 @@ import pygame
 from pygame.locals import *
 from config import *
 
+
 def transitionAnimationOpen(obj, menu, animation):
     obj.x += 100
 
     if obj.x >= 0:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
         menu.transition()
 
@@ -17,7 +18,7 @@ def transitionAnimationClose(obj, menu, animation):
     obj.x += 100
 
     if obj.x >= config["graphics"]["displayWidth"]:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
 
     obj.rect.x = obj.x * menu.renderer.getScale()
@@ -28,7 +29,7 @@ def transitionFadeIn(obj, menu, animation):
     obj.dirty = True
 
     if obj.getAlpha() >= 255:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
         menu.transition()
 
@@ -38,7 +39,7 @@ def transitionFadeOut(obj, menu, animation):
     obj.dirty = True
 
     if obj.getAlpha() <= 0:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
 
 
@@ -46,11 +47,52 @@ def transitionFadeOut(obj, menu, animation):
 
 transitionspeed = 40
 
+
+def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
+    obj.x += speed * 100 * menu.game.dt
+
+    if (transitionDirection == "left" and obj.x >= x) or (transitionDirection == "right" and obj.x < x):
+        obj.removeAnimation(animation)
+        callback(obj, menu, x)
+
+    obj.rect.x = obj.x * menu.renderer.getScale()
+
+
+def transitionY(obj, menu, animation, speed, transitionDirection, y, callback):
+    obj.y += speed * 100 * menu.game.dt
+
+    if (transitionDirection == "down" and obj.y >= y) or (transitionDirection == "up" and obj.y < y):
+        obj.removeAnimation(animation)
+        callback(obj, menu, y)
+
+    obj.rect.y = obj.y * menu.renderer.getScale()
+
+
+def transitionMessageDown(obj, menu, animation, speed, transitionDirection, y):
+    # obj.y += speed * 100 * menu.game.dt
+    obj.setPos((obj.x, obj.y + speed * 100 * menu.game.dt))
+
+    if (transitionDirection == "down" and obj.y >= y) or (transitionDirection == "up" and obj.y < y):
+        obj.removeAnimation(animation)
+        obj.setPos((obj.x, y))
+
+    # obj.rect.y = obj.y * menu.renderer.getScale()
+    obj.setRectPos()
+
+def transitionMessageRight(obj, menu, animation, speed, x):
+    obj.setPos((obj.x + speed * 100 * menu.game.dt, obj.y))
+
+    if obj.x >= x:
+        obj.removeAnimation(animation)
+        obj.remove()
+
+    obj.setRectPos()
+
 def transitionLeft(obj, menu, animation):
     obj.x -= transitionspeed * 100 * menu.game.dt
 
     if obj.x < -500:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
 
     obj.rect.x = obj.x * menu.renderer.getScale()
@@ -60,7 +102,7 @@ def transitionLeftUnpause(obj, menu, animation):
     obj.x -= transitionspeed * 100 * menu.game.dt
 
     if obj.x < -500:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         menu.close()
         menu.game.paused = False
 
@@ -72,16 +114,17 @@ def transitionRight(obj, menu, animation):
 
     if obj.x >= 100:
         obj.x = 100
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
 
     obj.rect.x = obj.x * menu.renderer.getScale()
+
 
 def transitionRightBackground(obj, menu, animation):
     obj.x += transitionspeed * 100 * menu.game.dt
 
     if obj.x >= 0:
         obj.x = 0
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
 
     obj.rect.x = obj.x * menu.renderer.getScale()
 
@@ -90,19 +133,19 @@ def transitionRightBackground(obj, menu, animation):
 #### Text hover animations ####
 hoverspeed = 10
 
-def hoverOverAnimation(obj, menu, animation):
-    obj.x += hoverspeed * 10 * menu.game.dt
+def hoverOverAnimation(obj, menu, animation, speed, x):
+    obj.x += speed * 100 * menu.game.dt
 
-    if obj.x >= 110:
-        obj.animations.remove(animation)
+    if obj.x >= x:
+        obj.removeAnimation(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
-def hoverOutAnimation(obj, menu, animation):
-    obj.x -= hoverspeed * 10 * menu.game.dt
+def hoverOutAnimation(obj, menu, animation, speed, x):
+    obj.x -= speed * 100 * menu.game.dt
 
-    if obj.x <= 100:
-        obj.animations.remove(animation)
+    if obj.x <= x:
+        obj.removeAnimation(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
@@ -114,8 +157,8 @@ def successAnimationUp(obj, menu, animation):
 
     #increase hight too so it stays put
     if obj.fontSize >= 35:
-        obj.animations.remove(animation)
-        obj.animations.append((successAnimationDown, 'onLoad'))
+        obj.removeAnimation(animation)
+        obj.addAnimation(successAnimationDown, 'onLoad')
     obj.dirty = True
 
 
@@ -125,6 +168,34 @@ def successAnimationDown(obj, menu, animation):
 
 
     if obj.fontSize <= 25:
-        obj.animations.remove(animation)
+        obj.removeAnimation(animation)
         obj.setColor(BLACK)
     obj.dirty = True
+
+
+
+
+
+def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDirection = 'up'):
+    obj.y += speed * 100 * menu.game.dt
+
+    if transitionDirection == 'up':
+        if (half == 'first' and obj.y <= 0) or (half == 'second' and obj.y + obj.height <= 0):
+            obj.removeAnimation(animation)
+            callback(obj, menu)
+    else:
+        if (half == 'first' and obj.y >= 0) or (half == 'second' and obj.y >= config["graphics"]["displayHeight"]):
+            obj.removeAnimation(animation)
+            callback(obj, menu)
+
+    obj.rect.y = obj.y * menu.renderer.getScale()
+
+
+def slideTransitionX(obj, menu, animation, speed, half, callback):
+    obj.x += speed * 100 * menu.game.dt
+
+    if (half == 'first' and obj.x >= 0) or (half == 'second' and obj.x >= config["graphics"]["displayWidth"]):
+        obj.removeAnimation(animation)
+        callback(obj, menu)
+
+    obj.rect.x = obj.x * menu.renderer.getScale()
