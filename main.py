@@ -88,11 +88,7 @@ class Game:
                 self.__quit()
 
             elif e.type == pygame.VIDEORESIZE:
-                self.renderer.setScale(e.size, self.fullscreen)
-                # self.spriteRenderer.resize()
-                # self.mapEditor.resize()
-                # self.optionMenu.resize()
-                # self.mainMenu.resize()            
+                self.renderer.setScale(e.size, self.fullscreen)      
 
             if e.type == pygame.KEYDOWN:
                 self.textHandler.events(e)
@@ -126,12 +122,14 @@ class Game:
                 if e.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
                     self.mapEditor.undoChange()
                     level = self.mapEditor.getLevelData()
-                    self.mapEditor.createLevel(level) #reload the level
+                    layer = self.mapEditor.getLayer()
+                    self.mapEditor.createLevel(level, layer = layer) #reload the level
 
                 elif e.key == pygame.K_y and pygame.key.get_mods() & pygame.KMOD_CTRL and not self.paused and not self.mainMenu.open:
                     self.mapEditor.redoChange()
                     level = self.mapEditor.getLevelData()
-                    self.mapEditor.createLevel(level) #reload the level
+                    layer = self.mapEditor.getLayer()
+                    self.mapEditor.createLevel(level, layer = layer) #reload the level
 
 
             elif e.type == pygame.KEYUP:

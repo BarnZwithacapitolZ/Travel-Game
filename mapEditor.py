@@ -15,9 +15,12 @@ class MapEditor(SpriteRenderer):
         self.hud = EditorHud(self.game)
         self.clickManager = EditorClickManager(self.game)
         self.levelChanges = [] # array to hold all the changes made to the map. TODO: should this have a limit on the size (otherwise it could get huge and be slow??)
-        self.poppedLevelChanged = []
+        self.poppedLevelChanges = []
     
         self.allowEdits = True
+
+        self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
+
 
     def getSaved(self):
         return self.levelData["saved"]
@@ -31,6 +34,12 @@ class MapEditor(SpriteRenderer):
     def getClickManager(self):
         return self.clickManager
 
+    def getLevelChanges(self):
+        return self.levelChanges
+
+    def getPoppedLevelChanges(self):
+        return self.poppedLevelChanges
+
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
@@ -40,14 +49,14 @@ class MapEditor(SpriteRenderer):
         if self.rendering:
             if len(self.levelChanges) > 1:
                 popped = self.levelChanges.pop()
-                self.poppedLevelChanged.append(popped)
+                self.poppedLevelChanges.append(popped)
                 self.levelData = copy.deepcopy(self.levelChanges[-1])
     
     
     def redoChange(self):
         if self.rendering:
-            if len(self.poppedLevelChanged) > 0:                
-                popped = self.poppedLevelChanged.pop()
+            if len(self.poppedLevelChanges) > 0:                
+                popped = self.poppedLevelChanges.pop()
                 self.levelChanges.append(popped)
                 self.levelData = copy.deepcopy(popped)
 
@@ -126,8 +135,9 @@ class MapEditor(SpriteRenderer):
     
     
     # Override creating the level
-    def createLevel(self, level = None, clearChanges = False):
+    def createLevel(self, level = None, clearChanges = False, layer = None):
         self.clearLevel()
+        self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
         self.gridLayer4 = EditorLayer4(self, (self.allSprites, self.layer4), level) 
         self.gridLayer3 = EditorLayer3(self, (self.allSprites, self.layer3, self.layer4), level)
@@ -149,7 +159,11 @@ class MapEditor(SpriteRenderer):
         # creating a new level
         if clearChanges:
             self.levelChanges = [copy.deepcopy(self.levelData)]
-            self.poppedLevelChanged = []
+            self.poppedLevelChanges = []
+
+        # load the level on a specific layer (for undoing / redoing changes)
+        if layer is not None:
+            self.showLayer(layer)
 
 
     # check the user can save the level by meeting the criteria
@@ -363,6 +377,8 @@ class MapEditor(SpriteRenderer):
             layer.removeConnections(connections)
 
             self.levelData["connections"][connectionType].remove([connection.getFrom().getNumber(), connection.getTo().getNumber()])
+            if len(self.levelData["connections"][connectionType]) <= 0:
+                del self.levelData["connections"][connectionType]
             self.addChange()
         else:
             return

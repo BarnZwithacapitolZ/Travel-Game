@@ -92,6 +92,11 @@ class Layer():
 
         peopleTypes = [Manager, Commuter]
         peopleTypes, weights = Person.checkPeopleTypes(peopleTypes, self.previousPeopleTypes, destinations)
+
+        # no people can spawn, return
+        if len(peopleTypes) <= 0 or len(weights) <= 0:
+            return
+
         picks = [v for v, w in zip(peopleTypes, weights) for x in range(w)]
 
         p = random.choice(picks)(self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)

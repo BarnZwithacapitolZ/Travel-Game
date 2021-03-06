@@ -586,21 +586,31 @@ class EditorHud(GameHudLayout):
         textX = self.editLocation + 10
 
         size = Label(self, "Map Size", 25, Color("white"), (textX, 50))
-        undo = Label(self, "Undo", 25, Color("white"), (textX, 85))
-        redo = Label(self, "Redo", 25, Color("white"), (textX, 120))
+        undo = Label(self, "Undo", 25, Color("white") if len(self.game.mapEditor.getLevelChanges()) > 1 else GREY, (textX, 85))
+        redo = Label(self, "Redo", 25, Color("white") if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1 else GREY, (textX, 120))
         
         self.add(box)
 
         size.addEvent(toggleEditSizeDropdown, 'onMouseClick')
-        undo.addEvent(undoChange, 'onMouseClick')
-        redo.addEvent(redoChange, 'onMouseClick')
 
-        labels = [size, undo, redo]
+        if len(self.game.mapEditor.getLevelChanges()) > 1:
+            undo.addEvent(undoChange, 'onMouseClick')
+            undo.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            undo.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+
+        if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1:
+            redo.addEvent(redoChange, 'onMouseClick')
+            redo.addEvent(hoverColor, 'onMouseOver', color = GREEN)
+            redo.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+
+        labels = [size]
         for label in labels:
             label.addEvent(hoverColor, 'onMouseOver', color = GREEN)
             label.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             self.add(label)
 
+        self.add(undo)
+        self.add(redo)
 
     def editSizeDropdown(self):
         self.open = True

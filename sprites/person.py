@@ -97,12 +97,17 @@ class Person(pygame.sprite.Sprite):
                     possiblePlayerTypes[person].setdefault('destinations', []).append(node)
   
         for person, spawnDestinations in possiblePlayerTypes.items():
+            # if there is more than one spawn node, we know there are two different types (spawn and destination)
             if 'spawns' in spawnDestinations and len(spawnDestinations['spawns']) > 1:
                 finalPlayerTypes.append(person)
                 continue 
             elif 'spawns' in spawnDestinations and 'destinations' in spawnDestinations:
                 finalPlayerTypes.append(person)
                 continue
+
+        # no players can spawn
+        if len(finalPlayerTypes) <= 0:
+            return [], []
 
         weights = numpy.full(shape = len(finalPlayerTypes), fill_value = 100 / len(finalPlayerTypes), dtype = numpy.int)
         for i in range(len(finalPlayerTypes)):
@@ -146,9 +151,9 @@ class Person(pygame.sprite.Sprite):
     def getLayer(self, connection):
         if connection == "layer 1":
             return self.spriteRenderer.layer1
-        if connection == "layer 2":
+        elif connection == "layer 2":
             return self.spriteRenderer.layer2
-        if connection == "layer 3":
+        elif connection == "layer 3":
             return self.spriteRenderer.layer3
 
 

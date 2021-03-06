@@ -55,6 +55,8 @@ class SpriteRenderer():
 
         self.debug = False
 
+        self.connectionTypes = ["layer 4"] # the connection types availabe on the map (always has layer 4)
+
 
     def setDefaultMap(self):
         self.levelData = {
@@ -151,6 +153,9 @@ class SpriteRenderer():
     def getDebug(self):
         return self.debug
 
+    def getConnectionTypes(self):
+        return self.connectionTypes
+
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
@@ -158,6 +163,7 @@ class SpriteRenderer():
         self.meter.addToAmountToAdd(20)
 
 
+    # Reset the level back to its default state
     def clearLevel(self):
         self.timer = 0
         self.allSprites.empty()
@@ -168,6 +174,7 @@ class SpriteRenderer():
 
         # Reset the layers to show the top layer
         self.currentLayer = 4
+        self.connectionTypes = []
         self.setDefaultMap()
 
 
@@ -184,9 +191,19 @@ class SpriteRenderer():
             self.hud = GameHud(self.game)
             spacing = (1.5, 1)
 
-
         # ordering matters -> stack
         self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
+
+        # Set the name of the level
+        self.level = self.gridLayer4.getGrid().getLevelName()
+
+        # Set the level data
+        self.levelData = self.gridLayer4.getGrid().getMap()
+
+        # we want to get which connectionTypes are available in the map
+        for connectionType in self.levelData['connections']:
+            self.connectionTypes.append(connectionType)
+
         self.gridLayer3 = Layer3(self, (self.allSprites, self.layer3, self.layer4), level, spacing)
         self.gridLayer1 = Layer1(self, (self.allSprites, self.layer1, self.layer4), level, spacing)
         self.gridLayer2 = Layer2(self, (self.allSprites, self.layer2, self.layer4), level, spacing) # walking layer at the bottom so nodes are drawn above metro stations
@@ -197,13 +214,6 @@ class SpriteRenderer():
         self.gridLayer3.grid.loadTransport("layer 3")
 
         self.removeDuplicates()
-
-        # Set the name of the level
-        self.level = self.gridLayer4.getGrid().getLevelName()
-
-        # Set the level data
-        self.levelData = self.gridLayer4.getGrid().getMap()
-
 
         # Set all the destinations to be the destinations from all layers
         layer1Destinations =  self.gridLayer1.getGrid().getDestinations() 
@@ -216,13 +226,30 @@ class SpriteRenderer():
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
 
+        # if there is more than one layer we want to be able to see 'all' layers at once (layer 4) otherwise we only need to see the single layer
+        if len(self.connectionTypes) > 1 or self.debug:
+            self.connectionTypes.append("layer 4")
+        else:
+            self.showLayer(self.getLayerInt(self.connectionTypes[0]))
+
+
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
             return self.gridLayer1
-        if connectionType == "layer 2":
+        elif connectionType == "layer 2":
             return self.gridLayer2
-        if connectionType == "layer 3":
+        elif connectionType == "layer 3":
             return self.gridLayer3
+            
+    def getLayerInt(self, connectionType):
+        if connectionType == "layer 1":
+            return 1
+        elif connectionType == "layer 2":
+            return 2
+        elif connectionType == "layer 3":
+            return 3
+        elif connectionType == "layer 4":
+            return 4
 
 
     # Remove duplicate nodes on layer 4 for layering
@@ -288,9 +315,11 @@ class SpriteRenderer():
 
 
     def showLayer(self, layer):
-        self.currentLayer = layer
-        self.resize() #redraw the nodes so that the mouse cant collide with them
-        self.hud.updateLayerText()
+        # only switch to a layer that is in the map
+        if "layer " + str(layer) in self.connectionTypes: 
+            self.currentLayer = layer
+            self.resize() #redraw the nodes so that the mouse cant collide with them
+            self.hud.updateLayerText()
 
 
     def resize(self):

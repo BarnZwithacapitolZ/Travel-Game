@@ -29,7 +29,16 @@ def hideLayersWhite(obj, menu, event):
 # Change the layer showing on the screen
 def changeGameLayer(obj, menu, event):
     current = menu.game.spriteRenderer.getLayer()
+    connectionTypes = menu.game.spriteRenderer.getConnectionTypes()
+
+    if len(connectionTypes) <= 1:
+        return
+
     current += 1 if current < 4 else -3
+
+    while "layer " + str(current) not in connectionTypes:
+        current += 1
+
     menu.game.spriteRenderer.showLayer(current)
 
 
@@ -279,14 +288,24 @@ def undoChange(obj, menu, event):
     menu.game.mapEditor.undoChange()
 
     level = menu.game.mapEditor.getLevelData()
-    menu.game.mapEditor.createLevel(level) #reload the level
+    layer = menu.game.mapEditor.getLayer()
+    menu.game.mapEditor.createLevel(level, layer = layer) #reload the level
+
+    # change the color of the undo / redo buttons
+    generalFunctions.clearMenu(obj, menu)
+    menu.editDropdown()
 
 
 def redoChange(obj, menu, next):
     menu.game.mapEditor.redoChange()
 
     level = menu.game.mapEditor.getLevelData()
-    menu.game.mapEditor.createLevel(level) #reload the level
+    layer = menu.game.mapEditor.getLayer()
+    menu.game.mapEditor.createLevel(level, layer = layer) #reload the level
+
+    # change the color of the undo / redo buttons
+    generalFunctions.clearMenu(obj, menu)
+    menu.editDropdown()
     
 
 def addConnection(obj, menu, event):
