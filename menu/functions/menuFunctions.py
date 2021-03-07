@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from config import *
 from clickManager import *
+import time
 
 import generalFunctions as generalFunctions
 import hudFunctions as hudFunctions
@@ -20,6 +21,11 @@ def continueGame(obj, menu, event):
         obj.y = 0
 
     menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+
+
+def openLevelSelect(obj, menu, event):
+    menu.close()
+    menu.levelSelect()
 
 
 # load the map editor and show transition
@@ -45,11 +51,51 @@ def loadMap(obj, menu, event):
         component.addAnimation(transitionLeft, 'onLoad')
 
 
+# Move the level scroller foward by one level
+def levelForward(obj, menu, event):
+    if not menu.getTransitioning() and menu.increaseCurrentLevel():
+        menu.setLevelsClickable()
+
+        def callback(obj, menu, x):
+            obj.x = x
+            menu.setTransitioning(False)
+
+        for index, level in menu.getLevels().items():
+            level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (menu.levelWidth + menu.spacing), callback = callback)
+        menu.setTransitioning(True)
+
+
+# Move the level scroller backwards by one level
+def levelBackward(obj, menu, event):
+    if not menu.getTransitioning() and menu.decreaseCurrentLevel():
+        menu.setLevelsClickable()
+
+        def callback(obj, menu, x):
+            obj.x = x
+            menu.setTransitioning(False)
+
+        for index, level in menu.getLevels().items():
+            level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (menu.levelWidth + menu.spacing), callback = callback)
+        menu.setTransitioning(True)
+
+
 # quit the game
 def closeGame(obj, menu, event):
     menu.close()
     menu.game.playing = False
 
+
+def loadLevel(obj, menu, event, level):
+    global levelName
+    levelName = level
+
+    def callback(obj, menu):
+        menu.game.spriteRenderer.createLevel(levelName)
+        menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+        menu.close()
+        obj.y = 0
+
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 
 

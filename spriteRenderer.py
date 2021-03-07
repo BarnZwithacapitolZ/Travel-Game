@@ -109,6 +109,9 @@ class SpriteRenderer():
     def setFixedScale(self, fixedScale):
         self.fixedScale = fixedScale
 
+    def minusFixedScale(self, negativeFixedScale):
+        self.fixedScale -= negativeFixedScale
+
     def setDebug(self, debug):
         self.debug = debug
 
@@ -234,6 +237,20 @@ class SpriteRenderer():
             self.showLayer(self.getLayerInt(self.connectionTypes[0]))
 
 
+    # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
+    def createLevelSurface(self, level):
+        self.clearLevel()
+        spacing = (1.5, 1)
+
+        gridLayer4 = MenuLayer4(self, (), level)
+        gridLayer3 = Layer3(self, (), level, spacing)
+        gridLayer1 = Layer1(self, (), level, spacing)
+        gridLayer2 = Layer2(self, (), level, spacing)
+        gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
+
+        return gridLayer4.getLineSurface()
+
+
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
             return self.gridLayer1
@@ -254,24 +271,26 @@ class SpriteRenderer():
 
 
     # Remove duplicate nodes on layer 4 for layering
-    def removeDuplicates(self):
+    def removeDuplicates(self, allNodes = None, removeLayer = None):
         seen = {}
         dupes = []
+        removeLayer = self.layer4 if removeLayer is None else removeLayer
 
-        layer1Nodes = self.gridLayer1.getGrid().getNodes()
-        layer2Nodes = self.gridLayer2.getGrid().getNodes()
-        layer3Nodes = self.gridLayer3.getGrid().getNodes()
+        if allNodes is None:
+            layer1Nodes = self.gridLayer1.getGrid().getNodes()
+            layer2Nodes = self.gridLayer2.getGrid().getNodes()
+            layer3Nodes = self.gridLayer3.getGrid().getNodes()
 
-        allnodes = layer1Nodes + layer2Nodes + layer3Nodes
+            allNodes = layer1Nodes + layer2Nodes + layer3Nodes
 
         # Do i need to add tram stops????????????
 
         # Make sure stops are at the front of the list, so they are not removed 
-        allnodes = sorted(allnodes, key=lambda x:isinstance(x, Stop))
-        allnodes = sorted(allnodes, key=lambda x:isinstance(x, Destination))
-        allnodes = allnodes[::-1] # Reverse the list so they're at the front
+        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
+        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
+        allNodes = allNodes[::-1] # Reverse the list so they're at the front
 
-        for node in allnodes:
+        for node in allNodes:
             if node.getNumber() not in seen:
                 seen[node.getNumber()] = 1
             else:
@@ -279,7 +298,7 @@ class SpriteRenderer():
                     dupes.append(node)
 
         for node in dupes:
-            self.layer4.remove(node)
+            removeLayer.remove(node)
 
 
     def update(self):
@@ -302,19 +321,6 @@ class SpriteRenderer():
     def events(self):
         keys = pygame.key.get_pressed()
         key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
-
-        # if len(key) == 1:
-        #     if key[0] == config["controls"]["dtDown"]: # slow down
-        #         if self.dt != self.startDt -0.5:
-        #             self.game.audioLoader.playSound("slowIn", 1)
-
-        #         self.dt = self.startDt - 0.5
-        #     elif key[0] == config["controls"]["dtUp"]: # speed up
-
-        #         self.dt = self.startDt + 0.5
-        # else:
-        #     if self.dt != self.startDt:
-        #         self.game.audioLoader.playSound("slowOut", 1)
 
 
         #     self.dt = self.startDt

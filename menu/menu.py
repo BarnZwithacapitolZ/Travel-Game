@@ -54,7 +54,7 @@ class Menu:
                 component.resizeIndicator()
                 
 
-    def display(self):    
+    def display(self):  
         for component in list(self.components): # we use list so we can delete from the array whilst looping through it (without causing flicking with double blits)
             component.draw()
 
@@ -157,10 +157,41 @@ class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
         self.currentLevel = 0
+        self.maps = list(self.game.mapLoader.getMaps().keys())
+        self.levels = {}
+        self.backgroundColor = GREEN
+
+        self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / 4)
+        self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / 4)
+        self.spacing = 50
+
+        self.transitioning = False
+
+    def getBackgroundColor(self):
+        return self.backgroundColor
+
+
+    def getLevels(self):
+        return self.levels
+
+
+    def getCurrentLevel(self):
+        return self.currentLevel
+
+
+    def getTransitioning(self):
+        return self.transitioning
+
+    
+    def setTransitioning(self, transitioning):
+        self.transitioning = transitioning
 
 
     def main(self, transition = False):
         self.open = True
+        self.levelSelectOpen = False
+        self.backgroundColor = GREEN
+
         sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
         # sidebar = Image(self, "monitor", Color("white"), (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"], 50), (0, 0))
 
@@ -180,7 +211,7 @@ class MainMenu(Menu):
         end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
 
 
-        cont.addEvent(continueGame, 'onMouseClick')
+        cont.addEvent(openLevelSelect, 'onMouseClick')
         cont.addEvent(hoverOver, 'onMouseOver', x = x + 10)
         cont.addEvent(hoverOut, 'onMouseOut', x = x)
 
@@ -195,7 +226,7 @@ class MainMenu(Menu):
         end.addEvent(hoverOver, 'onMouseOver', x = x + 10)
         end.addEvent(hoverOut, 'onMouseOut', x = x)
 
-        self.add(sidebar)
+        # self.add(sidebar)
         # self.add(otherbar)
 
         self.add(title1)
@@ -206,14 +237,6 @@ class MainMenu(Menu):
         self.add(options)
         self.add(end)
 
-        # # Temporarily load in the existing maps
-        y = 100
-        for mapName, path in self.game.mapLoader.getMaps().items():
-            m = Label(self, mapName, 30, BLACK, (800, y))
-            m.addEvent(loadMap, 'onMouseClick')
-            self.add(m)
-            y += 40
-
         if transition:
             # set the up transition
             def callback(obj, menu):
@@ -222,9 +245,83 @@ class MainMenu(Menu):
             self.slideTransitionY((0, 0), 'second', speed = 40, callback = callback, direction = 'down')
 
 
+    def increaseCurrentLevel(self):
+        if self.currentLevel < len(self.maps) - 1:
+            self.currentLevel += 1
+            return True
+        return False
+
+
+    def decreaseCurrentLevel(self):
+        if self.currentLevel > 0:
+            self.currentLevel -= 1
+            return True
+        return False
+
+
+    def createLevel(self, levelInt, offset):
+        if levelInt >= 0 and levelInt < len(self.maps):
+            levelName = self.game.mapLoader.getMap(self.maps[levelInt])
+            level = Map(self, levelName, levelInt, (self.levelWidth, self.levelHeight), (config["graphics"]["displayWidth"] / 8 + offset, config["graphics"]["displayHeight"] / 8))
+            self.add(level)
+            self.levels[levelInt] = level           
+         
+
+    def setLevelsClickable(self):
+        for index, level in self.levels.items():
+            if index == self.currentLevel:
+                level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+            else:
+                # Remove click event
+                level.removeEvent({
+                    'function': loadLevel,
+                    'event': 'onMouseClick',
+                    'kwargs': {'level': level.getLevel()}
+                })
+
+
     def levelSelect(self):
         self.open = True
+        self.levelSelectOpen = True
+        self.backgroundColor = BLACK
+        self.levels = {}
 
+        # Load levels before current level
+        for i, level in enumerate(reversed(self.maps[:self.currentLevel])):
+            self.createLevel(self.currentLevel - (i + 1), -((self.levelWidth + self.spacing) * (i +1)))
+        
+        # Load current level and levels after current level
+        for i, level in enumerate(self.maps[self.currentLevel:]):
+            self.createLevel(self.currentLevel + i, (self.levelWidth + self.spacing) * i)
+
+        self.setLevelsClickable()
+
+        back = Label(self, "back", 30, Color("white"), (50, 25))
+
+        back.addEvent(showMain, 'onMouseClick')
+
+        nextArrow = Label(self, "-->", 30, Color("white"), (config["graphics"]["displayWidth"] - 100, config["graphics"]["displayHeight"] - 50))
+        backArrow = Label(self, "<--", 30, Color("white"), (50, config["graphics"]["displayHeight"] - 50))
+
+        nextArrow.addEvent(hoverOver, 'onMouseOver', x = config["graphics"]["displayWidth"] - 90, color = GREEN)
+        nextArrow.addEvent(hoverOut, 'onMouseOut', x = config["graphics"]["displayWidth"] - 100, color = Color("white"))
+
+        backArrow.addEvent(hoverOver, 'onMouseOver', x = 60, color = GREEN)
+        backArrow.addEvent(hoverOut, 'onMouseOut', x = 50, color = Color("white"))
+
+        nextArrow.addEvent(levelForward, 'onMouseClick')
+        backArrow.addEvent(levelBackward, 'onMouseClick')
+
+        self.add(back)
+        self.add(backArrow)
+        self.add(nextArrow)
+
+        # if self.currentLevel > 0:
+        #     self.add(backArrow)
+        # if self.currentLevel < len(self.maps) - 1:
+        #     self.add(nextArrow)
+
+    
 
     
 

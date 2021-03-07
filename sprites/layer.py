@@ -44,6 +44,10 @@ class Layer():
     def getLines(self):
         return self.lines
 
+    def getLineSurface(self):
+        if hasattr(self, 'lineSurface'):
+            return self.lineSurface
+
 
     #### Setters ####
 
@@ -162,7 +166,7 @@ class Layer():
             self.backgroundColor = default
 
 
-    def render(self):
+    def render(self, nodes = None):
         self.lineSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
                                             int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
         self.lineSurface.fill(self.backgroundColor)
@@ -172,6 +176,11 @@ class Layer():
 
         for line in self.lines:
             pygame.draw.line(self.lineSurface, line["color"], line["posx"], line["posy"], int(line["thickness"]))
+
+        if nodes is not None:
+            for node in nodes:
+                node.draw() # call the render function so there is an image to blit
+                self.lineSurface.blit(node.image, (node.rect))
 
 
     def draw(self):
@@ -215,6 +224,22 @@ class Layer4(Layer):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
         self.lines = lines
         self.render()
+
+
+class MenuLayer4(Layer):
+    def __init__(self, spriteRenderer, groups, level):
+        super().__init__(spriteRenderer, groups, "layer 4", level)
+        background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
+        # self.addComponent(background)
+
+    def addLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        nodes = layer1.getGrid().getNodes() + layer2.getGrid().getNodes() + layer3.getGrid().getNodes()
+        
+        self.spriteRenderer.removeDuplicates(nodes, nodes)
+
+        self.lines = lines
+        self.render(nodes)
 
 
 class EditorLayer1(Layer):

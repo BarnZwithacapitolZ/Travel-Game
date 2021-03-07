@@ -33,6 +33,13 @@ class Renderer:
         self.fpsFont = pygame.font.Font(pygame.font.get_default_font(), 30)
         self.fontImage = self.fpsFont.render(str(int(self.game.clock.get_fps())), False, RED)
         self.createScanlines()
+
+
+    # Prepare the gamedisplay for blitting to, this means overriding it with a new color
+    def prepareSurface(self, color):
+        self.gameDisplay.fill(color)
+        # pygame.draw.rect(self.gameDisplay, color, (0, 0, config["graphics"]["displayWidth"] * self.scale, config["graphics"]["displayHeight"] * self.scale))
+        # self.dirtySurfaces.append(self.gameDisplay.get_rect())
     
 
     def drawScanlines(self, surface):
@@ -134,10 +141,11 @@ class Renderer:
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
-        if config["graphics"]["scanlines"]["enabled"] and not self.game.mainMenu.open:
-            self.gameDisplay.blit(self.scanlines, (0, 0))
-        pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
-    
+        if not self.game.mainMenu.open:
+            if config["graphics"]["scanlines"]["enabled"]: 
+                self.gameDisplay.blit(self.scanlines, (0, 0))
+            pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
+            
 
         self.screen.blit(self.gameDisplay, (0 + self.getDifference()[0], 0 + self.getDifference()[1]))
         # self.screen.blit(pygame.transform.smoothscale(self.gameDisplay, (int(self.width), int(self.height))), (0, 0))

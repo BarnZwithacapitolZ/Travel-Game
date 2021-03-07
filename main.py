@@ -186,6 +186,8 @@ class Game:
 
     def __draw(self):
         #add sprites
+        if self.mainMenu.open: self.renderer.prepareSurface(self.mainMenu.getBackgroundColor())
+
         self.spriteRenderer.render()
         self.mapEditor.render()
 

@@ -131,7 +131,6 @@ class MenuComponent:
     def removeAnimation(self, function):
         del self.animations[function]
 
-
     def removeEvent(self, event):
         if event in self.events:
             self.events.remove(event)
@@ -141,8 +140,6 @@ class MenuComponent:
 
     def getOffset(self):
         return self.offset
-
-
 
 
 class Label(MenuComponent):
@@ -312,7 +309,6 @@ class InputBox(Label):
                 self.menu.game.textHandler.setPointer(len(self.text))
        
 
-
 class Shape(MenuComponent):
     def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
         super().__init__(menu, color, size, pos)
@@ -377,7 +373,6 @@ class Shape(MenuComponent):
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
             self.menu.renderer.addSurface(None, None, self.drawShape)
-
 
 
 class MessageBox(Shape):
@@ -465,6 +460,52 @@ class MessageBox(Shape):
             # self.menu.components.remove(self)
             # for message in self.messages:
             #     self.menu.components.remove(message)
+
+
+class Map(MenuComponent):
+    def __init__(self, menu, level, levelInt, size = tuple(), pos = tuple()):  
+        super().__init__(menu, TRUEBLACK, size, pos)
+        self.level = level
+        self.levelInt = levelInt
+
+    def getLevel(self):
+        return self.level
+
+
+    def getLevelInt(self):
+        return self.levelInt
+
+
+    def __render(self):
+        self.dirty = False
+
+        self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert_alpha()
+        self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.menu.renderer.getScale()), 
+                                                                int(self.height * self.menu.renderer.getScale()))).convert()
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+
+        if config["graphics"]["scanlines"]["enabled"]:
+            self.scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
+            self.scanlines.fill(SCANLINES)
+            self.menu.renderer.drawScanlines(self.scanlines)
+            self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])
+            self.image.blit(self.scanlines, (0, 0))
+
+
+        # make rounded corners
+        size = self.image.get_size()
+        self.rectImage = pygame.Surface(size, pygame.SRCALPHA)
+        self.rectImage.fill(self.menu.getBackgroundColor())
+        pygame.draw.rect(self.rectImage, Color("white"), (0, 0, *size), border_radius = int(50 * self.menu.renderer.getScale()))
+        self.image.blit(self.rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
+        # pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(30 * self.menu.renderer.getScale()), border_radius = int(50 * self.menu.renderer.getScale()))
+
+
+    def draw(self):
+        if self.dirty or self.image is None: self.__render()
+        self.menu.renderer.addSurface(self.image, (self.rect))
 
 
 class Image(MenuComponent):
