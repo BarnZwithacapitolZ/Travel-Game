@@ -103,7 +103,6 @@ class MenuComponent:
 
         self.mouseOver = False
 
-
     def setSize(self, size = tuple()):
         self.width = size[0]
         self.height = size[1]
@@ -465,8 +464,10 @@ class MessageBox(Shape):
 class Map(MenuComponent):
     def __init__(self, menu, level, levelInt, size = tuple(), pos = tuple()):  
         super().__init__(menu, TRUEBLACK, size, pos)
-        self.level = level
+        self.levelName = level
+        self.level = menu.game.mapLoader.getMap(self.levelName)
         self.levelInt = levelInt
+        self.levelData = menu.game.mapLoader.getMapData(self.levelName)
 
     def getLevel(self):
         return self.level
@@ -478,14 +479,19 @@ class Map(MenuComponent):
 
     def __render(self):
         self.dirty = False
-
         self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                                int(self.height * self.menu.renderer.getScale()))).convert()
+                                                                int(self.height * self.menu.renderer.getScale()))).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
+        # add labels
+        # self.mapTitle = Label(self.menu, self.levelName, 30, BLACK, (50, 50))
+        # self.mapTitle.render()
+        # self.image.blit(self.mapTitle.image, (self.mapTitle.rect))
+
+        # draw scanlines if enabled
         if config["graphics"]["scanlines"]["enabled"]:
             self.scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
             self.scanlines.fill(SCANLINES)
@@ -497,10 +503,10 @@ class Map(MenuComponent):
         # make rounded corners
         size = self.image.get_size()
         self.rectImage = pygame.Surface(size, pygame.SRCALPHA)
-        self.rectImage.fill(self.menu.getBackgroundColor())
+        # self.rectImage.fill(self.menu.getBackgroundColor())
         pygame.draw.rect(self.rectImage, Color("white"), (0, 0, *size), border_radius = int(50 * self.menu.renderer.getScale()))
         self.image.blit(self.rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
-        # pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(30 * self.menu.renderer.getScale()), border_radius = int(50 * self.menu.renderer.getScale()))
+        pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(30 * self.menu.renderer.getScale()), border_radius = int(50 * self.menu.renderer.getScale()))
 
 
     def draw(self):

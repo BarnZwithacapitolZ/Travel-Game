@@ -24,18 +24,23 @@ def continueGame(obj, menu, event):
 
 
 def openLevelSelect(obj, menu, event):
-    menu.close()
-    menu.levelSelect()
+    def callback(obj, menu):
+        obj.y = 0
+        menu.close()
+        menu.levelSelect(True)
+
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.loadingScreen()
 
 
 # load the map editor and show transition
 def openMapEditor(obj, menu, event):
     def callback(obj, menu):
+        obj.y = 0
         menu.game.mapEditor.createLevel(clearChanges = True)
         menu.game.mapEditor.setRendering(True, True) #Load the hud
         hudFunctions.addConnection(obj, menu, event) # default option to add connection
         menu.close()
-        obj.y = 0
 
     menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
@@ -90,13 +95,12 @@ def loadLevel(obj, menu, event, level):
     levelName = level
 
     def callback(obj, menu):
+        obj.y = 0
         menu.game.spriteRenderer.createLevel(levelName)
         menu.game.spriteRenderer.setRendering(True, True) #Load the hud
         menu.close()
-        obj.y = 0
 
     menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
-
 
 
 ###### Option-Menu Functions ######
@@ -104,13 +108,13 @@ def loadLevel(obj, menu, event, level):
 # Exit the game and return to the main menu with transition
 def showMainMenu(obj, menu, event):
     def callback(obj, menu):
+        obj.y = 0
         menu.game.paused = False
         menu.game.spriteRenderer.setRendering(False) # Always close the Game
         menu.game.mapEditor.setRendering(False) # Always close the Editor
         menu.game.textHandler.setActive(False) # Always close any open inputs
         menu.game.mainMenu.main(True)
         menu.close()
-        obj.y = 0
 
     menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
 

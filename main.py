@@ -58,6 +58,9 @@ class Game:
         self.setIcon()
         self.setCursor()
 
+        # self.audioLoader.playSound("boot", 2)
+        # self.audioLoader.fadeOutSound(10000, 2)
+
         # print(pygame.font.get_fonts())
 
     # Set the games caption (name)

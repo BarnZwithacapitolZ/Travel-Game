@@ -150,9 +150,13 @@
             "image": "Filter.png",
             "alpha": true
         },
-        "example": {
-            "image": "example.png",
-            "alpha": false
+        "loading1": {
+            "image": "Loading1.png",
+            "alpha": true
+        },
+        "loading2": {
+            "image": "Loading2.png",
+            "alpha": true
         },
         "monitor": {
             "image": "Monitor.png",
@@ -184,6 +188,10 @@
             "swoopOut": {
                 "file": "swoopOut.wav",
                 "volume": 0.7
+            },
+            "boot": {
+                "file": "boot.wav",
+                "volume": 1.0
             }
         },
         "music": {

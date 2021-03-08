@@ -15,16 +15,15 @@ import random
 class Menu:
     def __init__(self, game):
         pygame.font.init()
-        # self.font = pygame.freetype.Font(font, 30)
 
         self.open = False
         self.game = game
         self.renderer = game.renderer
         self.components = []
 
-
-        # print(pygame.display.get_surface())
         self.clicked = False
+
+        self.loadingImage = Image(self, "loading1", Color("white"), (100, 72), ((config["graphics"]["displayWidth"] / 2) - 50, (config["graphics"]["displayHeight"] / 2) - 36))
 
     
     def setOpen(self, hudOpen):
@@ -96,7 +95,7 @@ class Menu:
                             self.clickButton()
                             self.game.clickManager.setClicked(False)
                             e['function'](component, self, e, **e['kwargs'])
-                            component.dirty = True
+                            # component.dirty = True
 
                     if e['event'] == 'onMouseOver':
                         if component.rect.collidepoint((mx, my)) and not component.mouseOver:
@@ -152,6 +151,21 @@ class Menu:
         transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
         self.add(transition)
 
+    def loadingScreen(self):
+        self.loadingImage.setImageName("loading1")
+        self.loadingImage.dirty = True
+        loadingText = Label(self, "Loading", 30, Color("white"), (config["graphics"]["displayWidth"] / 2 - 58, config["graphics"]["displayHeight"] / 2 + 45))
+
+        self.add(self.loadingImage)
+        self.add(loadingText)
+
+    def updateLoadingScreen(self):
+        if self.loadingImage.getImageName() == "loading1":
+            self.loadingImage.setImageName("loading2")
+        else:
+            self.loadingImage.setImageName("loading1")
+        self.loadingImage.dirty = True  
+
 
 class MainMenu(Menu):
     def __init__(self, renderer):
@@ -161,11 +175,13 @@ class MainMenu(Menu):
         self.levels = {}
         self.backgroundColor = GREEN
 
-        self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / 4)
-        self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / 4)
-        self.spacing = 50
+        scaler = 5 # larger scaler = larger image
+        self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / scaler)
+        self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / scaler)
+        self.spacing = 25
 
         self.transitioning = False
+
 
     def getBackgroundColor(self):
         return self.backgroundColor
@@ -261,11 +277,13 @@ class MainMenu(Menu):
 
     def createLevel(self, levelInt, offset):
         if levelInt >= 0 and levelInt < len(self.maps):
-            levelName = self.game.mapLoader.getMap(self.maps[levelInt])
-            level = Map(self, levelName, levelInt, (self.levelWidth, self.levelHeight), (config["graphics"]["displayWidth"] / 8 + offset, config["graphics"]["displayHeight"] / 8))
+            level = Map(self, self.maps[levelInt], levelInt, (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
             self.add(level)
-            self.levels[levelInt] = level           
-         
+            self.levels[levelInt] = level        
+
+            # Update the loading screen when the level has loaded
+            self.updateLoadingScreen()
+
 
     def setLevelsClickable(self):
         for index, level in self.levels.items():
@@ -280,7 +298,7 @@ class MainMenu(Menu):
                 })
 
 
-    def levelSelect(self):
+    def levelSelect(self, transition = False):
         self.open = True
         self.levelSelectOpen = True
         self.backgroundColor = BLACK
@@ -321,9 +339,14 @@ class MainMenu(Menu):
         # if self.currentLevel < len(self.maps) - 1:
         #     self.add(nextArrow)
 
-    
 
-    
+        if transition:
+            # set the up transition
+            def callback(obj, menu):
+                menu.game.spriteRenderer.runOpeningMenu()
+                menu.remove(obj)
+        
+            self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
 class OptionMenu(Menu):
@@ -570,7 +593,10 @@ class GameHud(GameHudLayout):
         # self.add(topbar)
         # self.add(dropdown)
         self.add(home)
-        self.add(layers)
+
+        if len(self.game.spriteRenderer.getConnectionTypes()) > 1:
+            self.add(layers)
+
         self.add(slowDownMeter)
         self.add(self.slowDownMeterAmount)
         self.add(slowDownMeterOutline)

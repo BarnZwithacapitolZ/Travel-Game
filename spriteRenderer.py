@@ -36,7 +36,7 @@ class SpriteRenderer():
 
         self.rendering = False
 
-        # Game timer to keep track of how long has been played 
+        # Game timer to keep track of how long has been played
         self.timer = 0
         self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         # self.timeStep = 8
@@ -60,10 +60,10 @@ class SpriteRenderer():
 
     def setDefaultMap(self):
         self.levelData = {
-            "mapName": "", 
+            "mapName": "",
             "locked": False,
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
-            "saved": False, # Has the map been saved before 
+            "saved": False, # Has the map been saved before
             "width": 18,
             "height": 10,
             "completion": {
@@ -77,8 +77,8 @@ class SpriteRenderer():
                 "layer 3": CREAM,
                 "layer 4": CREAM
             },
-            "connections": {}, 
-            "transport": {}, 
+            "connections": {},
+            "transport": {},
             "stops": {},
             "destinations": {}
         } # Level data to be stored, for export to JSON
@@ -88,9 +88,9 @@ class SpriteRenderer():
         self.rendering = rendering
         self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
-        
+
     def runOpeningMenu(self):
-        if self.rendering and not self.debug: 
+        if self.rendering and not self.debug:
             self.openingMenu.main()
 
     def setCompleted(self, completed):
@@ -184,14 +184,14 @@ class SpriteRenderer():
 
     def createLevel(self, level, debug = False):
         self.clearLevel()
-        self.setCompleted(0) 
+        self.setCompleted(0)
         self.debug = debug
 
         # for running the game in test mode (when testing a level)
-        if self.debug: 
+        if self.debug:
             self.hud = PreviewHud(self.game)
             spacing = (1.5, 1.5) # push the level down since we have hud at the top
-        else: 
+        else:
             self.hud = GameHud(self.game)
             spacing = (1.5, 1)
 
@@ -220,9 +220,9 @@ class SpriteRenderer():
         self.removeDuplicates()
 
         # Set all the destinations to be the destinations from all layers
-        layer1Destinations =  self.gridLayer1.getGrid().getDestinations() 
-        layer2Destinations =  self.gridLayer2.getGrid().getDestinations() 
-        layer3Destinations =  self.gridLayer3.getGrid().getDestinations() 
+        layer1Destinations =  self.gridLayer1.getGrid().getDestinations()
+        layer2Destinations =  self.gridLayer2.getGrid().getDestinations()
+        layer3Destinations =  self.gridLayer3.getGrid().getDestinations()
         self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
 
         # set number of people to complete level
@@ -240,12 +240,24 @@ class SpriteRenderer():
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
     def createLevelSurface(self, level):
         self.clearLevel()
-        spacing = (1.5, 1)
+        spacings = {(16, 9): (3.5, 2), (18, 10): (4, 2.5), (20, 11): (4.5, 2.8), (22, 12): (5, 3)}
 
         gridLayer4 = MenuLayer4(self, (), level)
+
+        levelData = gridLayer4.getGrid().getMap()
+        size = (levelData["width"], levelData["height"])
+        spacing = spacings[size]
+
         gridLayer3 = Layer3(self, (), level, spacing)
         gridLayer1 = Layer1(self, (), level, spacing)
         gridLayer2 = Layer2(self, (), level, spacing)
+
+        self.minusFixedScale(0.2)
+        gridLayer1.resize()
+        gridLayer2.resize()
+        gridLayer3.resize()
+        gridLayer4.resize()
+
         gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
 
         return gridLayer4.getLineSurface()
@@ -258,7 +270,7 @@ class SpriteRenderer():
             return self.gridLayer2
         elif connectionType == "layer 3":
             return self.gridLayer3
-            
+
     def getLayerInt(self, connectionType):
         if connectionType == "layer 1":
             return 1
@@ -285,7 +297,7 @@ class SpriteRenderer():
 
         # Do i need to add tram stops????????????
 
-        # Make sure stops are at the front of the list, so they are not removed 
+        # Make sure stops are at the front of the list, so they are not removed
         allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
         allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
         allNodes = allNodes[::-1] # Reverse the list so they're at the front
@@ -315,9 +327,9 @@ class SpriteRenderer():
                     # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
                     self.gridLayer2.addPerson(self.allDestinations)
             else:
-                self.timeSetMet = False      
+                self.timeSetMet = False
 
-            
+
     def events(self):
         keys = pygame.key.get_pressed()
         key = [pygame.key.name(k) for k,v in enumerate(keys) if v]
@@ -331,8 +343,8 @@ class SpriteRenderer():
         #     if key[0] == config["controls"]["dtDown"]:
         #         self.game.clickManager.setSpaceBar(True)
         # else:
-        #     self.game.clickManager.setSpaceBar(False)   
-        
+        #     self.game.clickManager.setSpaceBar(False)
+
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.game.clickManager.setSpaceBar(True)
 
@@ -341,13 +353,13 @@ class SpriteRenderer():
         else:
             if self.dt != self.startDt:
                 self.game.audioLoader.playSound("slowOut", 1)
-                
+
             self.game.clickManager.setSpaceBar(False)
 
 
     def showLayer(self, layer):
         # only switch to a layer that is in the map
-        if "layer " + str(layer) in self.connectionTypes: 
+        if "layer " + str(layer) in self.connectionTypes:
             self.currentLayer = layer
             self.resize() #redraw the nodes so that the mouse cant collide with them
             self.hud.updateLayerText()
@@ -358,12 +370,12 @@ class SpriteRenderer():
         if self.rendering:
             self.gridLayer1.resize()
             self.gridLayer2.resize()
-            self.gridLayer3.resize()    
+            self.gridLayer3.resize()
             self.gridLayer4.resize() # only need to do this if it has components
 
             # we want to reset the layer 4 lines with the new ones (resized) from the other layers
-            self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3) 
-            
+            self.gridLayer4.addLayerLines(self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
             # resize huds and menus
             self.hud.resize()
             self.messageSystem.resize()
@@ -381,7 +393,7 @@ class SpriteRenderer():
 
 
     def render(self):
-        if self.rendering:    
+        if self.rendering:
             self.renderLayer(1, self.gridLayer1, self.layer1)
             self.renderLayer(2, self.gridLayer2, self.layer2)
             self.renderLayer(3, self.gridLayer3, self.layer3)
@@ -392,4 +404,4 @@ class SpriteRenderer():
             self.hud.display()
             self.messageSystem.display()
             self.openingMenu.display()
-            
+

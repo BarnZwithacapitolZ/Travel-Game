@@ -221,6 +221,14 @@ class AudioLoader:
         self.channels[chan].play(self.sounds[key])
 
 
+    def stopSound(self, chan = 0):
+        self.channels[chan].stop()
+
+
+    def fadeOutSound(self, duration, chan = 0):
+        self.channels[chan].fadeout(duration)
+
+
     def setChannels(self):
         # Channel 0 reserved for hud sounds 
         # Channel 1 reserved for game sounds
