@@ -195,7 +195,8 @@ class MapEditor(SpriteRenderer):
         config["maps"]["custom"][self.game.textHandler.getString()] = saveName
         dump(config)
 
-        self.game.mapLoader.addMap(self.game.textHandler.getString(), path)
+        self.game.mapLoader.addMap(self.game.textHandler.getString(), path, self.game.mapLoader.getCustomMaps())
+        self.game.mainMenu.updateMaps()
 
     
     # Save function, for when the level has already been created before (and is being edited)
@@ -212,6 +213,7 @@ class MapEditor(SpriteRenderer):
         if os.path.exists(path):
             os.remove(path) # Delete the level
             self.game.mapLoader.removeMap(self.levelData["mapName"])
+            self.game.mainMenu.updateMaps()
             del config["maps"]["custom"][self.levelData["mapName"]]
             dump(config)
 

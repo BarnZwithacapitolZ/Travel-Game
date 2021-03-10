@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from config import *
 
+vec = pygame.math.Vector2
 
 def transitionAnimationOpen(obj, menu, animation):
     obj.x += 100
@@ -181,12 +182,10 @@ def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDire
 
     if transitionDirection == 'up':
         if (half == 'first' and obj.y <= 0) or (half == 'second' and obj.y + obj.height <= 0):
-            obj.removeAnimation(animation)
-            callback(obj, menu)
+            callback(obj, menu, animation)
     else:
         if (half == 'first' and obj.y >= 0) or (half == 'second' and obj.y >= config["graphics"]["displayHeight"]):
-            obj.removeAnimation(animation)
-            callback(obj, menu)
+            callback(obj, menu, animation)
 
     obj.rect.y = obj.y * menu.renderer.getScale()
 
@@ -199,3 +198,4 @@ def slideTransitionX(obj, menu, animation, speed, half, callback):
         callback(obj, menu)
 
     obj.rect.x = obj.x * menu.renderer.getScale()
+

@@ -146,10 +146,6 @@
             "image": "House.png",
             "alpha": true
         },
-        "filter": {
-            "image": "Filter.png",
-            "alpha": true
-        },
         "loading1": {
             "image": "Loading1.png",
             "alpha": true
@@ -158,9 +154,29 @@
             "image": "Loading2.png",
             "alpha": true
         },
-        "monitor": {
-            "image": "Monitor.png",
-            "alpha": false
+        "buttonRed": {
+            "image": "ButtonRed.png",
+            "alpha": true
+        },
+        "buttonGreen": {
+            "image": "ButtonGreen.png",
+            "alpha": true
+        },
+        "button": {
+            "image": "Button.png",
+            "alpha": true
+        },
+        "buttonSelected": {
+            "image": "ButtonSelected.png",
+            "alpha": true
+        },
+        "locked": {
+            "image": "Locked.png",
+            "alpha": true
+        },
+        "banana": {
+            "image": "Banana.png",
+            "alpha": true
         }
     }, 
     "audio": {
@@ -216,8 +232,11 @@
         },
         "custom": {
             "Another test": "map_Another_test.json",
-            "player spawn test": "map_player_spawn_test.json",
-            "leveltest": "map_leveltest.json"
+            "leveltest": "map_leveltest.json",
+            "size1": "map_size1.json", 
+            "size2": "map_size2.json", 
+            "size3": "map_size3.json", 
+            "size4": "map_size4.json"
         }
     } 
 }

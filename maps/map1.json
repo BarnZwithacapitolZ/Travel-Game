@@ -1,9 +1,16 @@
 {
     "mapName": "London", 
+    "locked": false,
     "deletable": false, 
     "saved": true, 
     "width": 18,
     "height": 10,
+    "completion": {
+        "total": 10, 
+        "completed": true, 
+        "time": 0
+    },
+    "difficulty": 2,
     "connections": {
         "layer 1": [
             [0, 11], 

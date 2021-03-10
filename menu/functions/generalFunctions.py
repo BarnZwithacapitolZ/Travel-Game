@@ -26,6 +26,11 @@ def hoverOut(obj, menu, event, speed = 1, x = 100, color = BLACK):
     obj.setColor(color)
 
 
+def hoverImage(obj, menu, event, image = None):
+    if image is not None:
+        obj.setImageName(image)
+
+
 # close and clear the menu
 def clearMenu(obj, menu):
     menu.close()

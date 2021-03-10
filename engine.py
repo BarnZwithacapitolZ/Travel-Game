@@ -1,4 +1,5 @@
 import pygame
+import pygame._sdl2
 from pygame.locals import *
 from config import *
 import os
@@ -52,7 +53,7 @@ class Renderer:
             
 
     def createScanlines(self):
-        self.scanlines = pygame.Surface((self.width, self.height))
+        self.scanlines = pygame.Surface((self.width, self.height)).convert()
         self.scanlines.fill(SCANLINES)
         self.drawScanlines(self.scanlines)
         self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])
@@ -141,7 +142,7 @@ class Renderer:
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
-        if not self.game.mainMenu.open:
+        if not self.game.mainMenu.levelSelectOpen:
             if config["graphics"]["scanlines"]["enabled"]: 
                 self.gameDisplay.blit(self.scanlines, (0, 0))
             pygame.draw.rect(self.gameDisplay, TRUEBLACK, (-30 * self.scale, -30 * self.scale, (config["graphics"]["displayWidth"] + 60) * self.scale, (config["graphics"]["displayHeight"] + 60) * self.scale), int(30 * self.scale), border_radius = int(80 * self.scale))
@@ -282,7 +283,8 @@ class MapLoader:
         return longest
 
 
-    def addMap(self, mapName, path):
+    def addMap(self, mapName, path, mapDict):
+        mapDict[mapName] = path
         self.maps[mapName] = path
 
 
@@ -295,7 +297,6 @@ class MapLoader:
             m = os.path.join(MAPSFOLDER, level)
             self.maps[key] = m
             mapDict[key] = m
-
 
 
     def loadAllMaps(self):

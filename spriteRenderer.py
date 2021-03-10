@@ -66,6 +66,7 @@ class SpriteRenderer():
             "saved": False, # Has the map been saved before
             "width": 18,
             "height": 10,
+            "difficulty": 1, # out of 4
             "completion": {
                 "total": 10,
                 "completed": False,
@@ -108,9 +109,6 @@ class SpriteRenderer():
 
     def setFixedScale(self, fixedScale):
         self.fixedScale = fixedScale
-
-    def minusFixedScale(self, negativeFixedScale):
-        self.fixedScale -= negativeFixedScale
 
     def setDebug(self, debug):
         self.debug = debug
@@ -252,7 +250,7 @@ class SpriteRenderer():
         gridLayer1 = Layer1(self, (), level, spacing)
         gridLayer2 = Layer2(self, (), level, spacing)
 
-        self.minusFixedScale(0.2)
+        self.setFixedScale(self.fixedScale - 0.2)
         gridLayer1.resize()
         gridLayer2.resize()
         gridLayer3.resize()

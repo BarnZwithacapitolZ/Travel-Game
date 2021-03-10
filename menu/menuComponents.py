@@ -3,6 +3,7 @@ from pygame.locals import *
 from config import *
 from transitionFunctions import transitionMessageRight
 import string
+import abc
 
 vec = pygame.math.Vector2
 
@@ -18,34 +19,44 @@ class TextHandler:
         self.keys = list(string.ascii_letters) + list(string.digits)
         self.keys.append(" ")
 
+
     def getActive(self):
         return self.active
+
 
     def getPressed(self):
         return self.pressed
 
+
     def getLengthReached(self):
         return self.lengthReached
+
 
     def getPointer(self):
         return self.pointer
 
+
     def getString(self, pointer = False):
         return ''.join(self.string[:self.pointer]) if pointer else ''.join(self.string) 
+
 
     def setPressed(self, pressed):
         self.pressed = pressed
 
+
     def setString(self, string = []):
         self.string = string
 
+
     def setLengthReached(self, lengthReached):
         self.lengthReached = lengthReached
+
 
     def setPointer(self, pointer):
         if pointer > len(self.string) or pointer < 0:
             return
         self.pointer = pointer
+
 
     def removeLast(self):
         if self.pointer > 0:
@@ -59,6 +70,7 @@ class TextHandler:
 
         if self.active:
             self.string = []
+
 
     def events(self, event):
         if self.active:
@@ -83,7 +95,7 @@ class TextHandler:
 
 
 class MenuComponent:
-    def __init__(self, menu, color, size = tuple(), pos = tuple()):
+    def __init__(self, menu, color = None, size = tuple(), pos = tuple()):
         self.menu = menu
         self.color = color
         self.width = size[0]
@@ -91,9 +103,11 @@ class MenuComponent:
         self.x = pos[0]
         self.y = pos[1]
         self.size = size
-        self.pos = pos
-        self.offset = vec(0, 0)
 
+        self.pos = vec(self.x, self.y)
+        self.vel = vec(0, 0)
+        self.acc = vec(0, 0)
+        self.offset = vec(0, 0)
 
         self.events = []
         self.animations = {}
@@ -103,42 +117,72 @@ class MenuComponent:
 
         self.mouseOver = False
 
+
+    def getAnimations(self):
+        return self.animations
+
+
+    def getOffset(self):
+        return self.offset
+
+
     def setSize(self, size = tuple()):
         self.width = size[0]
         self.height = size[1]
 
+
     def setColor(self, color):
         self.color = color
+
 
     def setPos(self, pos = tuple()):
         self.x = pos[0]
         self.y = pos[1]
 
+
     def setOffset(self, offset):
         self.offset = offset
 
+
     def addEvent(self, function, event, **kwargs):
-        self.events.append({
-            'function': function,
-            'event': event,
-            'kwargs': kwargs
-        })
+        self.events.append({'function': function, 'event': event, 'kwargs': kwargs})
+
 
     def addAnimation(self, function, event, **kwargs):
         self.animations[function] = (event, kwargs)
 
+
     def removeAnimation(self, function):
         del self.animations[function]
 
-    def removeEvent(self, event):
+
+    def removeEvent(self, function, event, **kwargs):
+        event = {'function': function, 'event': event,'kwargs': kwargs}
         if event in self.events:
             self.events.remove(event)
 
-    def getAnimations(self):
-        return self.animations
 
-    def getOffset(self):
-        return self.offset
+    def update(self):
+        self.acc += self.vel * 0.5
+        self.vel += self.acc * self.menu.game.dt
+        self.pos += self.vel * self.menu.game.dt + 10 * self.acc * self.menu.game.dt ** 2
+
+        self.rect.topleft = self.pos * self.menu.renderer.getScale()
+
+
+    @abc.abstractmethod
+    def __render(self):
+        return
+
+
+    @abc.abstractmethod
+    def makeSurface(self):
+        return
+
+
+    @abc.abstractmethod
+    def draw(self):
+        return
 
 
 class Label(MenuComponent):
@@ -154,6 +198,7 @@ class Label(MenuComponent):
         self.italic = False
         self.underline = False
         
+
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
 
@@ -162,6 +207,7 @@ class Label(MenuComponent):
     def getFontSize(self, text = None):
         text = self.text if text is None else text
         return pygame.font.Font(self.fontName, self.fontSize).size(text)
+
 
     # get the scaled font size by using the label font
     def getFontSizeScaled(self, text = None):
@@ -184,22 +230,28 @@ class Label(MenuComponent):
     def setFontName(self, fontName):
         self.fontName = fontName
 
+
     def setText(self, text):
         self.text = text
+
 
     def setBold(self, bold):
         self.bold = bold
 
+
     def setItalic(self, italic):
         self.italic = italic
+
 
     def setUnderline(self, underline):
         self.underline = underline
 
+
     def getText(self):
         return self.text
 
-    def render(self):
+
+    def __render(self):
         self.dirty = False
 
         self.font = pygame.font.Font(self.fontName, int(self.fontSize * self.menu.renderer.getScale()))
@@ -218,10 +270,14 @@ class Label(MenuComponent):
 
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
+
+
+    def makeSurface(self):
+        if self.dirty or self.image is None: self.__render()
         
 
     def draw(self):
-        if self.dirty or self.image is None: self.render()
+        self.makeSurface()
         self.menu.renderer.addSurface(self.image, self.rect)
 
 
@@ -236,6 +292,7 @@ class InputBox(Label):
         self.timer = 0
         self.background = background
         self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
+
 
     def setText(self):   
         width = (self.getFontSizeScaled(self.menu.game.textHandler.getString())[0] / self.menu.renderer.getScale())
@@ -270,7 +327,7 @@ class InputBox(Label):
 
     
     def draw(self):
-        if self.dirty or self.image is None: self.render()
+        self.makeSurface()
         self.menu.renderer.addSurface(self.image, self.rect)
 
         self.setFlashing()
@@ -319,25 +376,32 @@ class Shape(MenuComponent):
         if not config["graphics"]["smoothCorners"]:
             self.shapeBorderRadius = [0, 0, 0, 0]
 
+
     def getShapeType(self):
         return self.shapeType
+
 
     def getShapeOutline(self):
         return self.shapeOutline
 
+
     def getAlpha(self):
         return self.alpha if self.alpha is not None else 0
     
+
     def setShapeType(self, shapeType):
         self.shapeType = shapeType
+
 
     def setShapeOutline(self, shapeOutline):
         self.shapeOutline = shapeOutline
 
+
     def setAlpha(self, alpha):
         self.alpha = alpha
 
-    def render(self):
+
+    def __render(self):
         self.dirty = False
 
         pos = vec(self.x, self.y) * self.menu.renderer.getScale()
@@ -366,8 +430,12 @@ class Shape(MenuComponent):
             pygame.draw.ellipse(surface, self.color, self.rect, int(self.outline))
 
 
+    def makeSurface(self):
+        if self.dirty or self.rect is None: self.__render()
+
+
     def draw(self):
-        if self.dirty or self.rect is None: self.render()
+        self.makeSurface()
         if self.alpha is not None:
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
@@ -385,6 +453,7 @@ class MessageBox(Shape):
         self.offset = vec(10, 10)
 
         self.addLabels(message)
+
 
     def setPos(self, pos = tuple()):
         self.x = pos[0]
@@ -406,6 +475,7 @@ class MessageBox(Shape):
     def addMessages(self):
         for message in self.messages:
             self.menu.add(message)
+
 
     def addLabels(self, message):
         maxCharLimit = 25
@@ -449,7 +519,7 @@ class MessageBox(Shape):
 
 
     def draw(self):
-        if self.dirty or self.rect is None: self.render()
+        self.makeSurface()
         self.menu.renderer.addSurface(None, None, self.drawShape)
 
         self.timer += self.menu.game.dt
@@ -477,36 +547,81 @@ class Map(MenuComponent):
         return self.levelInt
 
 
+    def getLevelData(self):
+        return self.levelData
+
+
+    # draw scanlines if enabled
+    def drawScanlines(self):    
+        if config["graphics"]["scanlines"]["enabled"]:
+            scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
+            
+            fillColor = BLACK if self.levelData["locked"] else SCANLINES
+            scanlines.fill(fillColor)
+
+            self.menu.renderer.drawScanlines(scanlines)
+            alpha = 95 if self.levelData["locked"] else config["graphics"]["scanlines"]["opacity"]
+            scanlines.set_alpha(alpha)
+
+            self.image.blit(scanlines, (0, 0))
+
+
+    # show that the level is locked
+    def drawLocked(self):
+        if self.levelData["locked"]:
+            locked = Image(self.menu, "locked", (100, 100), (self.width / 2 - 50, self.height / 2- 50))
+            locked.makeSurface()
+            self.image.blit(locked.image, (locked.rect))
+
+
+    # make rounded corners
+    def roundedCorners(self):
+        size = self.image.get_size()
+        rectImage = pygame.Surface(size, pygame.SRCALPHA)
+        rectImage.fill(self.menu.getBackgroundColor())
+        pygame.draw.rect(rectImage, Color("white"), (0, 0, *size), border_radius = int(50 * self.menu.renderer.getScale()))
+        self.image.blit(rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
+
+        pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(10 * self.menu.renderer.getScale()), border_radius = int(30 * self.menu.renderer.getScale()))
+
+
+    def drawDifficulty(self):
+        difficultyText = Label(self.menu, "Difficulty", 15, BLACK, (30, self.height - 60))
+        difficultyText.makeSurface()
+        self.image.blit(difficultyText.image, (difficultyText.rect))
+
+        boxWidth, boxHeight = 15, 15
+        spacing = 2
+        offsetx, offsety = 30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)
+        remaining = 4 - self.levelData["difficulty"]
+
+        for x in range(self.levelData["difficulty"]):
+            pygame.draw.rect(self.image, RED, (offsetx * self.menu.renderer.getScale(), offsety * self.menu.renderer.getScale(), boxWidth * self.menu.renderer.getScale(), boxHeight * self.menu.renderer.getScale()))
+            offsetx += boxWidth + spacing
+
+        for x in range(remaining):
+            pygame.draw.rect(self.image, BLACK, (offsetx * self.menu.renderer.getScale(), offsety * self.menu.renderer.getScale(), boxWidth * self.menu.renderer.getScale(), boxHeight * self.menu.renderer.getScale()))
+            offsetx += boxWidth + spacing
+
+
     def __render(self):
         self.dirty = False
-        self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert_alpha()
+        self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert()
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                                int(self.height * self.menu.renderer.getScale()))).convert_alpha()
+                                                                int(self.height * self.menu.renderer.getScale()))).convert()
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
         # add labels
-        # self.mapTitle = Label(self.menu, self.levelName, 30, BLACK, (50, 50))
-        # self.mapTitle.render()
-        # self.image.blit(self.mapTitle.image, (self.mapTitle.rect))
+        self.mapTitle = Label(self.menu, self.levelName, 30, GREEN, (30, 25))
+        self.mapTitle.makeSurface()
+        self.image.blit(self.mapTitle.image, (self.mapTitle.rect))
 
-        # draw scanlines if enabled
-        if config["graphics"]["scanlines"]["enabled"]:
-            self.scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
-            self.scanlines.fill(SCANLINES)
-            self.menu.renderer.drawScanlines(self.scanlines)
-            self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])
-            self.image.blit(self.scanlines, (0, 0))
-
-
-        # make rounded corners
-        size = self.image.get_size()
-        self.rectImage = pygame.Surface(size, pygame.SRCALPHA)
-        # self.rectImage.fill(self.menu.getBackgroundColor())
-        pygame.draw.rect(self.rectImage, Color("white"), (0, 0, *size), border_radius = int(50 * self.menu.renderer.getScale()))
-        self.image.blit(self.rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
-        pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(30 * self.menu.renderer.getScale()), border_radius = int(50 * self.menu.renderer.getScale()))
+        self.drawDifficulty()
+        self.drawLocked()
+        self.drawScanlines()
+        self.roundedCorners()
 
 
     def draw(self):
@@ -515,19 +630,23 @@ class Map(MenuComponent):
 
 
 class Image(MenuComponent):
-    def __init__(self, menu, imageName, color, size = tuple(), pos = tuple(), alpha = None):
-        super().__init__(menu, color, size, pos)
+    def __init__(self, menu, imageName, size = tuple(), pos = tuple(), alpha = None):
+        super().__init__(menu, None, size, pos)
         self.imageName = imageName
         self.alpha = alpha
+
 
     def getImageName(self):
         return self.imageName
 
+
     def getAlpha(self):
         return self.alpha if self.alpha is not None else 0
 
+
     def setImageName(self, imageName):
         self.imageName = imageName
+
 
     def setAlpha(self, alpha):
         self.alpha = alpha
@@ -542,6 +661,10 @@ class Image(MenuComponent):
         if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+
+    def draw(self):
+        self.makeSurface()
         self.menu.renderer.addSurface(self.image, (self.rect))

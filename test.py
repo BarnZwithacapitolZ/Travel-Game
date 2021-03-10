@@ -1,49 +1,81 @@
+import pygame
 import random
-# import pygame as pg
+import pygame._sdl2
+import itertools
 
-# class Rectangle(pg.sprite.Sprite):
-#     def __init__(self):
-#         pg.sprite.Sprite.__init__(self)
-#         self.original_image = pg.Surface((100, 100))
-#         self.original_image.fill((4, 0, 0))
-#         self.image = self.original_image
-#         self.rect = self.image.get_rect()
+pygame.init()
 
-#     def set_rounded(self, roundness):
-#         size = self.original_image.get_size()
-#         self.rect_image = pg.Surface(size, pg.SRCALPHA)
-#         pg.draw.rect(self.rect_image, (255, 255, 255), (0, 0, *size), border_radius=roundness)
+random_queue = itertools.cycle((-1, 0, 1, 0, 0, 1, 1, -1, -1))
 
-#         self.image = self.original_image.copy().convert_alpha()
-#         self.image.blit(self.rect_image, (0, 0), None, pg.BLEND_RGBA_MIN) 
+cache = {}
 
-# pg.init()
-# window = pg.display.set_mode((500, 500))
+class GameObject:
+    def __init__(self, renderer):
+        color = random.choice(('white', 'red', 'blue', 'yellow'))
+        self.color = color
+        if not color in cache:
+            surface = pygame.Surface((64, 64))
+            surface.set_colorkey((1,2,3))
+            surface.fill((1,2,3))
+            pygame.draw.circle(surface, color, (32, 32), 6)
+            cache[color] = pygame._sdl2.Texture.from_surface(renderer, surface)
+        
+        self.rect = pygame.Rect((random.randrange(0, 800), random.randrange(0, 800), 64, 64))
+        self.image = cache[color]
+    
+    def update(self):
+        self.rect.move_ip(next(random_queue), next(random_queue))
+    
+def main():        
+    window = pygame._sdl2.Window("SDL2", size=(800, 800))
+    renderer = pygame._sdl2.Renderer(window, vsync=False)
+    renderer.draw_color = (0,0,0,255) 
+    buffer = pygame._sdl2.Texture(renderer, (800, 800), target=True)
+    buffer.blend_mode = 1
 
-# SIZE = 500, 500
-# SCANLINES = pg.Surface(SIZE).convert_alpha()
-# SCANLINES.fill((0,0,0,0))
-# for j in range(0, SIZE[1], 2):
-#     SCANLINES.fill((0,0,0, 255), (0, j, SIZE[0], 1)) # or slightly transparent if desired.
+    font = pygame.font.SysFont('Arial', 35)
 
+    clock = pygame.time.Clock()
 
-# run = True
-# while run:
-#     for event in pg.event.get():
-#         if event.type == pg.QUIT:
-#             run = False
+    objects = [GameObject(renderer) for _ in range(20000)]
+    #objects = sorted([GameObject(renderer) for _ in range(20000)], key=lambda x: x.color)
+   
+    old_time = pygame.time.get_ticks()
+    acc = 0.
+    while True:
+        renderer.target = buffer 
+        
+        renderer.clear()
+        
+        new_time = pygame.time.get_ticks()
+        delta_time = new_time - old_time
+        old_time = new_time
+        acc += delta_time
+        
+        events = pygame.event.get()
+        for e in events:
+            if e.type == pygame.QUIT: return
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE: return
 
-#     window.fill((246, 246, 238))
-#     window.blit(SCANLINES, (0, 0))
-#     pg.display.flip()
+        while acc > 1000./31.:
+            for o in objects:
+                o.update()
+            acc -= 1000./29.
+            if acc < 0: 
+                acc = 0
 
+        for o in objects:
+            o.image.draw(dstrect=o.rect)
 
-weights = [0, 100]
-values = ['a', 'b']
+        tmp = font.render(f'{clock.get_fps():.2f}', True, 'black')
+        pygame._sdl2.Texture.from_surface(renderer, tmp).draw(dstrect=(10, 10))
+        tmp = font.render(f'{clock.get_fps():.2f}', True, 'white')
+        pygame._sdl2.Texture.from_surface(renderer, tmp).draw(dstrect=(11, 11))
 
-picks = [v for v, d in zip(values, weights) for _ in range(d)]
+        renderer.target = None
+        
+        buffer.draw()
+        renderer.present() 
+        clock.tick()
 
-print(picks)
-
-for _ in range(12):
-    print(random.choice(picks))
+main()
