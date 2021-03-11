@@ -38,9 +38,8 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played
         self.timer = 0
-        self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         # self.timeStep = 8
-        self.timeSetMet = False
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
@@ -234,6 +233,10 @@ class SpriteRenderer():
         else:
             self.showLayer(self.getLayerInt(self.connectionTypes[0]))
 
+        # add the first player
+        self.gridLayer2.addPerson(self.allDestinations)
+        
+
 
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
     def createLevelSurface(self, level):
@@ -269,6 +272,7 @@ class SpriteRenderer():
         elif connectionType == "layer 3":
             return self.gridLayer3
 
+
     def getLayerInt(self, connectionType):
         if connectionType == "layer 1":
             return 1
@@ -280,6 +284,22 @@ class SpriteRenderer():
             return 4
 
 
+    # Get all the nodes from all layers in the spriterenderer
+    def getAllNodes(self, sortNodes = False):
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
+        allNodes = layer1Nodes + layer2Nodes + layer3Nodes
+
+        # Sort the node so that the stops are at the top
+        if sortNodes:
+            allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
+            allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
+            allNodes = allNodes[::-1] # Reverse the list so they're at the front
+
+        return allNodes
+
+
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(self, allNodes = None, removeLayer = None):
         seen = {}
@@ -287,12 +307,7 @@ class SpriteRenderer():
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
         if allNodes is None:
-            layer1Nodes = self.gridLayer1.getGrid().getNodes()
-            layer2Nodes = self.gridLayer2.getGrid().getNodes()
-            layer3Nodes = self.gridLayer3.getGrid().getNodes()
-            allNodes = layer1Nodes + layer2Nodes + layer3Nodes
-
-        # Do i need to add tram stops????????????
+            allNodes = self.getAllNodes()
 
         # Make sure stops are at the front of the list, so they are not removed
         allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
@@ -312,15 +327,7 @@ class SpriteRenderer():
 
     # if there is a node above the given node, return the highest node, else return node
     def getTopNode(self, bottomNode):
-        layer1Nodes = self.gridLayer1.getGrid().getNodes()
-        layer2Nodes = self.gridLayer2.getGrid().getNodes()
-        layer3Nodes = self.gridLayer3.getGrid().getNodes()
-        allNodes = layer1Nodes + layer2Nodes + layer3Nodes
-
-        # Make sure stops are at the front of the list, so the player goes on them
-        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
-        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
-        allNodes = allNodes[::-1] # Reverse the list so they're at the front
+        allNodes = self.getAllNodes(True)
 
         for node in allNodes:
             if node.getNumber() == bottomNode.getNumber():
@@ -329,22 +336,16 @@ class SpriteRenderer():
         return bottomNode
 
 
-
     def update(self):
         if self.rendering:
             self.allSprites.update()
             self.events()
 
             self.timer += self.game.dt * self.dt # we want players to spawn in line with the in-game time
-            if int(self.timer) % self.timeStep == 0:
-                if not self.timeSetMet:
-                    # print("is this called??")
-                    self.timeSetMet = True
-
-                    # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
-                    self.gridLayer2.addPerson(self.allDestinations)
-            else:
-                self.timeSetMet = False
+            if self.timer > self.timeStep:
+                self.timer = 0
+                self.gridLayer2.addPerson(self.allDestinations)
+       
 
 
     def events(self):

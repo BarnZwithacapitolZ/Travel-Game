@@ -232,10 +232,9 @@ class Transport(pygame.sprite.Sprite):
                 person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
                 person.moveStatusIndicator()
 
-
                 self.removePerson(person) # Remove the person from the transport
-                self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
 
+                # Add the player to the top node (on the highest layer)
                 playerNode = self.spriteRenderer.getTopNode(self.currentNode)
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
                 person.setCurrentNode(playerNode) # Set the persons current node to the node they're at
@@ -243,7 +242,6 @@ class Transport(pygame.sprite.Sprite):
                 person.switchLayer(person.getLayer(self.currentNode.getConnectionType()), person.getLayer(playerNode.getConnectionType()))
                 person.setTravellingOn(None)
 
-                
 
                 # # Position the person offset to the node
                 # person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
