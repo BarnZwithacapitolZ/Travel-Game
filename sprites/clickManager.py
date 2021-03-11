@@ -222,7 +222,6 @@ class PersonClickManager(ClickManager):
                 return path
                       
 
-
         # Within the same layer 
         if self.person.getStartingConnectionType() == B.getConnectionType():
 

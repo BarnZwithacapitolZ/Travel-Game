@@ -290,7 +290,6 @@ class SpriteRenderer():
             layer1Nodes = self.gridLayer1.getGrid().getNodes()
             layer2Nodes = self.gridLayer2.getGrid().getNodes()
             layer3Nodes = self.gridLayer3.getGrid().getNodes()
-
             allNodes = layer1Nodes + layer2Nodes + layer3Nodes
 
         # Do i need to add tram stops????????????
@@ -309,6 +308,26 @@ class SpriteRenderer():
 
         for node in dupes:
             removeLayer.remove(node)
+
+
+    # if there is a node above the given node, return the highest node, else return node
+    def getTopNode(self, bottomNode):
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
+        allNodes = layer1Nodes + layer2Nodes + layer3Nodes
+
+        # Make sure stops are at the front of the list, so the player goes on them
+        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
+        allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
+        allNodes = allNodes[::-1] # Reverse the list so they're at the front
+
+        for node in allNodes:
+            if node.getNumber() == bottomNode.getNumber():
+                return node
+
+        return bottomNode
+
 
 
     def update(self):

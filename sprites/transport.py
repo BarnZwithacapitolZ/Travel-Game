@@ -235,9 +235,15 @@ class Transport(pygame.sprite.Sprite):
 
                 self.removePerson(person) # Remove the person from the transport
                 self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
+
+                playerNode = self.spriteRenderer.getTopNode(self.currentNode)
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
-                person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
+                person.setCurrentNode(playerNode) # Set the persons current node to the node they're at
+                playerNode.addPerson(person)
+                person.switchLayer(person.getLayer(self.currentNode.getConnectionType()), person.getLayer(playerNode.getConnectionType()))
                 person.setTravellingOn(None)
+
+                
 
                 # # Position the person offset to the node
                 # person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
