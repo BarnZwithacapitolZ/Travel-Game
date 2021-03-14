@@ -594,27 +594,32 @@ class GameHud(GameHudLayout):
         self.dropdownOpen = False
 
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
+        levelData = self.game.spriteRenderer.getLevelData()
+        darkMode = self.game.spriteRenderer.getDarkMode()
 
-        topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        dropdown = Label(self, self.game.spriteRenderer.getLevel(), 25, BLACK, (20, 10)) # Should be white
-        home = Image(self, "home", (50, 50), (20, 500))
-        layers = Image(self, "layers", (50, 50), (20, 440))
+        layersImage = "layersWhite" if darkMode else "layers"
+        layersSelectedImage = "layersSelected"
+        homeImage = "homeWhite" if darkMode else "home"
+        homeSelectedImage = "homeSelected"
+        walkingImage = "walkingWhite" if darkMode else "walking"
+        self.textColor = Color("white") if darkMode else BLACK
+
+        home = Image(self, homeImage, (50, 50), (20, 500))
+        layers = Image(self, layersImage, (50, 50), (20, 440))
         slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
-        slowDownMeterOutline = Shape(self, BLACK, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
+        slowDownMeterOutline = Shape(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
         self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
-        completed = Image(self, "walking",  (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, BLACK, (config["graphics"]["displayWidth"] - 40, 43))  
+        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 40, 43))  
 
-        layers.addEvent(showLayers, 'onMouseOver')
-        layers.addEvent(hideLayers, 'onMouseOut')
+        layers.addEvent(hoverLayers, 'onMouseOver', image = layersSelectedImage)
+        layers.addEvent(hoverLayers, 'onMouseOut', image = layersImage)
         layers.addEvent(changeGameLayer, 'onMouseClick')
 
-        home.addEvent(showHome, 'onMouseOver')
-        home.addEvent(hideHome, 'onMouseOut')
+        home.addEvent(hoverHome, 'onMouseOver', image = homeSelectedImage)
+        home.addEvent(hoverHome, 'onMouseOut', image = homeImage)
         home.addEvent(goHome, 'onMouseClick')
 
-        # self.add(topbar)
-        # self.add(dropdown)
         self.add(home)
 
         if len(self.game.spriteRenderer.getConnectionTypes()) > 1:
@@ -688,8 +693,8 @@ class EditorHud(GameHudLayout):
         layers = Image(self, "layersWhite", (25, 25), (880, self.textY - 3))
         self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, self.textY))
 
-        layers.addEvent(showLayers, 'onMouseOver')
-        layers.addEvent(hideLayersWhite, 'onMouseOut')
+        layers.addEvent(hoverLayers, 'onMouseOver', image = "layersSelected")
+        layers.addEvent(hoverLayers, 'onMouseOut', image = "layersWhite")
         layers.addEvent(changeEditorLayer, 'onMouseClick')
 
         self.add(topbar)
@@ -832,7 +837,7 @@ class EditorHud(GameHudLayout):
         connection = Label(self, "Connection", 25, Color("white"), (textX, 50))
         stop = Label(self, "Stop", 25, Color("white"), (textX, 85))
         transport = Label(self, "Transport", 25, Color("white"), (textX, 120))
-        destination = Label(self, "Destination", 25, Color("white"), (textX, 155))
+        destination = Label(self, "Location", 25, Color("white"), (textX, 155))
 
         connection.addEvent(addConnection, 'onMouseClick')
         stop.addEvent(toggleAddStopDropdown, 'onMouseClick')

@@ -167,10 +167,9 @@ def successAnimationDown(obj, menu, animation):
     obj.fontSize -= increaseSpeed * 10 * menu.game.dt
     obj.y += increaseSpeed * 10 * menu.game.dt
 
-
     if obj.fontSize <= 25:
         obj.removeAnimation(animation)
-        obj.setColor(BLACK)
+        obj.setColor(menu.textColor)
     obj.dirty = True
 
 

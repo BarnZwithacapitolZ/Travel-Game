@@ -106,6 +106,8 @@ class Layer():
         p = random.choice(picks)(self.spriteRenderer, self.groups, self.spriteRenderer.getPersonClickManager(), self.spriteRenderer.getTransportClickManager(), destinations)
         self.previousPeopleTypes.append(type(p))
 
+        self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() + 1)
+
         return p
 
     # Create the connections by drawing them to the screen

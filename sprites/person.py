@@ -21,9 +21,10 @@ class Person(pygame.sprite.Sprite):
         WALKING = 1
         WAITING = 2
         BOARDING = 3
-        MOVING = 4
-        DEPARTING = 5
-        FLAG = 6
+        BOARDINGTAXI = 4
+        MOVING = 5
+        DEPARTING = 6
+        FLAG = 7
         
 
     def __init__(self, spriteRenderer, groups, clickManager, transportClickManager, spawnDestinations, possibleSpawns, possibleDestinations):
@@ -312,7 +313,8 @@ class Person(pygame.sprite.Sprite):
 
 
     def drawTimerTime(self):
-        self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, BLACK)
+        textColor = Color("white") if self.spriteRenderer.getDarkMode() else BLACK
+        self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, textColor)
         self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())
 
 
@@ -545,7 +547,7 @@ class StatusIndicator(pygame.sprite.Sprite):
 
         self.dirty = True
 
-        self.images = [None, "walking", "waiting", "boarding", None, "departing", "flag"]
+        self.images = [None, "walking", "waiting", "boarding", "boarding", None, "departing", "flag"]
         self.currentState = self.currentPerson.getStatusValue()
 
 

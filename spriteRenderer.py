@@ -38,7 +38,7 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played
         self.timer = 0
-        self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        self.timeStep = 30 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         # self.timeStep = 8
 
         self.dt = 1 # control the speed of whats on screen
@@ -47,12 +47,12 @@ class SpriteRenderer():
 
         self.setDefaultMap()
 
-        self.completed = 0
-        self.totalToComplete = 0 # default is 0
-
+        self.totalPeople, self.completed, self.totalToComplete = 0, 0, 0
+        self.totalPeopleNone = False
         self.slowDownMeterAmount = 75
 
         self.debug = False
+        self.darkMode = False
 
         self.connectionTypes = ["layer 4"] # the connection types availabe on the map (always has layer 4)
 
@@ -112,6 +112,15 @@ class SpriteRenderer():
     def setDebug(self, debug):
         self.debug = debug
 
+    def setDarkMode(self):
+        if "backgrounds" in self.levelData and "darkMode" in self.levelData["backgrounds"] and self.levelData["backgrounds"]["darkMode"]:
+            self.darkMode = True
+        else:
+            self.darkMode = False
+
+    def setTotalPeople(self, totalPeople):
+        self.totalPeople = totalPeople
+
     def getStartDt(self):
         return self.startDt
 
@@ -156,9 +165,16 @@ class SpriteRenderer():
 
     def getConnectionTypes(self):
         return self.connectionTypes
+        
+    def getDarkMode(self):
+        return self.darkMode
+
+    def getTotalPeople(self):
+        return self.totalPeople
 
     def addToCompleted(self):
         self.completed += 1
+        self.totalPeople -= 1
         # self.timeStep -= 0.5
         self.hud.setCompletedText(str(self.completed))
         self.meter.addToAmountToAdd(20)
@@ -167,6 +183,7 @@ class SpriteRenderer():
     # Reset the level back to its default state
     def clearLevel(self):
         self.timer = 0
+        self.totalPeople = 0
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -226,6 +243,7 @@ class SpriteRenderer():
         self.totalToComplete = random.randint(8, 12)
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
+        self.setDarkMode()
 
         # if there is more than one layer we want to be able to see 'all' layers at once (layer 4) otherwise we only need to see the single layer
         if len(self.connectionTypes) > 1 or self.debug:
@@ -341,11 +359,23 @@ class SpriteRenderer():
             self.allSprites.update()
             self.events()
 
-            self.timer += self.game.dt * self.dt # we want players to spawn in line with the in-game time
+            self.timer += self.game.dt * self.dt 
+
+            # Always spawn a person if there is no people left on the map, to stop player having to wait
             if self.timer > self.timeStep:
                 self.timer = 0
-                self.gridLayer2.addPerson(self.allDestinations)
-       
+                self.gridLayer2.addPerson(self.allDestinations)       
+
+            if self.totalPeople <= 0:
+                if not self.totalPeopleNone:
+                    self.timer = 0
+                    self.totalPeopleNone = True
+
+                # wait 2 seconds before spawing the next person when there is no people left
+                if self.timer > 2:
+                    self.timer = 0
+                    self.gridLayer2.addPerson(self.allDestinations)       
+                    self.totalPeopleNone = False
 
 
     def events(self):
