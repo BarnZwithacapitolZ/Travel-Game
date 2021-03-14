@@ -73,7 +73,7 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
-        # self.timer = 10000
+        # self.timer = 20
         self.rad = 5
         self.step = 15
 
@@ -231,6 +231,7 @@ class Person(pygame.sprite.Sprite):
     def remove(self):
         self.kill()
         self.statusIndicator.kill()
+        self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() - 1)
 
 
     # Add a node to the persons path
@@ -257,6 +258,7 @@ class Person(pygame.sprite.Sprite):
 
 
     def complete(self):
+        self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() + 1)
         self.spriteRenderer.addToCompleted()
         self.remove()
 
@@ -318,6 +320,19 @@ class Person(pygame.sprite.Sprite):
         self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())
 
 
+    # Draw how long is left at each stop 
+    def drawTimer(self, surface):
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        length = 10
+
+        # Arc Indicator 
+        offx = 0.01
+        step = self.timer / (length / 2) + 0.02
+        for x in range(6):
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, int(4 * scale))
+            offx += 0.01
+
+
     def drawDestination(self):
         if self.destination is None:
             return 
@@ -369,6 +384,10 @@ class Person(pygame.sprite.Sprite):
         if self.clickManager.getPerson() == self:
             self.drawPath()
             self.game.renderer.addSurface(None, None, self.drawOutline)
+
+        if self.timer <= 10:
+            self.game.renderer.addSurface(None, None, self.drawTimer)
+
 
 
     def events(self):

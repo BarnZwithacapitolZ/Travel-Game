@@ -174,7 +174,6 @@ class SpriteRenderer():
 
     def addToCompleted(self):
         self.completed += 1
-        self.totalPeople -= 1
         # self.timeStep -= 0.5
         self.hud.setCompletedText(str(self.completed))
         self.meter.addToAmountToAdd(20)
