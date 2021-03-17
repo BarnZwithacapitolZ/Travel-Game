@@ -146,10 +146,12 @@ class Menu:
         transition.addAnimation(slideTransitionY, 'onLoad', speed = speed, half = half, callback = callback, transitionDirection = direction)
         self.add(transition)
 
+
     def slideTransitionX(self, pos, half, speed = -70, callback = None):
         transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
         self.add(transition)
+
 
     def loadingScreen(self):
         self.loadingImage.setImageName("loading1")
@@ -158,6 +160,7 @@ class Menu:
 
         self.add(self.loadingImage)
         self.add(loadingText)
+
 
     def updateLoadingScreen(self):
         if self.loadingImage.getImageName() == "loading1":

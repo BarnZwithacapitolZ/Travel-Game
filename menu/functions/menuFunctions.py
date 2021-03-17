@@ -68,20 +68,21 @@ def openMapEditor(obj, menu, event):
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, level):
-    global levelName
-    levelName = level
+    if not menu.getTransitioning():
+        global levelName
+        levelName = level
 
-    def callback(obj, menu, animation):
-        obj.y = 0
+        def callback(obj, menu, animation):
+            obj.y = 0
 
-        if obj.rect.y == 0:
-            obj.removeAnimation(animation)
-            menu.game.spriteRenderer.createLevel(levelName)
-            menu.game.spriteRenderer.setRendering(True, True) #Load the hud
-            menu.levelSelectOpen = False
-            menu.close()
+            if obj.rect.y == 0:
+                obj.removeAnimation(animation)
+                menu.game.spriteRenderer.createLevel(levelName)
+                menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+                menu.levelSelectOpen = False
+                menu.close()
 
-    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+        menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 
 # Move the level scroller foward by one level
