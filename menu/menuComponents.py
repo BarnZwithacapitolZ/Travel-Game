@@ -206,7 +206,7 @@ class Label(MenuComponent):
     # we don't want to use self.font since this is multiplied by the display size, which we don't want
     def getFontSize(self, text = None):
         text = self.text if text is None else text
-        return pygame.font.Font(self.fontName, self.fontSize).size(text)
+        return pygame.font.Font(self.fontName, int(self.fontSize)).size(text)
 
 
     # get the scaled font size by using the label font

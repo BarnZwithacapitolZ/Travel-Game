@@ -111,12 +111,15 @@ class Person(pygame.sprite.Sprite):
             return [], []
 
         weights = numpy.full(shape = len(finalPlayerTypes), fill_value = 100 / len(finalPlayerTypes), dtype = numpy.int)
-        for i in range(len(finalPlayerTypes)):
-            occurances = previousPeopleTypes.count(finalPlayerTypes[i])
-            weights[i] -= (occurances * 10)
-            indexes = [j for j, x in enumerate(weights) if j != i]
-            for k in indexes:
-                weights[k] += (occurances * 10) / (len(finalPlayerTypes) - 1)
+        
+        # If there is only ever one player type that can spawn it will always be 100% weight
+        if len(finalPlayerTypes) > 1:
+            for i in range(len(finalPlayerTypes)):
+                occurances = previousPeopleTypes.count(finalPlayerTypes[i])
+                weights[i] -= (occurances * 10)
+                indexes = [j for j, x in enumerate(weights) if j != i]
+                for k in indexes:
+                    weights[k] += (occurances * 10) / (len(finalPlayerTypes) - 1)
 
         return finalPlayerTypes, weights
 
@@ -258,7 +261,6 @@ class Person(pygame.sprite.Sprite):
 
 
     def complete(self):
-        self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() + 1)
         self.spriteRenderer.addToCompleted()
         self.remove()
 

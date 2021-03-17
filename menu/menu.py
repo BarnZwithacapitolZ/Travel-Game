@@ -571,7 +571,7 @@ class GameHudLayout(Menu):
         return
 
     @abc.abstractmethod
-    def setCompletedText(self, text):
+    def setCompletedText(self):
         return
 
     @abc.abstractmethod
@@ -606,11 +606,12 @@ class GameHud(GameHudLayout):
 
         home = Image(self, homeImage, (50, 50), (20, 500))
         layers = Image(self, layersImage, (50, 50), (20, 440))
-        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
-        slowDownMeterOutline = Shape(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26), 'rect', 2)
-        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 26))
-        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 75, 26))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 40, 43))  
+        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26))
+        slowDownMeterOutline = Shape(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26), 'rect', 2)
+        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26))
+        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 85, 26))
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 50, completed.y + completed.height - 20))  
+        self.totalToCompleteText = Label(self, f"/{str(self.game.spriteRenderer.getTotalToComplete())}", 12, self.textColor, (self.completedText.x + self.completedText.getFontSize()[0], completed.y + completed.height - 11))
 
         layers.addEvent(hoverLayers, 'onMouseOver', image = layersSelectedImage)
         layers.addEvent(hoverLayers, 'onMouseOut', image = layersImage)
@@ -630,6 +631,7 @@ class GameHud(GameHudLayout):
         self.add(slowDownMeterOutline)
         self.add(completed)
         self.add(self.completedText)
+        self.add(self.totalToCompleteText)
 
         if transition:
             # set the up transition
@@ -641,12 +643,16 @@ class GameHud(GameHudLayout):
             self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
-    def setCompletedText(self, text):
+    def setCompletedText(self):
         if hasattr(self, 'completedText'):
-            self.completedText.setText(text)
+            self.completedText.setText(str(self.game.spriteRenderer.getCompleted()))
             self.completedText.setColor(YELLOW)
-            self.completedText.addAnimation(successAnimationUp, 'onLoad')
+            self.completedText.addAnimation(successAnimationUp, 'onLoad', x = self.completedText.x, y = self.completedText.y)
             self.completedText.dirty = True
+
+            if len(str(self.game.spriteRenderer.getCompleted())) > len(str(self.game.spriteRenderer.getCompleted() - 1)):
+                self.totalToCompleteText.setPos((int(self.completedText.x + self.completedText.getFontSize()[0]), self.totalToCompleteText.y)) # move the total to complete text x with the width of the completed text
+                self.totalToCompleteText.dirty = True
 
 
 class EditorHud(GameHudLayout):
@@ -1236,9 +1242,9 @@ class PreviewHud(GameHudLayout):
         self.add(self.completedText)
 
 
-    def setCompletedText(self, text):
+    def setCompletedText(self):
         if hasattr(self, 'completedText'):
-            self.completedText.setText(text)
+            self.completedText.setText(str(self.game.spriteRenderer.getCompleted()))
             self.completedText.dirty = True
         
 

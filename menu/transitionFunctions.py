@@ -152,22 +152,28 @@ def hoverOutAnimation(obj, menu, animation, speed, x):
 
 increaseSpeed = 5
 
-def successAnimationUp(obj, menu, animation):
+def successAnimationUp(obj, menu, animation, x, y, fontSize = 25, maxFontSize = 35):
     obj.fontSize += increaseSpeed * 10 * menu.game.dt
-    obj.y -= increaseSpeed * 10 * menu.game.dt
+    obj.y -= (increaseSpeed / 2) * 10 * menu.game.dt
+    obj.x -= (increaseSpeed / 2) * 10 * menu.game.dt
 
     #increase hight too so it stays put
-    if obj.fontSize >= 35:
+    if obj.fontSize >= maxFontSize:
+        obj.fontSize = maxFontSize
         obj.removeAnimation(animation)
-        obj.addAnimation(successAnimationDown, 'onLoad')
+        obj.addAnimation(successAnimationDown, 'onLoad', x = x, y = y, fontSize = fontSize)
     obj.dirty = True
 
 
-def successAnimationDown(obj, menu, animation):
+def successAnimationDown(obj, menu, animation, x, y, fontSize = 25):
     obj.fontSize -= increaseSpeed * 10 * menu.game.dt
-    obj.y += increaseSpeed * 10 * menu.game.dt
+    obj.y += (increaseSpeed / 2) * 10 * menu.game.dt
+    obj.x += (increaseSpeed / 2) * 10 * menu.game.dt
 
-    if obj.fontSize <= 25:
+    if obj.fontSize <= fontSize:
+        obj.fontSize = fontSize
+        obj.x = x
+        obj.y = y
         obj.removeAnimation(animation)
         obj.setColor(menu.textColor)
     obj.dirty = True

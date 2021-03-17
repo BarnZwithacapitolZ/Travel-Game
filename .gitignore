@@ -1,2 +1,4 @@
-config.json
 *.pyc
+config.json
+test.py
+anotherTest.py
