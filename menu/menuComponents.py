@@ -206,7 +206,7 @@ class Label(MenuComponent):
     # we don't want to use self.font since this is multiplied by the display size, which we don't want
     def getFontSize(self, text = None):
         text = self.text if text is None else text
-        return pygame.font.Font(self.fontName, self.fontSize).size(text)
+        return pygame.font.Font(self.fontName, int(self.fontSize)).size(text)
 
 
     # get the scaled font size by using the label font
@@ -578,7 +578,6 @@ class Map(MenuComponent):
     def roundedCorners(self):
         size = self.image.get_size()
         rectImage = pygame.Surface(size, pygame.SRCALPHA)
-        rectImage.fill(self.menu.getBackgroundColor())
         pygame.draw.rect(rectImage, Color("white"), (0, 0, *size), border_radius = int(50 * self.menu.renderer.getScale()))
         self.image.blit(rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
 
@@ -586,7 +585,13 @@ class Map(MenuComponent):
 
 
     def drawDifficulty(self):
-        difficultyText = Label(self.menu, "Difficulty", 15, BLACK, (30, self.height - 60))
+        textColor = BLACK
+        
+        # can't use sprite renderer dark mode since it wont be different for every map
+        if "backgrounds" in self.levelData and "darkMode" in self.levelData["backgrounds"] and self.levelData["backgrounds"]["darkMode"]:
+            textColor = Color("white")
+
+        difficultyText = Label(self.menu, "Difficulty", 15, textColor, (30, self.height - 60))
         difficultyText.makeSurface()
         self.image.blit(difficultyText.image, (difficultyText.rect))
 
@@ -606,9 +611,10 @@ class Map(MenuComponent):
 
     def __render(self):
         self.dirty = False
-        self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert()
+        self.finalImage = pygame.Surface((self.width * self.menu.renderer.getScale(), self.height * self.menu.renderer.getScale())).convert()
+        self.image = self.menu.game.spriteRenderer.createLevelSurface(self.level).convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                                int(self.height * self.menu.renderer.getScale()))).convert()
+                                                                int(self.height * self.menu.renderer.getScale()))).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
@@ -623,10 +629,13 @@ class Map(MenuComponent):
         self.drawScanlines()
         self.roundedCorners()
 
+        self.finalImage.fill(self.menu.getBackgroundColor())
+        self.finalImage.blit(self.image, (0, 0))
+
 
     def draw(self):
         if self.dirty or self.image is None: self.__render()
-        self.menu.renderer.addSurface(self.image, (self.rect))
+        self.menu.renderer.addSurface(self.finalImage, (self.rect))
 
 
 class Image(MenuComponent):

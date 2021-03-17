@@ -222,7 +222,6 @@ class PersonClickManager(ClickManager):
                 return path
                       
 
-
         # Within the same layer 
         if self.person.getStartingConnectionType() == B.getConnectionType():
 
@@ -309,7 +308,6 @@ class TransportClickManager(ClickManager):
         return path
 
 
-
     def moveTransport(self):
         # node is set but transport isnt
         if self.node and self.transport is None:
@@ -318,6 +316,7 @@ class TransportClickManager(ClickManager):
         if self.node is not None and self.transport is not None:
             # only set the path if the bus is moving
             path = self.pathFinding()
+
 
             self.transport.setFirstPathNode(path)
             self.transport.clearPath(path)

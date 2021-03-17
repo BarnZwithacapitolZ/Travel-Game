@@ -11,19 +11,14 @@ from transitionFunctions import *
 
 ##### Hud Functions #####
  
-# hover over layer change image
-def showLayers(obj, menu, event):
-    obj.setImageName("layersSelected")
+# hover layer change image
+def hoverLayers(obj, menu, event, image = "layers"):
+    obj.setImageName(image)
 
 
-# hover out layer change image
-def hideLayers(obj, menu, event):
-    obj.setImageName("layers")
-
-
-# hver over layer change image to white version
-def hideLayersWhite(obj, menu, event):
-    obj.setImageName("layersWhite")
+# hover  home button change image
+def hoverHome(obj, menu, event, image = "home"):
+    obj.setImageName(image)
 
 
 # Change the layer showing on the screen
@@ -42,21 +37,9 @@ def changeGameLayer(obj, menu, event):
     menu.game.spriteRenderer.showLayer(current)
 
 
-# hover over home button change image
-def showHome(obj, menu, event):
-    obj.setImageName("homeSelected")
-
-
-# hover out home button change image
-def hideHome(obj, menu, event):
-    obj.setImageName("home")
-
-
 # Show the option menu
 def goHome(obj, menu, event):
     menu.game.optionMenu.main()
-
-
 
 
 #### Editor Hud Function ####

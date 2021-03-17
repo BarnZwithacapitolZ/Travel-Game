@@ -1,6 +1,6 @@
 {
     "mapName": "London", 
-    "locked": false,
+    "locked": true,
     "deletable": false, 
     "saved": true, 
     "width": 18,
@@ -9,6 +9,13 @@
         "total": 10, 
         "completed": true, 
         "time": 0
+    },
+    "backgrounds": {
+        "layer 1": [65, 62, 75], 
+        "layer 2": [65, 62, 75], 
+        "layer 3": [65, 62, 75], 
+        "layer 4": [65, 62, 75],
+        "darkMode": true
     },
     "difficulty": 2,
     "connections": {

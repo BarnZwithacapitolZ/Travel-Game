@@ -38,22 +38,22 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played
         self.timer = 0
-        self.timeStep = 11.5 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        self.timeStep = 30 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         # self.timeStep = 8
-        self.timeSetMet = False
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
         self.fixedScale = 1 # control the size of whats on the screen
+        self.startingFixedScale = 0
 
         self.setDefaultMap()
 
-        self.completed = 0
-        self.totalToComplete = 0 # default is 0
-
+        self.totalPeople, self.completed, self.totalToComplete = 0, 0, 0
+        self.totalPeopleNone = False
         self.slowDownMeterAmount = 75
 
         self.debug = False
+        self.darkMode = False
 
         self.connectionTypes = ["layer 4"] # the connection types availabe on the map (always has layer 4)
 
@@ -90,84 +90,136 @@ class SpriteRenderer():
         self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
 
+
     def runOpeningMenu(self):
         if self.rendering and not self.debug:
             self.openingMenu.main()
 
+
     def setCompleted(self, completed):
         self.completed = completed
-        self.hud.setCompletedText(str(self.completed))
+        self.hud.setCompletedText()
+
 
     def setTotalToComplete(self, totalToComplete):
         self.totalToComplete = totalToComplete
 
+
     def setSlowDownMeterAmount(self, slowDownMeterAmount):
         self.slowDownMeterAmount = slowDownMeterAmount
+
 
     def setDt(self, dt):
         self.dt = dt
 
+
     def setFixedScale(self, fixedScale):
         self.fixedScale = fixedScale
+
+
+    def setStartingFixedScale(self, startingFixedScale):
+        self.startingFixedScale = startingFixedScale
+
 
     def setDebug(self, debug):
         self.debug = debug
 
+
+    def setDarkMode(self):
+        if "backgrounds" in self.levelData and "darkMode" in self.levelData["backgrounds"] and self.levelData["backgrounds"]["darkMode"]:
+            self.darkMode = True
+        else:
+            self.darkMode = False
+
+
+    def setTotalPeople(self, totalPeople):
+        self.totalPeople = totalPeople
+
+
     def getStartDt(self):
         return self.startDt
+
 
     def getDt(self):
         return self.dt
 
+
     def getFixedScale(self):
         return self.fixedScale
+
+
+    def getStartingFixedScale(self):
+        return self.startingFixedScale
+
 
     def getHud(self):
         return self.hud
 
+
     def getMessageSystem(self):
         return self.messageSystem
+
 
     def getLevel(self):
         return self.level
 
+
     def getLevelData(self):
         return self.levelData
+
 
     def getPersonClickManager(self):
         return self.personClickManager
 
+
     def getTransportClickManager(self):
         return self.transportClickManager
+
 
     def getLayer(self):
         return self.currentLayer
 
+
     def getCompleted(self):
         return self.completed
+
 
     def getTotalToComplete(self):
         return self.totalToComplete
 
+
     def getSlowDownMeterAmount(self):
         return self.slowDownMeterAmount
+
 
     def getDebug(self):
         return self.debug
 
+
     def getConnectionTypes(self):
         return self.connectionTypes
+        
+
+    def getDarkMode(self):
+        return self.darkMode
+
+
+    def getTotalPeople(self):
+        return self.totalPeople
+
 
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
-        self.hud.setCompletedText(str(self.completed))
+        self.hud.setCompletedText()
         self.meter.addToAmountToAdd(20)
 
 
     # Reset the level back to its default state
     def clearLevel(self):
+        self.startingFixedScale = 0 # reset the scale back to default
         self.timer = 0
+        self.totalPeople = 0
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -182,8 +234,9 @@ class SpriteRenderer():
 
     def createLevel(self, level, debug = False):
         self.clearLevel()
-        self.setCompleted(0)
+        self.setCompleted(0) # currently this calls the wrong hud as its done before the hud is set
         self.debug = debug
+        # self.startingFixedScale = -0.05
 
         # for running the game in test mode (when testing a level)
         if self.debug:
@@ -227,6 +280,7 @@ class SpriteRenderer():
         self.totalToComplete = random.randint(8, 12)
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
+        self.setDarkMode()
 
         # if there is more than one layer we want to be able to see 'all' layers at once (layer 4) otherwise we only need to see the single layer
         if len(self.connectionTypes) > 1 or self.debug:
@@ -234,10 +288,15 @@ class SpriteRenderer():
         else:
             self.showLayer(self.getLayerInt(self.connectionTypes[0]))
 
+        # add the first player
+        self.gridLayer2.addPerson(self.allDestinations)
+
 
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
     def createLevelSurface(self, level):
         self.clearLevel()
+        self.startingFixedScale = -0.2
+
         spacings = {(16, 9): (3.5, 2), (18, 10): (4, 2.5), (20, 11): (4.5, 2.8), (22, 12): (5, 3)}
 
         gridLayer4 = MenuLayer4(self, (), level)
@@ -249,13 +308,6 @@ class SpriteRenderer():
         gridLayer3 = Layer3(self, (), level, spacing)
         gridLayer1 = Layer1(self, (), level, spacing)
         gridLayer2 = Layer2(self, (), level, spacing)
-
-        self.setFixedScale(self.fixedScale - 0.2)
-        gridLayer1.resize()
-        gridLayer2.resize()
-        gridLayer3.resize()
-        gridLayer4.resize()
-
         gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
 
         return gridLayer4.getLineSurface()
@@ -269,6 +321,7 @@ class SpriteRenderer():
         elif connectionType == "layer 3":
             return self.gridLayer3
 
+
     def getLayerInt(self, connectionType):
         if connectionType == "layer 1":
             return 1
@@ -280,6 +333,22 @@ class SpriteRenderer():
             return 4
 
 
+    # Get all the nodes from all layers in the spriterenderer
+    def getAllNodes(self, sortNodes = False):
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
+        allNodes = layer1Nodes + layer2Nodes + layer3Nodes
+
+        # Sort the node so that the stops are at the top
+        if sortNodes:
+            allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
+            allNodes = sorted(allNodes, key=lambda x:isinstance(x, Destination))
+            allNodes = allNodes[::-1] # Reverse the list so they're at the front
+
+        return allNodes
+
+
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(self, allNodes = None, removeLayer = None):
         seen = {}
@@ -287,13 +356,7 @@ class SpriteRenderer():
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
         if allNodes is None:
-            layer1Nodes = self.gridLayer1.getGrid().getNodes()
-            layer2Nodes = self.gridLayer2.getGrid().getNodes()
-            layer3Nodes = self.gridLayer3.getGrid().getNodes()
-
-            allNodes = layer1Nodes + layer2Nodes + layer3Nodes
-
-        # Do i need to add tram stops????????????
+            allNodes = self.getAllNodes()
 
         # Make sure stops are at the front of the list, so they are not removed
         allNodes = sorted(allNodes, key=lambda x:isinstance(x, Stop))
@@ -311,21 +374,39 @@ class SpriteRenderer():
             removeLayer.remove(node)
 
 
+    # if there is a node above the given node, return the highest node, else return node
+    def getTopNode(self, bottomNode):
+        allNodes = self.getAllNodes(True)
+
+        for node in allNodes:
+            if node.getNumber() == bottomNode.getNumber():
+                return node
+
+        return bottomNode
+
+
     def update(self):
         if self.rendering:
             self.allSprites.update()
             self.events()
 
-            self.timer += self.game.dt * self.dt # we want players to spawn in line with the in-game time
-            if int(self.timer) % self.timeStep == 0:
-                if not self.timeSetMet:
-                    # print("is this called??")
-                    self.timeSetMet = True
+            self.timer += self.game.dt * self.dt 
 
-                    # Create a person, passing through all the destinations from all layers so that persons destination can be from any layer
-                    self.gridLayer2.addPerson(self.allDestinations)
-            else:
-                self.timeSetMet = False
+            # Always spawn a person if there is no people left on the map, to stop player having to wait
+            if self.timer > self.timeStep:
+                self.timer = 0
+                self.gridLayer2.addPerson(self.allDestinations)       
+
+            if self.totalPeople <= 0:
+                if not self.totalPeopleNone:
+                    self.timer = 0
+                    self.totalPeopleNone = True
+
+                # wait 2 seconds before spawing the next person when there is no people left
+                if self.timer > 2:
+                    self.timer = 0
+                    self.gridLayer2.addPerson(self.allDestinations)       
+                    self.totalPeopleNone = False
 
 
     def events(self):

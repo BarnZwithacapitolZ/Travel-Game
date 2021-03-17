@@ -32,7 +32,9 @@ class GridManager:
         if self.level is not None:
             self.loadMap()
 
-        self.spriteRenderer.setFixedScale(min(18 / self.width, 10 / self.height))
+        scale = min(18 / self.width, 10 / self.height)
+        scale += self.spriteRenderer.getStartingFixedScale() # apply the starting fixed scale when first rendering
+        self.spriteRenderer.setFixedScale(scale)
 
         self.nodePositions = self.setNodePositions(spacing[0], spacing[1], self.width, self.height)
 

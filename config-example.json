@@ -106,6 +106,10 @@
             "image": "HomeSelected.png",
             "alpha": true
         }, 
+        "homeWhite": {
+            "image": "HomeWhite.png",
+            "alpha": true
+        },
         "metro": {
             "image": "Metro.png",
             "alpha": true

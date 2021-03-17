@@ -21,9 +21,10 @@ class Person(pygame.sprite.Sprite):
         WALKING = 1
         WAITING = 2
         BOARDING = 3
-        MOVING = 4
-        DEPARTING = 5
-        FLAG = 6
+        BOARDINGTAXI = 4
+        MOVING = 5
+        DEPARTING = 6
+        FLAG = 7
         
 
     def __init__(self, spriteRenderer, groups, clickManager, transportClickManager, spawnDestinations, possibleSpawns, possibleDestinations):
@@ -72,7 +73,7 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
-        # self.timer = 10000
+        # self.timer = 20
         self.rad = 5
         self.step = 15
 
@@ -110,12 +111,15 @@ class Person(pygame.sprite.Sprite):
             return [], []
 
         weights = numpy.full(shape = len(finalPlayerTypes), fill_value = 100 / len(finalPlayerTypes), dtype = numpy.int)
-        for i in range(len(finalPlayerTypes)):
-            occurances = previousPeopleTypes.count(finalPlayerTypes[i])
-            weights[i] -= (occurances * 10)
-            indexes = [j for j, x in enumerate(weights) if j != i]
-            for k in indexes:
-                weights[k] += (occurances * 10) / (len(finalPlayerTypes) - 1)
+        
+        # If there is only ever one player type that can spawn it will always be 100% weight
+        if len(finalPlayerTypes) > 1:
+            for i in range(len(finalPlayerTypes)):
+                occurances = previousPeopleTypes.count(finalPlayerTypes[i])
+                weights[i] -= (occurances * 10)
+                indexes = [j for j, x in enumerate(weights) if j != i]
+                for k in indexes:
+                    weights[k] += (occurances * 10) / (len(finalPlayerTypes) - 1)
 
         return finalPlayerTypes, weights
 
@@ -230,6 +234,7 @@ class Person(pygame.sprite.Sprite):
     def remove(self):
         self.kill()
         self.statusIndicator.kill()
+        self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() - 1)
 
 
     # Add a node to the persons path
@@ -312,8 +317,22 @@ class Person(pygame.sprite.Sprite):
 
 
     def drawTimerTime(self):
-        self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, BLACK)
+        textColor = Color("white") if self.spriteRenderer.getDarkMode() else BLACK
+        self.fontImage = self.timerFont.render(str(round(self.timer, 1)), True, textColor)
         self.game.renderer.addSurface(self.fontImage, (self.pos + vec(32, -35)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())
+
+
+    # Draw how long is left at each stop 
+    def drawTimer(self, surface):
+        scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        length = 10
+
+        # Arc Indicator 
+        offx = 0.01
+        step = self.timer / (length / 2) + 0.02
+        for x in range(6):
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, int(4 * scale))
+            offx += 0.01
 
 
     def drawDestination(self):
@@ -367,6 +386,10 @@ class Person(pygame.sprite.Sprite):
         if self.clickManager.getPerson() == self:
             self.drawPath()
             self.game.renderer.addSurface(None, None, self.drawOutline)
+
+        if self.timer <= 10:
+            self.game.renderer.addSurface(None, None, self.drawTimer)
+
 
 
     def events(self):
@@ -545,7 +568,7 @@ class StatusIndicator(pygame.sprite.Sprite):
 
         self.dirty = True
 
-        self.images = [None, "walking", "waiting", "boarding", None, "departing", "flag"]
+        self.images = [None, "walking", "waiting", "boarding", "boarding", None, "departing", "flag"]
         self.currentState = self.currentPerson.getStatusValue()
 
 

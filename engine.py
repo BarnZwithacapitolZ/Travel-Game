@@ -21,7 +21,7 @@ class Renderer:
         # self.monitorWidth = 1280
         # self.monitorHeight = 720
 
-        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = 1)
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
         self.scale = 1 # control the scale of whats on screen
@@ -119,9 +119,9 @@ class Renderer:
         self.diff.y = (self.windowHeight - self.height) / 2
 
         if fullscreen:
-            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
+            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF, vsync = 1)
         else:
-            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF)
+            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = 1)
 
         self.gameDisplay = pygame.Surface((self.width, self.height)) #.convert()
 

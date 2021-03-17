@@ -49,19 +49,16 @@ class Transport(pygame.sprite.Sprite):
 
         self.imageName = "train"
         self.stopType = (NODE.MetroStation, NODE.Destination)
+        self.boardingType = PERSON.Person.Status.BOARDING
 
         self.path = []
         self.firstPathNode = None # store the first node in the path, before it might be removed
 
 
-    #### Getters ####
-
-    # Return the people, in a list, current on the transport
     def getPeople(self):
         return self.people
 
 
-    # Return if the transport is moving or not
     def getMoving(self):
         return self.moving
 
@@ -74,8 +71,6 @@ class Transport(pygame.sprite.Sprite):
         return self.mouseOver
 
 
-    #### Setters ####
-
     def setSpeed(self, speed):
         self.speed = speed
 
@@ -87,6 +82,26 @@ class Transport(pygame.sprite.Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+
+    # Switch to the next connection in the path, so the player keeps following it 
+    def setNextPathConnection(self, path):
+        if len(self.path) > 1:
+            fromNode = path.getConnections()[0].getFrom().getNumber()
+            toNode = self.path[1].getNumber()
+
+            for connection in path.getConnections():
+                if connection.getFrom().getNumber() == fromNode and connection.getTo().getNumber() == toNode:
+                    self.currentConnection = connection
+                    break
+
+            self.currentNode.removeTransport(self)
+            self.currentNode = self.currentConnection.getFrom()
+            self.currentNode.addTransport(self)
+
+        if self.firstPathNode is not None and path.getNumber() != self.firstPathNode.getNumber():
+            self.firstPathNode = None
+        self.path.remove(path)
 
     
     def setFirstPathNode(self, path):
@@ -122,7 +137,6 @@ class Transport(pygame.sprite.Sprite):
         self.currentNode.addTransport(self)
 
 
-
     # Set the next connection for the transport to follow
     def setNextConnection(self):
         nextNode = self.currentConnection.getTo()
@@ -151,15 +165,15 @@ class Transport(pygame.sprite.Sprite):
                 self.addPeople()
 
 
-    # Set people waiting at the train station to boarding the transportation 
+    # Set people waiting at the stop to boarding the transportation 
     def setPeopleBoarding(self):
-        # If theres no one at the station, dont bother trying to add anyone
+        # If theres no one at the stop, dont bother trying to add anyone
         if len(self.currentNode.getPeople()) <= 0:
             return
 
         for person in self.currentNode.getPeople():
             if person.getStatus() == PERSON.Person.Status.WAITING: # If they're waiting for the train
-                person.setStatus(PERSON.Person.Status.BOARDING)
+                person.setStatus(self.boardingType)
 
 
     def addToPath(self, node):
@@ -185,7 +199,7 @@ class Transport(pygame.sprite.Sprite):
                 
             return
 
-        if self.path[0] in newPath:
+        if self.path[0] in newPath and self.path[0] != self.currentNode:
             del newPath[0]
 
         self.path = []
@@ -212,7 +226,7 @@ class Transport(pygame.sprite.Sprite):
 
         for person in list(self.currentNode.getPeople()):
             # Only remove people from the station once the train is moving
-            if person.getStatus() == PERSON.Person.Status.BOARDING:
+            if person.getStatus() == self.boardingType:
                 self.addPerson(person)
                 self.currentNode.removePerson(person)
                 person.setStatus(PERSON.Person.Status.MOVING)
@@ -232,12 +246,16 @@ class Transport(pygame.sprite.Sprite):
                 person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
                 person.moveStatusIndicator()
 
-
                 self.removePerson(person) # Remove the person from the transport
-                self.currentNode.addPerson(person)  # Add the person back to the node where the transport is stopped
+
+                # Add the player to the top node (on the highest layer)
+                playerNode = self.spriteRenderer.getTopNode(self.currentNode)
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
-                person.setCurrentNode(self.currentNode) # Set the persons current node to the node they're at
+                person.setCurrentNode(playerNode) # Set the persons current node to the node they're at
+                playerNode.addPerson(person)
+                person.switchLayer(person.getLayer(self.currentNode.getConnectionType()), person.getLayer(playerNode.getConnectionType()))
                 person.setTravellingOn(None)
+
 
                 # # Position the person offset to the node
                 # person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
@@ -389,35 +407,20 @@ class Transport(pygame.sprite.Sprite):
                 dis = dxy.length()
 
                 if dis >= 0.5 and self.moving:
+                    # Speed up when leaving a stop, only if it is the first node in the players path
                     if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
                         self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
-
+                    
+                    # Slow down when reaching a stop, only if it is the last node in the players path
                     elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
                         self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     self.movePeople()
-
                 else:
                     # set the current connection to be one of the paths connections (just pick a random one)
-                    if len(self.path) > 1:
-                        fromNode = path.getConnections()[0].getFrom().getNumber()
-                        toNode = self.path[1].getNumber()
-
-                        for connection in path.getConnections():
-                            if connection.getFrom().getNumber() == fromNode and connection.getTo().getNumber() == toNode:
-                                self.currentConnection = connection
-                                break
-
-                        self.currentNode.removeTransport(self)
-                        self.currentNode = self.currentConnection.getFrom()
-                        self.currentNode.addTransport(self)
-
-                    if self.firstPathNode is not None and path.getNumber() != self.firstPathNode.getNumber():
-                        self.firstPathNode = None
-                    self.path.remove(path)
+                    self.setNextPathConnection(path)
 
                 self.pos += self.vel
                 self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
@@ -428,21 +431,17 @@ class Transport(pygame.sprite.Sprite):
                 
                 if dis >= 0.5 and self.moving: #move towards the node
                     # Speed up when leaving a stop
-                    # Change the number taken away from the length of the connection for the length of the smooth starting 
-                    # Change the other number to say when the smooth starting should begin (after how many pixels)
                     if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
                         self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
 
                     # Slow down when reaching a stop
-                    # Change what number the distance is smaller than for the length of smooth stopping; larger lengths may make transport further from target
                     elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
                         self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                    self.movePeople()
 
-                else: #its reached the node
+                    self.movePeople()
+                else: 
                     self.setNextConnection()
                     self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
@@ -453,9 +452,9 @@ class Transport(pygame.sprite.Sprite):
 class Taxi(Transport):
     def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
         super().__init__(spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
-
         self.imageName = "taxi"
         self.stopType = NODE.Node
+        self.boardingType = PERSON.Person.Status.BOARDINGTAXI
 
         #self.timerLength = 200 # To Do: choose a value length
 
@@ -468,8 +467,24 @@ class Taxi(Transport):
             return
 
         for person in self.currentNode.getPeople():
-            if person.getStatus() == PERSON.Person.Status.FLAG: # If they're waiting for the train
-                person.setStatus(PERSON.Person.Status.BOARDING)
+            if person.getStatus() == PERSON.Person.Status.FLAG: # If they're waiting for the taxi
+                person.setStatus(self.boardingType)
+
+
+    def checkPeopleBoarding(self):
+        # Set people waiting for the transportation to departing 
+        self.setPeopleBoarding()
+
+        self.moving = False
+        self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
+
+        # Leaving the station
+        if self.timer > self.timerLength:
+            self.moving = True
+            self.timer = 0
+
+            # Add the people boarding to the transportation
+            self.addPeople()
 
 
     # override 
@@ -481,42 +496,32 @@ class Taxi(Transport):
             self.setConnection(nextNode)
             self.hasStopped = False
 
-
         if isinstance(self.currentNode, self.stopType) and self.checkTaxiStop(self.currentNode) or self.hasStopped:
+            self.checkPeopleBoarding()
 
-            # Set people waiting for the transportation to departing 
-            self.setPeopleBoarding()
-
-            self.moving = False
-            self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
-
-            # Leaving the station
-            if self.timer > self.timerLength:
-                self.moving = True
-                self.timer = 0
-
-                # Add the people boarding to the transportation
-                self.addPeople()
-
-
-        elif isinstance(self.currentNode, self.stopType) and self.checkPersonStop(self.currentNode):
+        if isinstance(self.currentNode, self.stopType) and self.checkPersonStop(self.currentNode):
             # Remove anyone departing before we add new people
             self.removePeople()
-            # Do I want to show the timer here?
+
+            # Check again if there is anyone waiting for a taxi after we have dropped off the previous user
+            if isinstance(self.currentNode, self.stopType) and self.checkTaxiStop(self.currentNode):
+                self.checkPeopleBoarding()
 
 
+    # Check if there is a person on the node flagging the taxi down
     def checkTaxiStop(self, node):
         # only stop if there is someone flagging the taxi down, dont stop if the taxi is already carrying someone 
         if len(node.getPeople()) <= 0 or len(self.people) >= 1:
             return False
 
         for person in node.getPeople():
-            if person.getStatus() == PERSON.Person.Status.FLAG or person.getStatus() == PERSON.Person.Status.BOARDING:
+            if person.getStatus() == PERSON.Person.Status.FLAG or person.getStatus() == self.boardingType:
                 self.hasStopped = True
                 return True
         return False
 
 
+    # Check if the person travelling on the taxi wants to leave the taxi
     def checkPersonStop(self, node):
         if len(self.people) <= 0:
             return False
@@ -541,37 +546,26 @@ class Taxi(Transport):
                 dis = dxy.length()
 
                 if dis >= 0.5 and self.moving:
-                    # if its the last node in the path, slow down if the last node is a stop
-                    if len(self.path) <= 1: 
-                        if dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                            if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
-                                self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                            else:
-                                self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                       
+                    # speed up when leaving a stop
+                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
+                        if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
+                            self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
                         else:
                             self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                            
+
+                    # slow down when reaching a node
+                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
+                        if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
+                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+                        else:
+                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                     self.movePeople()
 
                 else:
-                    if len(self.path) > 1:
-                        fromNode = path.getConnections()[0].getFrom().getNumber()
-                        toNode = self.path[1].getNumber()
-
-                        for connection in path.getConnections():
-                            if connection.getFrom().getNumber() == fromNode and connection.getTo().getNumber() == toNode:
-                                self.currentConnection = connection
-                                break
-
-                        self.currentNode.removeTransport(self)
-                        self.currentNode = self.currentConnection.getFrom()
-                        self.currentNode.addTransport(self)
-
-                    self.path.remove(path)
+                    self.setNextPathConnection(path)
 
                 self.pos += self.vel
                 self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()

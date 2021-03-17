@@ -219,10 +219,13 @@ class Node(pygame.sprite.Sprite):
     
         # Hover over event; for transport
         if self.rect.collidepoint((mx, my)) and not self.mouseOver and self.transportClickManager.getTransport() is not None:
+            # Prevent the node and the player from being pressed at the same time
+            for person in self.people:
+                if person.getMouseOver():
+                    return
+
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
-
-            #     print(self.getNumber())
         
 
         # Hover over event; for person
