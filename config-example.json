@@ -34,6 +34,10 @@
             "image": "Icon.png",
             "alpha": true
         }, 
+        "heart": {
+            "image": "Heart.png",
+            "alpha": true
+        },
         "person": {
             "image": "Person.png",
             "alpha": true
@@ -176,10 +180,6 @@
         },
         "locked": {
             "image": "Locked.png",
-            "alpha": true
-        },
-        "banana": {
-            "image": "Banana.png",
             "alpha": true
         }
     }, 

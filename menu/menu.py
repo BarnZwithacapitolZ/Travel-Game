@@ -136,19 +136,19 @@ class Menu:
     def transition(self):
         self.open = True
 
-        test = Shape(self, BLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), 255)
+        test = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), 255)
         test.addAnimation(transitionFadeOut, 'onLoad')
         self.add(test)
 
 
     def slideTransitionY(self, pos, half, speed = -40, callback = None, direction = 'up'):
-        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Rectangle(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionY, 'onLoad', speed = speed, half = half, callback = callback, transitionDirection = direction)
         self.add(transition)
 
 
     def slideTransitionX(self, pos, half, speed = -70, callback = None):
-        transition = Shape(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
+        transition = Rectangle(self, TRUEBLACK, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), pos)
         transition.addAnimation(slideTransitionX, 'onLoad', speed = speed, half = half, callback = callback)
         self.add(transition)
 
@@ -218,7 +218,7 @@ class MainMenu(Menu):
         self.levelSelectOpen = False
         self.backgroundColor = GREEN
 
-        sidebar = Shape(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
+        sidebar = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
 
         x = (config["graphics"]["displayWidth"] / 2) - 180
 
@@ -339,8 +339,6 @@ class MainMenu(Menu):
         custom = Image(self, "button", (25, 25), (backText.x + backText.getFontSize()[0] + 10, 21))
         customText = Label(self, "Custom Levels", 20, CREAM, (backText.x + backText.getFontSize()[0] + 40, 27))
 
-        banana = Image(self, "banana", (40, 40), (config["graphics"]["displayWidth"] / 2 - 20, config["graphics"]["displayHeight"] - 55))
-
         self.levelComplete = Image(self, "buttonRed", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, config["graphics"]["displayHeight"] - 42))
         self.levelCompleteText = Label(self, "Level Incomplete", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, config["graphics"]["displayHeight"] - 36))
 
@@ -358,7 +356,6 @@ class MainMenu(Menu):
         self.add(backText)
         self.add(custom)
         self.add(customText)
-        # self.add(banana)
 
 
         #### Adds the maps after eveything else in the menu has been loaded
@@ -408,7 +405,7 @@ class OptionMenu(Menu):
         # self.game.mapEditor.getMessageSystem().setOpen(False) 
         self.game.mapEditor.getHud().setOpen(False)
 
-        sidebar = Shape(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
+        sidebar = Rectangle(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
 
         paused = Label(self, "Paused", 70, BLACK, (-400, 100))
 
@@ -444,7 +441,7 @@ class OptionMenu(Menu):
     def options(self):
         self.open = True
 
-        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+        sidebar = Rectangle(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
 
         graphics = Label(self, "Graphics", 50, BLACK, (100, 200))
         controls = Label(self, "Controls", 50, BLACK, (100, 260))
@@ -466,7 +463,7 @@ class OptionMenu(Menu):
 
     def graphics(self):
         self.open = True
-        sidebar = Shape(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+        sidebar = Rectangle(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
 
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
@@ -532,7 +529,7 @@ class GameOpeningMenu(Menu):
 
         totalText = "Transport " + str(self.game.spriteRenderer.getTotalToComplete()) + " people!"
 
-        background = Shape(self, GREEN, (width, height), (x - 400, y))
+        background = Rectangle(self, GREEN, (width, height), (x - 400, y))
         total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - 400, (y + height) / 2 + 20))
         play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - 400, (config["graphics"]["displayHeight"] / 2) + 20))
 
@@ -559,23 +556,22 @@ class GameOpeningMenu(Menu):
 
         self.game.audioLoader.playSound("swoopIn")    
 
-        
-
-
-
 
 # Anything that all the game huds will use
 class GameHudLayout(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+
     @abc.abstractmethod
     def updateLayerText(self):
         return
 
+
     @abc.abstractmethod
     def setCompletedText(self):
         return
+
 
     @abc.abstractmethod
     def updateSlowDownMeter(self, amount):
@@ -584,17 +580,28 @@ class GameHudLayout(Menu):
     
 
 class GameHud(GameHudLayout):
-    def __init__(self, renderer):
+    def __init__(self, renderer, spacing = (1.5, 1.5)):
         super().__init__(renderer)
+        self.hearts = []
+        self.spacing = spacing
 
     def updateSlowDownMeter(self, amount):
         if hasattr(self, 'slowDownMeterAmount'):
             self.slowDownMeterAmount.setSize((amount, 20))
             self.slowDownMeterAmount.dirty = True
 
+
+    def removeHeart(self):
+        heart = self.hearts.pop()
+        self.remove(heart)
+
+
     def main(self, transition = False):
         self.open = True
         self.dropdownOpen = False
+
+        hudX = 15
+        hudY = 15
 
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
         levelData = self.game.spriteRenderer.getLevelData()
@@ -607,14 +614,23 @@ class GameHud(GameHudLayout):
         walkingImage = "walkingWhite" if darkMode else "walking"
         self.textColor = Color("white") if darkMode else BLACK
 
-        home = Image(self, homeImage, (50, 50), (20, 500))
-        layers = Image(self, layersImage, (50, 50), (20, 440))
-        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26))
-        slowDownMeterOutline = Shape(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26), 'rect', 2)
-        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), 26))
-        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 85, 26))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 50, completed.y + completed.height - 20))  
+        home = Image(self, homeImage, (50, 50), (hudX, 500))
+        layers = Image(self, layersImage, (50, 50), (hudX, 440))
+        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10))
+        slowDownMeterOutline = Rectangle(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10), 2)
+        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10))
+
+        time = Timer(self, self.textColor, YELLOW, 0, 100, (40, 40), (config["graphics"]["displayWidth"] - 85, hudY), 5)
+
+        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 85, hudY))
+        # self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 50, completed.y + completed.height - 20))  
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (time.x + 13, time.y + 11.5))  
         self.totalToCompleteText = Label(self, f"/{str(self.game.spriteRenderer.getTotalToComplete())}", 12, self.textColor, (self.completedText.x + self.completedText.getFontSize()[0], completed.y + completed.height - 11))
+
+        # for i in range(self.game.spriteRenderer.getLives()):
+        #     heart = Image(self, "heart", (30, 30), ((config["graphics"]["displayWidth"] - (100 + (35 * self.game.spriteRenderer.getLives()) + meterWidth)) + (i * 35), hudY))
+        #     self.hearts.append(heart)
+        #     self.add(heart)
 
         layers.addEvent(hoverLayers, 'onMouseOver', image = layersSelectedImage)
         layers.addEvent(hoverLayers, 'onMouseOut', image = layersImage)
@@ -632,9 +648,11 @@ class GameHud(GameHudLayout):
         self.add(slowDownMeter)
         self.add(self.slowDownMeterAmount)
         self.add(slowDownMeterOutline)
-        self.add(completed)
+        # self.add(completed)
+        self.add(time)
+
         self.add(self.completedText)
-        self.add(self.totalToCompleteText)
+        # self.add(self.totalToCompleteText)
 
         if transition:
             # set the up transition
@@ -691,7 +709,7 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(True)
 
-        topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
+        topbar = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
 
         fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, self.textY))
         edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, self.textY))
@@ -739,7 +757,7 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (200, 150), (self.editLocation, 40), 'rect', 0, [0, 0, 10, 10])
+        box = Rectangle(self, BLACK, (200, 150), (self.editLocation, 40), 0, [0, 0, 10, 10])
 
         textX = self.editLocation + 10
 
@@ -770,6 +788,7 @@ class EditorHud(GameHudLayout):
         self.add(undo)
         self.add(redo)
 
+
     def editSizeDropdown(self):
         self.open = True
         self.editSizeDropdownOpen = True
@@ -787,11 +806,11 @@ class EditorHud(GameHudLayout):
         boxX = self.editLocation + 200
         textX = boxX + 10
 
-        box = Shape(self, BLACK, (110, 150), (boxX, 85))
-        size0Box = Shape(self, GREEN, (110, 33), (boxX, 90))
-        size1Box = Shape(self, GREEN, (110, 33), (boxX, 126))
-        size2Box = Shape(self, GREEN, (110, 33), (boxX, 161))
-        size3Box = Shape(self, GREEN, (110, 33), (boxX, 195))
+        box = Rectangle(self, BLACK, (110, 150), (boxX, 85))
+        size0Box = Rectangle(self, GREEN, (110, 33), (boxX, 90))
+        size1Box = Rectangle(self, GREEN, (110, 33), (boxX, 126))
+        size2Box = Rectangle(self, GREEN, (110, 33), (boxX, 161))
+        size3Box = Rectangle(self, GREEN, (110, 33), (boxX, 195))
 
         size0 = Label(self, "16 x 9", 25, Color("white"), (textX, 95))
         size1 = Label(self, "18 x 10", 25, Color("white"), (textX, 130))
@@ -819,7 +838,6 @@ class EditorHud(GameHudLayout):
             self.add(label[0])
 
 
-
     def addDropdown(self):
         self.open = True
         self.addDropdownOpen = True
@@ -835,11 +853,11 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
         destinationSelected = True if clickType == EditorClickManager.ClickType.DESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (self.addLocation, 40), 'rect', 0, [0, 0, 10, 10])
-        connectionBox = Shape(self, GREEN, (200, 33), (self.addLocation, 45))
-        stopBox = Shape(self, GREEN, (200, 33), (self.addLocation, 81))
-        transportBox = Shape(self, GREEN, (200, 33), (self.addLocation, 116))
-        destinationBox = Shape(self, GREEN, (200, 33), (self.addLocation, 151))
+        box = Rectangle(self, BLACK, (200, 150), (self.addLocation, 40), 0, [0, 0, 10, 10])
+        connectionBox = Rectangle(self, GREEN, (200, 33), (self.addLocation, 45))
+        stopBox = Rectangle(self, GREEN, (200, 33), (self.addLocation, 81))
+        transportBox = Rectangle(self, GREEN, (200, 33), (self.addLocation, 116))
+        destinationBox = Rectangle(self, GREEN, (200, 33), (self.addLocation, 151))
 
         textX = self.addLocation + 10 # x position of text within box
 
@@ -883,10 +901,10 @@ class EditorHud(GameHudLayout):
         boxX = self.addLocation + 200
         textX = boxX + 10
 
-        box = Shape(self, BLACK, (200, 114), (boxX, 85))
-        metroBox = Shape(self, GREEN, (200, 33), (boxX, 90))
-        busBox = Shape(self, GREEN, (200, 33), (boxX, 126))
-        tramBox = Shape(self, GREEN, (200, 33), (boxX, 161))
+        box = Rectangle(self, BLACK, (200, 114), (boxX, 85))
+        metroBox = Rectangle(self, GREEN, (200, 33), (boxX, 90))
+        busBox = Rectangle(self, GREEN, (200, 33), (boxX, 126))
+        tramBox = Rectangle(self, GREEN, (200, 33), (boxX, 161))
 
         metroStation = Label(self, "Metro Station", 25, Color("white"), (textX, 95))
         busStop = Label(self, "Bus Stop", 25, Color("white"), (textX, 130))
@@ -926,11 +944,11 @@ class EditorHud(GameHudLayout):
         boxX = self.addLocation + 200
         textX = boxX + 10
 
-        box = Shape(self, BLACK, (110, 150), (boxX, 120))
-        metroBox = Shape(self, GREEN, (110, 33), (boxX, 125))
-        busBox = Shape(self, GREEN, (110, 33), (boxX, 161))
-        tramBox = Shape(self, GREEN, (110, 33), (boxX, 196))
-        taxiBox = Shape(self, GREEN, (110, 33), (boxX, 231))
+        box = Rectangle(self, BLACK, (110, 150), (boxX, 120))
+        metroBox = Rectangle(self, GREEN, (110, 33), (boxX, 125))
+        busBox = Rectangle(self, GREEN, (110, 33), (boxX, 161))
+        tramBox = Rectangle(self, GREEN, (110, 33), (boxX, 196))
+        taxiBox = Rectangle(self, GREEN, (110, 33), (boxX, 231))
 
         metro = Label(self, "Metro", 25, Color("white"), (textX, 130))
         bus = Label(self, "Bus", 25, Color("white"), (textX, 165))
@@ -958,7 +976,6 @@ class EditorHud(GameHudLayout):
             self.add(label[0])
 
 
-
     def addDestinationDropdown(self):
         self.open = True
         self.addDestinationDropdownOpen = True
@@ -974,10 +991,10 @@ class EditorHud(GameHudLayout):
         boxX = self.addLocation + 200
         textX = boxX + 10
 
-        box = Shape(self, BLACK, (200, 114), (boxX, 155))
-        airportBox = Shape(self, GREEN, (200, 33), (boxX, 160))
-        officeBox = Shape(self, GREEN, (200, 33), (boxX, 196))
-        houseBox = Shape(self, GREEN, (200, 33), (boxX, 228))
+        box = Rectangle(self, BLACK, (200, 114), (boxX, 155))
+        airportBox = Rectangle(self, GREEN, (200, 33), (boxX, 160))
+        officeBox = Rectangle(self, GREEN, (200, 33), (boxX, 196))
+        houseBox = Rectangle(self, GREEN, (200, 33), (boxX, 228))
         
         airport = Label(self, "Airport", 25, Color("white"), (textX, 165))
         office = Label(self, "Office", 25, Color("white"), (textX, 200))
@@ -1002,9 +1019,6 @@ class EditorHud(GameHudLayout):
             self.add(label[0])
 
 
-        
-
-
     def deleteDropdown(self):
         self.open = True
         self.deleteDropdownOpen = True
@@ -1017,11 +1031,11 @@ class EditorHud(GameHudLayout):
         transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
         destinationSelected = True if clickType == EditorClickManager.ClickType.DDESTINATION else False
 
-        box = Shape(self, BLACK, (200, 150), (self.deleteLocation, 40), 'rect', 0, [0, 0, 10, 10])
-        connectionBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 45))
-        stopBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 81))
-        transportBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 116))
-        destinationBox = Shape(self, GREEN, (200, 33), (self.deleteLocation, 151))
+        box = Rectangle(self, BLACK, (200, 150), (self.deleteLocation, 40), 0, [0, 0, 10, 10])
+        connectionBox = Rectangle(self, GREEN, (200, 33), (self.deleteLocation, 45))
+        stopBox = Rectangle(self, GREEN, (200, 33), (self.deleteLocation, 81))
+        transportBox = Rectangle(self, GREEN, (200, 33), (self.deleteLocation, 116))
+        destinationBox = Rectangle(self, GREEN, (200, 33), (self.deleteLocation, 151))
 
         textX = self.deleteLocation + 10
 
@@ -1060,7 +1074,7 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Shape(self, BLACK, (130, 220), (self.fileLocation, 40), 'rect', 0, [0, 0, 10, 10])
+        box = Rectangle(self, BLACK, (130, 220), (self.fileLocation, 40), 0, [0, 0, 10, 10])
 
         textX = self.fileLocation + 10
         
@@ -1124,7 +1138,7 @@ class EditorHud(GameHudLayout):
             maps.append(m)
             y += 30
 
-        box = Shape(self, BLACK, (maxWidth + 20, 20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
+        box = Rectangle(self, BLACK, (maxWidth + 20, 20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
         self.add(box)
 
         for m in maps:
@@ -1140,13 +1154,13 @@ class EditorHud(GameHudLayout):
         x = width - (width / 2)
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        box = Shape(self, GREEN, (width, height), (x, y))
+        box = Rectangle(self, GREEN, (width, height), (x, y))
         title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
-        self.inputBox = Shape(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
+        self.inputBox = Rectangle(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
         mapName = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (x + 40, y + 92)) # we pass through the background instead of defining it in the InputBox so we can customize it better (e.g with image ect)
-        saveBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        saveBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
-        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
         self.inputBox.addEvent(hoverColor, 'onKeyPress', color = Color("white"))
@@ -1178,15 +1192,15 @@ class EditorHud(GameHudLayout):
         x = width - (width / 2)
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        box = Shape(self, GREEN, (width, height), (x, y))
+        box = Rectangle(self, GREEN, (width, height), (x, y))
         title = Label(self, "Delete", 30, Color("white"), (x + 20, y + 20))
         title.setUnderline(True)
         confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 92))
         confirm2 = Label(self, "delete this map?", 30, Color("white"), (x + 40, y + 125))
 
-        confirmBox = Shape(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        confirmBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
-        cancelBox = Shape(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
 
@@ -1209,8 +1223,9 @@ class EditorHud(GameHudLayout):
 
 
 class PreviewHud(GameHudLayout):
-    def __init__(self, renderer):
+    def __init__(self, renderer, spacing):
         super().__init__(renderer)
+        self.spacing = spacing
 
 
     def updateSlowDownMeter(self, amount):
@@ -1224,11 +1239,11 @@ class PreviewHud(GameHudLayout):
 
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
 
-        topbar = Shape(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
+        topbar = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         stop = Label(self, "Stop", 25, Color("white"), (20, 10))
-        slowDownMeter = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
-        slowDownMeterOutline = Shape(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12), 'rect', 2)
-        self.slowDownMeterAmount = Shape(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
+        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
+        slowDownMeterOutline = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12), 2)
+        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
         completed = Image(self, "walkingWhite", (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
 
@@ -1257,8 +1272,10 @@ class MessageHud(Menu):
         super().__init__(renderer)
         self.messages = []
 
+
     def addMessage(self, message):
         self.messages.append(message)
+
 
     def removeMessage(self, message):
         self.messages.remove(message)
@@ -1296,7 +1313,7 @@ class MessageHud(Menu):
 
     #         messages.append(m)
 
-    #     box = Shape(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
+    #     box = Rectangle(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
     #     box.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y - 5, callback = callback)
 
     #     self.add(box)

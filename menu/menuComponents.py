@@ -4,6 +4,7 @@ from config import *
 from transitionFunctions import transitionMessageRight
 import string
 import abc
+import math
 
 vec = pygame.math.Vector2
 
@@ -124,6 +125,10 @@ class MenuComponent:
 
     def getOffset(self):
         return self.offset
+
+
+    def getColor(self):
+        return self.color
 
 
     def setSize(self, size = tuple()):
@@ -291,7 +296,7 @@ class InputBox(Label):
         self.flashing = True
         self.timer = 0
         self.background = background
-        self.indicator = Shape(self.menu, self.color, (3, fontSize), self.pos)
+        self.indicator = Rectangle(self.menu, self.color, (3, fontSize), self.pos)
 
 
     def setText(self):   
@@ -366,9 +371,8 @@ class InputBox(Label):
        
 
 class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeType = "rect", shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
         super().__init__(menu, color, size, pos)
-        self.shapeType = shapeType
         self.shapeOutline = shapeOutline        
         self.shapeBorderRadius = shapeBorderRadius
         self.alpha = alpha
@@ -411,23 +415,14 @@ class Shape(MenuComponent):
         self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
 
         if self.alpha is not None:
-            self.image = pygame.Surface((self.size)).convert()
-            self.image = pygame.transform.scale(self.image, (int(self.width * self.menu.renderer.getScale()), 
-                                                            int(self.height * self.menu.renderer.getScale()))).convert()
+            self.image = pygame.Surface(size).convert()
             self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-            self.drawShape(self.image)
+            self.drawShape(self.image, (0, 0, *size))
 
-            
-    def drawShape(self, surface):
-        if self.shapeType == "rect":
-            pygame.draw.rect(surface, self.color, self.rect, int(self.outline), 
-                border_top_left_radius = int(self.borderRadius[0]),
-                border_top_right_radius  = int(self.borderRadius[1]),
-                border_bottom_left_radius = int(self.borderRadius[2]),
-                border_bottom_right_radius = int(self.borderRadius[3]))
-        elif self.shapeType == "ellipse":
-            # pygame.draw.ellipse(self.game.renderer.gameDisplay, YELLOW, rect, int(7 * scale))
-            pygame.draw.ellipse(surface, self.color, self.rect, int(self.outline))
+
+    @abc.abstractmethod
+    def drawShape(self, surface, rect = None):
+        return
 
 
     def makeSurface(self):
@@ -442,9 +437,106 @@ class Shape(MenuComponent):
             self.menu.renderer.addSurface(None, None, self.drawShape)
 
 
-class MessageBox(Shape):
+class Rectangle(Shape):
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):
+        super().__init__(menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha)  
+
+
+    def drawShape(self, surface, rect = None):
+        rect = self.rect if rect is None else rect
+        pygame.draw.rect(surface, self.color, rect, int(self.outline), 
+                border_top_left_radius = int(self.borderRadius[0]),
+                border_top_right_radius  = int(self.borderRadius[1]),
+                border_bottom_left_radius = int(self.borderRadius[2]),
+                border_bottom_right_radius = int(self.borderRadius[3]))
+
+
+class Ellipse(Shape):
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
+        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha)   
+
+
+    def drawShape(self, surface, rect = None):
+        rect = self.rect if rect is None else rect
+        pygame.draw.ellipse(surface, self.color, rect, int(self.outline))
+
+
+
+class Arc(Shape):
+    def __init__(self, menu, color, startAngle, stopAngle, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
+        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha) 
+        self.startAngle = startAngle
+        self.stopAngle = stopAngle
+
+
+    def drawShape(self, surface, rect = None):
+        rect = self.rect if rect is None else rect
+        pygame.draw.arc(surface, self.color, rect, self.startAngle, self.stopAngle, int(self.outline))
+
+
+class Timer(Arc):
+    def __init__(self, menu, backgroundColor, foregoundColor, timer, length, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
+        step = (length - timer) / (length / 2) + 0.02
+        startAngle = math.pi / 2 + math.pi * step
+        stopAngle = math.pi / 2
+        
+        super().__init__(menu, foregoundColor, startAngle, stopAngle, size, pos, shapeOutline, alpha)
+        self.timer = timer
+        self.length = length
+        self.backgroundColor = backgroundColor
+
+
+    def getTimer(self):
+        return self.timer
+
+
+    def setTimer(self, timer):
+        self.timer = timer
+
+
+    def setBackgroundColor(self, backgroundColor):
+        self.backgroundColor = backgroundColor
+
+
+    def __render(self):
+        self.dirty = False
+
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        self.rect = pygame.Rect(pos, size)
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+
+        self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
+        # self.image.fill(BLACK)
+        # self.image.set_alpha(255, pygame.RLEACCEL)
+        self.drawShape(self.image, Rect(0, 0, *size))
+
+
+    def drawShape(self, surface, rect = None):
+        rect = self.rect if rect is None else rect
+        offx = 0.01
+
+        # inside circle
+        pygame.draw.ellipse(surface, self.backgroundColor, rect, int(self.outline - 1)) 
+
+        # outside timer
+        for x in range(6):
+            pygame.draw.arc(surface, self.color, rect, self.startAngle + offx, self.stopAngle, int(self.outline))
+            offx += 0.01
+
+
+    def makeSurface(self):
+        if self.dirty or self.rect is None: self.__render()
+
+    
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.image, (self.rect))
+
+
+class MessageBox(Rectangle):
     def __init__(self, menu, message, margin = tuple()):   
-        super().__init__(menu, GREEN, (0, 0), (0, 0), 'rect', 0, [10, 10, 10, 10])
+        super().__init__(menu, GREEN, (0, 0), (0, 0), 0, [10, 10, 10, 10])
         self.timer = 0
         self.messages = []
         self.marginX = margin[0]

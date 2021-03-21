@@ -73,7 +73,7 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
-        # self.timer = 20
+        # self.timer = 5
         self.rad = 5
         self.step = 15
 
@@ -480,6 +480,7 @@ class Person(pygame.sprite.Sprite):
                 self.step = -self.step
                 
             if self.timer <= 0:
+                self.spriteRenderer.removeLife()
                 self.remove()
 
             if self.currentNode.getNumber() == self.destination.getNumber():

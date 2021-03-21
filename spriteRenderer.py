@@ -39,7 +39,7 @@ class SpriteRenderer():
         # Game timer to keep track of how long has been played
         self.timer = 0
         self.timeStep = 30 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
-        # self.timeStep = 8
+        self.lives = DEFAULTLIVES
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
@@ -136,6 +136,10 @@ class SpriteRenderer():
         self.totalPeople = totalPeople
 
 
+    def setLives(self, lives):
+        self.lives = lives
+
+
     def getStartDt(self):
         return self.startDt
 
@@ -208,6 +212,18 @@ class SpriteRenderer():
         return self.totalPeople
 
 
+    def getLives(self):
+        return self.lives
+
+
+    def removeLife(self):
+        self.lives -= 1
+        # remove a heart from the hud here or something
+        self.hud.removeHeart()
+        if self.lives <= 0:
+            self.game.paused = True
+
+
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
@@ -219,7 +235,9 @@ class SpriteRenderer():
     def clearLevel(self):
         self.startingFixedScale = 0 # reset the scale back to default
         self.timer = 0
+        self.lives = DEFAULTLIVES
         self.totalPeople = 0
+        self.totalPeopleNone = False
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -236,17 +254,7 @@ class SpriteRenderer():
         self.clearLevel()
         self.setCompleted(0) # currently this calls the wrong hud as its done before the hud is set
         self.debug = debug
-        # self.startingFixedScale = -0.05
 
-        # for running the game in test mode (when testing a level)
-        if self.debug:
-            self.hud = PreviewHud(self.game)
-            spacing = (1.5, 1.5) # push the level down since we have hud at the top
-        else:
-            self.hud = GameHud(self.game)
-            spacing = (1.5, 1)
-
-        # ordering matters -> stack
         self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
 
         # Set the name of the level
@@ -254,6 +262,18 @@ class SpriteRenderer():
 
         # Set the level data
         self.levelData = self.gridLayer4.getGrid().getMap()
+
+        # for running the game in test mode (when testing a level)
+        if self.debug:
+            spacing = (1.5, 1.5) # push the level down since we have hud at the top
+            self.hud = PreviewHud(self.game, spacing)
+        else:
+            # self.startingFixedScale = -0.05
+            spacings = {(16, 9): (1.5, 1), (18, 10): (2, 1.5), (20, 11): (1.5, 1), (22, 12): (1.5, 1)}
+            size = (self.levelData["width"], self.levelData["height"])
+            # spacing = spacings[size]
+            spacing = (1.5, 1)
+            self.hud = GameHud(self.game, spacing)
 
         # we want to get which connectionTypes are available in the map
         for connectionType in self.levelData['connections']:
@@ -403,7 +423,7 @@ class SpriteRenderer():
                     self.totalPeopleNone = True
 
                 # wait 2 seconds before spawing the next person when there is no people left
-                if self.timer > 2:
+                if self.timer > 2 and self.totalPeopleNone:
                     self.timer = 0
                     self.gridLayer2.addPerson(self.allDestinations)       
                     self.totalPeopleNone = False
