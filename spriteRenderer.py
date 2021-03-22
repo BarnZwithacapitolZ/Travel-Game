@@ -227,7 +227,7 @@ class SpriteRenderer():
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
-        self.hud.setCompletedText()
+        self.hud.setTimerAmount()
         self.meter.addToAmountToAdd(20)
 
 

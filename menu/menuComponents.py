@@ -468,6 +468,14 @@ class Arc(Shape):
         self.startAngle = startAngle
         self.stopAngle = stopAngle
 
+    
+    def setStartAngle(self, startAngle):
+        self.startAngle = startAngle
+
+
+    def setStopAngle(self, stopAngle):
+        self.stopAngle = stopAngle
+
 
     def drawShape(self, surface, rect = None):
         rect = self.rect if rect is None else rect
@@ -475,19 +483,20 @@ class Arc(Shape):
 
 
 class Timer(Arc):
-    def __init__(self, menu, backgroundColor, foregoundColor, timer, length, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
-        step = (length - timer) / (length / 2) + 0.02
-        startAngle = math.pi / 2 + math.pi * step
-        stopAngle = math.pi / 2
-        
-        super().__init__(menu, foregoundColor, startAngle, stopAngle, size, pos, shapeOutline, alpha)
+    def __init__(self, menu, backgroundColor, foregoundColor, timer, step, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
+        super().__init__(menu, foregoundColor, 0, 0, size, pos, shapeOutline, alpha)
         self.timer = timer
-        self.length = length
+        self.length = 100
+        self.step = self.length / step
         self.backgroundColor = backgroundColor
 
 
     def getTimer(self):
         return self.timer
+
+
+    def getStep(self):
+        return self.step
 
 
     def setTimer(self, timer):
@@ -500,6 +509,10 @@ class Timer(Arc):
 
     def __render(self):
         self.dirty = False
+
+        step = (self.length - self.timer) / (self.length / 2) + 0.02
+        self.startAngle = math.pi / 2 + math.pi * step
+        self.stopAngle = math.pi / 2
 
         pos = vec(self.x, self.y) * self.menu.renderer.getScale()
         size = vec(self.width, self.height) * self.menu.renderer.getScale()

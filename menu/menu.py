@@ -616,16 +616,12 @@ class GameHud(GameHudLayout):
 
         home = Image(self, homeImage, (50, 50), (hudX, 500))
         layers = Image(self, layersImage, (50, 50), (hudX, 440))
-        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10))
-        slowDownMeterOutline = Rectangle(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10), 2)
-        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (90 + meterWidth), hudY + 10))
+        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
+        slowDownMeterOutline = Rectangle(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10), 2)
+        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
 
-        time = Timer(self, self.textColor, YELLOW, 0, 100, (40, 40), (config["graphics"]["displayWidth"] - 85, hudY), 5)
-
-        completed = Image(self, walkingImage,  (40, 40), (config["graphics"]["displayWidth"] - 85, hudY))
-        # self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (config["graphics"]["displayWidth"] - 50, completed.y + completed.height - 20))  
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, self.textColor, (time.x + 13, time.y + 11.5))  
-        self.totalToCompleteText = Label(self, f"/{str(self.game.spriteRenderer.getTotalToComplete())}", 12, self.textColor, (self.completedText.x + self.completedText.getFontSize()[0], completed.y + completed.height - 11))
+        self.timer = Timer(self, self.textColor, YELLOW, 0, self.game.spriteRenderer.getTotalToComplete(), (40, 40), (config["graphics"]["displayWidth"] - 85, hudY), 5)
+        self.timerAmount = Label(self, str(self.game.spriteRenderer.getCompleted()), 20, self.textColor, (self.timer.x + 14.5, self.timer.y + 13)) 
 
         # for i in range(self.game.spriteRenderer.getLives()):
         #     heart = Image(self, "heart", (30, 30), ((config["graphics"]["displayWidth"] - (100 + (35 * self.game.spriteRenderer.getLives()) + meterWidth)) + (i * 35), hudY))
@@ -648,11 +644,8 @@ class GameHud(GameHudLayout):
         self.add(slowDownMeter)
         self.add(self.slowDownMeterAmount)
         self.add(slowDownMeterOutline)
-        # self.add(completed)
-        self.add(time)
-
-        self.add(self.completedText)
-        # self.add(self.totalToCompleteText)
+        self.add(self.timer)
+        self.add(self.timerAmount)
 
         if transition:
             # set the up transition
@@ -664,16 +657,13 @@ class GameHud(GameHudLayout):
             self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
-    def setCompletedText(self):
-        if hasattr(self, 'completedText'):
-            self.completedText.setText(str(self.game.spriteRenderer.getCompleted()))
-            self.completedText.setColor(YELLOW)
-            self.completedText.addAnimation(successAnimationUp, 'onLoad', x = self.completedText.x, y = self.completedText.y)
-            self.completedText.dirty = True
-
-            if len(str(self.game.spriteRenderer.getCompleted())) > len(str(self.game.spriteRenderer.getCompleted() - 1)):
-                self.totalToCompleteText.setPos((int(self.completedText.x + self.completedText.getFontSize()[0]), self.totalToCompleteText.y)) # move the total to complete text x with the width of the completed text
-                self.totalToCompleteText.dirty = True
+    def setTimerAmount(self):
+        if hasattr(self, 'timerAmount'):
+            self.timer.addAnimation(increaseTimer, 'onLoad', speed = 0.2, finish = self.game.spriteRenderer.getCompleted() * self.timer.getStep())
+            self.timerAmount.setText(str(self.game.spriteRenderer.getCompleted()))
+            width, height = self.timerAmount.getFontSizeScaled()[0] / self.renderer.getScale(), self.timerAmount.getFontSizeScaled()[1] / self.renderer.getScale()
+            self.timerAmount.setPos(((self.timer.x + (self.timer.width / 2)) - width / 2, ((self.timer.y + (self.timer.height / 2)) - height / 2) + 1))
+            self.timerAmount.dirty = True
 
 
 class EditorHud(GameHudLayout):
@@ -1260,7 +1250,7 @@ class PreviewHud(GameHudLayout):
         self.add(self.completedText)
 
 
-    def setCompletedText(self):
+    def setTimerAmount(self):
         if hasattr(self, 'completedText'):
             self.completedText.setText(str(self.game.spriteRenderer.getCompleted()))
             self.completedText.dirty = True

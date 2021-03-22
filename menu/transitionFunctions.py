@@ -150,37 +150,6 @@ def hoverOutAnimation(obj, menu, animation, speed, x):
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
-increaseSpeed = 5
-
-def successAnimationUp(obj, menu, animation, x, y, fontSize = 25, maxFontSize = 35):
-    obj.fontSize += increaseSpeed * 10 * menu.game.dt
-    obj.y -= (increaseSpeed / 2) * 10 * menu.game.dt
-    obj.x -= (increaseSpeed / 2) * 10 * menu.game.dt
-
-    #increase hight too so it stays put
-    if obj.fontSize >= maxFontSize:
-        obj.fontSize = maxFontSize
-        obj.removeAnimation(animation)
-        obj.addAnimation(successAnimationDown, 'onLoad', x = x, y = y, fontSize = fontSize)
-    obj.dirty = True
-
-
-def successAnimationDown(obj, menu, animation, x, y, fontSize = 25):
-    obj.fontSize -= increaseSpeed * 10 * menu.game.dt
-    obj.y += (increaseSpeed / 2) * 10 * menu.game.dt
-    obj.x += (increaseSpeed / 2) * 10 * menu.game.dt
-
-    if obj.fontSize <= fontSize:
-        obj.fontSize = fontSize
-        obj.x = x
-        obj.y = y
-        obj.removeAnimation(animation)
-        obj.setColor(menu.textColor)
-    obj.dirty = True
-
-
-
-
 
 def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDirection = 'up'):
     obj.y += speed * 100 * menu.game.dt
@@ -204,3 +173,11 @@ def slideTransitionX(obj, menu, animation, speed, half, callback):
 
     obj.rect.x = obj.x * menu.renderer.getScale()
 
+
+def increaseTimer(obj, menu, animation, speed, finish):
+    obj.setTimer(obj.getTimer() + (speed * 100 * menu.game.dt))
+
+    if obj.timer >= finish:
+        obj.removeAnimation(animation)
+
+    obj.dirty = True
