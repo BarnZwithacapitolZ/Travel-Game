@@ -174,10 +174,12 @@ def slideTransitionX(obj, menu, animation, speed, half, callback):
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
-def increaseTimer(obj, menu, animation, speed, finish):
-    obj.setTimer(obj.getTimer() + (speed * 100 * menu.game.dt))
+def increaseTimer(obj, menu, animation, speed, finish, direction = "forwards", callback = None):
+    obj.timer += speed * 100 * menu.game.dt
 
-    if obj.timer >= finish:
+    if obj.timer >= finish and direction == "forwards" or obj.timer <= finish and direction == "backwards":
         obj.removeAnimation(animation)
+        if callback is not None:
+            callback(obj, menu)
 
     obj.dirty = True

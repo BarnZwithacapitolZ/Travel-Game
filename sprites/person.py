@@ -325,7 +325,7 @@ class Person(pygame.sprite.Sprite):
     # Draw how long is left at each stop 
     def drawTimer(self, surface):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-        length = 10
+        length = 20
 
         # Arc Indicator 
         offx = 0.01
@@ -387,7 +387,7 @@ class Person(pygame.sprite.Sprite):
             self.drawPath()
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
-        if self.timer <= 10:
+        if self.timer <= 20:
             self.game.renderer.addSurface(None, None, self.drawTimer)
 
 

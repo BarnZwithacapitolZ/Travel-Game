@@ -219,15 +219,16 @@ class SpriteRenderer():
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
-        self.hud.removeHeart()
+        self.hud.setLifeAmount()
         if self.lives <= 0:
-            self.game.paused = True
+            # although we pause the game in the timer, we wan't to stop anything else from reducing the life count here whilst the timer is decreasing (so no one can die whilst it is decreasing)
+            pass
 
 
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
-        self.hud.setTimerAmount()
+        self.hud.setCompletedAmount()
         self.meter.addToAmountToAdd(20)
 
 

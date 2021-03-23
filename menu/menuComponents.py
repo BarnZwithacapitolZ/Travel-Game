@@ -510,7 +510,7 @@ class Timer(Arc):
     def __render(self):
         self.dirty = False
 
-        step = (self.length - self.timer) / (self.length / 2) + 0.02
+        step = (self.length - self.timer) / (self.length / 2)
         self.startAngle = math.pi / 2 + math.pi * step
         self.stopAngle = math.pi / 2
 
