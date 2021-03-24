@@ -57,6 +57,7 @@ def openMapEditor(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
+            menu.game.paused = False
             menu.game.mapEditor.createLevel(clearChanges = True)
             menu.game.mapEditor.setRendering(True, True) #Load the hud
             hudFunctions.addConnection(obj, menu, event) # default option to add connection
@@ -128,7 +129,7 @@ def showMainMenu(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
-            menu.game.paused = False
+            menu.game.paused = True
             menu.game.spriteRenderer.setRendering(False) # Always close the Game
             menu.game.mapEditor.setRendering(False) # Always close the Editor
             menu.game.textHandler.setActive(False) # Always close any open inputs
@@ -145,7 +146,7 @@ def showLevelSelect(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
-            menu.game.paused = False
+            menu.game.paused = True
             menu.game.spriteRenderer.setRendering(False) # Always close the Game
             menu.game.mapEditor.setRendering(False) # Always close the Editor
             menu.game.textHandler.setActive(False) # Always close any open inputs

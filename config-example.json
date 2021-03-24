@@ -34,10 +34,6 @@
             "image": "Icon.png",
             "alpha": true
         }, 
-        "heart": {
-            "image": "Heart.png",
-            "alpha": true
-        },
         "person": {
             "image": "Person.png",
             "alpha": true
@@ -122,6 +118,10 @@
             "image": "Departing.png",
             "alpha": true
         }, 
+        "departingWhite": {
+            "image": "DepartingWhite.png",
+            "alpha": true
+        },
         "walking": {
             "image": "Walking.png",
             "alpha": true
@@ -134,12 +134,24 @@
             "image": "Boarding.png",
             "alpha": true
         }, 
+        "boardingWhite": {
+            "image": "BoardingWhite.png",
+            "alpha": true
+        }, 
         "waiting": {
             "image": "Waiting.png",
             "alpha": true
         }, 
+        "waitingWhite": {
+            "image": "WaitingWhite.png",
+            "alpha": true
+        },
         "flag": {
             "image": "Flag.png",
+            "alpha": true
+        }, 
+        "flagWhite": {
+            "image": "FlagWhite.png",
             "alpha": true
         }, 
         "airport": {
@@ -212,6 +224,10 @@
             "boot": {
                 "file": "boot.wav",
                 "volume": 1.0
+            },
+            "bell": {
+                "file": "Bell.wav",
+                "volume": 0.7
             }
         },
         "music": {

@@ -29,7 +29,7 @@ class Game:
         self.playing = True
         self.clock = pygame.time.Clock()
         self.running = True
-        self.paused = False
+        self.paused = True # start with the game paused (menus will keep running though)
         self.fullscreen = config["graphics"]["fullscreen"]
 
         # Engine

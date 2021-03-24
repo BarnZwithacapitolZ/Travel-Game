@@ -17,6 +17,7 @@ class SpriteRenderer():
     #loads all the sprites into groups and stuff
     def __init__(self, game):
         self.allSprites = pygame.sprite.Group()
+        self.entities = pygame.sprite.Group()
         self.layer1 = pygame.sprite.Group() # layer 1
         self.layer2 = pygame.sprite.Group() # layer 2
         self.layer3 = pygame.sprite.Group() # layer 3
@@ -38,7 +39,7 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played
         self.timer = 0
-        self.timeStep = 30 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.lives = DEFAULTLIVES
 
         self.dt = 1 # control the speed of whats on screen
@@ -216,6 +217,11 @@ class SpriteRenderer():
         return self.lives
 
 
+    def getAllDestination(self):
+        if hasattr(self, 'allDestinations'):
+            return self.allDestinations
+
+
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
@@ -239,6 +245,7 @@ class SpriteRenderer():
         self.lives = DEFAULTLIVES
         self.totalPeople = 0
         self.totalPeopleNone = False
+        self.entities.empty()
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -308,9 +315,6 @@ class SpriteRenderer():
             self.connectionTypes.append("layer 4")
         else:
             self.showLayer(self.getLayerInt(self.connectionTypes[0]))
-
-        # add the first player
-        self.gridLayer2.addPerson(self.allDestinations)
 
 
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
@@ -426,6 +430,7 @@ class SpriteRenderer():
                 # wait 2 seconds before spawing the next person when there is no people left
                 if self.timer > 2 and self.totalPeopleNone:
                     self.timer = 0
+                    self.game.audioLoader.playSound("bell")    
                     self.gridLayer2.addPerson(self.allDestinations)       
                     self.totalPeopleNone = False
 
@@ -494,6 +499,10 @@ class SpriteRenderer():
 
     def render(self):
         if self.rendering:
+            # Entities drawn below the other sprites
+            for entity in self.entities:
+                entity.draw() 
+             
             self.renderLayer(1, self.gridLayer1, self.layer1)
             self.renderLayer(2, self.gridLayer2, self.layer2)
             self.renderLayer(3, self.gridLayer3, self.layer3)

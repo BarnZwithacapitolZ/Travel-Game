@@ -1,6 +1,6 @@
 {
     "mapName": "London", 
-    "locked": false,
+    "locked": true,
     "deletable": false, 
     "saved": true, 
     "width": 18,

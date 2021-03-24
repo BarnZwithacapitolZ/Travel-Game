@@ -508,6 +508,7 @@ class GameOpeningMenu(Menu):
 
         def callback(obj, menu, x):
             menu.game.paused = False
+            menu.game.spriteRenderer.gridLayer2.addPerson(menu.game.spriteRenderer.getAllDestination()) # add the first player
             menu.close()
 
         for component in self.components:

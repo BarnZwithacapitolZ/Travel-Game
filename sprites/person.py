@@ -77,8 +77,11 @@ class Person(pygame.sprite.Sprite):
         self.rad = 5
         self.step = 15
 
+        self.entities = []
+
         # Switch to the layer that the player spawned on
         self.switchLayer(self.getLayer(self.startingConnectionType), self.getLayer(self.currentConnectionType))
+        self.spawnAnimation()
 
 
     # static function to check which player types can spawn on the map dependent on the desitations available
@@ -124,7 +127,10 @@ class Person(pygame.sprite.Sprite):
         return finalPlayerTypes, weights
 
 
-    #### Getters ####
+    def spawnAnimation(self):
+        Particle(self.game, (self.spriteRenderer.allSprites, self.spriteRenderer.entities), self)
+        self.game.audioLoader.playSound("bell", 1)    
+
 
     # Return the current status (Status) of the person
     def getStatus(self):
@@ -181,7 +187,9 @@ class Person(pygame.sprite.Sprite):
         return self.travellingOn
 
 
-    #### Setters ####
+    def getEntities(self):
+        return self.entities
+
 
     # Set the persons status
     def setStatus(self, status):
@@ -231,10 +239,18 @@ class Person(pygame.sprite.Sprite):
         self.spawn = possibleSpawns[spawn]
 
 
+    def setEntities(self, entities):
+        self.entities = entities
+
+
     def remove(self):
         self.kill()
         self.statusIndicator.kill()
         self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() - 1)
+
+
+    def addEntity(self, entity):
+        self.entities.append(entity)
 
 
     # Add a node to the persons path
@@ -372,7 +388,6 @@ class Person(pygame.sprite.Sprite):
         self.timerFont = pygame.font.Font(pygame.font.get_default_font(), int(15 * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())) # do I need the fixed scale to change here?
 
 
-
     def draw(self):
         if self.dirty or self.image is None: self.__render()
         self.game.renderer.addSurface(self.image, (self.rect))
@@ -389,8 +404,7 @@ class Person(pygame.sprite.Sprite):
 
         if self.timer <= 20:
             self.game.renderer.addSurface(None, None, self.drawTimer)
-
-
+        
 
     def events(self):
         self.vel = vec(0, 0)
@@ -473,7 +487,7 @@ class Person(pygame.sprite.Sprite):
             # print(self.status)
 
             self.timer -= self.game.dt * self.spriteRenderer.getDt()
-            self.rad += self.step * self.game.dt
+            self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
 
             # Increase the radius of the selector showing the destination
             if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
@@ -569,7 +583,10 @@ class StatusIndicator(pygame.sprite.Sprite):
 
         self.dirty = True
 
-        self.images = [None, "walking", "waiting", "boarding", "boarding", None, "departing", "flag"]
+        if self.spriteRenderer.getDarkMode():
+            self.images = [None, "walkingWhite", "waitingWhite", "boardingWhite", "boardingWhite", None, "departingWhite", "flagWhite"]
+        else:
+            self.images = [None, "walking", "waiting", "boarding", "boarding", None, "departing", "flag"]
         self.currentState = self.currentPerson.getStatusValue()
 
 
@@ -592,3 +609,52 @@ class StatusIndicator(pygame.sprite.Sprite):
         if self.currentPerson.getStatusValue() != self.currentState:
             self.dirty = True
             self.currentState = self.currentPerson.getStatusValue()
+
+
+
+class Particle(pygame.sprite.Sprite):
+    def __init__(self, game, groups, currentPerson, color = YELLOW):
+        self.groups = groups
+        super().__init__(self.groups)
+        self.game = game
+        self.currentPerson = currentPerson
+        self.spriteRenderer = self.currentPerson.spriteRenderer
+        self.color = color
+        self.start, self.end = 100, 0
+        self.rad = 0
+        self.dirty = True
+        self.alpha = self.start
+
+        self.currentPerson.addEntity(self)
+
+
+    def __render(self):
+        self.dirty = False
+        self.pos = (self.currentPerson.pos - vec(self.rad, self.rad)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        self.size = vec(self.currentPerson.width + (self.rad * 2), self.currentPerson.height + (self.rad * 2)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        self.image = pygame.Surface((self.size)).convert()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+        pygame.draw.ellipse(self.image, self.color, Rect(0, 0, *self.size))
+
+        self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+
+
+    def draw(self):
+        if self.dirty or self.image is None: self.__render()
+        self.game.renderer.addSurface(self.image, (self.rect))
+
+
+    def update(self):
+        self.rad += 60 * self.game.dt * self.spriteRenderer.getDt()
+        self.alpha -= 120 * self.game.dt * self.spriteRenderer.getDt()
+        
+        if self.alpha < self.end:
+            self.kill()
+            if len(self.currentPerson.getEntities()) < 3:
+                Particle(self.game, self.groups, self.currentPerson)
+            else:
+                self.currentPerson.setEntities([])
+
+        self.dirty = True
