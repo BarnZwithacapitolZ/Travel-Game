@@ -375,10 +375,9 @@ class MainMenu(Menu):
             # set the up transition
             def callback(obj, menu, animation):
                 obj.removeAnimation(animation)
-                menu.game.spriteRenderer.runOpeningMenu()
                 menu.remove(obj)
         
-            self.slideTransitionY((0, 0), 'second', speed = -40, callback = callback, direction = 'down')
+            self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
 class OptionMenu(Menu):
@@ -497,9 +496,11 @@ class OptionMenu(Menu):
         self.add(back)
 
 
-class GameOpeningMenu(Menu):
+class GameMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
+        self.startScreenOpen = False
+        self.endScreenOpen = False
 
 
     def closeTransition(self):
@@ -515,8 +516,37 @@ class GameOpeningMenu(Menu):
             component.addAnimation(transitionX, 'onLoad', speed = -40, transitionDirection = "right", x = -400, callback = callback)
 
 
-    def main(self):
+    def endScreen(self):
         self.open = True
+        self.endScreenOpen = True
+        self.startScreenOpen = False
+
+        self.game.paused = True
+        self.game.spriteRenderer.getHud().setOpen(False)
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        background = Rectangle(self, GREEN, (width, height), (x, y))
+        text = Label(self, "Level Compelte!", 45, Color("white"), (((x + width) / 2 - 50), (y + height) / 2 + 20))
+        ok = Label(self, "Level Selection", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
+
+        ok.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        ok.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        ok.addEvent(showLevelSelect, 'onMouseClick')
+
+
+        self.add(background)
+        self.add(text)
+        self.add(ok)
+    
+
+    def startScreen(self):
+        self.open = True
+        self.startScreenOpen = True
+        self.endScreenOpen = False
 
         # show this before the game is unpaused so we don't need this
         self.game.paused = True
@@ -534,7 +564,6 @@ class GameOpeningMenu(Menu):
         total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - 400, (y + height) / 2 + 20))
         play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - 400, (config["graphics"]["displayHeight"] / 2) + 20))
 
-        # total.setItalic(True)
 
         def callback(obj, menu, x):
             obj.x = x
@@ -543,13 +572,9 @@ class GameOpeningMenu(Menu):
         total.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((x + width) / 2 - 110), callback = callback)
         play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
 
-
         play.addEvent(hoverColor, 'onMouseOver', color = BLACK)
         play.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         play.addEvent(unpause, 'onMouseClick')
-
-        animateComponents = [background, total, play]
-
 
         self.add(background)
         self.add(total)
@@ -594,7 +619,6 @@ class GameHud(GameHudLayout):
 
     def main(self, transition = False):
         self.open = True
-        self.dropdownOpen = False
 
         hudX = 15
         hudY = 15
@@ -620,11 +644,6 @@ class GameHud(GameHudLayout):
         self.lives = Timer(self, self.textColor, GREEN, 100, self.game.spriteRenderer.getLives(), (48, 48), (config["graphics"]["displayWidth"] - 89, hudY - 4), 5)
         self.completedAmount = Label(self, str(self.game.spriteRenderer.getCompleted()), 20, self.textColor, (self.completed.x + 14.5, self.completed.y + 13)) 
 
-        # for i in range(self.game.spriteRenderer.getLives()):
-        #     heart = Image(self, "heart", (30, 30), ((config["graphics"]["displayWidth"] - (100 + (35 * self.game.spriteRenderer.getLives()) + meterWidth)) + (i * 35), hudY))
-        #     self.hearts.append(heart)
-        #     self.add(heart)
-
         layers.addEvent(hoverLayers, 'onMouseOver', image = layersSelectedImage)
         layers.addEvent(hoverLayers, 'onMouseOut', image = layersImage)
         layers.addEvent(changeGameLayer, 'onMouseClick')
@@ -649,7 +668,7 @@ class GameHud(GameHudLayout):
             # set the up transition
             def callback(obj, menu, animation):
                 obj.removeAnimation(animation)
-                menu.game.spriteRenderer.runOpeningMenu()
+                menu.game.spriteRenderer.runStartScreen()
                 menu.remove(obj)
         
             self.slideTransitionY((0, 0), 'second', callback = callback)
@@ -659,14 +678,18 @@ class GameHud(GameHudLayout):
         if hasattr(self, 'lives'):
             def callback(obj, menu):
                 if menu.game.spriteRenderer.getLives() <= 0:
-                    menu.game.paused = True
+                    menu.game.spriteRenderer.runEndScreen() # run end screen game over :(
 
             self.lives.addAnimation(increaseTimer, 'onLoad', speed = -0.2, finish = self.game.spriteRenderer.getLives() * self.lives.getStep(), direction = "backwards", callback = callback)
 
 
     def setCompletedAmount(self):
         if hasattr(self, 'completed'):
-            self.completed.addAnimation(increaseTimer, 'onLoad', speed = 0.2, finish = self.game.spriteRenderer.getCompleted() * self.completed.getStep())
+            def callback(obj, menu):
+                if menu.game.spriteRenderer.getCompleted() >= menu.game.spriteRenderer.getTotalToComplete():
+                    menu.game.spriteRenderer.runEndScreen() # run end screen game complete!
+
+            self.completed.addAnimation(increaseTimer, 'onLoad', speed = 0.2, finish = self.game.spriteRenderer.getCompleted() * self.completed.getStep(), callback = callback)
             self.completedAmount.setText(str(self.game.spriteRenderer.getCompleted()))
             width, height = self.completedAmount.getFontSizeScaled()[0] / self.renderer.getScale(), self.completedAmount.getFontSizeScaled()[1] / self.renderer.getScale()
             self.completedAmount.setPos(((self.completed.x + (self.completed.width / 2)) - width / 2, ((self.completed.y + (self.completed.height / 2)) - height / 2) + 1))

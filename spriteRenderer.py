@@ -29,8 +29,8 @@ class SpriteRenderer():
 
         # Hud for when the game is running
         self.hud = GameHud(self.game)
+        self.menu = GameMenu(self.game)
         self.messageSystem = MessageHud(self.game)
-        self.openingMenu = GameOpeningMenu(self.game)
 
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
@@ -92,9 +92,14 @@ class SpriteRenderer():
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
 
 
-    def runOpeningMenu(self):
+    def runStartScreen(self):
         if self.rendering and not self.debug:
-            self.openingMenu.main()
+            self.menu.startScreen()
+
+
+    def runEndScreen(self):
+        if self.rendering and not self.debug:
+            self.menu.endScreen()
 
 
     def setCompleted(self, completed):
@@ -483,8 +488,8 @@ class SpriteRenderer():
 
             # resize huds and menus
             self.hud.resize()
+            self.menu.resize()
             self.messageSystem.resize()
-            self.openingMenu.resize()
 
             for sprite in self.allSprites:
                 sprite.dirty = True
@@ -512,5 +517,5 @@ class SpriteRenderer():
             # Render the hud above all the other sprites
             self.hud.display()
             self.messageSystem.display()
-            self.openingMenu.display()
+            self.menu.display()
 
