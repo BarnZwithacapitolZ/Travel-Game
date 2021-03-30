@@ -516,6 +516,7 @@ class GameMenu(Menu):
             component.addAnimation(transitionX, 'onLoad', speed = -40, transitionDirection = "right", x = -400, callback = callback)
 
 
+    # Anything used by both the completed and game over end screens
     def endScreen(self):
         self.open = True
         self.endScreenOpen = True
@@ -523,6 +524,34 @@ class GameMenu(Menu):
 
         self.game.paused = True
         self.game.spriteRenderer.getHud().setOpen(False)
+
+
+    def endScreenGameOver(self):
+        self.endScreen()
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+        x = width - (width / 2)
+        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
+
+        background = Rectangle(self, GREEN, (width, height), (x, y))
+        text = Label(self, "Level Over!", 45, Color("white"), (((x + width) / 2 - 50), (y + height) / 2 + 20))
+        ok = Label(self, "Level Selection", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
+
+        ok.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        ok.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        ok.addEvent(showLevelSelect, 'onMouseClick')
+
+
+        self.add(background)
+        self.add(text)
+        self.add(ok)
+    
+
+    def endScreenComplete(self):
+        self.endScreen()
+        self.game.spriteRenderer.setLevelComplete() # Complete the level
+        self.game.spriteRenderer.setLevelScore() # Set the score
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240
@@ -541,7 +570,7 @@ class GameMenu(Menu):
         self.add(background)
         self.add(text)
         self.add(ok)
-    
+
 
     def startScreen(self):
         self.open = True
@@ -687,7 +716,7 @@ class GameHud(GameHudLayout):
         if hasattr(self, 'completed'):
             def callback(obj, menu):
                 if menu.game.spriteRenderer.getCompleted() >= menu.game.spriteRenderer.getTotalToComplete():
-                    menu.game.spriteRenderer.runEndScreen() # run end screen game complete!
+                    menu.game.spriteRenderer.runEndScreen(True) # run end screen game complete!
 
             self.completed.addAnimation(increaseTimer, 'onLoad', speed = 0.2, finish = self.game.spriteRenderer.getCompleted() * self.completed.getStep(), callback = callback)
             self.completedAmount.setText(str(self.game.spriteRenderer.getCompleted()))

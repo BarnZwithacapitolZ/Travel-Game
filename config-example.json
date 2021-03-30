@@ -25,6 +25,10 @@
             "1280 x 720": [1280, 720]
         }
     }, 
+    "player": {
+        "tutorial": false,
+        "keys": 0
+    },
     "fonts": {
         "whiteRabbit": "whitrabt.ttf",
         "bitwise": "Bitwise-m19x.ttf"

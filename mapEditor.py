@@ -25,17 +25,22 @@ class MapEditor(SpriteRenderer):
     def getSaved(self):
         return self.levelData["saved"]
 
+
     def getDeletable(self):
         return self.levelData["deletable"]
+
 
     def getAllowEdits(self):
         return self.allowEdits
 
+
     def getClickManager(self):
         return self.clickManager
 
+
     def getLevelChanges(self):
         return self.levelChanges
+
 
     def getPoppedLevelChanges(self):
         return self.poppedLevelChanges
@@ -124,7 +129,6 @@ class MapEditor(SpriteRenderer):
 
         self.addChange()
         
-        
 
     # returns true if dropdowns have been closed, false otherwise
     def isDropdownsClosed(self):
@@ -177,6 +181,7 @@ class MapEditor(SpriteRenderer):
 
         return [True]
 
+
     # Save As function
     def saveLevelAs(self):
         # Name of the map
@@ -197,13 +202,6 @@ class MapEditor(SpriteRenderer):
 
         self.game.mapLoader.addMap(self.game.textHandler.getString(), path, self.game.mapLoader.getCustomMaps())
         self.game.mainMenu.updateMaps()
-
-    
-    # Save function, for when the level has already been created before (and is being edited)
-    def saveLevel(self):
-        with open(self.game.mapLoader.getMap(self.levelData["mapName"]), "w") as f:
-            json.dump(self.levelData, f)
-        f.close()
 
 
     # Remove a map, which has already been saved, from the maps folder and references in config

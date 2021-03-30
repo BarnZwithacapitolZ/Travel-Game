@@ -644,6 +644,7 @@ class Map(MenuComponent):
         self.levelInt = levelInt
         self.levelData = menu.game.mapLoader.getMapData(self.levelName)
 
+
     def getLevel(self):
         return self.level
 

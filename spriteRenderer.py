@@ -41,6 +41,7 @@ class SpriteRenderer():
         self.timer = 0
         self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.lives = DEFAULTLIVES
+        self.score = 0
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
@@ -68,13 +69,14 @@ class SpriteRenderer():
             "width": 18,
             "height": 10,
             "difficulty": 1, # out of 4
+            "score": 0,
             "completion": {
                 "total": 10,
                 "completed": False,
                 "time": 0
             },
             "backgrounds": {
-                "layer 1": CREAM,
+                "layer 1": CREAM, # Default color CREAM :) 
                 "layer 2": CREAM,
                 "layer 3": CREAM,
                 "layer 4": CREAM
@@ -84,6 +86,13 @@ class SpriteRenderer():
             "stops": {},
             "destinations": {}
         } # Level data to be stored, for export to JSON
+
+
+    # Save function, for when the level has already been created before (and is being edited)
+    def saveLevel(self):
+        with open(self.game.mapLoader.getMap(self.levelData["mapName"]), "w") as f:
+            json.dump(self.levelData, f)
+        f.close()
 
 
     def setRendering(self, rendering, transition = False):
@@ -97,14 +106,48 @@ class SpriteRenderer():
             self.menu.startScreen()
 
 
-    def runEndScreen(self):
+    def runEndScreen(self, completed = False):
         if self.rendering and not self.debug:
-            self.menu.endScreen()
+            if completed:
+                self.menu.endScreenComplete()
+            else:
+                self.menu.endScreenGameOver()
 
 
     def setCompleted(self, completed):
         self.completed = completed
         self.hud.setCompletedText()
+
+
+    # When the player completed the level, set it to complete in the level data and save the data
+    def setLevelComplete(self):
+        if hasattr(self, 'levelData'):
+            return
+
+        # If the level is not already set to completed, complete it   
+        if not self.levelData["completion"]["completed"]:
+            self.levelData["completion"]["completed"] = True
+            self.saveLevel()
+
+
+    # Use the number of lives left to work out the players score TODO: make this use other factors in the future
+    def setLevelScore(self):
+        if not hasattr(self, 'levelData'):
+            return 
+
+        self.score = self.lives
+        previousScore = 0
+
+        if "score" in self.levelData:
+            previousScore = self.levelData["score"]
+
+        if self.score > previousScore:
+            self.levelData["score"] = self.score
+            self.saveLevel()
+
+        scoreDifference = self.score - previousScore if self.score - previousScore > 0 else 0
+        config["player"]["keys"] += scoreDifference
+        dump(config)
 
 
     def setTotalToComplete(self, totalToComplete):
@@ -227,6 +270,10 @@ class SpriteRenderer():
             return self.allDestinations
 
 
+    def getScore(self):
+        return self.score
+
+
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
@@ -311,6 +358,7 @@ class SpriteRenderer():
 
         # set number of people to complete level
         self.totalToComplete = random.randint(8, 12)
+        # self.totalToComplete = 1
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
         self.setDarkMode()
