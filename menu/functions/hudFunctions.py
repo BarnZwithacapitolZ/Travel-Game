@@ -39,7 +39,7 @@ def changeGameLayer(obj, menu, event):
 
 # Show the option menu
 def goHome(obj, menu, event):
-    menu.game.optionMenu.main()
+    menu.game.optionMenu.main(True, True)
 
 
 #### Editor Hud Function ####

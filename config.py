@@ -49,6 +49,7 @@ SCANLINESBLUE = (0, 102, 255, 20)
 SCANLINES = SCANLINESGREEN
 
 DEFAULTLIVES = 3
+# DEFAULTLIVES = 1
 
 # dump config file to json for saving
 def dump(data):

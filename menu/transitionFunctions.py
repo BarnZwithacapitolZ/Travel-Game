@@ -4,25 +4,6 @@ from config import *
 
 vec = pygame.math.Vector2
 
-def transitionAnimationOpen(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= 0:
-        obj.removeAnimation(animation)
-        menu.close()
-        menu.transition()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionAnimationClose(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= config["graphics"]["displayWidth"]:
-        obj.removeAnimation(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
 
 
 def transitionFadeIn(obj, menu, animation):
@@ -42,11 +23,6 @@ def transitionFadeOut(obj, menu, animation):
     if obj.getAlpha() <= 0:
         obj.removeAnimation(animation)
         menu.close()
-
-
-
-
-transitionspeed = 40
 
 
 def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
@@ -80,6 +56,7 @@ def transitionMessageDown(obj, menu, animation, speed, transitionDirection, y):
     # obj.rect.y = obj.y * menu.renderer.getScale()
     obj.setRectPos()
 
+
 def transitionMessageRight(obj, menu, animation, speed, x):
     obj.setPos((obj.x + speed * 100 * menu.game.dt, obj.y))
 
@@ -89,51 +66,8 @@ def transitionMessageRight(obj, menu, animation, speed, x):
 
     obj.setRectPos()
 
-def transitionLeft(obj, menu, animation):
-    obj.x -= transitionspeed * 100 * menu.game.dt
-
-    if obj.x < -500:
-        obj.removeAnimation(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-    
-
-def transitionLeftUnpause(obj, menu, animation):
-    obj.x -= transitionspeed * 100 * menu.game.dt
-
-    if obj.x < -500:
-        obj.removeAnimation(animation)
-        menu.close()
-        menu.game.paused = False
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionRight(obj, menu, animation):
-    obj.x += transitionspeed * 100 * menu.game.dt
-
-    if obj.x >= 100:
-        obj.x = 100
-        obj.removeAnimation(animation)
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionRightBackground(obj, menu, animation):
-    obj.x += transitionspeed * 100 * menu.game.dt
-
-    if obj.x >= 0:
-        obj.x = 0
-        obj.removeAnimation(animation)
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
 
 #### Text hover animations ####
-hoverspeed = 10
-
 def hoverOverAnimation(obj, menu, animation, speed, x):
     obj.x += speed * 100 * menu.game.dt
 

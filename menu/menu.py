@@ -398,13 +398,16 @@ class OptionMenu(Menu):
         # self.game.mapEditor.getMessageSystem().setOpen(True)
         self.game.mapEditor.getHud().setOpen(True)
 
+        def callback(obj, menu, y):
+            menu.game.paused = False
+            menu.close()
+
         for component in self.components:
-            # Can't add animation until previous opening animations stopped
-            if transitionRight not in component.getAnimations() and transitionRightBackground not in component.getAnimations():
-                component.addAnimation(transitionLeftUnpause, 'onLoad')
+            if transitionY not in component.getAnimations():
+                component.addAnimation(transitionY, 'onLoad', speed = -40, transitionDirection = "up", y = -config["graphics"]["displayHeight"], callback = callback)
 
 
-    def main(self):
+    def main(self, pausedSurface = True, transition = False):
         self.open = True
         
         self.game.paused = True
@@ -412,59 +415,67 @@ class OptionMenu(Menu):
         # self.game.mapEditor.getMessageSystem().setOpen(False) 
         self.game.mapEditor.getHud().setOpen(False)
 
-        self.game.spriteRenderer.createPausedSurface()
+        if pausedSurface:
+            self.game.spriteRenderer.createPausedSurface()
 
-        sidebar = Rectangle(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
+        x = 100
 
-        paused = Label(self, "Paused", 70, BLACK, (-400, 100))
+        background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
 
-        options = Label(self, "Options", 50,  BLACK, (-400, 200))
-        mainMenu = Label(self, "Main Menu", 50, BLACK, (-400, 260))
-        close = Label(self, "Close", 30, BLACK, (-400, 440))
+        paused = Label(self, "Paused", 70, Color("white"), (x, 100))
+
+        options = Label(self, "Options", 50,  Color("white"), (x, 200))
+        mainMenu = Label(self, "Main Menu", 50, Color("white"), (x, 260))
+        close = Label(self, "Close", 30, Color("white"), (x, 440))
 
         options.addEvent(showOptions, 'onMouseClick')
-        options.addEvent(hoverOver, 'onMouseOver')
-        options.addEvent(hoverOut, 'onMouseOut')
+        options.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        options.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         mainMenu.addEvent(showLevelSelect, 'onMouseClick')
-        mainMenu.addEvent(hoverOver, 'onMouseOver')
-        mainMenu.addEvent(hoverOut, 'onMouseOut')
+        mainMenu.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        mainMenu.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         close.addEvent(unpause, 'onMouseClick')
-        close.addEvent(hoverOver, 'onMouseOver')
-        close.addEvent(hoverOut, 'onMouseOut')
+        close.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        close.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
-        sidebar.addAnimation(transitionRightBackground, 'onLoad')
-        animateComponents = [paused, options, mainMenu, close]
-        for component in animateComponents:
-            component.addAnimation(transitionRight, 'onLoad')
-
-
-        self.add(sidebar)
+        self.add(background)
         self.add(paused)
         self.add(options)
         self.add(mainMenu)
         self.add(close)
-        
+
+        if transition:
+            def callback(obj, menu, y):
+                obj.y = y
+
+            for component in self.components:
+                y = component.y
+                component.setPos((component.x, component.y - config["graphics"]["displayHeight"]))
+                component.addAnimation(transitionY, 'onLoad', speed = 40, transitionDirection = 'down', y = y, callback = callback)
+
 
     def options(self):
         self.open = True
 
-        sidebar = Rectangle(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+        x = 100
 
-        graphics = Label(self, "Graphics", 50, BLACK, (100, 200))
-        controls = Label(self, "Controls", 50, BLACK, (100, 260))
-        back = Label(self, "Back", 30,  BLACK, (100, 440))
+        background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
+
+        graphics = Label(self, "Graphics", 50, Color("white"), (x, 200))
+        controls = Label(self, "Controls", 50, Color("white"), (x, 260))
+        back = Label(self, "Back", 30,  Color("white"), (x, 440))
 
         graphics.addEvent(showGraphics, 'onMouseClick')
-        graphics.addEvent(hoverOver, 'onMouseOver')
-        graphics.addEvent(hoverOut, 'onMouseOut')
+        graphics.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        graphics.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         back.addEvent(showMain, 'onMouseClick')
-        back.addEvent(hoverOver, 'onMouseOver')
-        back.addEvent(hoverOut, 'onMouseOut')
+        back.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        back.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
-        self.add(sidebar)
+        self.add(background)
         self.add(graphics)
         self.add(controls)
         self.add(back)
@@ -472,34 +483,37 @@ class OptionMenu(Menu):
 
     def graphics(self):
         self.open = True
-        sidebar = Rectangle(self, (0, 169, 132), (500, config["graphics"]["displayHeight"]), (0, 0))
+
+        x = 100
+
+        background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
 
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
         scanlinesText = "On" if config["graphics"]["scanlines"]["enabled"] else "Off"
 
-        antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, BLACK, (100, 200))
-        fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, BLACK, (100, 260))
-        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, BLACK, (100, 320))
-        back = Label(self, "Back", 30,  BLACK, (100, 440))
+        antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, Color("white"), (x, 200))
+        fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, Color("white"), (x, 260))
+        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, Color("white"), (x, 320))
+        back = Label(self, "Back", 30,  Color("white"), (x, 440))
 
         antiAlias.addEvent(toggleAlias, 'onMouseClick')
-        antiAlias.addEvent(hoverOver, 'onMouseOver')
-        antiAlias.addEvent(hoverOut, 'onMouseOut')
+        antiAlias.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        antiAlias.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         fullscreen.addEvent(toggleFullscreen, 'onMouseClick')
-        fullscreen.addEvent(hoverOver, 'onMouseOver')
-        fullscreen.addEvent(hoverOut, 'onMouseOut')
+        fullscreen.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        fullscreen.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         scanlines.addEvent(toggleScanlines, 'onMouseClick')
-        scanlines.addEvent(hoverOver, 'onMouseOver')
-        scanlines.addEvent(hoverOut, 'onMouseOut')
+        scanlines.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        scanlines.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
 
         back.addEvent(showOptions, 'onMouseClick')
-        back.addEvent(hoverOver, 'onMouseOver')
-        back.addEvent(hoverOut, 'onMouseOut')
+        back.addEvent(hoverOver, 'onMouseOver', color = BLACK)
+        back.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
         
-        self.add(sidebar)
+        self.add(background)
         self.add(antiAlias)
         self.add(fullscreen)
         self.add(scanlines)
@@ -534,6 +548,8 @@ class GameMenu(Menu):
 
         self.game.paused = True
         self.game.spriteRenderer.getHud().setOpen(False)
+
+        self.game.spriteRenderer.createPausedSurface()
 
 
     def endScreenGameOver(self):

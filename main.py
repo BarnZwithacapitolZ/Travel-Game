@@ -100,7 +100,7 @@ class Game:
                 # only open the option manu if the game isn't paused and the main menu isn't open
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
                     if not self.mapEditor.isDropdownsClosed():
-                        if not self.paused: self.optionMenu.main()
+                        if not self.paused: self.optionMenu.main(True, True)
                         else: self.optionMenu.closeTransition()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open

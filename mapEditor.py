@@ -412,3 +412,21 @@ class MapEditor(SpriteRenderer):
                 self.updateConnection(1, self.gridLayer1)
                 self.updateConnection(2, self.gridLayer2)
                 self.updateConnection(3, self.gridLayer3)
+
+
+    # override
+    def render(self):
+        if self.rendering:
+            # Entities drawn below the other sprites
+            for entity in self.entities:
+                entity.draw() 
+            
+            self.renderLayer(1, self.gridLayer1, self.layer1)
+            self.renderLayer(2, self.gridLayer2, self.layer2)
+            self.renderLayer(3, self.gridLayer3, self.layer3)
+            self.renderLayer(4, self.gridLayer4, self.layer4)
+
+            # Render the hud above all the other sprites
+            self.hud.display()
+            self.messageSystem.display()
+            self.menu.display()

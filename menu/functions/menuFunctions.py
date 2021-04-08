@@ -177,7 +177,7 @@ def showGraphics(obj, menu, event):
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
     menu.close()
-    menu.main()
+    menu.main(False)
 
 
 # Toggle anti-aliasing in the graphics menu
