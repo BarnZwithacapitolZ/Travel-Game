@@ -29,16 +29,24 @@ class Menu:
     def setOpen(self, hudOpen):
         self.open = hudOpen
 
+
     def getOpen(self):
         return self.open
 
+
+    def getComponents(self):
+        return self.components
+
+
     def add(self, obj):
         self.components.append(obj)
+
 
     def remove(self, obj):
         if obj in self.components:
             self.components.remove(obj)
             del obj
+
 
     def clickButton(self):  
         click = random.randint(1, 2)
@@ -404,6 +412,8 @@ class OptionMenu(Menu):
         # self.game.mapEditor.getMessageSystem().setOpen(False) 
         self.game.mapEditor.getHud().setOpen(False)
 
+        self.game.spriteRenderer.createPausedSurface()
+
         sidebar = Rectangle(self, GREEN, (500, config["graphics"]["displayHeight"]), (-500, 0))
 
         paused = Label(self, "Paused", 70, BLACK, (-400, 100))
@@ -534,8 +544,8 @@ class GameMenu(Menu):
         x = width - (width / 2)
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        background = Rectangle(self, GREEN, (width, height), (x, y))
-        text = Label(self, "Level Over!", 45, Color("white"), (((x + width) / 2 - 50), (y + height) / 2 + 20))
+        background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
+        text = Label(self, "Level Failed!", 45, Color("white"), (((x + width) / 2 - 30), (y + height) / 2 + 20))
         ok = Label(self, "Level Selection", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
 
         ok.addEvent(hoverColor, 'onMouseOver', color = BLACK)
@@ -558,12 +568,12 @@ class GameMenu(Menu):
         x = width - (width / 2)
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        background = Rectangle(self, GREEN, (width, height), (x, y))
+        background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
         text = Label(self, "Level Compelte!", 45, Color("white"), (((x + width) / 2 - 50), (y + height) / 2 + 20))
-        ok = Label(self, "Level Selection", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
+        ok = Label(self, "Level Selection", 25, BLACK, (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
 
-        ok.addEvent(hoverColor, 'onMouseOver', color = BLACK)
-        ok.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        ok.addEvent(hoverColor, 'onMouseOver', color = Color("white"))
+        ok.addEvent(hoverColor, 'onMouseOut', color = BLACK)
         ok.addEvent(showLevelSelect, 'onMouseClick')
 
 

@@ -41,7 +41,7 @@ class SpriteRenderer():
         self.timer = 0
         self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
         self.lives = DEFAULTLIVES
-        self.score = 0
+        self.score, self.bestScore = 0, 0
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
@@ -99,6 +99,7 @@ class SpriteRenderer():
         self.rendering = rendering
         self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
+        if self.rendering: self.createPausedSurface()
 
 
     def runStartScreen(self):
@@ -140,6 +141,7 @@ class SpriteRenderer():
 
         if "score" in self.levelData:
             previousScore = self.levelData["score"]
+            self.bestScore = previousScore
 
         if self.score > previousScore:
             self.levelData["score"] = self.score
@@ -274,6 +276,10 @@ class SpriteRenderer():
         return self.score
 
 
+    def getBestScore(self):
+        return self.bestScore
+
+
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
@@ -389,6 +395,28 @@ class SpriteRenderer():
         gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
 
         return gridLayer4.getLineSurface()
+
+
+    # Create a new surface when the game is paused with all the sprites currently in the game, so these don't have to be drawn every frame (as they are not moving)
+    def createPausedSurface(self):
+        self.pausedSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
+                                            int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
+
+        self.pausedSurface.blit(self.gridLayer4.getLineSurface(), (0, 0))
+        for sprite in self.layer4:
+            sprite.draw()
+
+            if hasattr(sprite, 'image'): # not all sprites have an image
+                self.pausedSurface.blit(sprite.image, (sprite.rect))
+
+        # for component in self.hud.getComponents():
+        #     if not hasattr(component, 'image'):
+        #         component.draw()
+
+        #     if hasattr(component, 'image'):
+        #         self.pausedSurface.blit(component.image, (component.rect))
+
+        return self.pausedSurface
 
 
     def getGridLayer(self, connectionType):
@@ -542,6 +570,8 @@ class SpriteRenderer():
             for sprite in self.allSprites:
                 sprite.dirty = True
 
+            self.createPausedSurface()
+
 
     def renderLayer(self, layer, gridLayer, group):
         if self.currentLayer == layer:
@@ -552,18 +582,21 @@ class SpriteRenderer():
 
     def render(self):
         if self.rendering:
-            # Entities drawn below the other sprites
-            for entity in self.entities:
-                entity.draw() 
-             
-            self.renderLayer(1, self.gridLayer1, self.layer1)
-            self.renderLayer(2, self.gridLayer2, self.layer2)
-            self.renderLayer(3, self.gridLayer3, self.layer3)
-            self.renderLayer(4, self.gridLayer4, self.layer4)
+            if not self.game.paused:
+                # Entities drawn below the other sprites
+                for entity in self.entities:
+                    entity.draw() 
+                
+                self.renderLayer(1, self.gridLayer1, self.layer1)
+                self.renderLayer(2, self.gridLayer2, self.layer2)
+                self.renderLayer(3, self.gridLayer3, self.layer3)
+                self.renderLayer(4, self.gridLayer4, self.layer4)
 
+            else:
+                if hasattr(self, 'pausedSurface'):
+                    self.game.renderer.addSurface(self.pausedSurface, (self.pausedSurface.get_rect()))
 
             # Render the hud above all the other sprites
             self.hud.display()
             self.messageSystem.display()
             self.menu.display()
-
