@@ -10,6 +10,8 @@ create a **config.json** file in the root directory and copy **config-example.js
 
 `main.py`
 
+# Development
+I have a trello board here https://trello.com/b/Lg8X8zBW/travel-game
 
 # Credit
 * Sam Barnes
