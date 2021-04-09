@@ -99,12 +99,14 @@ class SpriteRenderer():
         self.rendering = rendering
         self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
-        if self.rendering: self.createPausedSurface()
+        if self.rendering and self.game.paused: 
+            self.runStartScreen(transition)
+            self.createPausedSurface()
 
 
-    def runStartScreen(self):
+    def runStartScreen(self, transition = False):
         if self.rendering and not self.debug:
-            self.menu.startScreen()
+            self.menu.startScreen(transition)
 
 
     def runEndScreen(self, completed = False):
@@ -409,13 +411,10 @@ class SpriteRenderer():
             if hasattr(sprite, 'image'): # not all sprites have an image
                 self.pausedSurface.blit(sprite.image, (sprite.rect))
 
-        # for component in self.hud.getComponents():
-        #     if not hasattr(component, 'image'):
-        #         component.draw()
+        for component in self.hud.getComponents() + self.messageSystem.getComponents(): # draw hud and message system
+            component.drawPaused(self.pausedSurface)
 
-        #     if hasattr(component, 'image'):
-        #         self.pausedSurface.blit(component.image, (component.rect))
-
+        print(self.pausedSurface)
         return self.pausedSurface
 
 
@@ -591,12 +590,12 @@ class SpriteRenderer():
                 self.renderLayer(2, self.gridLayer2, self.layer2)
                 self.renderLayer(3, self.gridLayer3, self.layer3)
                 self.renderLayer(4, self.gridLayer4, self.layer4)
+    
+                self.hud.display()
+                self.messageSystem.display()
 
             else:
                 if hasattr(self, 'pausedSurface'):
                     self.game.renderer.addSurface(self.pausedSurface, (self.pausedSurface.get_rect()))
-
-            # Render the hud above all the other sprites
-            self.hud.display()
-            self.messageSystem.display()
+    
             self.menu.display()

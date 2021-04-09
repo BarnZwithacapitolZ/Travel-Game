@@ -185,9 +185,14 @@ class MenuComponent:
         return
 
 
-    @abc.abstractmethod
     def draw(self):
-        return
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.image, self.rect)
+
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
 
 
 class Label(MenuComponent):
@@ -279,11 +284,6 @@ class Label(MenuComponent):
 
     def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
-        
-
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, self.rect)
 
 
 class InputBox(Label):
@@ -330,10 +330,15 @@ class InputBox(Label):
     def resizeIndicator(self):
         self.indicator.dirty = True
 
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+        self.indicator.drawPaused(surface)
+
     
     def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, self.rect)
+        super().draw()
 
         self.setFlashing()
 
@@ -428,6 +433,14 @@ class Shape(MenuComponent):
     def makeSurface(self):
         if self.dirty or self.rect is None: self.__render()
 
+    
+    def drawPaused(self, surface):
+        self.makeSurface()
+        if self.alpha is not None:
+            surface.blit(self.image, (self.rect))
+        else:
+            self.drawShape(surface)
+
 
     def draw(self):
         self.makeSurface()
@@ -459,7 +472,6 @@ class Ellipse(Shape):
     def drawShape(self, surface, rect = None):
         rect = self.rect if rect is None else rect
         pygame.draw.ellipse(surface, self.color, rect, int(self.outline))
-
 
 
 class Arc(Shape):
@@ -541,11 +553,6 @@ class Timer(Arc):
     def makeSurface(self):
         if self.dirty or self.rect is None: self.__render()
 
-    
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, (self.rect))
-
 
 class MessageBox(Rectangle):
     def __init__(self, menu, message, margin = tuple()):   
@@ -621,6 +628,11 @@ class MessageBox(Rectangle):
             self.menu.components.remove(message)
 
         del self
+
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        self.drawShape(surface)
 
 
     def draw(self):
@@ -738,10 +750,9 @@ class Map(MenuComponent):
         self.finalImage.fill(self.menu.getBackgroundColor())
         self.finalImage.blit(self.image, (0, 0))
 
-
-    def draw(self):
+    
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
-        self.menu.renderer.addSurface(self.finalImage, (self.rect))
 
 
 class Image(MenuComponent):
@@ -778,8 +789,3 @@ class Image(MenuComponent):
 
     def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
-
-
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, (self.rect))

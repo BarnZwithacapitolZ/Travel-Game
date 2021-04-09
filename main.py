@@ -67,10 +67,12 @@ class Game:
     def setCaption(self):
         pygame.display.set_caption(config["game"]["gameTitle"])
 
+
     # Set the games icon
     def setIcon(self):
         icon = self.imageLoader.getImage(config["game"]["icon"])
         pygame.display.set_icon(icon)
+
 
     # Set the games cursor (cursor class?)
     def setCursor(self):
@@ -160,8 +162,6 @@ class Game:
                 self.clickManager.setRightClicked(False)
                     
 
-    
-
     def run(self):
         #main menu
         self.mainMenu.main()
@@ -179,6 +179,7 @@ class Game:
             self.__draw()
 
         self.running = False
+
 
     def __update(self):
         # print(self.paused)
@@ -200,7 +201,6 @@ class Game:
 
         # render everything
         self.renderer.render()
-
 
 
 if __name__ == "__main__":
