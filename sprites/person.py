@@ -388,8 +388,12 @@ class Person(pygame.sprite.Sprite):
         self.timerFont = pygame.font.Font(pygame.font.get_default_font(), int(15 * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())) # do I need the fixed scale to change here?
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+
+    def draw(self):
+        self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
 
         if self.mouseOver or self.clickManager.getPerson() == self:
@@ -597,12 +601,17 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.images[self.currentState] is None:
-            return
+            return False
 
         if self.dirty or self.image is None: self.__render()
-        self.game.renderer.addSurface(self.image, (self.rect))
+        return True
+
+
+    def draw(self):
+        if self.makeSurface():
+            self.game.renderer.addSurface(self.image, (self.rect))
 
     
     def update(self):
@@ -640,9 +649,13 @@ class Particle(pygame.sprite.Sprite):
 
         self.image.set_alpha(self.alpha, pygame.RLEACCEL)
 
+    
+    def makeSurface(self):
+        if self.dirty or self.image is None: self.__render()
+
 
     def draw(self):
-        if self.dirty or self.image is None: self.__render()
+        self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
 
 

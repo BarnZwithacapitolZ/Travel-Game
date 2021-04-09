@@ -119,8 +119,7 @@ class Transport(pygame.sprite.Sprite):
 
         for connection in nextNode.getConnections():
             if connection.getConnectionType() == self.currentConnection.getConnectionType():
-                if not isinstance(connection.getTo(), NODE.EntranceNode):
-                    totalConnections.append(connection)
+                totalConnections.append(connection)
 
         if len(totalConnections) <= 1:
             self.currentConnection = totalConnections[0]
@@ -336,8 +335,12 @@ class Transport(pygame.sprite.Sprite):
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+
+    def draw(self):
+        self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
 
         if self.timer > 0:

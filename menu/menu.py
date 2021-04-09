@@ -599,7 +599,7 @@ class GameMenu(Menu):
         self.add(ok)
 
 
-    def startScreen(self, transition = False):
+    def startScreen(self):
         self.open = True
         self.startScreenOpen = True
         self.endScreenOpen = False
@@ -616,17 +616,17 @@ class GameMenu(Menu):
 
         totalText = "Transport " + str(self.game.spriteRenderer.getTotalToComplete()) + " people!"
 
-        background = Rectangle(self, GREEN, (width, height), (x - config["graphics"]["displayWidth"], y))
-        total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - config["graphics"]["displayWidth"], (y + height) / 2 + 20))
-        play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - config["graphics"]["displayWidth"], (config["graphics"]["displayHeight"] / 2) + 20))
+        background = Rectangle(self, GREEN, (width, height), (x - 400, y))
+        total = Label(self, totalText, 45, Color("white"), (((x + width) / 2 - 110) - 400, (y + height) / 2 + 20))
+        play = Label(self, "Got it!", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 40) - 400, (config["graphics"]["displayHeight"] / 2) + 20))
 
 
         def callback(obj, menu, x):
             obj.x = x
 
-        # background.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = x, callback = callback)
-        # total.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((x + width) / 2 - 110), callback = callback)
-        # play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
+        background.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = x, callback = callback)
+        total.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((x + width) / 2 - 110), callback = callback)
+        play.addAnimation(transitionX, 'onLoad', speed = 40, transitionDirection = "left", x = ((config["graphics"]["displayWidth"] / 2) - 40), callback = callback)
 
         play.addEvent(hoverColor, 'onMouseOver', color = BLACK)
         play.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
@@ -637,24 +637,6 @@ class GameMenu(Menu):
         self.add(play)
 
         self.game.audioLoader.playSound("swoopIn")    
-
-        if transition:
-            # set the up transition
-            def callback(obj, menu, animation):
-                obj.removeAnimation(animation)
-                # menu.game.spriteRenderer.runStartScreen()
-                menu.animateX()
-                menu.remove(obj)
-        
-            self.slideTransitionY((0, 0), 'second', callback = callback)
-
-
-    def animateX(self):
-        def callback(obj, menu, x):
-            obj.x = x
-
-        for component in self.components:
-            component.addAnimation(transitionX, 'onLoad', speed = 60, transitionDirection = 'left', x = component.x + config["graphics"]["displayWidth"], callback = callback)
 
 
 # Anything that all the game huds will use
@@ -737,6 +719,15 @@ class GameHud(GameHudLayout):
         self.add(self.lives)
         self.add(self.completed)
         self.add(self.completedAmount)
+
+        if transition:
+            # set the up transition
+            def callback(obj, menu, animation):
+                obj.removeAnimation(animation)
+                menu.game.spriteRenderer.runStartScreen()
+                menu.remove(obj)
+        
+            self.slideTransitionY((0, 0), 'second', callback = callback)
 
 
     def setLifeAmount(self):
