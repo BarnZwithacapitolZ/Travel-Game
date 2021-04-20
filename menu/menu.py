@@ -303,6 +303,32 @@ class MainMenu(Menu):
             self.updateLoadingScreen()
 
 
+    def levelForward(self):
+        if not self.getTransitioning() and self.increaseCurrentLevel():
+            self.setLevelsClickable()
+
+            def callback(obj, menu, x):
+                obj.x = x
+                menu.setTransitioning(False)
+
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (self.levelWidth + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+
+    def levelBackward(self):
+        if not self.getTransitioning() and self.decreaseCurrentLevel():
+            self.setLevelsClickable()
+
+            def callback(obj, menu, x):
+                obj.x = x
+                menu.setTransitioning(False)
+
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+
     def setLevelsClickable(self):
         for index, level in self.levels.items():
             if index == self.currentLevel:
@@ -310,8 +336,10 @@ class MainMenu(Menu):
                 level.removeEvent(levelForward, 'onMouseClick')
                 level.removeEvent(levelBackward, 'onMouseClick')
 
-                if not level.getLevelData()["locked"]:
+                if not level.getLevelData()["locked"]["isLocked"]:
                     level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+                else:
+                    level.addEvent(unlockLevel, 'onMouseClick', level = level)
 
                 if self.currentLevel < len(self.levels) - 1:
                     self.levels[index + 1].removeEvent(levelForward, 'onMouseClick')
@@ -332,6 +360,7 @@ class MainMenu(Menu):
             else:
                 # Remove click event
                 level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+                level.removeEvent(unlockLevel, 'onMouseClick', level = level)
 
 
     def levelSelect(self, transition = False):
@@ -350,6 +379,11 @@ class MainMenu(Menu):
         self.levelComplete = Image(self, "buttonRed", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, config["graphics"]["displayHeight"] - 42))
         self.levelCompleteText = Label(self, "Level Incomplete", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, config["graphics"]["displayHeight"] - 36))
 
+        key = Image(self, "keyCream", (25, 25), (config["graphics"]["displayWidth"] - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - self.spacing - 75, 21))
+        keyTextBackground = Rectangle(self, CREAM, (40, 25), (config["graphics"]["displayWidth"] - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - self.spacing - 40, 21), shapeBorderRadius = [5, 5, 5, 5])
+        self.keyText = Label(self, str(config["player"]["keys"]), 20, BLACK, (config["graphics"]["displayWidth"] - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - self.spacing - 20, 27))
+        self.keyText.setPos((self.keyText.x - (self.keyText.getFontSize()[0] / 2), self.keyText.y))
+
         back.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
         back.addEvent(hoverImage, 'onMouseOut', image = "button")
         custom.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
@@ -364,6 +398,9 @@ class MainMenu(Menu):
         self.add(backText)
         self.add(custom)
         self.add(customText)
+        self.add(key)
+        self.add(keyTextBackground)
+        self.add(self.keyText)
 
 
         #### Adds the maps after eveything else in the menu has been loaded

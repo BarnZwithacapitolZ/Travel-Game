@@ -197,6 +197,18 @@
         "locked": {
             "image": "Locked.png",
             "alpha": true
+        },
+        "key": {
+            "image": "Key.png",
+            "alpha": true
+        },
+        "keyCream": {
+            "image": "KeyCream.png",
+            "alpha": true
+        },
+        "keyGreen": {
+            "image": "KeyGreen.png",
+            "alpha": true
         }
     }, 
     "audio": {

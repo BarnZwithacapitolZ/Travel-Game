@@ -674,11 +674,11 @@ class Map(MenuComponent):
         if config["graphics"]["scanlines"]["enabled"]:
             scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
             
-            fillColor = BLACK if self.levelData["locked"] else SCANLINES
+            fillColor = BLACK if self.levelData["locked"]["isLocked"] else SCANLINES
             scanlines.fill(fillColor)
 
             self.menu.renderer.drawScanlines(scanlines)
-            alpha = 95 if self.levelData["locked"] else config["graphics"]["scanlines"]["opacity"]
+            alpha = 95 if self.levelData["locked"]["isLocked"] else config["graphics"]["scanlines"]["opacity"]
             scanlines.set_alpha(alpha)
 
             self.image.blit(scanlines, (0, 0))
@@ -686,10 +686,27 @@ class Map(MenuComponent):
 
     # show that the level is locked
     def drawLocked(self):
-        if self.levelData["locked"]:
+        if self.levelData["locked"]["isLocked"]:
             locked = Image(self.menu, "locked", (100, 100), (self.width / 2 - 50, self.height / 2- 50))
+            key = Image(self.menu, "keyGreen", (30, 30), (self.width / 2 - 80, self.height - 50))
+            unlock = Label(self.menu, str(self.levelData["locked"]["unlock"]), 20, RED, (key.x + key.width + 10, key.y + (key.height / 2) - 8))
+            keyText = Label(self.menu, "to unlock", 20, GREEN, (unlock.x + unlock.getFontSize()[0] + 5, unlock.y))
+
             locked.makeSurface()
+            key.makeSurface()
+            unlock.makeSurface()
+            keyText.makeSurface()
             self.image.blit(locked.image, (locked.rect))
+            self.image.blit(key.image, (key.rect))
+            self.image.blit(unlock.image, (unlock.rect))
+            self.image.blit(keyText.image, (keyText.rect))
+
+            # draw the overlay when the scanlines aren't enabled
+            if not config["graphics"]["scanlines"]["enabled"]:
+                overlay = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
+                overlay.fill(BLACK)
+                overlay.set_alpha(95)
+                self.image.blit(overlay, (0, 0))
 
 
     # make rounded corners

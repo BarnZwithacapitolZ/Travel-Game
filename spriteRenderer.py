@@ -63,7 +63,10 @@ class SpriteRenderer():
     def setDefaultMap(self):
         self.levelData = {
             "mapName": "",
-            "locked": False,
+            "locked": {
+                "isLocked": False, 
+                "unlock": 0 # Amount to unlock
+            },
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before
             "width": 18,
@@ -90,9 +93,7 @@ class SpriteRenderer():
 
     # Save function, for when the level has already been created before (and is being edited)
     def saveLevel(self):
-        with open(self.game.mapLoader.getMap(self.levelData["mapName"]), "w") as f:
-            json.dump(self.levelData, f)
-        f.close()
+        self.game.mapLoader.saveMap(self.levelData["mapName"], self.levelData)
 
 
     def setRendering(self, rendering, transition = False):

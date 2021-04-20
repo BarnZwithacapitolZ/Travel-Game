@@ -175,6 +175,11 @@ class Node(pygame.sprite.Sprite):
     def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
 
+    
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
 
     def draw(self):
         self.makeSurface()

@@ -86,6 +86,29 @@ def loadLevel(obj, menu, event, level):
         menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 
+# Check if a level can be unlocked with the amount of keys the player has,
+# if it can then unlock the level, else play an error sound
+def unlockLevel(obj, menu, event, level):
+    if not level.getLevelData()["locked"]["isLocked"]:
+        return 
+    
+    if config["player"]["keys"] >= level.getLevelData()["locked"]["unlock"]:
+        config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
+        level.getLevelData()["locked"]["isLocked"] = False
+        menu.game.mapLoader.saveMap(level.getLevelData()["mapName"], level.getLevelData())
+        dump(config)
+
+        # if successful update menu
+        menu.keyText.setText(str(config["player"]["keys"]))
+        level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+        level.removeEvent(unlockLevel, 'onMouseClick', level = level)
+        level.dirty = True
+        menu.keyText.dirty = True
+
+    else:
+        print("do not have enough keys!")
+
+
 # Move the level scroller foward by one level
 def levelForward(obj, menu, event):
     if not menu.getTransitioning() and menu.increaseCurrentLevel():

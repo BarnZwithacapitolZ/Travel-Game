@@ -310,3 +310,8 @@ class MapLoader:
         return False
 
 
+    def saveMap(self, mapName, mapData):
+        with open(self.getMap(mapName), "w") as f:
+            json.dump(mapData, f)
+        f.close()
+

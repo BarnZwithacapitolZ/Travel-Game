@@ -105,6 +105,11 @@ class Game:
                         if not self.paused: self.optionMenu.main(True, True)
                         else: self.optionMenu.closeTransition()
 
+                elif e.key == pygame.K_RIGHT and self.mainMenu.open:
+                    self.mainMenu.levelForward()
+                elif e.key == pygame.K_LEFT and self.mainMenu.open:
+                    self.mainMenu.levelBackward()
+
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
                     # Show / Hide the different layers depending on key press
