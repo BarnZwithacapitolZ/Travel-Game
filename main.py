@@ -78,7 +78,6 @@ class Game:
     def setCursor(self):
         pygame.mouse.set_cursor(*pygame.cursors.tri_left)
 
-
     def getPaused(self):
         return self.paused
 
@@ -101,14 +100,17 @@ class Game:
 
                 # only open the option manu if the game isn't paused and the main menu isn't open
                 if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
-                    if not self.mapEditor.isDropdownsClosed():
-                        if not self.paused: self.optionMenu.main(True, True)
+                    if not self.mapEditor.isDropdownsClosed(): # Close the dropdowns first
+                        if not self.optionMenu.open: self.optionMenu.main(True, True)
                         else: self.optionMenu.closeTransition()
 
                 elif e.key == pygame.K_RIGHT and self.mainMenu.open:
                     self.mainMenu.levelForward()
                 elif e.key == pygame.K_LEFT and self.mainMenu.open:
                     self.mainMenu.levelBackward()
+
+                elif e.key == pygame.K_p:
+                    self.spriteRenderer.togglePaused()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():

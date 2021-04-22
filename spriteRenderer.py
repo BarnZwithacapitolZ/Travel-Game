@@ -47,6 +47,7 @@ class SpriteRenderer():
         self.startDt = self.dt
         self.fixedScale = 1 # control the size of whats on the screen
         self.startingFixedScale = 0
+        self.paused = False # Individual pause for the levels
 
         self.setDefaultMap()
 
@@ -192,6 +193,12 @@ class SpriteRenderer():
         self.lives = lives
 
 
+    def togglePaused(self):
+        self.paused = not self.paused 
+        self.game.paused = not self.game.paused
+        self.createPausedSurface()
+
+
     def getStartDt(self):
         return self.startDt
 
@@ -281,6 +288,10 @@ class SpriteRenderer():
         return self.bestScore
 
 
+    def getPaused(self):
+        return self.paused
+
+
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
@@ -299,6 +310,7 @@ class SpriteRenderer():
 
     # Reset the level back to its default state
     def clearLevel(self):
+        self.paused = False # Not to confuse the option menu
         self.startingFixedScale = 0 # reset the scale back to default
         self.timer = 0
         self.lives = DEFAULTLIVES
@@ -509,7 +521,6 @@ class SpriteRenderer():
                 # wait 2 seconds before spawing the next person when there is no people left
                 if self.timer > 2 and self.totalPeopleNone:
                     self.timer = 0
-                    self.game.audioLoader.playSound("bell")    
                     self.gridLayer2.addPerson(self.allDestinations)       
                     self.totalPeopleNone = False
 

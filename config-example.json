@@ -1,6 +1,6 @@
 {
     "game": {
-        "gameTitle": "Transport the Public 3", 
+        "gameTitle": "Transport the Public", 
         "version": 0.26, 
         "icon": "icon"
     }, 
@@ -112,6 +112,30 @@
         }, 
         "homeWhite": {
             "image": "HomeWhite.png",
+            "alpha": true
+        },
+        "pause": {
+            "image": "Pause.png",
+            "alpha": true
+        },
+        "pauseSelected": {
+            "image": "PauseSelected.png",
+            "alpha": true
+        },
+        "pauseWhite": {
+            "image": "PauseWhite.png",
+            "alpha": true
+        },
+        "play": {
+            "image": "Play.png",
+            "alpha": true
+        },
+        "playSelected": {
+            "image": "PlaySelected.png",
+            "alpha": true
+        },
+        "playWhite": {
+            "image": "PlayWhite.png",
             "alpha": true
         },
         "metro": {
@@ -244,6 +268,14 @@
             "bell": {
                 "file": "Bell.wav",
                 "volume": 0.7
+            },
+            "uiError": {
+                "file": "UI-error.wav",
+                "volume": 1.0
+            },
+            "uiSuccess": {
+                "file": "UI-success.wav",
+                "volume": 1.0
             }
         },
         "music": {

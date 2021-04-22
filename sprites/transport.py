@@ -32,6 +32,7 @@ class Transport(pygame.sprite.Sprite):
         self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
         self.speed = float(decimal.Decimal(random.randrange(50, 60)))
+        # self.speed = float(decimal.Decimal(random.randrange(55, 65)))
         
         self.mouseOver = False
         self.dirty = True

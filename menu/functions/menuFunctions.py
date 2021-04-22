@@ -93,6 +93,7 @@ def unlockLevel(obj, menu, event, level):
         return 
     
     if config["player"]["keys"] >= level.getLevelData()["locked"]["unlock"]:
+        menu.game.audioLoader.playSound("uiSuccess", 0)
         config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
         level.getLevelData()["locked"]["isLocked"] = False
         menu.game.mapLoader.saveMap(level.getLevelData()["mapName"], level.getLevelData())
@@ -106,7 +107,7 @@ def unlockLevel(obj, menu, event, level):
         menu.keyText.dirty = True
 
     else:
-        print("do not have enough keys!")
+        menu.game.audioLoader.playSound("uiError", 0)
 
 
 # Move the level scroller foward by one level

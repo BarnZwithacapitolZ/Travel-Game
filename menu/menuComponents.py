@@ -112,12 +112,13 @@ class MenuComponent:
 
         self.events = []
         self.animations = {}
+        self.components = []
 
         self.dirty = True
         self.responsive = True
 
         self.mouseOver = False
-
+        
 
     def getAnimations(self):
         return self.animations
@@ -149,6 +150,10 @@ class MenuComponent:
         self.offset = offset
 
 
+    def add(self, obj):
+        self.components.append(obj)
+
+
     def addEvent(self, function, event, **kwargs):
         self.events.append({'function': function, 'event': event, 'kwargs': kwargs})
 
@@ -167,6 +172,20 @@ class MenuComponent:
             self.events.remove(event)
 
 
+    def clearAnimations(self):
+        self.animations = {}
+
+
+    def clearEvents(self):
+        self.events = []
+
+
+    def resize(self):
+        self.dirty = True
+        for component in self.components:
+            component.resize()
+
+
     def update(self):
         self.acc += self.vel * 0.5
         self.vel += self.acc * self.menu.game.dt
@@ -183,6 +202,19 @@ class MenuComponent:
     @abc.abstractmethod
     def makeSurface(self):
         return
+
+
+    def addComponents(self):
+        if self.image is None: return
+
+        for component in list(self.components):
+            # make the components location relative to the gamedisplay, not this components surface
+            component.x -= self.x
+            component.y -= self.y
+            component.makeSurface()
+            
+            if component.image is not None:
+                self.image.blit(component.image, (component.rect))
 
 
     def draw(self):
@@ -419,10 +451,12 @@ class Shape(MenuComponent):
         self.outline = self.shapeOutline * self.menu.renderer.getScale()
         self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
 
-        if self.alpha is not None:
-            self.image = pygame.Surface(size).convert()
-            self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-            self.drawShape(self.image, (0, 0, *size))
+        # Create the image for blitting onto other surfaces, even if its not used in this shape
+        self.image = pygame.Surface(size).convert()
+        self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+        self.drawShape(self.image, (0, 0, *size))
+
+        self.addComponents()
 
 
     @abc.abstractmethod
@@ -436,7 +470,7 @@ class Shape(MenuComponent):
     
     def drawPaused(self, surface):
         self.makeSurface()
-        if self.alpha is not None:
+        if self.alpha is not None or len(self.components) > 0:
             surface.blit(self.image, (self.rect))
         else:
             self.drawShape(surface)
@@ -444,7 +478,7 @@ class Shape(MenuComponent):
 
     def draw(self):
         self.makeSurface()
-        if self.alpha is not None:
+        if self.alpha is not None or len(self.components) > 0:
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
             self.menu.renderer.addSurface(None, None, self.drawShape)
@@ -638,6 +672,8 @@ class MessageBox(Rectangle):
     def draw(self):
         self.makeSurface()
         self.menu.renderer.addSurface(None, None, self.drawShape)
+        # self.menu.renderer.addSurface(self.image, (self.rect))
+
 
         self.timer += self.menu.game.dt
 
@@ -802,6 +838,7 @@ class Image(MenuComponent):
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
         if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+        self.addComponents()
 
 
     def makeSurface(self):

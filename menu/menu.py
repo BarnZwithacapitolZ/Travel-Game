@@ -19,7 +19,7 @@ class Menu:
         self.open = False
         self.game = game
         self.renderer = game.renderer
-        self.components = []
+        self.components = [] # Components to render to the screen
 
         self.clicked = False
 
@@ -38,8 +38,8 @@ class Menu:
         return self.components
 
 
-    def add(self, obj):
-        self.components.append(obj)
+    def add(self, component):
+        self.components.append(component)
 
 
     def remove(self, obj):
@@ -55,7 +55,7 @@ class Menu:
 
     def resize(self):
         for component in self.components:
-            component.dirty = True # force redraw
+            component.resize() # force redraw
 
             if isinstance(component, InputBox):
                 component.resizeIndicator()
@@ -243,6 +243,12 @@ class MainMenu(Menu):
         options = Label(self, "Options", 50, BLACK, (x, editor.y + 60))
         end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
 
+        # test = Image(self, "button", (50, 50), (10, 10))
+        # test2 = Label(self, "hi", 20, BLACK, (15, 15))
+        # test.add(test2)
+        # test.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
+        # test.addEvent(hoverImage, 'onMouseOut', image = "button")
+        # self.add(test)
 
         cont.addEvent(openLevelSelect, 'onMouseClick')
         cont.addEvent(hoverOver, 'onMouseOver', x = x + 10)
@@ -269,6 +275,7 @@ class MainMenu(Menu):
         self.add(editor)
         self.add(options)
         self.add(end)
+
 
         if transition:
             # set the up transition
@@ -436,7 +443,8 @@ class OptionMenu(Menu):
         self.game.mapEditor.getHud().setOpen(True)
 
         def callback(obj, menu, y):
-            menu.game.paused = False
+            if not menu.game.spriteRenderer.getPaused():
+                menu.game.paused = False
             menu.close()
 
         for component in self.components:
@@ -724,11 +732,16 @@ class GameHud(GameHudLayout):
         layersSelectedImage = "layersSelected"
         homeImage = "homeWhite" if darkMode else "home"
         homeSelectedImage = "homeSelected"
+        pauseImage = "pauseWhite" if darkMode else "pause"
+        pauseSelectedImage = "pauseSelected"
+        playImage = "playWhite" if darkMode else "play"
+        playSelectedImage = "playSelected"
         walkingImage = "walkingWhite" if darkMode else "walking"
         self.textColor = Color("white") if darkMode else BLACK
 
         home = Image(self, homeImage, (50, 50), (hudX, 500))
         layers = Image(self, layersImage, (50, 50), (hudX, 440))
+        pause = Image(self, pauseImage, (50, 50), (hudX, 380))
         slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
         slowDownMeterOutline = Rectangle(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10), 2)
         self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
@@ -737,14 +750,19 @@ class GameHud(GameHudLayout):
         self.lives = Timer(self, self.textColor, GREEN, 100, self.game.spriteRenderer.getLives(), (48, 48), (config["graphics"]["displayWidth"] - 89, hudY - 4), 5)
         self.completedAmount = Label(self, str(self.game.spriteRenderer.getCompleted()), 20, self.textColor, (self.completed.x + 14.5, self.completed.y + 13)) 
 
-        layers.addEvent(hoverLayers, 'onMouseOver', image = layersSelectedImage)
-        layers.addEvent(hoverLayers, 'onMouseOut', image = layersImage)
+        pause.addEvent(hoverImage, 'onMouseOver', image = pauseSelectedImage)
+        pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
+        pause.addEvent(pauseGame, 'onMouseClick', image = playImage, imageSelected = playSelectedImage, newImage = pauseImage, newImageSelected = pauseSelectedImage)
+
+        layers.addEvent(hoverImage, 'onMouseOver', image = layersSelectedImage)
+        layers.addEvent(hoverImage, 'onMouseOut', image = layersImage)
         layers.addEvent(changeGameLayer, 'onMouseClick')
 
-        home.addEvent(hoverHome, 'onMouseOver', image = homeSelectedImage)
-        home.addEvent(hoverHome, 'onMouseOut', image = homeImage)
+        home.addEvent(hoverImage, 'onMouseOver', image = homeSelectedImage)
+        home.addEvent(hoverImage, 'onMouseOut', image = homeImage)
         home.addEvent(goHome, 'onMouseClick')
 
+        self.add(pause)
         self.add(home)
 
         if len(self.game.spriteRenderer.getConnectionTypes()) > 1:
@@ -833,8 +851,8 @@ class EditorHud(GameHudLayout):
         layers = Image(self, "layersWhite", (25, 25), (880, self.textY - 3))
         self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, self.textY))
 
-        layers.addEvent(hoverLayers, 'onMouseOver', image = "layersSelected")
-        layers.addEvent(hoverLayers, 'onMouseOut', image = "layersWhite")
+        layers.addEvent(hoverImage, 'onMouseOver', image = "layersSelected")
+        layers.addEvent(hoverImage, 'onMouseOut', image = "layersWhite")
         layers.addEvent(changeEditorLayer, 'onMouseClick')
 
         self.add(topbar)
@@ -1286,13 +1304,13 @@ class EditorHud(GameHudLayout):
         cancel.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         cancel.addEvent(toggleSaveBox, 'onMouseClick')
 
+        box.add(title)
+        box.add(saveBox)
+        box.add(cancelBox)
         self.add(box)
-        self.add(title)
         self.add(self.inputBox)
         self.add(mapName)
-        self.add(saveBox)
         self.add(save)
-        self.add(cancelBox)
         self.add(cancel)
 
 
@@ -1308,14 +1326,13 @@ class EditorHud(GameHudLayout):
         box = Rectangle(self, GREEN, (width, height), (x, y))
         title = Label(self, "Delete", 30, Color("white"), (x + 20, y + 20))
         title.setUnderline(True)
-        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 92))
-        confirm2 = Label(self, "delete this map?", 30, Color("white"), (x + 40, y + 125))
+        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 82))
+        confirm2 = Label(self, "delete this map?", 30, Color("white"), (x + 40, y + 115))
 
         confirmBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
         confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
         cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
-
 
         confirm.addEvent(hoverColor, 'onMouseOver', color = GREEN)
         confirm.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
@@ -1325,13 +1342,13 @@ class EditorHud(GameHudLayout):
         cancel.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
         cancel.addEvent(toggleConfirmBox, 'onMouseClick')
 
+        box.add(title)
+        box.add(confirm1)
+        box.add(confirm2)
+        box.add(confirmBox)
+        box.add(cancelBox)
         self.add(box)
-        self.add(title)
-        self.add(confirm1)
-        self.add(confirm2)
-        self.add(confirmBox)
         self.add(confirm)
-        self.add(cancelBox)
         self.add(cancel)
 
 
