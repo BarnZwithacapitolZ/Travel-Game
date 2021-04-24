@@ -579,6 +579,7 @@ class GameMenu(Menu):
 
         def callback(obj, menu, x):
             menu.game.paused = False
+            menu.game.spriteRenderer.getHud().slideHudIn()
             menu.game.spriteRenderer.gridLayer2.addPerson(menu.game.spriteRenderer.getAllDestination()) # add the first player
             menu.close()
 
@@ -712,17 +713,37 @@ class GameHud(GameHudLayout):
         self.hearts = []
         self.spacing = spacing
 
+        self.hudX = 15
+        self.hudY = 15
+
+
     def updateSlowDownMeter(self, amount):
-        if hasattr(self, 'slowDownMeterAmount'):
-            self.slowDownMeterAmount.setSize((amount, 20))
-            self.slowDownMeterAmount.dirty = True
+        if hasattr(self, 'slowDownMeter'):
+            self.slowDownMeter.setAmount((amount, 20))
+            self.slowDownMeter.dirty = True
+
+
+    def slideHudIn(self):
+        def callbackX(obj, menu, x):
+            obj.x = x
+
+        def callbackY(obj, menu, y):
+            obj.y = y
+
+        speed = 5
+        
+        self.pause.addAnimation(transitionX, 'onLoad', speed = speed, transitionDirection = "left", x = self.hudX, callback = callbackX)
+        self.layers.addAnimation(transitionX, 'onLoad', speed = speed, transitionDirection = "left", x = self.hudX, callback = callbackX)
+        self.home.addAnimation(transitionX, 'onLoad', speed = speed, transitionDirection = "left", x = self.hudX, callback = callbackX)
+
+        self.completed.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY, callback = callbackY)
+        self.completedAmount.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY + 13, callback = callbackY)
+        self.lives.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY - 4, callback = callbackY)
+        self.slowDownMeter.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY + 10, callback = callbackY)
 
 
     def main(self, transition = False):
         self.open = True
-
-        hudX = 15
-        hudY = 15
 
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
         levelData = self.game.spriteRenderer.getLevelData()
@@ -739,38 +760,35 @@ class GameHud(GameHudLayout):
         walkingImage = "walkingWhite" if darkMode else "walking"
         self.textColor = Color("white") if darkMode else BLACK
 
-        home = Image(self, homeImage, (50, 50), (hudX, 500))
-        layers = Image(self, layersImage, (50, 50), (hudX, 440))
-        pause = Image(self, pauseImage, (50, 50), (hudX, 380))
-        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
-        slowDownMeterOutline = Rectangle(self, self.textColor, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10), 2)
-        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), hudY + 10))
+    
+        self.home = Image(self, homeImage, (50, 50), (self.hudX - 100, 500))
+        self.layers = Image(self, layersImage, (50, 50), (self.hudX - 100, 440))
+        self.pause = Image(self, pauseImage, (50, 50), (self.hudX - 100, 380))
 
-        self.completed = Timer(self, self.textColor, YELLOW, 0, self.game.spriteRenderer.getTotalToComplete(), (40, 40), (config["graphics"]["displayWidth"] - 85, hudY), 5)
-        self.lives = Timer(self, self.textColor, GREEN, 100, self.game.spriteRenderer.getLives(), (48, 48), (config["graphics"]["displayWidth"] - 89, hudY - 4), 5)
+        self.slowDownMeter = Meter(self, Color("white"), self.textColor, GREEN, (meterWidth, 20), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), self.hudY + 10 - 100), 2)
+
+        self.completed = Timer(self, self.textColor, YELLOW, 0, self.game.spriteRenderer.getTotalToComplete(), (40, 40), (config["graphics"]["displayWidth"] - 85, self.hudY - 100), 5)
+        self.lives = Timer(self, self.textColor, GREEN, 100, self.game.spriteRenderer.getLives(), (48, 48), (config["graphics"]["displayWidth"] - 89, self.hudY - 4 - 100), 5)
         self.completedAmount = Label(self, str(self.game.spriteRenderer.getCompleted()), 20, self.textColor, (self.completed.x + 14.5, self.completed.y + 13)) 
 
-        pause.addEvent(hoverImage, 'onMouseOver', image = pauseSelectedImage)
-        pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
-        pause.addEvent(pauseGame, 'onMouseClick', image = playImage, imageSelected = playSelectedImage, newImage = pauseImage, newImageSelected = pauseSelectedImage)
+        self.pause.addEvent(hoverImage, 'onMouseOver', image = pauseSelectedImage)
+        self.pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
+        self.pause.addEvent(pauseGame, 'onMouseClick', image = playImage, imageSelected = playSelectedImage, newImage = pauseImage, newImageSelected = pauseSelectedImage)
 
-        layers.addEvent(hoverImage, 'onMouseOver', image = layersSelectedImage)
-        layers.addEvent(hoverImage, 'onMouseOut', image = layersImage)
-        layers.addEvent(changeGameLayer, 'onMouseClick')
+        self.layers.addEvent(hoverImage, 'onMouseOver', image = layersSelectedImage)
+        self.layers.addEvent(hoverImage, 'onMouseOut', image = layersImage)
+        self.layers.addEvent(changeGameLayer, 'onMouseClick')
 
-        home.addEvent(hoverImage, 'onMouseOver', image = homeSelectedImage)
-        home.addEvent(hoverImage, 'onMouseOut', image = homeImage)
-        home.addEvent(goHome, 'onMouseClick')
+        self.home.addEvent(hoverImage, 'onMouseOver', image = homeSelectedImage)
+        self.home.addEvent(hoverImage, 'onMouseOut', image = homeImage)
+        self.home.addEvent(goHome, 'onMouseClick')
 
-        self.add(pause)
-        self.add(home)
+        self.add(self.home)
+        if len(self.game.spriteRenderer.getConnectionTypes()) > 1: self.add(self.layers)
+        else: self.pause.setPos((self.layers.x, self.layers.y))
+        self.add(self.pause)
 
-        if len(self.game.spriteRenderer.getConnectionTypes()) > 1:
-            self.add(layers)
-
-        self.add(slowDownMeter)
-        self.add(self.slowDownMeterAmount)
-        self.add(slowDownMeterOutline)
+        self.add(self.slowDownMeter)
         self.add(self.lives)
         self.add(self.completed)
         self.add(self.completedAmount)
@@ -1359,9 +1377,9 @@ class PreviewHud(GameHudLayout):
 
 
     def updateSlowDownMeter(self, amount):
-        if hasattr(self, 'slowDownMeterAmount'):
-            self.slowDownMeterAmount.setSize((amount, 20))
-            self.slowDownMeterAmount.dirty = True
+        if hasattr(self, 'slowDownMeter'):
+            self.slowDownMeter.setAmount((amount, 20))
+            self.slowDownMeter.dirty = True
 
 
     def main(self, transition = False):
@@ -1371,9 +1389,7 @@ class PreviewHud(GameHudLayout):
 
         topbar = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
         stop = Label(self, "Stop", 25, Color("white"), (20, 10))
-        slowDownMeter = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
-        slowDownMeterOutline = Rectangle(self, Color("white"), (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12), 2)
-        self.slowDownMeterAmount = Rectangle(self, GREEN, (meterWidth, 20), (config["graphics"]["displayWidth"] - (80 + meterWidth), 12))
+        self.slowDownMeter = Meter(self, Color("white"), Color("white"), GREEN, (meterWidth, 20), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), 12), 2)
         completed = Image(self, "walkingWhite", (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
         self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
 
@@ -1383,9 +1399,7 @@ class PreviewHud(GameHudLayout):
 
         self.add(topbar)
         self.add(stop)
-        self.add(slowDownMeter)
-        self.add(self.slowDownMeterAmount)
-        self.add(slowDownMeterOutline)
+        self.add(self.slowDownMeter)
         self.add(completed)
         self.add(self.completedText)
 

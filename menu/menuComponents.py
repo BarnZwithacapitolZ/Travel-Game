@@ -408,11 +408,12 @@ class InputBox(Label):
        
 
 class Shape(MenuComponent):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None, fill = None):   
         super().__init__(menu, color, size, pos)
         self.shapeOutline = shapeOutline        
         self.shapeBorderRadius = shapeBorderRadius
         self.alpha = alpha
+        self.fill = fill
 
         if not config["graphics"]["smoothCorners"]:
             self.shapeBorderRadius = [0, 0, 0, 0]
@@ -454,14 +455,25 @@ class Shape(MenuComponent):
         # Create the image for blitting onto other surfaces, even if its not used in this shape
         self.image = pygame.Surface(size).convert()
         self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-        self.drawShape(self.image, (0, 0, *size))
+
+        if self.fill is not None: self.drawShape(self.image, self.fill, (0, 0, *size), 0)
+        self.drawShape(self.image, self.color, (0, 0, *size), self.outline)
 
         self.addComponents()
 
 
     @abc.abstractmethod
-    def drawShape(self, surface, rect = None):
+    def drawShape(self, surface, color = None, rect = None, outline = None):
         return
+
+
+    # Get either the object attribute or variable depending on if its None or not
+    def getShapeComponents(self, color, rect, outline):
+        color = self.color if color is None else color
+        rect = self.rect if rect is None else rect
+        outline = self.outline if outline is None else outline
+
+        return color, rect, outline
 
 
     def makeSurface(self):
@@ -470,7 +482,7 @@ class Shape(MenuComponent):
     
     def drawPaused(self, surface):
         self.makeSurface()
-        if self.alpha is not None or len(self.components) > 0:
+        if self.alpha is not None or len(self.components) > 0 or self.fill is not None:
             surface.blit(self.image, (self.rect))
         else:
             self.drawShape(surface)
@@ -478,39 +490,88 @@ class Shape(MenuComponent):
 
     def draw(self):
         self.makeSurface()
-        if self.alpha is not None or len(self.components) > 0:
+        if self.alpha is not None or len(self.components) > 0 or self.fill is not None:
             self.menu.renderer.addSurface(self.image, (self.rect))
         else:
             self.menu.renderer.addSurface(None, None, self.drawShape)
 
 
 class Rectangle(Shape):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):
-        super().__init__(menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha)  
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None, fill = None):
+        super().__init__(menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha, fill)  
 
 
-    def drawShape(self, surface, rect = None):
-        rect = self.rect if rect is None else rect
-        pygame.draw.rect(surface, self.color, rect, int(self.outline), 
+    def drawShape(self, surface, color = None, rect = None, outline = None):
+        color, rect, outline = self.getShapeComponents(color, rect, outline)
+
+        pygame.draw.rect(surface, color, rect, int(outline), 
                 border_top_left_radius = int(self.borderRadius[0]),
                 border_top_right_radius  = int(self.borderRadius[1]),
                 border_bottom_left_radius = int(self.borderRadius[2]),
                 border_bottom_right_radius = int(self.borderRadius[3]))
 
 
+class Meter(Rectangle):
+    def __init__(self, menu, color, outlineColor, innerColor, amount = tuple(), size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):
+        super().__init__(menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha)
+        self.outlineColor = outlineColor
+        self.innerColor = innerColor
+        self.amount = amount
+
+    
+    def setAmount(self, amount = tuple()):
+        self.amount = amount
+
+
+    def getAmount(self, amount):
+        return self.amount
+
+
+    def __render(self):
+        self.dirty = False
+
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        sizeAmount = vec(self.amount[0], self.amount[1]) * self.menu.renderer.getScale()
+        
+        self.rect = pygame.Rect(pos, size)
+        self.rectAmount = pygame.Rect(pos, sizeAmount)
+        
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+
+        self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
+        self.drawShape(self.image, self.color, Rect(0, 0, *size), Rect(0, 0, *sizeAmount), self.outline)
+
+    
+    def drawShape(self, surface, color = None, rect = None, rectAmount = None, outline = None):
+        rectAmount = self.rectAmount if rectAmount is None else rectAmount
+
+        self.rectAmount.x = self.rect.x
+        self.rectAmount.y = self.rect.y
+
+        super().drawShape(surface, color, rect, 0)
+        super().drawShape(surface, self.innerColor, rectAmount, 0)       
+        super().drawShape(surface, self.outlineColor, rect, outline)
+
+    
+    def makeSurface(self):
+        if self.dirty or self.image is None: self.__render()
+
+
 class Ellipse(Shape):
-    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
-        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha)   
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None, fill = None):
+        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha, fill = fill)   
 
 
-    def drawShape(self, surface, rect = None):
-        rect = self.rect if rect is None else rect
-        pygame.draw.ellipse(surface, self.color, rect, int(self.outline))
+    def drawShape(self, surface, color = None, rect = None, outline = None):
+        color, rect, outline = self.getShapeComponents(color, rect, outline)
+        pygame.draw.ellipse(surface, color, rect, int(outline))
 
 
 class Arc(Shape):
-    def __init__(self, menu, color, startAngle, stopAngle, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
-        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha) 
+    def __init__(self, menu, color, startAngle, stopAngle, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None, fill = None):
+        super().__init__(menu, color, size, pos, shapeOutline, alpha = alpha, fill = fill) 
         self.startAngle = startAngle
         self.stopAngle = stopAngle
 
@@ -523,14 +584,14 @@ class Arc(Shape):
         self.stopAngle = stopAngle
 
 
-    def drawShape(self, surface, rect = None):
-        rect = self.rect if rect is None else rect
-        pygame.draw.arc(surface, self.color, rect, self.startAngle, self.stopAngle, int(self.outline))
+    def drawShape(self, surface, color = None, rect = None, outline = None):
+        color, rect, outline = self.getShapeComponents(color, rect, outline)
+        pygame.draw.arc(surface, color, rect, self.startAngle, self.stopAngle, int(outline))
 
 
 class Timer(Arc):
-    def __init__(self, menu, backgroundColor, foregoundColor, timer, step, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None):
-        super().__init__(menu, foregoundColor, 0, 0, size, pos, shapeOutline, alpha)
+    def __init__(self, menu, backgroundColor, foregoundColor, timer, step, size = tuple(), pos = tuple(), shapeOutline = 0, alpha = None, fill = None):
+        super().__init__(menu, foregoundColor, 0, 0, size, pos, shapeOutline, alpha, fill)
         self.timer = timer
         self.length = 100
         self.step = self.length / step
@@ -568,19 +629,19 @@ class Timer(Arc):
         self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
         # self.image.fill(BLACK)
         # self.image.set_alpha(255, pygame.RLEACCEL)
-        self.drawShape(self.image, Rect(0, 0, *size))
+        self.drawShape(self.image, self.color, Rect(0, 0, *size), self.outline)
 
 
-    def drawShape(self, surface, rect = None):
-        rect = self.rect if rect is None else rect
+    def drawShape(self, surface, color = None, rect = None, outline = None):
+        color, rect, outline = self.getShapeComponents(color, rect, outline)
         offx = 0.01
 
         # inside circle
-        pygame.draw.ellipse(surface, self.backgroundColor, rect, int(self.outline - 1)) 
+        pygame.draw.ellipse(surface, self.backgroundColor, rect, int(outline - 1)) 
 
         # outside timer
         for x in range(6):
-            pygame.draw.arc(surface, self.color, rect, self.startAngle + offx, self.stopAngle, int(self.outline))
+            pygame.draw.arc(surface, color, rect, self.startAngle + offx, self.stopAngle, int(outline))
             offx += 0.01
 
 
