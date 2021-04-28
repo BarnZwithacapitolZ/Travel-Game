@@ -21,7 +21,7 @@ class Renderer:
         # self.monitorWidth = 1280
         # self.monitorHeight = 720
 
-        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = 1)
+        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = int(self.game.vsync))
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
         self.scale = 1 # control the scale of whats on screen
@@ -96,6 +96,14 @@ class Renderer:
         return self.height
 
 
+    def getWindowWidth(self):
+        return self.windowWidth
+
+
+    def getWindowHeight(self):
+        return self.windowHeight
+
+
     def setFullscreen(self):
         self.setScale((self.monitorWidth, self.monitorHeight), True)
 
@@ -119,9 +127,9 @@ class Renderer:
         self.diff.y = (self.windowHeight - self.height) / 2
 
         if fullscreen:
-            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF, vsync = 1)
+            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF, vsync = int(self.game.vsync))
         else:
-            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = 1)
+            self.screen = pygame.display.set_mode((int(self.windowWidth), int(self.windowHeight)), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = int(self.game.vsync))
 
         self.gameDisplay = pygame.Surface((self.width, self.height)) #.convert()
 
@@ -205,7 +213,8 @@ class ImageLoader:
 
 class AudioLoader:
     def __init__(self):
-        pygame.mixer.set_num_channels(3)
+        self.numChannels = 8
+        pygame.mixer.set_num_channels(self.numChannels)
 
         self.sounds = {}
         self.music = {}
@@ -234,7 +243,7 @@ class AudioLoader:
         # Channel 0 reserved for hud sounds 
         # Channel 1 reserved for game sounds
         # Channel 2 reserved for extra game sounds
-        self.channels = [pygame.mixer.Channel(i) for i in range(3)]
+        self.channels = [pygame.mixer.Channel(i) for i in range(self.numChannels)]
         
 
     def loadAllSounds(self):

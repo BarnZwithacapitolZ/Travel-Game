@@ -31,6 +31,7 @@ class Game:
         self.running = True
         self.paused = True # start with the game paused (menus will keep running though)
         self.fullscreen = config["graphics"]["fullscreen"]
+        self.vsync = config["graphics"]["vsync"]
 
         # Engine
         self.renderer = Renderer(self)
@@ -99,7 +100,7 @@ class Game:
                 self.textHandler.setPressed(True)
 
                 # only open the option manu if the game isn't paused and the main menu isn't open
-                if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
+                if e.key == pygame.K_ESCAPE and not self.mainMenu.open and not self.spriteRenderer.getMenu().open: 
                     if not self.mapEditor.isDropdownsClosed(): # Close the dropdowns first
                         if not self.optionMenu.open: self.optionMenu.main(True, True)
                         else: self.optionMenu.closeTransition()
@@ -110,7 +111,8 @@ class Game:
                     self.mainMenu.levelBackward()
 
                 elif e.key == pygame.K_p:
-                    self.spriteRenderer.togglePaused()
+                    if self.spriteRenderer.getHud().open:
+                        self.spriteRenderer.getHud().togglePauseGame()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():

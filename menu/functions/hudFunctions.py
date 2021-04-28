@@ -32,15 +32,9 @@ def goHome(obj, menu, event):
     menu.game.optionMenu.main(True, True)
 
 
-def pauseGame(obj, menu, event, image, imageSelected, newImage, newImageSelected):
-    obj.setImageName(imageSelected)
-    obj.clearEvents()
-    obj.addEvent(generalFunctions.hoverImage, 'onMouseOver', image = imageSelected)
-    obj.addEvent(generalFunctions.hoverImage, 'onMouseOut', image = image)
-    obj.addEvent(pauseGame, 'onMouseClick', image = newImage, imageSelected = newImageSelected, newImage = image, newImageSelected = imageSelected)
-    obj.dirty = True
-
-    menu.game.spriteRenderer.togglePaused()
+# Pause the game and change the pause icon
+def pauseGame(obj, menu, event):
+    menu.togglePauseGame(True)
 
 
 #### Editor Hud Function ####

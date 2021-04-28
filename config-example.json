@@ -16,6 +16,7 @@
             "enabled": true,
             "opacity": 40
         },
+        "vsync": true,
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {
@@ -230,6 +231,10 @@
             "image": "KeyCream.png",
             "alpha": true
         },
+        "keyWhite": {
+            "image": "KeyWhite.png",
+            "alpha": true
+        },
         "keyGreen": {
             "image": "KeyGreen.png",
             "alpha": true
@@ -276,6 +281,18 @@
             "uiSuccess": {
                 "file": "UI-success.wav",
                 "volume": 1.0
+            },
+            "success1": {
+                "file": "Success-1.wav",
+                "volume": 0.7
+            },
+            "success2": {
+                "file": "Success-2.wav",
+                "volume": 0.7
+            },
+            "success3": {
+                "file": "Success-3.wav",
+                "volume": 0.7
             }
         },
         "music": {

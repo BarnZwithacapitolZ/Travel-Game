@@ -69,21 +69,23 @@ def openMapEditor(obj, menu, event):
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, level):
-    if not menu.getTransitioning():
-        global levelName
-        levelName = level
+    if hasattr(menu, 'transitioning') and menu.getTransitioning():
+        return
+    
+    global levelName
+    levelName = level
 
-        def callback(obj, menu, animation):
-            obj.y = 0
+    def callback(obj, menu, animation):
+        obj.y = 0
 
-            if obj.rect.y == 0:
-                obj.removeAnimation(animation)
-                menu.game.spriteRenderer.createLevel(levelName)
-                menu.game.spriteRenderer.setRendering(True, True) #Load the hud
-                menu.levelSelectOpen = False
-                menu.close()
+        if obj.rect.y == 0:
+            obj.removeAnimation(animation)
+            menu.game.spriteRenderer.createLevel(levelName)
+            menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+            menu.levelSelectOpen = False
+            menu.close()
 
-        menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
 
 
 # Check if a level can be unlocked with the amount of keys the player has,
@@ -241,3 +243,30 @@ def toggleScanlines(obj, menu, event):
     obj.setText("Scanlines: " + text)
 
     dump(config)
+
+
+# Toggle between smooth and harsh scaling
+def toggleScalingMode(obj, menu, event):
+    toggle = not config["graphics"]["smoothscale"]
+    config["graphics"]["smoothscale"] = toggle
+
+    text = "smooth" if toggle else "harsh"
+
+    obj.setText("Scaling: " + text)
+
+    dump(config)
+    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)
+
+
+# Toggle vsync between on and off
+def toggleVsync(obj, menu, event):
+    menu.game.vsync = not menu.game.vsync
+
+    text = "On" if menu.game.vsync else "Off"
+
+    obj.setText("Vsync: " + text)
+
+    config["graphics"]["vsync"] = menu.game.vsync
+    dump(config)
+
+    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)

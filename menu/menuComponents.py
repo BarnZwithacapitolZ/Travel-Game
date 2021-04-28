@@ -5,6 +5,7 @@ from transitionFunctions import transitionMessageRight
 import string
 import abc
 import math
+import copy
 
 vec = pygame.math.Vector2
 
@@ -118,6 +119,8 @@ class MenuComponent:
         self.responsive = True
 
         self.mouseOver = False
+
+        self.timer = 0 # For use in animation the component
         
 
     def getAnimations(self):
@@ -130,6 +133,10 @@ class MenuComponent:
 
     def getColor(self):
         return self.color
+
+    
+    def getTimer(self):
+        return self.timer
 
 
     def setSize(self, size = tuple()):
@@ -148,6 +155,10 @@ class MenuComponent:
 
     def setOffset(self, offset):
         self.offset = offset
+
+
+    def setTimer(self, timer):
+        self.timer = timer
 
 
     def add(self, obj):
@@ -208,13 +219,11 @@ class MenuComponent:
         if self.image is None: return
 
         for component in list(self.components):
-            # make the components location relative to the gamedisplay, not this components surface
-            component.x -= self.x
-            component.y -= self.y
-            component.makeSurface()
+            component.drawPaused(self.image)
+            # component.makeSurface()
             
-            if component.image is not None:
-                self.image.blit(component.image, (component.rect))
+            # if component.image is not None:
+            #     self.image.blit(component.image, (component.rect))
 
 
     def draw(self):
@@ -326,7 +335,6 @@ class InputBox(Label):
         self.inputWidth = width # max length of text input 
 
         self.flashing = True
-        self.timer = 0
         self.background = background
         self.indicator = Rectangle(self.menu, self.color, (3, fontSize), self.pos)
 
@@ -452,12 +460,12 @@ class Shape(MenuComponent):
         self.outline = self.shapeOutline * self.menu.renderer.getScale()
         self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
 
-        # Create the image for blitting onto other surfaces, even if its not used in this shape
+        # Create the image for blitting onto other
+        # surfaces, even if its not used in this shape
         self.image = pygame.Surface(size).convert()
-        self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-
-        if self.fill is not None: self.drawShape(self.image, self.fill, (0, 0, *size), 0)
-        self.drawShape(self.image, self.color, (0, 0, *size), self.outline)
+        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+        if self.fill is not None: self.drawShape(self.image, self.fill, Rect(0, 0, *size), 0)
+        self.drawShape(self.image, self.color, Rect(0, 0, *size), self.outline)
 
         self.addComponents()
 
@@ -511,6 +519,45 @@ class Rectangle(Shape):
                 border_bottom_right_radius = int(self.borderRadius[3]))
 
 
+# Rectangle with on border radius that is made filling a shape, not drawing a rect
+class FillRectangle(Rectangle):
+    def __init__(self, menu, color, size = tuple(), pos = tuple(), shapeOutline = 0, fill = None):
+        super().__init__(menu, color, size, pos, shapeOutline, fill = fill)
+
+
+    def __render(self):
+        self.dirty = False
+
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        self.borderRadius = [0, 0, 0, 0] # Cant have a radius on a surface
+        fillColor = self.fill if self.outline > 0 else self.color
+
+        self.image = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+        self.image.fill(fillColor)
+        if self.outline > 0: super().drawShape(self.image, self.color, Rect(0, 0, *size), self.outline)
+
+        self.addComponents()
+
+
+    def makeSurface(self):
+        if self.dirty or self.image is None: self.__render()
+
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+    
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.image, (self.rect))
+
+
 class Meter(Rectangle):
     def __init__(self, menu, color, outlineColor, innerColor, amount = tuple(), size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None):
         super().__init__(menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha)
@@ -543,6 +590,8 @@ class Meter(Rectangle):
         self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
         self.drawShape(self.image, self.color, Rect(0, 0, *size), Rect(0, 0, *sizeAmount), self.outline)
 
+        self.addComponents()
+
     
     def drawShape(self, surface, color = None, rect = None, rectAmount = None, outline = None):
         rectAmount = self.rectAmount if rectAmount is None else rectAmount
@@ -557,6 +606,68 @@ class Meter(Rectangle):
     
     def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+
+
+class DifficultyMeter(Rectangle):
+    def __init__(self, menu, foregroundcolor, backgroundColor, length, amount, spacing, size = tuple(), pos = tuple(), shapeOutline = 0, shapeBorderRadius = [0, 0, 0, 0], alpha = None, fill = None):
+        super().__init__(menu, foregroundcolor, size, pos, shapeOutline, shapeBorderRadius, alpha, fill)
+        self.backgroundColor = backgroundColor
+        self.length = length
+        self.amount = amount
+        self.spacing = spacing
+        self.fullSize = ((self.width * self.length) + (self.spacing * self.length), self.height)
+
+
+    def getAmount(self):
+        return self.amount
+
+
+    def getFullSize(self):
+        return self.fullSize
+
+
+    def setAmount(self, amount):
+        self.amount = amount
+
+
+    def __render(self):
+        self.dirty = False
+
+        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
+        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        self.rect = pygame.Rect(pos, size)
+        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        self.borderRadius = [i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+        self.gap = self.spacing * self.menu.renderer.getScale()
+
+        self.fullsize = copy.copy(size)
+        self.fullsize[0] = (size[0] * self.length) + (self.gap * self.length)
+
+        self.image = pygame.Surface(self.fullsize).convert()
+        if self.alpha is not None: self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+        if self.fill is not None: self.drawShape(self.image, self.fill, Rect(0, 0, *size), 0)
+        self.drawShape(self.image, self.color, Rect(0, 0, *size), self.outline)
+
+
+    def drawShape(self, surface, color = None, rect = None, outline = None):
+        rect = self.rect if rect is None else rect
+        offx = rect.x
+        remaining = self.length - self.amount
+
+        for x in range(self.amount):
+            newRect = Rect(offx, rect.y, rect.width, rect.height)
+            super().drawShape(surface, color, newRect, outline)
+            offx += rect.width + self.gap
+
+        for i in range(remaining):
+            newRect = Rect(offx, rect.y, rect.width, rect.height)
+            super().drawShape(surface, self.backgroundColor, newRect, outline)
+            offx += rect.width + self.gap
+
+
+    def makeSurface(self):
+        if self.dirty or self.rect is None: self.__render()
 
 
 class Ellipse(Shape):
@@ -598,16 +709,8 @@ class Timer(Arc):
         self.backgroundColor = backgroundColor
 
 
-    def getTimer(self):
-        return self.timer
-
-
     def getStep(self):
         return self.step
-
-
-    def setTimer(self, timer):
-        self.timer = timer
 
 
     def setBackgroundColor(self, backgroundColor):
@@ -652,7 +755,6 @@ class Timer(Arc):
 class MessageBox(Rectangle):
     def __init__(self, menu, message, margin = tuple()):   
         super().__init__(menu, GREEN, (0, 0), (0, 0), 0, [10, 10, 10, 10])
-        self.timer = 0
         self.messages = []
         self.marginX = margin[0]
         self.marginY = margin[1]
@@ -827,18 +929,8 @@ class Map(MenuComponent):
         difficultyText.makeSurface()
         self.image.blit(difficultyText.image, (difficultyText.rect))
 
-        boxWidth, boxHeight = 15, 15
-        spacing = 2
-        offsetx, offsety = 30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)
-        remaining = 4 - self.levelData["difficulty"]
-
-        for x in range(self.levelData["difficulty"]):
-            pygame.draw.rect(self.image, RED, (offsetx * self.menu.renderer.getScale(), offsety * self.menu.renderer.getScale(), boxWidth * self.menu.renderer.getScale(), boxHeight * self.menu.renderer.getScale()))
-            offsetx += boxWidth + spacing
-
-        for x in range(remaining):
-            pygame.draw.rect(self.image, BLACK, (offsetx * self.menu.renderer.getScale(), offsety * self.menu.renderer.getScale(), boxWidth * self.menu.renderer.getScale(), boxHeight * self.menu.renderer.getScale()))
-            offsetx += boxWidth + spacing
+        difficulty = DifficultyMeter(self.menu, RED, BLACK, 4, self.levelData["difficulty"], 2, (15, 15), (30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
+        difficulty.drawPaused(self.image)
 
 
     def __render(self):

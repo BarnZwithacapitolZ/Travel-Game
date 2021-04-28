@@ -228,7 +228,8 @@ class MainMenu(Menu):
 
         sidebar = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
 
-        x = (config["graphics"]["displayWidth"] / 2) - 180
+        # x = (config["graphics"]["displayWidth"] / 2) - 180
+        x = 100
 
         title1 = Label(self, "Transport", 70, Color("white"), (x, 80))
         title2 = Label(self, "The", 30, Color("white"), (x, title1.y + 70))
@@ -248,6 +249,14 @@ class MainMenu(Menu):
         # test.add(test2)
         # test.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
         # test.addEvent(hoverImage, 'onMouseOut', image = "button")
+        # self.add(test)
+
+        # test = FillRectangle(self, (0, 0, 0, 0), (40, 40), (20, 20))
+        # test2 = Label(self, "hi", 20, Color("white"), (0, 0))
+        # test.add(test2)
+        # self.add(test)
+
+        # test = DifficultyMeter(self, RED, BLACK, 4, 2, 2, (15, 15), (20, 20))
         # self.add(test)
 
         cont.addEvent(openLevelSelect, 'onMouseClick')
@@ -471,24 +480,31 @@ class OptionMenu(Menu):
         paused = Label(self, "Paused", 70, Color("white"), (x, 100))
 
         options = Label(self, "Options", 50,  Color("white"), (x, 200))
-        mainMenu = Label(self, "Main Menu", 50, Color("white"), (x, 260))
+        levelSelect = Label(self, "Level Selection", 50, Color("white"), (x, 260))
+        mainMenu = Label(self, "Main Menu", 50, Color("white"), (x, 320))
         close = Label(self, "Close", 30, Color("white"), (x, 440))
 
         options.addEvent(showOptions, 'onMouseClick')
-        options.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        options.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        options.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        options.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
-        mainMenu.addEvent(showLevelSelect, 'onMouseClick')
-        mainMenu.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        mainMenu.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        levelSelect.addEvent(showLevelSelect, 'onMouseClick')
+        levelSelect.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        levelSelect.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
+
+        mainMenu.addEvent(showMainMenu, 'onMouseClick')
+        mainMenu.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        mainMenu.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
         close.addEvent(unpause, 'onMouseClick')
-        close.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        close.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        close.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        close.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
+        # background.add(paused)
         self.add(background)
         self.add(paused)
         self.add(options)
+        self.add(levelSelect)
         self.add(mainMenu)
         self.add(close)
 
@@ -509,19 +525,22 @@ class OptionMenu(Menu):
 
         background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
 
+        options = Label(self, "Options", 70, Color("white"), (x, 100))
+
         graphics = Label(self, "Graphics", 50, Color("white"), (x, 200))
         controls = Label(self, "Controls", 50, Color("white"), (x, 260))
         back = Label(self, "Back", 30,  Color("white"), (x, 440))
 
         graphics.addEvent(showGraphics, 'onMouseClick')
-        graphics.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        graphics.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        graphics.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        graphics.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
         back.addEvent(showMain, 'onMouseClick')
-        back.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        back.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        back.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        back.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
         self.add(background)
+        self.add(options)
         self.add(graphics)
         self.add(controls)
         self.add(back)
@@ -534,35 +553,47 @@ class OptionMenu(Menu):
 
         background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
 
+        graphics = Label(self, "Graphics", 70, Color("white"), (x, 100))
+
         aliasText = "On" if config["graphics"]["antiAliasing"] else "Off"
         fullscreenText = "On" if self.game.fullscreen else "Off"
         scanlinesText = "On" if config["graphics"]["scanlines"]["enabled"] else "Off"
+        scalingText = "Smooth" if config["graphics"]["smoothscale"] else "Harsh"
+        vsyncText = "On" if config["graphics"]["vsync"] else "Off"
 
-        antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, Color("white"), (x, 200))
-        fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, Color("white"), (x, 260))
-        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, Color("white"), (x, 320))
+        # antiAlias = Label(self, "AntiAliasing: " + aliasText, 50, Color("white"), (x, 200))
+        fullscreen = Label(self, "Fullscreen: " + fullscreenText, 50, Color("white"), (x, 200))
+        scanlines = Label(self, "Scanlines: " + scanlinesText, 50, Color("white"), (x, 260))
+        scaling = Label(self, "Scaling: " + scalingText, 50, Color("white"), (x, 320))
+        vsync = Label(self, "Vsync: " + vsyncText, 50, Color("white"), (x + 500, 200))
         back = Label(self, "Back", 30,  Color("white"), (x, 440))
 
-        antiAlias.addEvent(toggleAlias, 'onMouseClick')
-        antiAlias.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        antiAlias.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
-
         fullscreen.addEvent(toggleFullscreen, 'onMouseClick')
-        fullscreen.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        fullscreen.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        fullscreen.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        fullscreen.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
 
         scanlines.addEvent(toggleScanlines, 'onMouseClick')
-        scanlines.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        scanlines.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        scanlines.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        scanlines.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
+
+        scaling.addEvent(toggleScalingMode, 'onMouseClick')
+        scaling.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        scaling.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
+
+        vsync.addEvent(toggleVsync, 'onMouseClick')
+        vsync.addEvent(hoverOver, 'onMouseOver', x = x + 500 + 10, color = BLACK)
+        vsync.addEvent(hoverOut, 'onMouseOut', x = x + 500, color = Color("white"))
 
         back.addEvent(showOptions, 'onMouseClick')
-        back.addEvent(hoverOver, 'onMouseOver', color = BLACK)
-        back.addEvent(hoverOut, 'onMouseOut', color = Color("white"))
+        back.addEvent(hoverOver, 'onMouseOver', x = x + 10, color = BLACK)
+        back.addEvent(hoverOut, 'onMouseOut', x = x, color = Color("white"))
         
         self.add(background)
-        self.add(antiAlias)
+        self.add(graphics)
         self.add(fullscreen)
         self.add(scanlines)
+        self.add(scaling)
+        self.add(vsync)
         self.add(back)
 
 
@@ -599,50 +630,125 @@ class GameMenu(Menu):
         self.game.spriteRenderer.createPausedSurface()
 
 
-    def endScreenGameOver(self):
+    def endScreenGameOver(self, transition = False):
         self.endScreen()
 
         width = config["graphics"]["displayWidth"] / 2
-        height = 240
         x = width - (width / 2)
-        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
-        text = Label(self, "Level Failed!", 45, Color("white"), (((x + width) / 2 - 30), (y + height) / 2 + 20))
-        ok = Label(self, "Level Selection", 25, Color("white"), (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
+        failed = Label(self, "Level Failed!", 45, Color("white"), (((x + width) / 2 - 30), 100))
+               
+        scoreText = Label(self, "Highest Score", 25, Color("white"), (width - 87, 210))
+        self.score = DifficultyMeter(self, YELLOW, Color("White"), 3, self.game.spriteRenderer.getLevelData()["score"], 5, (40, 40), (width - 50, scoreText.y + scoreText.getFontSize()[1] + 10), shapeBorderRadius = [5, 5, 5, 5])
+        self.score.setPos((width - (self.score.getFullSize()[0] / 2), self.score.y))
 
-        ok.addEvent(hoverColor, 'onMouseOver', color = BLACK)
-        ok.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
-        ok.addEvent(showLevelSelect, 'onMouseClick')
+        keyTextBackground = Rectangle(self, Color("white"), (60, 35), (width - 30, self.score.y + self.score.height + 30), shapeBorderRadius = [5, 5, 5, 5])
+        self.keyText = Label(self, str(config["player"]["keys"]), 25, BLACK, (width - 20, keyTextBackground.y + 10))
+        self.keyText.setPos((width - (self.keyText.getFontSize()[0] / 2), self.keyText.y))
+        self.keyTextDifference = Label(self, "+0", 25, Color("white"), (keyTextBackground.x + keyTextBackground.width + 10, self.keyText.y))
+        key = Image(self, "keyWhite", (35, 35), (keyTextBackground.x - 35 - 10, keyTextBackground.y))
 
+        levelSelect = Label(self, "Level Selection", 25, Color("white"), ((width - 100), config["graphics"]["displayHeight"] - 100))
+        levelSelect.setPos((width - (levelSelect.getFontSize()[0] / 2), levelSelect.y))
+        retry = Label(self, "Retry", 25, Color("white"), (width - 100, levelSelect.y - 10))
+        retry.setPos((width - (retry.getFontSize()[0] / 2), levelSelect.y - 20 - retry.getFontSize()[1]))
+
+        levelSelect.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        levelSelect.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        levelSelect.addEvent(showLevelSelect, 'onMouseClick')
+
+        retry.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        retry.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        retry.addEvent(loadLevel, 'onMouseClick', level = self.game.mapLoader.getMap(self.game.spriteRenderer.getLevel()))
 
         self.add(background)
-        self.add(text)
-        self.add(ok)
-    
+        self.add(failed)
+        self.add(scoreText)
+        self.add(self.score)
+        self.add(key)
+        self.add(keyTextBackground)
+        self.add(self.keyText)
+        self.add(self.keyTextDifference)
+        self.add(levelSelect)
+        self.add(retry)
 
-    def endScreenComplete(self):
+
+        if transition:
+            def callback(obj, menu, y):
+                obj.y = y
+
+            for component in self.components:
+                y = component.y
+                component.setPos((component.x, component.y - config["graphics"]["displayHeight"]))
+                component.addAnimation(transitionY, 'onLoad', speed = 40, transitionDirection = 'down', y = y, callback = callback)
+
+            self.game.audioLoader.playSound("swoopIn")    
+
+
+    def endScreenComplete(self, transition = False):
         self.endScreen()
         self.game.spriteRenderer.setLevelComplete() # Complete the level
-        self.game.spriteRenderer.setLevelScore() # Set the score
+        previousKeys, self.keyDifference, self.previousScore = self.game.spriteRenderer.setLevelScore() # Set the score
 
         width = config["graphics"]["displayWidth"] / 2
-        height = 240
-        x = width - (width / 2)
-        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
-
+        x = width - (width / 2)   
+    
         background = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0), alpha = 150)
-        text = Label(self, "Level Compelte!", 45, Color("white"), (((x + width) / 2 - 50), (y + height) / 2 + 20))
-        ok = Label(self, "Level Selection", 25, BLACK, (((config["graphics"]["displayWidth"] / 2) - 110), (config["graphics"]["displayHeight"] / 2) + 20))
+        success = Label(self, "Level Compelte!", 45, Color("white"), (((x + width) / 2 - 50), 100))
+       
+        scoreText = Label(self, "Highest Score", 25, Color("white"), (width - 87, 210))
+        self.score = DifficultyMeter(self, YELLOW, Color("White"), 3, self.previousScore, 5, (40, 40), (width - 50, scoreText.y + scoreText.getFontSize()[1] + 10), shapeBorderRadius = [5, 5, 5, 5])
+        self.score.setPos((width - (self.score.getFullSize()[0] / 2), self.score.y))
 
-        ok.addEvent(hoverColor, 'onMouseOver', color = Color("white"))
-        ok.addEvent(hoverColor, 'onMouseOut', color = BLACK)
-        ok.addEvent(showLevelSelect, 'onMouseClick')
+        keyTextBackground = Rectangle(self, Color("white"), (60, 35), (width - 30, self.score.y + self.score.height + 30), shapeBorderRadius = [5, 5, 5, 5])
+        self.keyText = Label(self, str(previousKeys), 25, BLACK, (width - 20, keyTextBackground.y + 10))
+        self.keyText.setPos((width - (self.keyText.getFontSize()[0] / 2), self.keyText.y))
+        self.keyTextDifference = Label(self, "+" + str(self.keyDifference), 25, Color("white"), (keyTextBackground.x + keyTextBackground.width + 10, self.keyText.y))
+        key = Image(self, "keyWhite", (35, 35), (keyTextBackground.x - 35 - 10, keyTextBackground.y))
+        
+        levelSelect = Label(self, "Level Selection", 25, Color("white"), ((width - 100), config["graphics"]["displayHeight"] - 100))
+        levelSelect.setPos((width - (levelSelect.getFontSize()[0] / 2), levelSelect.y))
+        retry = Label(self, "Retry", 25, Color("white"), (width - 100, levelSelect.y - 10))
+        retry.setPos((width - (retry.getFontSize()[0] / 2), levelSelect.y - 20 - retry.getFontSize()[1]))
 
+        levelSelect.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        levelSelect.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        levelSelect.addEvent(showLevelSelect, 'onMouseClick')
+
+        retry.addEvent(hoverColor, 'onMouseOver', color = BLACK)
+        retry.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
+        retry.addEvent(loadLevel, 'onMouseClick', level = self.game.mapLoader.getMap(self.game.spriteRenderer.getLevel()))
 
         self.add(background)
-        self.add(text)
-        self.add(ok)
+        self.add(success)
+        self.add(scoreText)
+        self.add(self.score)
+        self.add(key)
+        self.add(keyTextBackground)
+        self.add(self.keyText)
+        self.add(self.keyTextDifference)
+        self.add(levelSelect)
+        self.add(retry)
+
+        if transition:
+            def callback(obj, menu, y):
+                obj.y = y
+                if menu.keyDifference > 0:
+                    menu.keyText.addAnimation(increaseKeys, 'onLoad')
+                    menu.keyTextDifference.addAnimation(decreaseKeys, 'onLoad')
+
+                if menu.previousScore + menu.keyDifference > menu.previousScore:
+                    menu.score.addAnimation(increaseMeter, 'onLoad', fromAmount = menu.previousScore, toAmount = menu.previousScore + self.keyDifference)
+                
+
+            for component in self.components:
+                y = component.y
+                component.setPos((component.x, component.y - config["graphics"]["displayHeight"]))
+                component.addAnimation(transitionY, 'onLoad', speed = 40, transitionDirection = 'down', y = y, callback = callback)
+    
+            self.game.audioLoader.playSound("swoopIn")    
+
 
 
     def startScreen(self):
@@ -742,6 +848,21 @@ class GameHud(GameHudLayout):
         self.slowDownMeter.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY + 10, callback = callbackY)
 
 
+    def togglePauseGame(self, selected = False):
+        self.game.spriteRenderer.togglePaused() 
+
+        pauseImage = "play" if self.game.paused else "pause"
+        pauseImageSelected = "playSelected" if self.game.paused else "pauseSelected"
+        pauseImage += "White" if self.game.spriteRenderer.getDarkMode() else ""
+        
+        self.pause.setImageName(pauseImageSelected if selected else pauseImage)
+        self.pause.clearEvents()
+        self.pause.addEvent(hoverImage, 'onMouseOver', image = pauseImageSelected)
+        self.pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
+        self.pause.addEvent(pauseGame, 'onMouseClick')
+        self.pause.dirty = True
+
+
     def main(self, transition = False):
         self.open = True
 
@@ -773,7 +894,7 @@ class GameHud(GameHudLayout):
 
         self.pause.addEvent(hoverImage, 'onMouseOver', image = pauseSelectedImage)
         self.pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
-        self.pause.addEvent(pauseGame, 'onMouseClick', image = playImage, imageSelected = playSelectedImage, newImage = pauseImage, newImageSelected = pauseSelectedImage)
+        self.pause.addEvent(pauseGame, 'onMouseClick')
 
         self.layers.addEvent(hoverImage, 'onMouseOver', image = layersSelectedImage)
         self.layers.addEvent(hoverImage, 'onMouseOut', image = layersImage)
@@ -1304,12 +1425,12 @@ class EditorHud(GameHudLayout):
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(self, "Map name", 30, Color("white"), (x + 20, y + 20))
+        title = Label(self, "Map name", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y))
         self.inputBox = Rectangle(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
         mapName = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (x + 40, y + 92)) # we pass through the background instead of defining it in the InputBox so we can customize it better (e.g with image ect)
-        saveBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        saveBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120 - box.x, (y + height) - 70 - box.y))
         save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
-        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240 - box.x, (y + height) - 70 - box.y))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
         self.inputBox.addEvent(hoverColor, 'onKeyPress', color = Color("white"))
@@ -1342,14 +1463,14 @@ class EditorHud(GameHudLayout):
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(self, "Delete", 30, Color("white"), (x + 20, y + 20))
+        title = Label(self, "Delete", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y))
         title.setUnderline(True)
-        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), (x + 40, y + 82))
-        confirm2 = Label(self, "delete this map?", 30, Color("white"), (x + 40, y + 115))
+        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), ((x + 40) - box.x, (y + 82) - box.y))
+        confirm2 = Label(self, "delete this map?", 30, Color("white"), ((x + 40) - box.x, (y + 115) - box.y))
 
-        confirmBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120, (y + height) - 70))
+        confirmBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120 - box.x, (y + height) - 70 - box.y))
         confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
-        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240, (y + height) - 70))
+        cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240 - box.x, (y + height) - 70 - box.y))
         cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
 
         confirm.addEvent(hoverColor, 'onMouseOver', color = GREEN)

@@ -84,7 +84,6 @@ def hoverOutAnimation(obj, menu, animation, speed, x):
     obj.rect.x = obj.x * menu.renderer.getScale()
 
 
-
 def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDirection = 'up'):
     obj.y += speed * 100 * menu.game.dt
 
@@ -117,3 +116,50 @@ def increaseTimer(obj, menu, animation, speed, finish, direction = "forwards", c
             callback(obj, menu)
 
     obj.dirty = True
+
+
+# TODO: Put these into one function
+def increaseKeys(obj, menu, animation, x = 1):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0
+        total = int(obj.getText()) + 1
+        obj.setText(str(total))
+        obj.dirty = True
+
+        menu.game.audioLoader.playSound("success" + str(x), x) #TODO: Fix this sound so it plays on each point given
+
+        if total >= config["player"]["keys"]:
+            obj.removeAnimation(animation)
+        else:
+            obj.removeAnimation(animation)
+            obj.addAnimation(increaseKeys, 'onLoad', x = x + 1)
+
+
+def decreaseKeys(obj, menu, animation):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0
+        total = int(obj.getText()) - 1
+        obj.setText("+" + str(total))
+        obj.dirty = True
+
+        if total <= 0:
+            obj.removeAnimation(animation)
+
+
+def increaseMeter(obj, menu, animation, fromAmount, toAmount):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0   
+        obj.setAmount(fromAmount + 1)
+        obj.dirty = True
+
+        if obj.getAmount() >= toAmount:
+            obj.removeAnimation(animation)
+        else:
+            obj.removeAnimation(animation)
+            obj.addAnimation(increaseMeter, 'onLoad', fromAmount = fromAmount + 1, toAmount = toAmount)

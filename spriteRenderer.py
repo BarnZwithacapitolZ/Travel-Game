@@ -112,9 +112,9 @@ class SpriteRenderer():
     def runEndScreen(self, completed = False):
         if self.rendering and not self.debug:
             if completed:
-                self.menu.endScreenComplete()
+                self.menu.endScreenComplete(True) # Run with transition
             else:
-                self.menu.endScreenGameOver()
+                self.menu.endScreenGameOver(True) # Run with transition
 
 
     def setCompleted(self, completed):
@@ -124,7 +124,7 @@ class SpriteRenderer():
 
     # When the player completed the level, set it to complete in the level data and save the data
     def setLevelComplete(self):
-        if hasattr(self, 'levelData'):
+        if not hasattr(self, 'levelData'):
             return
 
         # If the level is not already set to completed, complete it   
@@ -134,6 +134,7 @@ class SpriteRenderer():
 
 
     # Use the number of lives left to work out the players score TODO: make this use other factors in the future
+    # Return the previous keys and difference so this can be used in the menu animation
     def setLevelScore(self):
         if not hasattr(self, 'levelData'):
             return 
@@ -150,8 +151,11 @@ class SpriteRenderer():
             self.saveLevel()
 
         scoreDifference = self.score - previousScore if self.score - previousScore > 0 else 0
+        previousKeys = config["player"]["keys"] # use this in the menu animation
         config["player"]["keys"] += scoreDifference
         dump(config)
+
+        return previousKeys, scoreDifference, previousScore
 
 
     def setTotalToComplete(self, totalToComplete):
@@ -217,6 +221,10 @@ class SpriteRenderer():
 
     def getHud(self):
         return self.hud
+
+
+    def getMenu(self):
+        return self.menu
 
 
     def getMessageSystem(self):
