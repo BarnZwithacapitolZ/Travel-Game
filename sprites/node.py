@@ -260,7 +260,7 @@ class Node(pygame.sprite.Sprite):
 
 
     def update(self):
-        if not self.dirty:
+        if not self.dirty and not self.spriteRenderer.getPaused():
             self.events()
 
 

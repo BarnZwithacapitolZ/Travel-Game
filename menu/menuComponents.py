@@ -873,12 +873,12 @@ class Map(MenuComponent):
         if config["graphics"]["scanlines"]["enabled"]:
             scanlines = pygame.Surface((int(self.width * self.menu.renderer.getScale()), int(self.height * self.menu.renderer.getScale())))
             
-            fillColor = BLACK if self.levelData["locked"]["isLocked"] else SCANLINES
+            fillColor = TRUEBLACK if self.levelData["locked"]["isLocked"] else SCANLINES
             scanlines.fill(fillColor)
 
             self.menu.renderer.drawScanlines(scanlines)
-            alpha = 95 if self.levelData["locked"]["isLocked"] else config["graphics"]["scanlines"]["opacity"]
-            scanlines.set_alpha(alpha)
+            alpha = 65 if self.levelData["locked"]["isLocked"] else config["graphics"]["scanlines"]["opacity"]
+            scanlines.set_alpha(alpha, pygame.RLEACCEL)
 
             self.image.blit(scanlines, (0, 0))
 
@@ -926,11 +926,26 @@ class Map(MenuComponent):
             textColor = Color("white")
 
         difficultyText = Label(self.menu, "Difficulty", 15, textColor, (30, self.height - 60))
-        difficultyText.makeSurface()
-        self.image.blit(difficultyText.image, (difficultyText.rect))
+        difficultyText.drawPaused(self.image)
 
-        difficulty = DifficultyMeter(self.menu, RED, BLACK, 4, self.levelData["difficulty"], 2, (15, 15), (30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
+        difficulty = DifficultyMeter(self.menu, RED, textColor, 4, self.levelData["difficulty"], 2, (15, 15), (30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
         difficulty.drawPaused(self.image)
+
+
+    def drawScore(self):
+        if "score" not in self.levelData:
+            return
+
+        textColor = BLACK
+
+        if "backgrounds" in self.levelData and "darkMode" in self.levelData["backgrounds"] and self.levelData["backgrounds"]["darkMode"]:
+            textColor = Color("white")
+
+        scoreText = Label(self.menu, "Score", 15, textColor, (140, self.height - 60))
+        scoreText.drawPaused(self.image)
+
+        score = DifficultyMeter(self.menu, YELLOW, textColor, 3, self.levelData["score"], 2, (15, 15), (140, scoreText.y + (scoreText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
+        score.drawPaused(self.image)
 
 
     def __render(self):
@@ -949,6 +964,7 @@ class Map(MenuComponent):
         self.image.blit(self.mapTitle.image, (self.mapTitle.rect))
 
         self.drawDifficulty()
+        self.drawScore()
         self.drawLocked()
         self.drawScanlines()
         self.roundedCorners()

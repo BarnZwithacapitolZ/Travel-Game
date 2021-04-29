@@ -73,6 +73,7 @@ class SpriteRenderer():
             "width": 18,
             "height": 10,
             "difficulty": 1, # out of 4
+            "total": 8, # total to complete the level
             "score": 0,
             "completion": {
                 "total": 10,
@@ -198,9 +199,10 @@ class SpriteRenderer():
 
 
     def togglePaused(self):
+        self.dt = 0
         self.paused = not self.paused 
-        self.game.paused = not self.game.paused
-        self.createPausedSurface()
+        # self.game.paused = not self.game.paused
+        # self.createPausedSurface()
 
 
     def getStartDt(self):
@@ -384,7 +386,7 @@ class SpriteRenderer():
         self.allDestinations = layer1Destinations + layer2Destinations + layer3Destinations
 
         # set number of people to complete level
-        self.totalToComplete = random.randint(8, 12)
+        self.totalToComplete = random.randint(8, 12) if "total" not in self.levelData else self.levelData["total"]
         # self.totalToComplete = 1
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
@@ -510,27 +512,33 @@ class SpriteRenderer():
 
 
     def update(self):
-        if self.rendering:
-            self.allSprites.update()
-            self.events()
+        if not self.rendering:
+            return 
+            
+        self.allSprites.update()
 
-            self.timer += self.game.dt * self.dt 
+        if self.paused:
+            return
 
-            # Always spawn a person if there is no people left on the map, to stop player having to wait
-            if self.timer > self.timeStep:
+        self.events()
+
+        self.timer += self.game.dt * self.dt 
+
+        # Always spawn a person if there is no people left on the map, to stop player having to wait
+        if self.timer > self.timeStep:
+            self.timer = 0
+            self.gridLayer2.addPerson(self.allDestinations)       
+
+        if self.totalPeople <= 0:
+            if not self.totalPeopleNone:
+                self.timer = 0
+                self.totalPeopleNone = True
+
+            # wait 2 seconds before spawing the next person when there is no people left
+            if self.timer > 2 and self.totalPeopleNone:
                 self.timer = 0
                 self.gridLayer2.addPerson(self.allDestinations)       
-
-            if self.totalPeople <= 0:
-                if not self.totalPeopleNone:
-                    self.timer = 0
-                    self.totalPeopleNone = True
-
-                # wait 2 seconds before spawing the next person when there is no people left
-                if self.timer > 2 and self.totalPeopleNone:
-                    self.timer = 0
-                    self.gridLayer2.addPerson(self.allDestinations)       
-                    self.totalPeopleNone = False
+                self.totalPeopleNone = False
 
 
     def events(self):

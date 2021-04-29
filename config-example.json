@@ -14,7 +14,7 @@
         "smoothscale": true, 
         "scanlines": {
             "enabled": true,
-            "opacity": 40
+            "opacity": 60
         },
         "vsync": true,
         "fullscreen": false, 

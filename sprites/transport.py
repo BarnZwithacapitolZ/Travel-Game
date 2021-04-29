@@ -409,60 +409,66 @@ class Transport(pygame.sprite.Sprite):
 
 
     def update(self):
-        if hasattr(self, 'rect') and self.running:
-            self.events()
+        if not hasattr(self, 'rect') or not self.running:
+            return
 
-            # Reset velocity to prevent infinate movement
-            self.vel = vec(0, 0)
+        self.events()
 
-            # if the path is set follow it, only if the transport is not stopped at a stop
-            if len(self.path) > 0 and self.moving:
-                path = self.path[0]
+        # Everything beyond here will NOT be called if the spriteRenderer is paused
+        if self.spriteRenderer.getPaused():
+            return 
 
-                dxy = (path.pos - path.offset) - self.pos + self.offset
-                dis = dxy.length()
+        # Reset velocity to prevent infinate movement
+        self.vel = vec(0, 0)
 
-                if dis >= 0.5 and self.moving:
-                    # Speed up when leaving a stop, only if it is the first node in the players path
-                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
-                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
-                    
-                    # Slow down when reaching a stop, only if it is the last node in the players path
-                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
-                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                    else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+        # if the path is set follow it, only if the transport is not stopped at a stop
+        if len(self.path) > 0 and self.moving:
+            path = self.path[0]
 
-                    self.movePeople()
-                else:
-                    # set the current connection to be one of the paths connections (just pick a random one)
-                    self.setNextPathConnection(path)
+            dxy = (path.pos - path.offset) - self.pos + self.offset
+            dis = dxy.length()
 
-                self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-
-            else:
-                dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
-                dis = dxy.length()
+            if dis >= 0.5 and self.moving:
+                # Speed up when leaving a stop, only if it is the first node in the players path
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
+                    self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
                 
-                if dis >= 0.5 and self.moving: #move towards the node
-                    # Speed up when leaving a stop
-                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
-                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
+                # Slow down when reaching a stop, only if it is the last node in the players path
+                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
+                    self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+                else:
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
-                    # Slow down when reaching a stop
-                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                    else:
-                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+                self.movePeople()
+            else:
+                # set the current connection to be one of the paths connections (just pick a random one)
+                self.setNextPathConnection(path)
 
-                    self.movePeople()
-                else: 
-                    self.setNextConnection()
-                    self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
-                self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        else:
+            dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
+            dis = dxy.length()
+            
+            if dis >= 0.5 and self.moving: #move towards the node
+                # Speed up when leaving a stop
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
+                    self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
+
+                # Slow down when reaching a stop
+                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                    self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+                else:
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+
+                self.movePeople()
+            else: 
+                self.setNextConnection()
+                self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
+
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 class Taxi(Transport):
@@ -551,71 +557,78 @@ class Taxi(Transport):
 
     # override
     def update(self):
-        if hasattr(self, 'rect') and self.running:
-            self.events()
-            self.vel = vec(0, 0)
+        if not hasattr(self, 'rect') or not self.running:
+            return
 
-            if len(self.path) > 0 and self.moving:
-                path = self.path[0]
+        self.events()
 
-                dxy = (path.pos - path.offset) - self.pos + self.offset
-                dis = dxy.length()
+        # Everything beyond here will NOT be called if the spriteRenderer is paused
+        if self.spriteRenderer.getPaused():
+            return 
 
-                if dis >= 0.5 and self.moving:
-                    # speed up when leaving a stop
-                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
-                        if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
-                            self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
-                        else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+        self.vel = vec(0, 0)
 
-                    # slow down when reaching a node
-                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
-                        if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
-                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                        else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+        if len(self.path) > 0 and self.moving:
+            path = self.path[0]
+
+            dxy = (path.pos - path.offset) - self.pos + self.offset
+            dis = dxy.length()
+
+            if dis >= 0.5 and self.moving:
+                # speed up when leaving a stop
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType) and self.currentNode == self.firstPathNode:
+                    if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
+                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
-                    self.movePeople()
-
+                # slow down when reaching a node
+                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType) and len(self.path) <= 1:
+                    if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
+                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+                    else:
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
                 else:
-                    self.setNextPathConnection(path)
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
-                self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                self.movePeople()
 
             else:
-                dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
-                dis = dxy.length()
+                self.setNextPathConnection(path)
 
-                if dis >= 0.5 and self.moving: #move towards the node
-                    # speed up when leaving
-                    if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
-                        if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
-                            self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
-                        else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
-                    # slow down when stopping
-                    elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
-                        if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
-                            self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
-                        else:
-                            self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                            
+        else:
+            dxy = (self.currentConnection.getTo().pos - self.currentConnection.getTo().offset) - self.pos + self.offset
+            dis = dxy.length()
+
+            if dis >= 0.5 and self.moving: #move towards the node
+                # speed up when leaving
+                if dis >= self.currentConnection.getDistance() - 15 and dis <= self.currentConnection.getLength().length() - 0.5 and isinstance(self.currentNode, self.stopType):
+                    if self.checkTaxiStop(self.currentNode) or self.checkPersonStop(self.currentNode) or self.hasStopped:
+                        self.vel = (-(self.currentConnection.getLength() + dxy) * (self.speed / 12)) * self.game.dt * self.spriteRenderer.getDt()
                     else:
                         self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
-                    self.movePeople()
+                # slow down when stopping
+                elif dis <= 15 and isinstance(self.currentConnection.getTo(), self.stopType):
+                    if self.checkTaxiStop(self.currentConnection.getTo()) or self.checkPersonStop(self.currentConnection.getTo()):
+                        self.vel = (dxy * (self.speed / 10)) * self.game.dt * self.spriteRenderer.getDt()
+                    else:
+                        self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+                        
+                else:
+                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
-                else: # At the node
-                    self.setNextConnection()
-                    self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
-                
-                self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                self.movePeople()
+
+            else: # At the node
+                self.setNextConnection()
+                self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
+            
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 

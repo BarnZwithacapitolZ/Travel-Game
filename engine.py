@@ -47,14 +47,14 @@ class Renderer:
         for i in range(0, int(self.height), step):
             pos1 = (0, i)
             pos2 = (int(self.width), i)
-            pygame.draw.line(surface, (0, 0, 0, 60), pos1, pos2, 1)
+            pygame.draw.line(surface, BLACK, pos1, pos2, 1)
             
 
     def createScanlines(self):
         self.scanlines = pygame.Surface((self.width, self.height)).convert()
         self.scanlines.fill(SCANLINES)
         self.drawScanlines(self.scanlines)
-        self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"])
+        self.scanlines.set_alpha(config["graphics"]["scanlines"]["opacity"], pygame.RLEACCEL)
 
 
     # Add a surface to the gameDisplay

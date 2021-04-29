@@ -452,8 +452,7 @@ class OptionMenu(Menu):
         self.game.mapEditor.getHud().setOpen(True)
 
         def callback(obj, menu, y):
-            if not menu.game.spriteRenderer.getPaused():
-                menu.game.paused = False
+            menu.game.paused = False
             menu.close()
 
         for component in self.components:
@@ -811,6 +810,11 @@ class GameHudLayout(Menu):
     def updateSlowDownMeter(self, amount):
         return
 
+
+    @abc.abstractmethod
+    def setLifeAmount(self):
+        return
+
     
 
 class GameHud(GameHudLayout):
@@ -851,8 +855,8 @@ class GameHud(GameHudLayout):
     def togglePauseGame(self, selected = False):
         self.game.spriteRenderer.togglePaused() 
 
-        pauseImage = "play" if self.game.paused else "pause"
-        pauseImageSelected = "playSelected" if self.game.paused else "pauseSelected"
+        pauseImage = "play" if self.game.spriteRenderer.getPaused() else "pause"
+        pauseImageSelected = "playSelected" if self.game.spriteRenderer.getPaused() else "pauseSelected"
         pauseImage += "White" if self.game.spriteRenderer.getDarkMode() else ""
         
         self.pause.setImageName(pauseImageSelected if selected else pauseImage)

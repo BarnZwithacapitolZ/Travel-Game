@@ -457,6 +457,9 @@ class Person(pygame.sprite.Sprite):
                 
             self.clickManager.setPerson(self)
 
+            if self.spriteRenderer.getPaused():
+                return
+
             if self.status == Person.Status.UNASSIGNED:
                 if isinstance(self.currentNode, NODE.Stop) or isinstance(self.currentNode, NODE.Destination):
                     self.status = Person.Status.WAITING
@@ -508,51 +511,59 @@ class Person(pygame.sprite.Sprite):
 
 
     def update(self):
-        if hasattr(self, 'rect'):
-            self.events()
-            # print(self.status)
+        if not hasattr(self, 'rect'):
+            return
 
-            self.timer -= self.game.dt * self.spriteRenderer.getDt()
-            self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
+        # mouse over and click events first
+        self.events()
 
-            # Increase the radius of the selector showing the destination
-            if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
-                self.step = -self.step
-                
-            if self.timer <= 0:
-                self.spriteRenderer.removeLife()
-                self.remove()
+        self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
 
-            if self.currentNode.getNumber() == self.destination.getNumber():
-                self.complete()
+        # Increase the radius of the selector showing the destination
+        if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
+            self.step = -self.step
 
 
-            if len(self.path) > 0:
-                path = self.path[0]
+        # Everything beyond here will NOT be called if the spriteRenderer is paused
+        if self.spriteRenderer.getPaused():
+            return 
+            
+        self.timer -= self.game.dt * self.spriteRenderer.getDt()
+            
+        if self.timer <= 0:
+            self.spriteRenderer.removeLife()
+            self.remove()
 
-                dxy = (path.pos - path.offset) - self.pos + self.offset
-                dis = dxy.length()
+        if self.currentNode.getNumber() == self.destination.getNumber():
+            self.complete()
 
-                if dis > 1:
-                    self.status = Person.Status.WALKING
-                    self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
-                    self.moveStatusIndicator()
 
-                else:
-                    self.currentNode.removePerson(self)
-                    self.currentNode = path
-                    self.currentNode.addPerson(self)
-                    self.path.remove(path)
+        if len(self.path) > 0:
+            path = self.path[0]
 
-                    # No more nodes in the path, the person is no longer walking and is unassigned
-                    if len(self.path) <= 0:
-                        self.status = Person.Status.UNASSIGNED
+            dxy = (path.pos - path.offset) - self.pos + self.offset
+            dis = dxy.length()
 
-                    if self.currentConnectionType != self.currentNode.connectionType:
-                        self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
-                
-                self.pos += self.vel
-                self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            if dis > 1:
+                self.status = Person.Status.WALKING
+                self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
+                self.moveStatusIndicator()
+
+            else:
+                self.currentNode.removePerson(self)
+                self.currentNode = path
+                self.currentNode.addPerson(self)
+                self.path.remove(path)
+
+                # No more nodes in the path, the person is no longer walking and is unassigned
+                if len(self.path) <= 0:
+                    self.status = Person.Status.UNASSIGNED
+
+                if self.currentConnectionType != self.currentNode.connectionType:
+                    self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
+            
+            self.pos += self.vel
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
 
