@@ -18,10 +18,8 @@ class Renderer:
         self.monitorWidth = pygame.display.Info().current_w
         self.monitorHeight = pygame.display.Info().current_h
 
-        # self.monitorWidth = 1280
-        # self.monitorHeight = 720
-
         self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.RESIZABLE | pygame.DOUBLEBUF, vsync = int(self.game.vsync))
+        # self.screen.set_alpha(None)
         self.gameDisplay = pygame.Surface((self.width, self.height))
 
         self.scale = 1 # control the scale of whats on screen

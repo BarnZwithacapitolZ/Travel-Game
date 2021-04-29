@@ -961,6 +961,11 @@ class Map(MenuComponent):
         if self.dirty or self.image is None: self.__render()
 
 
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.finalImage, self.rect)
+
+
 class Image(MenuComponent):
     def __init__(self, menu, imageName, size = tuple(), pos = tuple(), alpha = None):
         super().__init__(menu, None, size, pos)
