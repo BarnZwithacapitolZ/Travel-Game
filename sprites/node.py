@@ -172,8 +172,17 @@ class Node(pygame.sprite.Sprite):
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+    
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+
+    def draw(self):
+        self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
 
         # if self.personClickManager.getNode() == self:
@@ -314,17 +323,6 @@ class EditorNode(Node):
 
             if self.clickManager.getTempEndNode() is not None:
                 self.clickManager.removeTempEndNode()
-
-
-
-class EntranceNode(Node):
-    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
-        super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
-
-    # Empty draw function so its a hidden node
-    def draw(self):
-        pass
-
 
 
 # To Do: Parent class for all stops

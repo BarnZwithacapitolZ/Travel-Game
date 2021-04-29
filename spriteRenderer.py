@@ -17,6 +17,7 @@ class SpriteRenderer():
     #loads all the sprites into groups and stuff
     def __init__(self, game):
         self.allSprites = pygame.sprite.Group()
+        self.entities = pygame.sprite.Group()
         self.layer1 = pygame.sprite.Group() # layer 1
         self.layer2 = pygame.sprite.Group() # layer 2
         self.layer3 = pygame.sprite.Group() # layer 3
@@ -28,8 +29,8 @@ class SpriteRenderer():
 
         # Hud for when the game is running
         self.hud = GameHud(self.game)
+        self.menu = GameMenu(self.game)
         self.messageSystem = MessageHud(self.game)
-        self.openingMenu = GameOpeningMenu(self.game)
 
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
@@ -38,13 +39,15 @@ class SpriteRenderer():
 
         # Game timer to keep track of how long has been played
         self.timer = 0
-        self.timeStep = 30 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
-        # self.timeStep = 8
+        self.timeStep = 25 # make this dependant on the level and make it decrease as the number of people who reach their destinations increase
+        self.lives = DEFAULTLIVES
+        self.score, self.bestScore = 0, 0
 
         self.dt = 1 # control the speed of whats on screen
         self.startDt = self.dt
         self.fixedScale = 1 # control the size of whats on the screen
         self.startingFixedScale = 0
+        self.paused = False # Individual pause for the levels
 
         self.setDefaultMap()
 
@@ -61,19 +64,23 @@ class SpriteRenderer():
     def setDefaultMap(self):
         self.levelData = {
             "mapName": "",
-            "locked": False,
+            "locked": {
+                "isLocked": False, 
+                "unlock": 0 # Amount to unlock
+            },
             "deletable": True, # Map can / cannot be deleted; maps that cant be deleted cant be opened in the editor
             "saved": False, # Has the map been saved before
             "width": 18,
             "height": 10,
             "difficulty": 1, # out of 4
+            "score": 0,
             "completion": {
                 "total": 10,
                 "completed": False,
                 "time": 0
             },
             "backgrounds": {
-                "layer 1": CREAM,
+                "layer 1": CREAM, # Default color CREAM :) 
                 "layer 2": CREAM,
                 "layer 3": CREAM,
                 "layer 4": CREAM
@@ -85,20 +92,70 @@ class SpriteRenderer():
         } # Level data to be stored, for export to JSON
 
 
+    # Save function, for when the level has already been created before (and is being edited)
+    def saveLevel(self):
+        self.game.mapLoader.saveMap(self.levelData["mapName"], self.levelData)
+
+
     def setRendering(self, rendering, transition = False):
         self.rendering = rendering
         self.hud.main(transition) if self.rendering else self.hud.close()
         self.messageSystem.main() if self.rendering else self.messageSystem.close()
+        self.createPausedSurface() # create the paused surface when first rendering
 
 
-    def runOpeningMenu(self):
+    def runStartScreen(self):
+        if self.rendering and not self.debug and self.game.paused:
+            self.menu.startScreen()
+
+
+    def runEndScreen(self, completed = False):
         if self.rendering and not self.debug:
-            self.openingMenu.main()
+            if completed:
+                self.menu.endScreenComplete(True) # Run with transition
+            else:
+                self.menu.endScreenGameOver(True) # Run with transition
 
 
     def setCompleted(self, completed):
         self.completed = completed
         self.hud.setCompletedText()
+
+
+    # When the player completed the level, set it to complete in the level data and save the data
+    def setLevelComplete(self):
+        if not hasattr(self, 'levelData'):
+            return
+
+        # If the level is not already set to completed, complete it   
+        if not self.levelData["completion"]["completed"]:
+            self.levelData["completion"]["completed"] = True
+            self.saveLevel()
+
+
+    # Use the number of lives left to work out the players score TODO: make this use other factors in the future
+    # Return the previous keys and difference so this can be used in the menu animation
+    def setLevelScore(self):
+        if not hasattr(self, 'levelData'):
+            return 
+
+        self.score = self.lives
+        previousScore = 0
+
+        if "score" in self.levelData:
+            previousScore = self.levelData["score"]
+            self.bestScore = previousScore
+
+        if self.score > previousScore:
+            self.levelData["score"] = self.score
+            self.saveLevel()
+
+        scoreDifference = self.score - previousScore if self.score - previousScore > 0 else 0
+        previousKeys = config["player"]["keys"] # use this in the menu animation
+        config["player"]["keys"] += scoreDifference
+        dump(config)
+
+        return previousKeys, scoreDifference, previousScore
 
 
     def setTotalToComplete(self, totalToComplete):
@@ -136,6 +193,16 @@ class SpriteRenderer():
         self.totalPeople = totalPeople
 
 
+    def setLives(self, lives):
+        self.lives = lives
+
+
+    def togglePaused(self):
+        self.paused = not self.paused 
+        self.game.paused = not self.game.paused
+        self.createPausedSurface()
+
+
     def getStartDt(self):
         return self.startDt
 
@@ -154,6 +221,10 @@ class SpriteRenderer():
 
     def getHud(self):
         return self.hud
+
+
+    def getMenu(self):
+        return self.menu
 
 
     def getMessageSystem(self):
@@ -208,18 +279,52 @@ class SpriteRenderer():
         return self.totalPeople
 
 
+    def getLives(self):
+        return self.lives
+
+
+    def getAllDestination(self):
+        if hasattr(self, 'allDestinations'):
+            return self.allDestinations
+
+
+    def getScore(self):
+        return self.score
+
+
+    def getBestScore(self):
+        return self.bestScore
+
+
+    def getPaused(self):
+        return self.paused
+
+
+    def removeLife(self):
+        self.lives -= 1
+        # remove a heart from the hud here or something
+        self.hud.setLifeAmount()
+        if self.lives <= 0:
+            # although we pause the game in the timer, we wan't to stop anything else from reducing the life count here whilst the timer is decreasing (so no one can die whilst it is decreasing)
+            pass
+
+
     def addToCompleted(self):
         self.completed += 1
         # self.timeStep -= 0.5
-        self.hud.setCompletedText()
+        self.hud.setCompletedAmount()
         self.meter.addToAmountToAdd(20)
 
 
     # Reset the level back to its default state
     def clearLevel(self):
+        self.paused = False # Not to confuse the option menu
         self.startingFixedScale = 0 # reset the scale back to default
         self.timer = 0
+        self.lives = DEFAULTLIVES
         self.totalPeople = 0
+        self.totalPeopleNone = False
+        self.entities.empty()
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -236,17 +341,7 @@ class SpriteRenderer():
         self.clearLevel()
         self.setCompleted(0) # currently this calls the wrong hud as its done before the hud is set
         self.debug = debug
-        # self.startingFixedScale = -0.05
 
-        # for running the game in test mode (when testing a level)
-        if self.debug:
-            self.hud = PreviewHud(self.game)
-            spacing = (1.5, 1.5) # push the level down since we have hud at the top
-        else:
-            self.hud = GameHud(self.game)
-            spacing = (1.5, 1)
-
-        # ordering matters -> stack
         self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
 
         # Set the name of the level
@@ -254,6 +349,18 @@ class SpriteRenderer():
 
         # Set the level data
         self.levelData = self.gridLayer4.getGrid().getMap()
+
+        # for running the game in test mode (when testing a level)
+        if self.debug:
+            spacing = (1.5, 1.5) # push the level down since we have hud at the top
+            self.hud = PreviewHud(self.game, spacing)
+        else:
+            # self.startingFixedScale = -0.05
+            spacings = {(16, 9): (1.5, 1), (18, 10): (2, 1.5), (20, 11): (1.5, 1), (22, 12): (1.5, 1)}
+            size = (self.levelData["width"], self.levelData["height"])
+            # spacing = spacings[size]
+            spacing = (1.5, 1)
+            self.hud = GameHud(self.game, spacing)
 
         # we want to get which connectionTypes are available in the map
         for connectionType in self.levelData['connections']:
@@ -278,6 +385,7 @@ class SpriteRenderer():
 
         # set number of people to complete level
         self.totalToComplete = random.randint(8, 12)
+        # self.totalToComplete = 1
 
         self.meter = MeterController(self, self.allSprites, self.slowDownMeterAmount)
         self.setDarkMode()
@@ -287,9 +395,6 @@ class SpriteRenderer():
             self.connectionTypes.append("layer 4")
         else:
             self.showLayer(self.getLayerInt(self.connectionTypes[0]))
-
-        # add the first player
-        self.gridLayer2.addPerson(self.allDestinations)
 
 
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
@@ -311,6 +416,25 @@ class SpriteRenderer():
         gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
 
         return gridLayer4.getLineSurface()
+
+
+    # Create a new surface when the game is paused with all the sprites currently in the game, so these don't have to be drawn every frame (as they are not moving)
+    def createPausedSurface(self):
+        if self.rendering and self.game.paused:
+            self.pausedSurface = pygame.Surface((int(config["graphics"]["displayWidth"] * self.game.renderer.getScale()), 
+                                                int(config["graphics"]["displayHeight"] * self.game.renderer.getScale()))).convert()
+
+            self.pausedSurface.blit(self.gridLayer4.getLineSurface(), (0, 0))
+            for sprite in self.layer4:
+                sprite.makeSurface()
+
+                if hasattr(sprite, 'image'): # not all sprites have an image
+                    self.pausedSurface.blit(sprite.image, (sprite.rect))
+
+            # for component in self.hud.getComponents() + self.messageSystem.getComponents(): # draw hud and message system
+            #     component.drawPaused(self.pausedSurface)
+
+            return self.pausedSurface
 
 
     def getGridLayer(self, connectionType):
@@ -403,7 +527,7 @@ class SpriteRenderer():
                     self.totalPeopleNone = True
 
                 # wait 2 seconds before spawing the next person when there is no people left
-                if self.timer > 2:
+                if self.timer > 2 and self.totalPeopleNone:
                     self.timer = 0
                     self.gridLayer2.addPerson(self.allDestinations)       
                     self.totalPeopleNone = False
@@ -457,11 +581,13 @@ class SpriteRenderer():
 
             # resize huds and menus
             self.hud.resize()
+            self.menu.resize()
             self.messageSystem.resize()
-            self.openingMenu.resize()
 
             for sprite in self.allSprites:
                 sprite.dirty = True
+
+            self.createPausedSurface()
 
 
     def renderLayer(self, layer, gridLayer, group):
@@ -473,14 +599,20 @@ class SpriteRenderer():
 
     def render(self):
         if self.rendering:
-            self.renderLayer(1, self.gridLayer1, self.layer1)
-            self.renderLayer(2, self.gridLayer2, self.layer2)
-            self.renderLayer(3, self.gridLayer3, self.layer3)
-            self.renderLayer(4, self.gridLayer4, self.layer4)
+            if not self.game.paused:
+                # Entities drawn below the other sprites
+                for entity in self.entities:
+                    entity.draw() 
+                
+                self.renderLayer(1, self.gridLayer1, self.layer1)
+                self.renderLayer(2, self.gridLayer2, self.layer2)
+                self.renderLayer(3, self.gridLayer3, self.layer3)
+                self.renderLayer(4, self.gridLayer4, self.layer4)
 
+            else:
+                if hasattr(self, 'pausedSurface'):
+                    self.game.renderer.addSurface(self.pausedSurface, (self.pausedSurface.get_rect()))
 
-            # Render the hud above all the other sprites
             self.hud.display()
             self.messageSystem.display()
-            self.openingMenu.display()
-
+            self.menu.display()

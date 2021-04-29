@@ -10,16 +10,6 @@ from transitionFunctions import *
 
 
 ##### Hud Functions #####
- 
-# hover layer change image
-def hoverLayers(obj, menu, event, image = "layers"):
-    obj.setImageName(image)
-
-
-# hover  home button change image
-def hoverHome(obj, menu, event, image = "home"):
-    obj.setImageName(image)
-
 
 # Change the layer showing on the screen
 def changeGameLayer(obj, menu, event):
@@ -39,7 +29,12 @@ def changeGameLayer(obj, menu, event):
 
 # Show the option menu
 def goHome(obj, menu, event):
-    menu.game.optionMenu.main()
+    menu.game.optionMenu.main(True, True)
+
+
+# Pause the game and change the pause icon
+def pauseGame(obj, menu, event):
+    menu.togglePauseGame(True)
 
 
 #### Editor Hud Function ####

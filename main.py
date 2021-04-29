@@ -29,8 +29,9 @@ class Game:
         self.playing = True
         self.clock = pygame.time.Clock()
         self.running = True
-        self.paused = False
+        self.paused = True # start with the game paused (menus will keep running though)
         self.fullscreen = config["graphics"]["fullscreen"]
+        self.vsync = config["graphics"]["vsync"]
 
         # Engine
         self.renderer = Renderer(self)
@@ -67,15 +68,16 @@ class Game:
     def setCaption(self):
         pygame.display.set_caption(config["game"]["gameTitle"])
 
+
     # Set the games icon
     def setIcon(self):
         icon = self.imageLoader.getImage(config["game"]["icon"])
         pygame.display.set_icon(icon)
 
+
     # Set the games cursor (cursor class?)
     def setCursor(self):
         pygame.mouse.set_cursor(*pygame.cursors.tri_left)
-
 
     def getPaused(self):
         return self.paused
@@ -98,10 +100,19 @@ class Game:
                 self.textHandler.setPressed(True)
 
                 # only open the option manu if the game isn't paused and the main menu isn't open
-                if e.key == pygame.K_ESCAPE and not self.mainMenu.open: 
-                    if not self.mapEditor.isDropdownsClosed():
-                        if not self.paused: self.optionMenu.main()
+                if e.key == pygame.K_ESCAPE and not self.mainMenu.open and not self.spriteRenderer.getMenu().open: 
+                    if not self.mapEditor.isDropdownsClosed(): # Close the dropdowns first
+                        if not self.optionMenu.open: self.optionMenu.main(True, True)
                         else: self.optionMenu.closeTransition()
+
+                elif e.key == pygame.K_RIGHT and self.mainMenu.open:
+                    self.mainMenu.levelForward()
+                elif e.key == pygame.K_LEFT and self.mainMenu.open:
+                    self.mainMenu.levelBackward()
+
+                elif e.key == pygame.K_p:
+                    if self.spriteRenderer.getHud().open:
+                        self.spriteRenderer.getHud().togglePauseGame()
 
                 # if the game is not paused and the main menu isnt open and no text inputs are open
                 if not self.paused and not self.mainMenu.open and not self.textHandler.getActive():
@@ -160,8 +171,6 @@ class Game:
                 self.clickManager.setRightClicked(False)
                     
 
-    
-
     def run(self):
         #main menu
         self.mainMenu.main()
@@ -179,6 +188,7 @@ class Game:
             self.__draw()
 
         self.running = False
+
 
     def __update(self):
         # print(self.paused)
@@ -200,7 +210,6 @@ class Game:
 
         # render everything
         self.renderer.render()
-
 
 
 if __name__ == "__main__":

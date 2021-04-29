@@ -32,6 +32,7 @@ class Transport(pygame.sprite.Sprite):
         self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
 
         self.speed = float(decimal.Decimal(random.randrange(50, 60)))
+        # self.speed = float(decimal.Decimal(random.randrange(55, 65)))
         
         self.mouseOver = False
         self.dirty = True
@@ -119,8 +120,7 @@ class Transport(pygame.sprite.Sprite):
 
         for connection in nextNode.getConnections():
             if connection.getConnectionType() == self.currentConnection.getConnectionType():
-                if not isinstance(connection.getTo(), NODE.EntranceNode):
-                    totalConnections.append(connection)
+                totalConnections.append(connection)
 
         if len(totalConnections) <= 1:
             self.currentConnection = totalConnections[0]
@@ -287,19 +287,19 @@ class Transport(pygame.sprite.Sprite):
 
 
     # Draw how long is left at each stop 
-    def drawTimer(self):
+    def drawTimer(self, surface):
         scale = self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
         # Arc Indicator 
         offx = 0.01
         step = self.timer / (self.timerLength / 2) + 0.02
         for x in range(6):
-            pygame.draw.arc(self.game.renderer.gameDisplay, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, int(8 * scale))
+            pygame.draw.arc(surface, YELLOW, ((self.pos.x - 4) * scale, (self.pos.y - 4) * scale, (self.width + 8) * scale, (self.height + 8) * scale), math.pi / 2 + offx, math.pi / 2 + math.pi * step, int(8 * scale))
             offx += 0.01
 
 
     # Visualize the players path by drawing the connection between each node in the path
-    def drawPath(self):
+    def drawPath(self, surface):
         if len(self.path) <= 0:
             return
 
@@ -311,12 +311,12 @@ class Transport(pygame.sprite.Sprite):
             posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
             posy = ((current.pos - current.offset) + vec(10, 10)) * scale
 
-            pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, posx, posy, int(thickness * scale))
+            pygame.draw.line(surface, YELLOW, posx, posy, int(thickness * scale))
             
         # Connection from player to the first node in the path
         startx = ((self.pos - self.offset) + vec(10, 10)) * scale
         starty = ((start.pos - start.offset) + vec(10, 10)) * scale
-        pygame.draw.line(self.game.renderer.gameDisplay, YELLOW, startx, starty, int(thickness * scale))
+        pygame.draw.line(surface, YELLOW, startx, starty, int(thickness * scale))
 
 
     def drawOutline(self, surface):
@@ -336,16 +336,32 @@ class Transport(pygame.sprite.Sprite):
         self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
-    def draw(self):
+    def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
+
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+        if self.timer > 0:
+            self.drawTimer(surface)
+
+        if self.clickManager.getTransport() == self:
+            self.drawPath(surface)
+            self.drawOutline(surface)
+
+
+    def draw(self):
+        self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
 
         if self.timer > 0:
             #draw the time indicator
-            self.drawTimer()
+            self.drawTimer(self.game.renderer.gameDisplay)
         
         if self.clickManager.getTransport() == self:
-            self.drawPath()
+            self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
 

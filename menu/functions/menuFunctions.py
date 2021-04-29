@@ -57,6 +57,7 @@ def openMapEditor(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
+            menu.game.paused = False
             menu.game.mapEditor.createLevel(clearChanges = True)
             menu.game.mapEditor.setRendering(True, True) #Load the hud
             hudFunctions.addConnection(obj, menu, event) # default option to add connection
@@ -68,21 +69,47 @@ def openMapEditor(obj, menu, event):
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, level):
-    if not menu.getTransitioning():
-        global levelName
-        levelName = level
+    if hasattr(menu, 'transitioning') and menu.getTransitioning():
+        return
+    
+    global levelName
+    levelName = level
 
-        def callback(obj, menu, animation):
-            obj.y = 0
+    def callback(obj, menu, animation):
+        obj.y = 0
 
-            if obj.rect.y == 0:
-                obj.removeAnimation(animation)
-                menu.game.spriteRenderer.createLevel(levelName)
-                menu.game.spriteRenderer.setRendering(True, True) #Load the hud
-                menu.levelSelectOpen = False
-                menu.close()
+        if obj.rect.y == 0:
+            obj.removeAnimation(animation)
+            menu.game.spriteRenderer.createLevel(levelName)
+            menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+            menu.levelSelectOpen = False
+            menu.close()
 
-        menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+
+
+# Check if a level can be unlocked with the amount of keys the player has,
+# if it can then unlock the level, else play an error sound
+def unlockLevel(obj, menu, event, level):
+    if not level.getLevelData()["locked"]["isLocked"]:
+        return 
+    
+    if config["player"]["keys"] >= level.getLevelData()["locked"]["unlock"]:
+        menu.game.audioLoader.playSound("uiSuccess", 0)
+        config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
+        level.getLevelData()["locked"]["isLocked"] = False
+        menu.game.mapLoader.saveMap(level.getLevelData()["mapName"], level.getLevelData())
+        dump(config)
+
+        # if successful update menu
+        menu.keyText.setText(str(config["player"]["keys"]))
+        level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+        level.removeEvent(unlockLevel, 'onMouseClick', level = level)
+        level.dirty = True
+        menu.keyText.dirty = True
+
+    else:
+        menu.game.audioLoader.playSound("uiError", 0)
 
 
 # Move the level scroller foward by one level
@@ -128,7 +155,7 @@ def showMainMenu(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
-            menu.game.paused = False
+            menu.game.paused = True
             menu.game.spriteRenderer.setRendering(False) # Always close the Game
             menu.game.mapEditor.setRendering(False) # Always close the Editor
             menu.game.textHandler.setActive(False) # Always close any open inputs
@@ -145,7 +172,7 @@ def showLevelSelect(obj, menu, event):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
-            menu.game.paused = False
+            menu.game.paused = True
             menu.game.spriteRenderer.setRendering(False) # Always close the Game
             menu.game.mapEditor.setRendering(False) # Always close the Editor
             menu.game.textHandler.setActive(False) # Always close any open inputs
@@ -176,7 +203,7 @@ def showGraphics(obj, menu, event):
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
     menu.close()
-    menu.main()
+    menu.main(False)
 
 
 # Toggle anti-aliasing in the graphics menu
@@ -216,3 +243,30 @@ def toggleScanlines(obj, menu, event):
     obj.setText("Scanlines: " + text)
 
     dump(config)
+
+
+# Toggle between smooth and harsh scaling
+def toggleScalingMode(obj, menu, event):
+    toggle = not config["graphics"]["smoothscale"]
+    config["graphics"]["smoothscale"] = toggle
+
+    text = "smooth" if toggle else "harsh"
+
+    obj.setText("Scaling: " + text)
+
+    dump(config)
+    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)
+
+
+# Toggle vsync between on and off
+def toggleVsync(obj, menu, event):
+    menu.game.vsync = not menu.game.vsync
+
+    text = "On" if menu.game.vsync else "Off"
+
+    obj.setText("Vsync: " + text)
+
+    config["graphics"]["vsync"] = menu.game.vsync
+    dump(config)
+
+    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)

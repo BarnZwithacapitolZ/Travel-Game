@@ -4,25 +4,6 @@ from config import *
 
 vec = pygame.math.Vector2
 
-def transitionAnimationOpen(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= 0:
-        obj.removeAnimation(animation)
-        menu.close()
-        menu.transition()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionAnimationClose(obj, menu, animation):
-    obj.x += 100
-
-    if obj.x >= config["graphics"]["displayWidth"]:
-        obj.removeAnimation(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
 
 
 def transitionFadeIn(obj, menu, animation):
@@ -42,11 +23,6 @@ def transitionFadeOut(obj, menu, animation):
     if obj.getAlpha() <= 0:
         obj.removeAnimation(animation)
         menu.close()
-
-
-
-
-transitionspeed = 40
 
 
 def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
@@ -80,6 +56,7 @@ def transitionMessageDown(obj, menu, animation, speed, transitionDirection, y):
     # obj.rect.y = obj.y * menu.renderer.getScale()
     obj.setRectPos()
 
+
 def transitionMessageRight(obj, menu, animation, speed, x):
     obj.setPos((obj.x + speed * 100 * menu.game.dt, obj.y))
 
@@ -89,51 +66,8 @@ def transitionMessageRight(obj, menu, animation, speed, x):
 
     obj.setRectPos()
 
-def transitionLeft(obj, menu, animation):
-    obj.x -= transitionspeed * 100 * menu.game.dt
-
-    if obj.x < -500:
-        obj.removeAnimation(animation)
-        menu.close()
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-    
-
-def transitionLeftUnpause(obj, menu, animation):
-    obj.x -= transitionspeed * 100 * menu.game.dt
-
-    if obj.x < -500:
-        obj.removeAnimation(animation)
-        menu.close()
-        menu.game.paused = False
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionRight(obj, menu, animation):
-    obj.x += transitionspeed * 100 * menu.game.dt
-
-    if obj.x >= 100:
-        obj.x = 100
-        obj.removeAnimation(animation)
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-def transitionRightBackground(obj, menu, animation):
-    obj.x += transitionspeed * 100 * menu.game.dt
-
-    if obj.x >= 0:
-        obj.x = 0
-        obj.removeAnimation(animation)
-
-    obj.rect.x = obj.x * menu.renderer.getScale()
-
-
 
 #### Text hover animations ####
-hoverspeed = 10
-
 def hoverOverAnimation(obj, menu, animation, speed, x):
     obj.x += speed * 100 * menu.game.dt
 
@@ -148,38 +82,6 @@ def hoverOutAnimation(obj, menu, animation, speed, x):
     if obj.x <= x:
         obj.removeAnimation(animation)
     obj.rect.x = obj.x * menu.renderer.getScale()
-
-
-increaseSpeed = 5
-
-def successAnimationUp(obj, menu, animation, x, y, fontSize = 25, maxFontSize = 35):
-    obj.fontSize += increaseSpeed * 10 * menu.game.dt
-    obj.y -= (increaseSpeed / 2) * 10 * menu.game.dt
-    obj.x -= (increaseSpeed / 2) * 10 * menu.game.dt
-
-    #increase hight too so it stays put
-    if obj.fontSize >= maxFontSize:
-        obj.fontSize = maxFontSize
-        obj.removeAnimation(animation)
-        obj.addAnimation(successAnimationDown, 'onLoad', x = x, y = y, fontSize = fontSize)
-    obj.dirty = True
-
-
-def successAnimationDown(obj, menu, animation, x, y, fontSize = 25):
-    obj.fontSize -= increaseSpeed * 10 * menu.game.dt
-    obj.y += (increaseSpeed / 2) * 10 * menu.game.dt
-    obj.x += (increaseSpeed / 2) * 10 * menu.game.dt
-
-    if obj.fontSize <= fontSize:
-        obj.fontSize = fontSize
-        obj.x = x
-        obj.y = y
-        obj.removeAnimation(animation)
-        obj.setColor(menu.textColor)
-    obj.dirty = True
-
-
-
 
 
 def slideTransitionY(obj, menu, animation, speed, half, callback, transitionDirection = 'up'):
@@ -204,3 +106,60 @@ def slideTransitionX(obj, menu, animation, speed, half, callback):
 
     obj.rect.x = obj.x * menu.renderer.getScale()
 
+
+def increaseTimer(obj, menu, animation, speed, finish, direction = "forwards", callback = None):
+    obj.timer += speed * 100 * menu.game.dt
+
+    if obj.timer >= finish and direction == "forwards" or obj.timer <= finish and direction == "backwards":
+        obj.removeAnimation(animation)
+        if callback is not None:
+            callback(obj, menu)
+
+    obj.dirty = True
+
+
+# TODO: Put these into one function
+def increaseKeys(obj, menu, animation, x = 1):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0
+        total = int(obj.getText()) + 1
+        obj.setText(str(total))
+        obj.dirty = True
+
+        menu.game.audioLoader.playSound("success" + str(x), x) #TODO: Fix this sound so it plays on each point given
+
+        if total >= config["player"]["keys"]:
+            obj.removeAnimation(animation)
+        else:
+            obj.removeAnimation(animation)
+            obj.addAnimation(increaseKeys, 'onLoad', x = x + 1)
+
+
+def decreaseKeys(obj, menu, animation):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0
+        total = int(obj.getText()) - 1
+        obj.setText("+" + str(total))
+        obj.dirty = True
+
+        if total <= 0:
+            obj.removeAnimation(animation)
+
+
+def increaseMeter(obj, menu, animation, fromAmount, toAmount):
+    obj.timer += menu.game.dt
+
+    if obj.timer > 0.2:
+        obj.timer = 0   
+        obj.setAmount(fromAmount + 1)
+        obj.dirty = True
+
+        if obj.getAmount() >= toAmount:
+            obj.removeAnimation(animation)
+        else:
+            obj.removeAnimation(animation)
+            obj.addAnimation(increaseMeter, 'onLoad', fromAmount = fromAmount + 1, toAmount = toAmount)

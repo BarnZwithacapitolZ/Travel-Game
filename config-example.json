@@ -16,6 +16,7 @@
             "enabled": true,
             "opacity": 40
         },
+        "vsync": true,
         "fullscreen": false, 
         "resizeable": true,
         "resolutions": {
@@ -25,6 +26,10 @@
             "1280 x 720": [1280, 720]
         }
     }, 
+    "player": {
+        "tutorial": false,
+        "keys": 0
+    },
     "fonts": {
         "whiteRabbit": "whitrabt.ttf",
         "bitwise": "Bitwise-m19x.ttf"
@@ -110,6 +115,30 @@
             "image": "HomeWhite.png",
             "alpha": true
         },
+        "pause": {
+            "image": "Pause.png",
+            "alpha": true
+        },
+        "pauseSelected": {
+            "image": "PauseSelected.png",
+            "alpha": true
+        },
+        "pauseWhite": {
+            "image": "PauseWhite.png",
+            "alpha": true
+        },
+        "play": {
+            "image": "Play.png",
+            "alpha": true
+        },
+        "playSelected": {
+            "image": "PlaySelected.png",
+            "alpha": true
+        },
+        "playWhite": {
+            "image": "PlayWhite.png",
+            "alpha": true
+        },
         "metro": {
             "image": "Metro.png",
             "alpha": true
@@ -118,6 +147,10 @@
             "image": "Departing.png",
             "alpha": true
         }, 
+        "departingWhite": {
+            "image": "DepartingWhite.png",
+            "alpha": true
+        },
         "walking": {
             "image": "Walking.png",
             "alpha": true
@@ -130,12 +163,24 @@
             "image": "Boarding.png",
             "alpha": true
         }, 
+        "boardingWhite": {
+            "image": "BoardingWhite.png",
+            "alpha": true
+        }, 
         "waiting": {
             "image": "Waiting.png",
             "alpha": true
         }, 
+        "waitingWhite": {
+            "image": "WaitingWhite.png",
+            "alpha": true
+        },
         "flag": {
             "image": "Flag.png",
+            "alpha": true
+        }, 
+        "flagWhite": {
+            "image": "FlagWhite.png",
             "alpha": true
         }, 
         "airport": {
@@ -178,8 +223,20 @@
             "image": "Locked.png",
             "alpha": true
         },
-        "banana": {
-            "image": "Banana.png",
+        "key": {
+            "image": "Key.png",
+            "alpha": true
+        },
+        "keyCream": {
+            "image": "KeyCream.png",
+            "alpha": true
+        },
+        "keyWhite": {
+            "image": "KeyWhite.png",
+            "alpha": true
+        },
+        "keyGreen": {
+            "image": "KeyGreen.png",
             "alpha": true
         }
     }, 
@@ -212,6 +269,30 @@
             "boot": {
                 "file": "boot.wav",
                 "volume": 1.0
+            },
+            "bell": {
+                "file": "Bell.wav",
+                "volume": 0.7
+            },
+            "uiError": {
+                "file": "UI-error.wav",
+                "volume": 1.0
+            },
+            "uiSuccess": {
+                "file": "UI-success.wav",
+                "volume": 1.0
+            },
+            "success1": {
+                "file": "Success-1.wav",
+                "volume": 0.7
+            },
+            "success2": {
+                "file": "Success-2.wav",
+                "volume": 0.7
+            },
+            "success3": {
+                "file": "Success-3.wav",
+                "volume": 0.7
             }
         },
         "music": {
