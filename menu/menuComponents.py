@@ -237,7 +237,7 @@ class MenuComponent:
 
 
 class Label(MenuComponent):
-    def __init__(self, menu, text, fontSize, color, pos = tuple()):
+    def __init__(self, menu, text, fontSize, color, pos = tuple(), backgroundColor = None):
         super().__init__(menu, color, (1, 1), pos)
 
         self.text = text
@@ -248,11 +248,16 @@ class Label(MenuComponent):
         self.bold = False
         self.italic = False
         self.underline = False
+        self.backgroundColor = backgroundColor
         
 
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
 
+
+    def setBackgrondColor(self, backgroundColor):
+        self.backgroundColor = backgroundColor
+        
 
     # we don't want to use self.font since this is multiplied by the display size, which we don't want
     def getFontSize(self, text = None):
@@ -311,7 +316,11 @@ class Label(MenuComponent):
         self.font.set_italic(self.italic)
         self.font.set_underline(self.underline)
 
-        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color).convert_alpha()
+        self.image = self.font.render(self.text, config["graphics"]["antiAliasing"], self.color, self.backgroundColor)
+        if self.backgroundColor is None:
+            self.image.convert_alpha()
+        else:
+            self.image.convert()
 
         self.rect = self.image.get_rect()
 
@@ -328,8 +337,8 @@ class Label(MenuComponent):
 
 
 class InputBox(Label):
-    def __init__(self, menu, fontSize, color, background, width, pos = tuple()):
-        super().__init__(menu, "", fontSize, color, pos)
+    def __init__(self, menu, fontSize, color, background, width, pos = tuple(), backgroundColor = None):
+        super().__init__(menu, "", fontSize, color, pos, backgroundColor)
         self.menu.game.textHandler.setString([])
         self.menu.game.textHandler.setPointer(0)
         self.inputWidth = width # max length of text input 

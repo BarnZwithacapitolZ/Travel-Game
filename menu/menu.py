@@ -231,18 +231,18 @@ class MainMenu(Menu):
         # x = (config["graphics"]["displayWidth"] / 2) - 180
         x = 100
 
-        title1 = Label(self, "Transport", 70, Color("white"), (x, 80))
-        title2 = Label(self, "The", 30, Color("white"), (x, title1.y + 70))
-        title3 = Label(self, "Public", 70, Color("white"), (x, title2.y + 30))
+        title1 = Label(self, "Transport", 70, Color("white"), (x, 80), GREEN)
+        title2 = Label(self, "The", 30, Color("white"), (x, title1.y + 70), GREEN)
+        title3 = Label(self, "Public", 70, Color("white"), (x, title2.y + 30), GREEN)
 
         title1.setItalic(True)
         title2.setItalic(True)
         title3.setItalic(True)
 
-        cont = Label(self, "Continue", 50,  BLACK, (x, 290))
-        editor = Label(self, "Level editor", 50, BLACK, (x, cont.y + 60))
-        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60))
-        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
+        cont = Label(self, "Continue", 50,  BLACK, (x, 290), GREEN)
+        editor = Label(self, "Level editor", 50, BLACK, (x, cont.y + 60), GREEN)
+        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60), GREEN)
+        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60), GREEN)
 
         # test = Image(self, "button", (50, 50), (10, 10))
         # test2 = Label(self, "hi", 20, BLACK, (15, 15))
@@ -985,14 +985,14 @@ class EditorHud(GameHudLayout):
 
         topbar = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
 
-        fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, self.textY))
-        edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, self.textY))
-        add = Label(self, "Add", 25, Color("white"), (self.addLocation, self.textY))
-        delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, self.textY))
-        run = Label(self, "Run", 25, Color("white"), (self.runLocation, self.textY))
+        fileSelect = Label(self, "File", 25, Color("white"), (self.fileLocation, self.textY), BLACK)
+        edit = Label(self, "Edit", 25, Color("white"), (self.editLocation, self.textY), BLACK)
+        add = Label(self, "Add", 25, Color("white"), (self.addLocation, self.textY), BLACK)
+        delete = Label(self, "Delete", 25, Color("white"), (self.deleteLocation, self.textY), BLACK)
+        run = Label(self, "Run", 25, Color("white"), (self.runLocation, self.textY), BLACK)
 
         layers = Image(self, "layersWhite", (25, 25), (880, self.textY - 3))
-        self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, self.textY))
+        self.currentLayer = Label(self, "layer " + str(self.game.mapEditor.getLayer()), 25, Color("white"), (915, self.textY), BLACK)
 
         layers.addEvent(hoverImage, 'onMouseOver', image = "layersSelected")
         layers.addEvent(hoverImage, 'onMouseOut', image = "layersWhite")
@@ -1035,9 +1035,9 @@ class EditorHud(GameHudLayout):
 
         textX = self.editLocation + 10
 
-        size = Label(self, "Map Size", 25, Color("white"), (textX, 50))
-        undo = Label(self, "Undo", 25, Color("white") if len(self.game.mapEditor.getLevelChanges()) > 1 else GREY, (textX, 85))
-        redo = Label(self, "Redo", 25, Color("white") if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1 else GREY, (textX, 120))
+        size = Label(self, "Map Size", 25, Color("white"), (textX, 50), BLACK)
+        undo = Label(self, "Undo", 25, Color("white") if len(self.game.mapEditor.getLevelChanges()) > 1 else GREY, (textX, 85), BLACK)
+        redo = Label(self, "Redo", 25, Color("white") if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1 else GREY, (textX, 120), BLACK)
         
         self.add(box)
 
@@ -1086,10 +1086,10 @@ class EditorHud(GameHudLayout):
         size2Box = Rectangle(self, GREEN, (110, 33), (boxX, 161))
         size3Box = Rectangle(self, GREEN, (110, 33), (boxX, 195))
 
-        size0 = Label(self, "16 x 9", 25, Color("white"), (textX, 95))
-        size1 = Label(self, "18 x 10", 25, Color("white"), (textX, 130))
-        size2 = Label(self, "20 x 11", 25, Color("white"), (textX, 165))
-        size3 = Label(self, "22 x 12", 25, Color("white"), (textX, 200))
+        size0 = Label(self, "16 x 9", 25, Color("white"), (textX, 95), GREEN if size0Selected else BLACK)
+        size1 = Label(self, "18 x 10", 25, Color("white"), (textX, 130), GREEN if size1Selected else BLACK)
+        size2 = Label(self, "20 x 11", 25, Color("white"), (textX, 165), GREEN if size2Selected else BLACK)
+        size3 = Label(self, "22 x 12", 25, Color("white"), (textX, 200), GREEN if size3Selected else BLACK)
 
         size0.addEvent(setSize0, 'onMouseClick')
         size1.addEvent(setSize1, 'onMouseClick')
@@ -1123,7 +1123,7 @@ class EditorHud(GameHudLayout):
 
         clickType = self.game.mapEditor.getClickManager().getClickType()
         connectionSelected = True if clickType == EditorClickManager.ClickType.CONNECTION else False 
-        stopSelectd = True if clickType == EditorClickManager.ClickType.STOP else False 
+        stopSelected = True if clickType == EditorClickManager.ClickType.STOP else False 
         transportSelected = True if clickType == EditorClickManager.ClickType.TRANSPORT else False 
         destinationSelected = True if clickType == EditorClickManager.ClickType.DESTINATION else False
 
@@ -1135,10 +1135,10 @@ class EditorHud(GameHudLayout):
 
         textX = self.addLocation + 10 # x position of text within box
 
-        connection = Label(self, "Connection", 25, Color("white"), (textX, 50))
-        stop = Label(self, "Stop", 25, Color("white"), (textX, 85))
-        transport = Label(self, "Transport", 25, Color("white"), (textX, 120))
-        destination = Label(self, "Location", 25, Color("white"), (textX, 155))
+        connection = Label(self, "Connection", 25, Color("white"), (textX, 50), GREEN if connectionSelected else BLACK)
+        stop = Label(self, "Stop", 25, Color("white"), (textX, 85), GREEN if stopSelected else BLACK)
+        transport = Label(self, "Transport", 25, Color("white"), (textX, 120), GREEN if transportSelected else BLACK)
+        destination = Label(self, "Location", 25, Color("white"), (textX, 155), GREEN if destinationSelected else BLACK)
 
         connection.addEvent(addConnection, 'onMouseClick')
         stop.addEvent(toggleAddStopDropdown, 'onMouseClick')
@@ -1147,11 +1147,11 @@ class EditorHud(GameHudLayout):
 
         self.add(box)
         if connectionSelected: self.add(connectionBox)
-        elif stopSelectd: self.add(stopBox)
+        elif stopSelected: self.add(stopBox)
         elif transportSelected: self.add(transportBox)
         elif destinationSelected: self.add(destinationBox)
 
-        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
+        labels = [(connection, connectionSelected), (stop, stopSelected), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
                 label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
@@ -1180,9 +1180,9 @@ class EditorHud(GameHudLayout):
         busBox = Rectangle(self, GREEN, (200, 33), (boxX, 126))
         tramBox = Rectangle(self, GREEN, (200, 33), (boxX, 161))
 
-        metroStation = Label(self, "Metro Station", 25, Color("white"), (textX, 95))
-        busStop = Label(self, "Bus Stop", 25, Color("white"), (textX, 130))
-        tramStop = Label(self, "Tram Stop", 25, Color("white"), (textX, 165))
+        metroStation = Label(self, "Metro Station", 25, Color("white"), (textX, 95), GREEN if metroSelected else BLACK)
+        busStop = Label(self, "Bus Stop", 25, Color("white"), (textX, 130), GREEN if busSelected else BLACK)
+        tramStop = Label(self, "Tram Stop", 25, Color("white"), (textX, 165), GREEN if tramSelected else BLACK)
 
         self.add(box)
         if metroSelected: self.add(metroBox)
@@ -1224,10 +1224,10 @@ class EditorHud(GameHudLayout):
         tramBox = Rectangle(self, GREEN, (110, 33), (boxX, 196))
         taxiBox = Rectangle(self, GREEN, (110, 33), (boxX, 231))
 
-        metro = Label(self, "Metro", 25, Color("white"), (textX, 130))
-        bus = Label(self, "Bus", 25, Color("white"), (textX, 165))
-        tram = Label(self, "Tram", 25, Color("white"), (textX, 200))
-        taxi = Label(self, "Taxi", 25, Color("white"), (textX, 235))
+        metro = Label(self, "Metro", 25, Color("white"), (textX, 130), GREEN if metroSelected else BLACK)
+        bus = Label(self, "Bus", 25, Color("white"), (textX, 165), GREEN if busSelected else BLACK)
+        tram = Label(self, "Tram", 25, Color("white"), (textX, 200), GREEN if tramSelected else BLACK)
+        taxi = Label(self, "Taxi", 25, Color("white"), (textX, 235), GREEN if taxiSelected else BLACK)
 
         self.add(box)
         if metroSelected: self.add(metroBox)
@@ -1270,9 +1270,9 @@ class EditorHud(GameHudLayout):
         officeBox = Rectangle(self, GREEN, (200, 33), (boxX, 196))
         houseBox = Rectangle(self, GREEN, (200, 33), (boxX, 228))
         
-        airport = Label(self, "Airport", 25, Color("white"), (textX, 165))
-        office = Label(self, "Office", 25, Color("white"), (textX, 200))
-        house = Label(self, "House", 25, Color("white"), (textX, 233))
+        airport = Label(self, "Airport", 25, Color("white"), (textX, 165), GREEN if airportSelected else BLACK)
+        office = Label(self, "Office", 25, Color("white"), (textX, 200), GREEN if officeSelected else BLACK)
+        house = Label(self, "House", 25, Color("white"), (textX, 233), GREEN if houseSelected else BLACK)
 
         self.add(box)
         if airportSelected: self.add(airportBox)
@@ -1301,7 +1301,7 @@ class EditorHud(GameHudLayout):
 
         clickType = self.game.mapEditor.getClickManager().getClickType()
         connectionSelected = True if clickType == EditorClickManager.ClickType.DCONNECTION else False 
-        stopSelectd = True if clickType == EditorClickManager.ClickType.DSTOP else False 
+        stopSelected = True if clickType == EditorClickManager.ClickType.DSTOP else False 
         transportSelected = True if clickType == EditorClickManager.ClickType.DTRANSPORT else False
         destinationSelected = True if clickType == EditorClickManager.ClickType.DDESTINATION else False
 
@@ -1313,10 +1313,10 @@ class EditorHud(GameHudLayout):
 
         textX = self.deleteLocation + 10
 
-        connection = Label(self, "Connection", 25, Color("white"), (textX, 50))
-        stop = Label(self, "Stop", 25, Color("white"), (textX, 85))
-        transport = Label(self, "Transport", 25, Color("white"), (textX, 120))
-        destination = Label(self, "Destination", 25, Color("white"), (textX, 155))
+        connection = Label(self, "Connection", 25, Color("white"), (textX, 50), GREEN if connectionSelected else BLACK)
+        stop = Label(self, "Stop", 25, Color("white"), (textX, 85), GREEN if stopSelected else BLACK)
+        transport = Label(self, "Transport", 25, Color("white"), (textX, 120), GREEN if transportSelected else BLACK)
+        destination = Label(self, "Destination", 25, Color("white"), (textX, 155), GREEN if destinationSelected else BLACK)
 
         connection.addEvent(deleteConnection, 'onMouseClick')
         stop.addEvent(deleteStop, 'onMouseClick')
@@ -1325,11 +1325,11 @@ class EditorHud(GameHudLayout):
 
         self.add(box)
         if connectionSelected: self.add(connectionBox)
-        elif stopSelectd: self.add(stopBox)
+        elif stopSelected: self.add(stopBox)
         elif transportSelected: self.add(transportBox)
         elif destinationSelected: self.add(destinationBox)
 
-        labels = [(connection, connectionSelected), (stop, stopSelectd), (transport, transportSelected), (destination, destinationSelected)]
+        labels = [(connection, connectionSelected), (stop, stopSelected), (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
             if label[1]:
                 label[0].addEvent(hoverColor, 'onMouseOver', color = BLACK)
@@ -1352,14 +1352,14 @@ class EditorHud(GameHudLayout):
 
         textX = self.fileLocation + 10
         
-        new = Label(self, "New", 25, Color("white"), (textX, 50))
-        load = Label(self, "Open", 25, Color("white"), (textX, 85))
-        save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 120)) 
-        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 155))
+        new = Label(self, "New", 25, Color("white"), (textX, 50), BLACK)
+        load = Label(self, "Open", 25, Color("white"), (textX, 85), BLACK)
+        save = Label(self, "Save", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 120), BLACK) 
+        saveAs = Label(self, "Save as", 25, Color("white") if self.game.mapEditor.getDeletable() else GREY, (textX, 155), BLACK)
 
         # Must be already saved and be a deletable map
-        delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (textX, 190))
-        close = Label(self, "Exit", 25, Color("white"), (textX, 225))
+        delete = Label(self, "Delete", 25, Color("white") if self.game.mapEditor.getSaved() and self.game.mapEditor.getDeletable() else GREY, (textX, 190), BLACK)
+        close = Label(self, "Exit", 25, Color("white"), (textX, 225), BLACK)
 
         new.addEvent(newMap, 'onMouseClick')
         load.addEvent(toggleLoadDropdown, 'onMouseClick')
@@ -1403,7 +1403,7 @@ class EditorHud(GameHudLayout):
         maxWidth = 130 # min width
         maps = []
         for mapName, path in self.game.mapLoader.getMaps().items():
-            m = Label(self, mapName, 25, Color("white"), (textX, y))
+            m = Label(self, mapName, 25, Color("white"), (textX, y), BLACK)
             m.addEvent(hoverColor, 'onMouseOver', color = GREEN)
             m.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
             m.addEvent(loadEditorMap, 'onMouseClick')
@@ -1429,13 +1429,13 @@ class EditorHud(GameHudLayout):
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(self, "Map name", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y))
+        title = Label(self, "Map name", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y), GREEN)
         self.inputBox = Rectangle(self, Color("white"), (width - 40, 50), (x + 20, y + 80))
         mapName = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (x + 40, y + 92)) # we pass through the background instead of defining it in the InputBox so we can customize it better (e.g with image ect)
         saveBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120 - box.x, (y + height) - 70 - box.y))
-        save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55))
+        save = Label(self, "Save", 25, Color("white"), ((x + width) - 100, (y + height) - 55), BLACK)
         cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240 - box.x, (y + height) - 70 - box.y))
-        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
+        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55), BLACK)
 
         self.inputBox.addEvent(hoverColor, 'onKeyPress', color = Color("white"))
 
@@ -1467,15 +1467,15 @@ class EditorHud(GameHudLayout):
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(self, "Delete", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y))
+        title = Label(self, "Delete", 30, Color("white"), ((x + 20) - box.x, (y + 20) - box.y), GREEN)
         title.setUnderline(True)
-        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), ((x + 40) - box.x, (y + 82) - box.y))
-        confirm2 = Label(self, "delete this map?", 30, Color("white"), ((x + 40) - box.x, (y + 115) - box.y))
+        confirm1 = Label(self, "Are you sure you want to", 30, Color("white"), ((x + 40) - box.x, (y + 82) - box.y), GREEN)
+        confirm2 = Label(self, "delete this map?", 30, Color("white"), ((x + 40) - box.x, (y + 115) - box.y), GREEN)
 
         confirmBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 120 - box.x, (y + height) - 70 - box.y))
-        confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55))
+        confirm = Label(self, "Yes", 25, Color("white"), ((x + width) - 93, (y + height) - 55), BLACK)
         cancelBox = Rectangle(self, BLACK, (100, 50), ((x + width) - 240 - box.x, (y + height) - 70 - box.y))
-        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55))
+        cancel = Label(self, "Cancel", 23, Color("white"), ((x + width) - 229, (y + height) - 55), BLACK)
 
         confirm.addEvent(hoverColor, 'onMouseOver', color = GREEN)
         confirm.addEvent(hoverColor, 'onMouseOut', color = Color("white"))
@@ -1513,10 +1513,10 @@ class PreviewHud(GameHudLayout):
         meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
 
         topbar = Rectangle(self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
-        stop = Label(self, "Stop", 25, Color("white"), (20, 10))
+        stop = Label(self, "Stop", 25, Color("white"), (20, 10), BLACK)
         self.slowDownMeter = Meter(self, Color("white"), Color("white"), GREEN, (meterWidth, 20), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), 12), 2)
         completed = Image(self, "walkingWhite", (30, 30), (config["graphics"]["displayWidth"] - 68, 7))
-        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14))   
+        self.completedText = Label(self, str(self.game.spriteRenderer.getCompleted()), 25, Color("white"), (config["graphics"]["displayWidth"] - 40, 14), BLACK)   
 
         stop.addEvent(hoverColor, 'onMouseOver', color = GREEN)
         stop.addEvent(hoverColor, 'onMouseOut', color = Color("white"))

@@ -126,7 +126,7 @@ class ClickManager:
                 # Add the child to the open list
                 openList.append(child)
 
-        print("route is impossible")
+        self.game.audioLoader.playSound("uiError", 0)
         return [] # Return the empty path if route is impossible
 
 
