@@ -35,6 +35,7 @@ class Node(pygame.sprite.Sprite):
 
         # all people currently at this node
         self.people = []
+        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self)
 
         self.dirty = True
 
@@ -74,6 +75,10 @@ class Node(pygame.sprite.Sprite):
         return self.mouseOver
 
 
+    def getPersonHolder(self):
+        return self.personHolder
+
+
     #### Setters ####
 
     def setCurrentImage(self, image):
@@ -103,27 +108,16 @@ class Node(pygame.sprite.Sprite):
         self.transports.append(transport)
 
 
-    # Add a person to the node
-    def addPerson(self, person):
-        # print(person.path)
-        # print(f"added to: {self.number}")
-
-        # if len(person.path) > 1 and person.path[0] == self:
-        #     return
-        self.people.append(person)
-
-        # if len(self.people) > 1:
-        #     print(len(self.people), "why is this not called?")
-        #     offset = vec(0, 0)
-        #     for person in list(self.people):
-        #         person.pos = (self.pos - self.offset) + person.offset + offset
-        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-        #         offset.x += person.width + 1
-        #         person.moveStatusIndicator()
-
-
     def remove(self):
         self.kill()
+
+    
+    # Add a person to the node
+    def addPerson(self, person):
+        if person in self.people:
+            return 
+            
+        self.people.append(person)
 
 
     # Remove a person from the node
@@ -131,18 +125,7 @@ class Node(pygame.sprite.Sprite):
         if person not in self.people:
             return
 
-        # print(f"removed from: {self.number}")
-
         self.people.remove(person)
-
-        # # if there is someone left on the node we need to reshuffle them
-        # if len(self.people) >= 1:
-        #     offset = vec(0, 0)
-        #     for key, person in enumerate(self.people):
-        #         print(person)
-        #         person.pos += offset
-        #         person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-        #         offset.x += person.width
 
 
     def removeTransport(self, transport):
@@ -251,6 +234,7 @@ class Node(pygame.sprite.Sprite):
 
             # print(self.number)
             # print(self.people)
+            # print(f"number: {self.number}, people: {self.people}, person holder people: {self.personHolder.people}")
 
         # Hover out event
         if not self.rect.collidepoint((mx, my)) and self.mouseOver:

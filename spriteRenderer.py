@@ -428,6 +428,7 @@ class SpriteRenderer():
 
             self.pausedSurface.blit(self.gridLayer4.getLineSurface(), (0, 0))
             for sprite in self.layer4:
+                # sprite.drawPaused(self.pausedSurface)
                 sprite.makeSurface()
 
                 if hasattr(sprite, 'image'): # not all sprites have an image

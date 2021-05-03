@@ -55,7 +55,6 @@ class Person(pygame.sprite.Sprite):
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
         self.vel = vec(0, 0)
 
-        self.currentNode.addPerson(self)
 
         self.speed = 20
         self.budget = 20
@@ -81,6 +80,8 @@ class Person(pygame.sprite.Sprite):
 
         # Switch to the layer that the player spawned on
         self.switchLayer(self.getLayer(self.startingConnectionType), self.getLayer(self.currentConnectionType))
+        self.currentNode.addPerson(self) # Add the person to the node after they have switched to the correct layer to stop it adding the player back when removed if in personHolder
+        self.currentNode.getPersonHolder().addPerson(self)
         self.spawnAnimation()
 
 
@@ -165,6 +166,8 @@ class Person(pygame.sprite.Sprite):
             return self.spriteRenderer.layer2
         elif connection == "layer 3":
             return self.spriteRenderer.layer3
+        elif connection == "layer 4":
+            return self.spriteRenderer.layer4
 
 
     def getMouseOver(self):
@@ -244,6 +247,8 @@ class Person(pygame.sprite.Sprite):
 
 
     def remove(self):
+        self.currentNode.removePerson(self)
+        self.currentNode.getPersonHolder().removePerson(self)
         self.kill()
         self.statusIndicator.kill()
         self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() - 1)
@@ -266,11 +271,17 @@ class Person(pygame.sprite.Sprite):
     # Clear the players path by removing all nodes 
     # To Do: FIX PLAYER WALKING BACK TO CURRENT NODE WHEN NEW PATH IS ASSINGNED
     def clearPath(self, newPath):
+        if len(newPath) > 1:
+            self.currentNode.getPersonHolder().removePerson(self)
+        elif len(newPath) == 1 and len(self.path) <= 0:
+            if newPath[0].getConnectionType() == self.currentNode.getConnectionType():
+                del newPath[0]
+
         if len(self.path) <= 0 or len(newPath) <= 0:
             return
 
         # The new path is going in the same direction, so we delete its starting node since the player has already passed this
-        if self.path[0] in newPath:
+        if self.path[0] in newPath and self.path[0] != self.currentNode:
             del newPath[0]
 
         self.path = []
@@ -283,13 +294,23 @@ class Person(pygame.sprite.Sprite):
 
     # Switch the person and their status indicator from one layer to a new layer
     def switchLayer(self, oldLayer, newLayer):
-        oldLayer.remove(self)
-        newLayer.add(self)
-        oldLayer.remove(self.statusIndicator)
-        newLayer.add(self.statusIndicator)
+        self.removeFromLayer(oldLayer)
+        self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
 
 
+    def addToLayer(self, layer = None):
+        layer = self.getLayer(self.currentConnectionType) if layer is None else layer
+        layer.add(self)
+        layer.add(self.statusIndicator)
+
+
+    def removeFromLayer(self, layer = None):
+        layer = self.getLayer(self.currentConnectionType) if layer is None else layer
+        layer.remove(self)
+        layer.remove(self.statusIndicator)
+
+    
     # Move the status indicator above the plerson so follow the persons movement
     def moveStatusIndicator(self):
         if not hasattr(self.statusIndicator, 'rect'):
@@ -297,7 +318,6 @@ class Person(pygame.sprite.Sprite):
 
         self.statusIndicator.pos = self.pos + self.statusIndicator.offset
         self.statusIndicator.rect.topleft = self.statusIndicator.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-
 
 
     # Visualize the players path by drawing the connection between each node in the path
@@ -456,6 +476,7 @@ class Person(pygame.sprite.Sprite):
                 self.transportClickManager.setTransport(None)
                 
             self.clickManager.setPerson(self)
+            self.game.clickManager.setClicked(False)
 
             if self.spriteRenderer.getPaused():
                 return
@@ -484,8 +505,6 @@ class Person(pygame.sprite.Sprite):
 
             elif self.status == Person.Status.DEPARTING:
                 self.status = Person.Status.MOVING
-
-            self.game.clickManager.setClicked(False)
             
         # Hover over event
         if self.rect.collidepoint((mx, my)) and not self.mouseOver:
@@ -515,7 +534,8 @@ class Person(pygame.sprite.Sprite):
             return
 
         # mouse over and click events first
-        self.events()
+        if not self.currentNode.getPersonHolder().getCanClick():
+            self.events()
 
         self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
 
@@ -550,14 +570,16 @@ class Person(pygame.sprite.Sprite):
                 self.moveStatusIndicator()
 
             else:
+                # Only swap if its a different node
                 self.currentNode.removePerson(self)
                 self.currentNode = path
                 self.currentNode.addPerson(self)
                 self.path.remove(path)
-
+                    
                 # No more nodes in the path, the person is no longer walking and is unassigned
                 if len(self.path) <= 0:
                     self.status = Person.Status.UNASSIGNED
+                    self.currentNode.getPersonHolder().addPerson(self)
 
                 if self.currentConnectionType != self.currentNode.connectionType:
                     self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
@@ -656,6 +678,227 @@ class StatusIndicator(pygame.sprite.Sprite):
         if self.currentPerson.getStatusValue() != self.currentState:
             self.dirty = True
             self.currentState = self.currentPerson.getStatusValue()
+
+
+
+class PersonHolder(pygame.sprite.Sprite):
+    def __init__(self, game, groups, target):
+        self.groups = groups
+        super().__init__([])
+        self.game = game
+        self.target = target
+        self.spriteRenderer = self.target.spriteRenderer
+        self.width = 20 #TODO: Change the width and height to scale with the number of people in the holder
+        self.height = 20
+        self.drawerWidth, self.drawerHeight = 0, 0
+
+        self.people = []
+        self.open = False
+        self.canClick = False # Used to stop people events for people in the holder (so player can click on the holder instead)
+
+        self.offset = vec(-10, -15)
+        self.pos = self.target.pos + self.offset
+
+        self.drawerOffset = self.offset
+        self.drawerPos = self.pos
+
+        self.dirty = True
+        self.mouseOver = False
+
+        self.color = Color("white")
+
+
+    def getOpen(self):
+        return self.open
+
+
+    def getCanClick(self):
+        return self.canClick
+
+
+    def setOpen(self, open):
+        self.open = open
+
+
+    def addPerson(self, person):
+        if person in self.people:
+            return 
+
+        self.people.append(person)
+        print("person added")
+
+
+        if len(self.people) > 1:
+            self.add(self.groups)
+
+            # If the holder is already open we don't want to remove people then add them back
+            if self.open:
+                self.openHolder()
+            else:
+                self.canClick = True
+
+                for person in self.people:
+                    person.removeFromLayer()
+                    person.removeFromLayer(self.spriteRenderer.layer4)
+
+                self.dirty = True
+    
+
+    def removePerson(self, person):
+        if person not in self.people:
+            return
+
+        self.people.remove(person)
+        print("person removed")
+
+
+        # Position the player back against the target        
+        person.pos = (self.target.pos - self.target.offset) + person.offset
+        person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        person.moveStatusIndicator()
+
+        person.addToLayer()
+        person.addToLayer(self.spriteRenderer.layer4)
+
+        if len(self.people) > 1 and self.open:
+            self.closeHolder()
+        elif len(self.people) <= 1 and len(self.people) > 0:
+            self.remove(self.groups)
+            self.canClick = False
+            self.open = False
+
+            person = self.people[0] # Will only ever be one person left so we can just directly modify them
+            person.addToLayer()
+            person.addToLayer(self.spriteRenderer.layer4)
+
+            person.pos = (self.target.pos - self.target.offset) + person.offset
+            person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            person.moveStatusIndicator()
+
+
+    def openHolder(self):
+        if len(self.people) <= 1:
+            return
+
+        # Width and height of a person should always be the same, so we can just use the first person in the holder
+        personWidth = self.people[0].width
+        personHeight = self.people[0].height
+        spacing = 2.5
+        cols = 2
+        offset = vec(spacing, spacing)
+
+        self.drawerWidth = spacing + ((personWidth + spacing) * (len(self.people) if len(self.people) <= cols else cols))
+        self.drawerHeight = spacing + ((personHeight + spacing) * math.ceil(len(self.people) / cols))
+        self.drawerOffset = vec((-self.drawerWidth) + 15, (-self.drawerHeight) + 10)
+        self.drawerPos = self.target.pos + self.drawerOffset
+
+        for i, person in enumerate(self.people):
+            person.addToLayer()
+            person.addToLayer(self.spriteRenderer.layer4)
+            person.pos = self.drawerPos + offset
+            # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            person.dirty = True
+            person.moveStatusIndicator()
+            offset.x += person.width + spacing
+
+            if (i + 1) % cols == 0:
+                offset.x = spacing
+                offset.y += person.height + spacing
+
+        self.open = True
+        self.canClick = False
+        self.dirty = True
+
+
+    def closeHolder(self):
+        if len(self.people) <= 1:
+            return
+
+        for person in self.people:
+            person.removeFromLayer()
+            person.removeFromLayer(self.spriteRenderer.layer4)
+
+            # Reset the players positions
+            person.pos = (self.target.pos - self.target.offset) + person.offset
+            # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            person.dirty = True
+            person.moveStatusIndicator()
+        
+        self.open = False
+        self.canClick = True
+        self.dirty = True
+
+
+    def __render(self):
+        self.dirty = False
+        
+        if not self.open:
+            self.image = pygame.Surface((self.width * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale(),  self.height * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), pygame.SRCALPHA).convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            self.counterFont = pygame.font.Font(pygame.font.get_default_font(), int(12 * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale())) # do I need the fixed scale to change here?
+
+            pygame.draw.ellipse(self.image, self.color, (0, 0, self.rect.width, self.rect.height))
+
+            self.fontImage = self.counterFont.render("+" + str(len(self.people)), True, BLACK)
+            size = pygame.font.Font(pygame.font.get_default_font(), 12).size("+" + str(len(self.people)))
+            rect = vec(self.width / 2 - (size[0] / 2), self.height / 2 - (size[1] / 2)) * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            self.image.blit(self.fontImage, rect)
+        else:
+            self.image = pygame.Surface((self.drawerWidth * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale(), self.drawerHeight * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()), pygame.SRCALPHA).convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.drawerPos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+
+            pygame.draw.rect(self.image, self.color, (0, 0, self.rect.width, self.rect.height), border_radius = int(10 * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()))
+
+    
+    def makeSurface(self):
+        if self.dirty or self.image is None: self.__render()
+
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+
+    def drawBox(self, surface):
+        pygame.draw.rect(surface, BLACK, self.rect,
+            border_radius = 5)
+
+    
+    def draw(self):
+        self.makeSurface()
+        self.game.renderer.addSurface(self.image, (self.rect))
+
+
+    def events(self):
+        mx, my = pygame.mouse.get_pos()
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
+
+        
+        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+            self.closeHolder()
+
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.canClick:
+            self.openHolder()
+            self.game.clickManager.setClicked(False)
+
+        if self.rect.collidepoint((mx, my)) and not self.mouseOver and not self.open:
+            self.mouseOver = True
+            self.color = GREY
+            self.dirty = True
+
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver and not self.open:
+            self.mouseOver = False
+            self.color = Color("white")
+            self.dirty = True
+
+
+    def update(self):
+        self.events()
+        
 
 
 

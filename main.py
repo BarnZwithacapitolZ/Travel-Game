@@ -79,6 +79,7 @@ class Game:
     def setCursor(self):
         pygame.mouse.set_cursor(*pygame.cursors.tri_left)
 
+
     def getPaused(self):
         return self.paused
 

@@ -47,6 +47,7 @@ class Transport(pygame.sprite.Sprite):
 
         #people travelling in the transport
         self.people = []
+        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self)
 
         self.imageName = "train"
         self.stopType = (NODE.MetroStation, NODE.Destination)
@@ -207,10 +208,17 @@ class Transport(pygame.sprite.Sprite):
 
     # Add a person to the transport
     def addPerson(self, person):
+        if person in self.people:
+            return 
+
         self.people.append(person)
+
 
     # Remove a person from the transport
     def removePerson(self, person):
+        if person not in self.people:
+            return 
+
         self.people.remove(person)
 
 
@@ -284,6 +292,14 @@ class Transport(pygame.sprite.Sprite):
             # if person.getDestination().getNumber() == self.currentNode.getNumber():
             #     person.complete()    
             #     self.removePerson(person)            
+
+
+    def movePersonHolder(self):
+        if not hasattr(self.personHolder, 'rect'):
+            return
+
+        self.personHolder.pos = self.pos + self.personHolder.offset
+        self.personHolder.rect.topleft = self.personHolder.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
     # Draw how long is left at each stop 
@@ -440,6 +456,7 @@ class Transport(pygame.sprite.Sprite):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                 self.movePeople()
+                self.movePersonHolder()
             else:
                 # set the current connection to be one of the paths connections (just pick a random one)
                 self.setNextPathConnection(path)
@@ -463,6 +480,7 @@ class Transport(pygame.sprite.Sprite):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                 self.movePeople()
+                self.movePersonHolder()
             else: 
                 self.setNextConnection()
                 self.pos = (self.currentConnection.getFrom().pos - self.currentConnection.getFrom().offset) + self.offset
@@ -592,6 +610,7 @@ class Taxi(Transport):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                 self.movePeople()
+                self.movePersonHolder()
 
             else:
                 self.setNextPathConnection(path)
@@ -622,6 +641,7 @@ class Taxi(Transport):
                     self.vel = dxy / dis * float(self.speed) * self.game.dt * self.spriteRenderer.getDt()
 
                 self.movePeople()
+                self.movePersonHolder()
 
             else: # At the node
                 self.setNextConnection()
