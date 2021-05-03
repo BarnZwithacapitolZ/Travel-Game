@@ -29,30 +29,36 @@ class Layer():
         self.lines = []
         self.previousPeopleTypes = []
 
+        self.number = 1
+
         self.loadBackgroundColor(CREAM)
 
 
-    #### Getters ####
-    
     # Get the grid of the layer
     def getGrid(self):
         return self.grid
 
+
     def getSpriteRenderer(self):
         return self.spriteRenderer
 
+
     def getLines(self):
         return self.lines
+
 
     def getLineSurface(self):
         if hasattr(self, 'lineSurface'):
             return self.lineSurface
 
 
-    #### Setters ####
+    def getNumber(self):
+        return self.number
+
 
     def setLines(self, lines):
         self.lines = lines
+
 
     # Add a component to the layer
     def addComponent(self, component):
@@ -109,6 +115,7 @@ class Layer():
         self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() + 1)
 
         return p
+
 
     # Create the connections by drawing them to the screen
     def createConnections(self):
@@ -195,6 +202,7 @@ class Layer():
 class Layer1(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
         super().__init__(spriteRenderer, groups, "layer 1", level, spacing)
+        self.number = 1
         self.grid.createGrid(self.connectionType)
         self.addConnections()  
         self.createConnections()
@@ -203,6 +211,7 @@ class Layer1(Layer):
 class Layer2(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
         super().__init__(spriteRenderer, groups, "layer 2", level, spacing)
+        self.number = 2
         self.grid.createGrid(self.connectionType)
         self.addConnections()     
         self.createConnections()
@@ -211,6 +220,7 @@ class Layer2(Layer):
 class Layer3(Layer):
     def __init__(self, spriteRenderer, groups, level, spacing = (1.5, 1)):
         super().__init__(spriteRenderer, groups, "layer 3", level, spacing)
+        self.number = 3
         self.grid.createGrid(self.connectionType)
         self.addConnections()        
         self.createConnections()
@@ -219,6 +229,7 @@ class Layer3(Layer):
 class Layer4(Layer):
     def __init__(self, spriteRenderer, groups, level):
         super().__init__(spriteRenderer, groups, "layer 4", level)
+        self.number = 4
         background = Background(self.game, "river", (600, 250), (config["graphics"]["displayWidth"] - 600, config["graphics"]["displayHeight"] - 250))
         # self.addComponent(background)
 

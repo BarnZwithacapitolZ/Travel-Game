@@ -396,7 +396,7 @@ class SpriteRenderer():
         if len(self.connectionTypes) > 1 or self.debug:
             self.connectionTypes.append("layer 4")
         else:
-            self.showLayer(self.getLayerInt(self.connectionTypes[0]))
+            self.showLayer(self.getGridLayer(self.connectionTypes[0]).getNumber())
 
 
     # draw the level to a surface and return this surface for blitting (i.e on the level selection screen)
@@ -440,6 +440,17 @@ class SpriteRenderer():
             return self.pausedSurface
 
 
+    def getSpriteLayer(self, connectionType):
+        if connectionType == "layer 1":
+            return self.layer1
+        elif connectionType == "layer 2":
+            return self.layer2
+        elif connectionType == "layer 3":
+            return self.layer3
+        elif connectionType == "layer 4":
+            return self.layer4
+
+
     def getGridLayer(self, connectionType):
         if connectionType == "layer 1":
             return self.gridLayer1
@@ -447,17 +458,8 @@ class SpriteRenderer():
             return self.gridLayer2
         elif connectionType == "layer 3":
             return self.gridLayer3
-
-
-    def getLayerInt(self, connectionType):
-        if connectionType == "layer 1":
-            return 1
-        elif connectionType == "layer 2":
-            return 2
-        elif connectionType == "layer 3":
-            return 3
         elif connectionType == "layer 4":
-            return 4
+            return self.gridLayer4
 
 
     # Get all the nodes from all layers in the spriterenderer

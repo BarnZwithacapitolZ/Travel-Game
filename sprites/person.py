@@ -79,7 +79,7 @@ class Person(pygame.sprite.Sprite):
         self.entities = []
 
         # Switch to the layer that the player spawned on
-        self.switchLayer(self.getLayer(self.startingConnectionType), self.getLayer(self.currentConnectionType))
+        self.switchLayer(self.spriteRenderer.getSpriteLayer(self.startingConnectionType), self.spriteRenderer.getSpriteLayer(self.currentConnectionType))
         self.currentNode.addPerson(self) # Add the person to the node after they have switched to the correct layer to stop it adding the player back when removed if in personHolder
         self.currentNode.getPersonHolder().addPerson(self)
         self.spawnAnimation()
@@ -156,18 +156,6 @@ class Person(pygame.sprite.Sprite):
     # Return the connection type that the person started at
     def getStartingConnectionType(self):
         return self.startingConnectionType
-
-
-    # Return the layer, given the connection 
-    def getLayer(self, connection):
-        if connection == "layer 1":
-            return self.spriteRenderer.layer1
-        elif connection == "layer 2":
-            return self.spriteRenderer.layer2
-        elif connection == "layer 3":
-            return self.spriteRenderer.layer3
-        elif connection == "layer 4":
-            return self.spriteRenderer.layer4
 
 
     def getMouseOver(self):
@@ -269,13 +257,18 @@ class Person(pygame.sprite.Sprite):
 
     
     # Clear the players path by removing all nodes 
-    # To Do: FIX PLAYER WALKING BACK TO CURRENT NODE WHEN NEW PATH IS ASSINGNED
+    # TODO: FIX PLAYER WALKING BACK TO CURRENT NODE WHEN NEW PATH IS ASSINGNED
     def clearPath(self, newPath):
+        # Always remove the player from the first current node when walking ( > 1 path)
         if len(newPath) > 1:
             self.currentNode.getPersonHolder().removePerson(self)
+        
+        # When clicking on the same node with no previous path, either switch to the new layer or do nothing (remove path)
         elif len(newPath) == 1 and len(self.path) <= 0:
             if newPath[0].getConnectionType() == self.currentNode.getConnectionType():
                 del newPath[0]
+            else:
+                self.currentNode.getPersonHolder().removePerson(self)
 
         if len(self.path) <= 0 or len(newPath) <= 0:
             return
@@ -300,13 +293,13 @@ class Person(pygame.sprite.Sprite):
 
 
     def addToLayer(self, layer = None):
-        layer = self.getLayer(self.currentConnectionType) if layer is None else layer
+        layer = self.spriteRenderer.getSpriteLayer(self.currentConnectionType) if layer is None else layer
         layer.add(self)
         layer.add(self.statusIndicator)
 
 
     def removeFromLayer(self, layer = None):
-        layer = self.getLayer(self.currentConnectionType) if layer is None else layer
+        layer = self.spriteRenderer.getSpriteLayer(self.currentConnectionType) if layer is None else layer
         layer.remove(self)
         layer.remove(self.statusIndicator)
 
@@ -570,7 +563,6 @@ class Person(pygame.sprite.Sprite):
                 self.moveStatusIndicator()
 
             else:
-                # Only swap if its a different node
                 self.currentNode.removePerson(self)
                 self.currentNode = path
                 self.currentNode.addPerson(self)
@@ -582,11 +574,10 @@ class Person(pygame.sprite.Sprite):
                     self.currentNode.getPersonHolder().addPerson(self)
 
                 if self.currentConnectionType != self.currentNode.connectionType:
-                    self.switchLayer(self.getLayer(self.currentConnectionType), self.getLayer(self.currentNode.connectionType))
+                    self.switchLayer(self.spriteRenderer.getSpriteLayer(self.currentConnectionType), self.spriteRenderer.getSpriteLayer(self.currentNode.connectionType))
             
             self.pos += self.vel
             self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-
 
 
 class Manager(Person):
@@ -725,8 +716,6 @@ class PersonHolder(pygame.sprite.Sprite):
             return 
 
         self.people.append(person)
-        print("person added")
-
 
         if len(self.people) > 1:
             self.add(self.groups)
@@ -749,8 +738,6 @@ class PersonHolder(pygame.sprite.Sprite):
             return
 
         self.people.remove(person)
-        print("person removed")
-
 
         # Position the player back against the target        
         person.pos = (self.target.pos - self.target.offset) + person.offset
