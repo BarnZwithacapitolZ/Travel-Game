@@ -55,7 +55,6 @@ class Person(pygame.sprite.Sprite):
         self.pos = (self.currentNode.pos + self.offset) - self.currentNode.offset
         self.vel = vec(0, 0)
 
-
         self.speed = 20
         self.budget = 20
         self.path = []
@@ -63,6 +62,7 @@ class Person(pygame.sprite.Sprite):
         self.travellingOn = None
 
         self.mouseOver = False
+        self.canClick = True
         self.status = Person.Status.UNASSIGNED
 
         self.dirty = True
@@ -180,6 +180,14 @@ class Person(pygame.sprite.Sprite):
 
     def getEntities(self):
         return self.entities
+
+
+    def getCanClick(self):
+        return self.canClick
+
+
+    def setCanClick(self, canClick):
+        self.canClick = canClick
 
 
     # Set the persons status
@@ -527,7 +535,7 @@ class Person(pygame.sprite.Sprite):
             return
 
         # mouse over and click events first
-        if not self.currentNode.getPersonHolder().getCanClick():
+        if self.canClick:
             self.events()
 
         self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
@@ -682,6 +690,8 @@ class PersonHolder(pygame.sprite.Sprite):
         self.width = 20 #TODO: Change the width and height to scale with the number of people in the holder
         self.height = 20
         self.drawerWidth, self.drawerHeight = 0, 0
+        self.drawerSpacing = 2.5 # Need these to be attributes so they can be used when moving the player on the transports
+        self.drawerCols = 2
 
         self.people = []
         self.open = False
@@ -724,14 +734,8 @@ class PersonHolder(pygame.sprite.Sprite):
             if self.open:
                 self.openHolder()
             else:
-                self.canClick = True
-
-                for person in self.people:
-                    person.removeFromLayer()
-                    person.removeFromLayer(self.spriteRenderer.layer4)
-
-                self.dirty = True
-    
+                self.closeHolder()
+                
 
     def removePerson(self, person):
         if person not in self.people:
@@ -746,6 +750,7 @@ class PersonHolder(pygame.sprite.Sprite):
 
         person.addToLayer()
         person.addToLayer(self.spriteRenderer.layer4)
+        person.setCanClick(True)
 
         if len(self.people) > 1 and self.open:
             self.closeHolder()
@@ -757,10 +762,31 @@ class PersonHolder(pygame.sprite.Sprite):
             person = self.people[0] # Will only ever be one person left so we can just directly modify them
             person.addToLayer()
             person.addToLayer(self.spriteRenderer.layer4)
+            person.setCanClick(True)
 
             person.pos = (self.target.pos - self.target.offset) + person.offset
             person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
             person.moveStatusIndicator()
+
+
+    def movePeople(self, addToLayers = False):
+        offset = vec(self.drawerSpacing, self.drawerSpacing)
+
+        for i, person in enumerate(self.people):
+            if addToLayers:
+                person.addToLayer()
+                person.addToLayer(self.spriteRenderer.layer4)
+                person.setCanClick(True)
+
+            person.pos = self.drawerPos + offset
+            person.makeSurface() # If a player spawns in the holder they won't have an image (since they're not added to any groups that draw them) so we need to make their image
+            person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+            person.moveStatusIndicator()
+            offset.x += person.width + self.drawerSpacing
+
+            if (i + 1) % self.drawerCols == 0:
+                offset.x = self.drawerSpacing
+                offset.y += person.height + self.drawerSpacing
 
 
     def openHolder(self):
@@ -770,27 +796,15 @@ class PersonHolder(pygame.sprite.Sprite):
         # Width and height of a person should always be the same, so we can just use the first person in the holder
         personWidth = self.people[0].width
         personHeight = self.people[0].height
-        spacing = 2.5
-        cols = 2
-        offset = vec(spacing, spacing)
+        
+        offset = vec(self.drawerSpacing, self.drawerSpacing)
 
-        self.drawerWidth = spacing + ((personWidth + spacing) * (len(self.people) if len(self.people) <= cols else cols))
-        self.drawerHeight = spacing + ((personHeight + spacing) * math.ceil(len(self.people) / cols))
+        self.drawerWidth = self.drawerSpacing + ((personWidth + self.drawerSpacing) * (len(self.people) if len(self.people) <= self.drawerCols else self.drawerCols))
+        self.drawerHeight = self.drawerSpacing + ((personHeight + self.drawerSpacing) * math.ceil(len(self.people) / self.drawerCols))
         self.drawerOffset = vec((-self.drawerWidth) + 15, (-self.drawerHeight) + 10)
         self.drawerPos = self.target.pos + self.drawerOffset
 
-        for i, person in enumerate(self.people):
-            person.addToLayer()
-            person.addToLayer(self.spriteRenderer.layer4)
-            person.pos = self.drawerPos + offset
-            # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-            person.dirty = True
-            person.moveStatusIndicator()
-            offset.x += person.width + spacing
-
-            if (i + 1) % cols == 0:
-                offset.x = spacing
-                offset.y += person.height + spacing
+        self.movePeople(True)
 
         self.open = True
         self.canClick = False
@@ -804,11 +818,12 @@ class PersonHolder(pygame.sprite.Sprite):
         for person in self.people:
             person.removeFromLayer()
             person.removeFromLayer(self.spriteRenderer.layer4)
+            person.setCanClick(False)
 
             # Reset the players positions
             person.pos = (self.target.pos - self.target.offset) + person.offset
-            # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-            person.dirty = True
+            person.makeSurface()
+            person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
             person.moveStatusIndicator()
         
         self.open = False
@@ -846,11 +861,6 @@ class PersonHolder(pygame.sprite.Sprite):
     def drawPaused(self, surface):
         self.makeSurface()
         surface.blit(self.image, (self.rect))
-
-
-    def drawBox(self, surface):
-        pygame.draw.rect(surface, BLACK, self.rect,
-            border_radius = 5)
 
     
     def draw(self):

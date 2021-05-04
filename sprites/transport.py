@@ -235,10 +235,15 @@ class Transport(pygame.sprite.Sprite):
         for person in list(self.currentNode.getPeople()):
             # Only remove people from the station once the train is moving
             if person.getStatus() == self.boardingType:
-                self.addPerson(person)
                 self.currentNode.removePerson(person)
+                self.currentNode.getPersonHolder().removePerson(person)
+
+                self.addPerson(person)
+                self.personHolder.addPerson(person)
+
                 person.setStatus(PERSON.Person.Status.MOVING)
                 person.setTravellingOn(self)
+
                 # Make the person unclicked?
                 # self.game.clickManager.setPerson(None)
 
@@ -254,23 +259,17 @@ class Transport(pygame.sprite.Sprite):
                 person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
                 person.moveStatusIndicator()
 
-                self.removePerson(person) # Remove the person from the transport
+                self.removePerson(person)
+                self.personHolder.removePerson(person)
 
                 # Add the player to the top node (on the highest layer)
                 playerNode = self.spriteRenderer.getTopNode(self.currentNode)
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)  # Set the person to unassigned so they can be moved
                 person.setCurrentNode(playerNode) # Set the persons current node to the node they're at
                 playerNode.addPerson(person)
+                playerNode.getPersonHolder().addPerson(person)
                 person.switchLayer(self.spriteRenderer.getSpriteLayer(self.currentNode.getConnectionType()), self.spriteRenderer.getSpriteLayer(playerNode.getConnectionType()))
                 person.setTravellingOn(None)
-
-
-                # # Position the person offset to the node
-                # person.pos = (self.currentNode.pos - self.currentNode.offset) + person.offset
-                # person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-                # # person.width, person.height = 20, 20
-                # # person.dirty = True
-                # person.moveStatusIndicator()
 
 
     #move all the people within the transport relative to its location
@@ -278,20 +277,21 @@ class Transport(pygame.sprite.Sprite):
         if len(self.people) <= 0:
             return
 
-        offset = vec(0, 0)
-        for person in list(self.people):
-            person.pos = self.pos + person.offset + offset
-            person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-            # person.width, person.height = 18, 18
-            # person.dirty = True
+        if not self.personHolder.getOpen():
+            offset = vec(0, 0)
+            for person in list(self.people):
+                person.pos = self.pos + person.offset
+                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                person.moveStatusIndicator()
 
-            offset.x += person.width + 1#padding
-            person.moveStatusIndicator()
-
-            # # Check if the person has reached their destination and if they have remove
-            # if person.getDestination().getNumber() == self.currentNode.getNumber():
-            #     person.complete()    
-            #     self.removePerson(person)            
+                # # Check if the person has reached their destination and if they have remove
+                # if person.getDestination().getNumber() == self.currentNode.getNumber():
+                #     person.complete()    
+                #     self.removePerson(person)            
+        
+        # Move the people inside the person holder if it is open
+        else:
+            self.personHolder.movePeople()
 
 
     def movePersonHolder(self):
@@ -299,7 +299,12 @@ class Transport(pygame.sprite.Sprite):
             return
 
         self.personHolder.pos = self.pos + self.personHolder.offset
-        self.personHolder.rect.topleft = self.personHolder.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        self.personHolder.drawerPos = self.pos + self.personHolder.drawerOffset
+
+        if self.personHolder.getOpen():
+            self.personHolder.rect.topleft = self.personHolder.drawerPos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        else:
+            self.personHolder.rect.topleft = self.personHolder.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
 
 
     # Draw how long is left at each stop 
