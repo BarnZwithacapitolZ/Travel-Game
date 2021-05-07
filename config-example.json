@@ -293,6 +293,14 @@
             "success3": {
                 "file": "Success-3.wav",
                 "volume": 0.7
+            },
+            "expand": {
+                "file": "Expand.wav",
+                "volume": 1.0
+            },
+            "collapse": {
+                "file": "Collapse.wav",
+                "volume": 1.0
             }
         },
         "music": {

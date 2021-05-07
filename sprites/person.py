@@ -269,7 +269,7 @@ class Person(pygame.sprite.Sprite):
     def clearPath(self, newPath):
         # Always remove the player from the first current node when walking ( > 1 path)
         if len(newPath) > 1:
-            self.currentNode.getPersonHolder().removePerson(self)
+            self.currentNode.getPersonHolder().removePerson(self, True)
         
         # When clicking on the same node with no previous path, either switch to the new layer or do nothing (remove path)
         elif len(newPath) == 1 and len(self.path) <= 0:
@@ -737,7 +737,7 @@ class PersonHolder(pygame.sprite.Sprite):
                 self.closeHolder()
                 
 
-    def removePerson(self, person):
+    def removePerson(self, person, audio = False):
         if person not in self.people:
             return
 
@@ -753,8 +753,10 @@ class PersonHolder(pygame.sprite.Sprite):
         person.setCanClick(True)
 
         if len(self.people) > 1 and self.open:
+            if audio: self.game.audioLoader.playSound("collapse")
             self.closeHolder()
         elif len(self.people) <= 1 and len(self.people) > 0:
+            if audio: self.game.audioLoader.playSound("collapse")
             self.remove(self.groups)
             self.canClick = False
             self.open = False
@@ -875,10 +877,12 @@ class PersonHolder(pygame.sprite.Sprite):
         my -= difference[1]
 
         
-        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked():
+        if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.open:
+            self.game.audioLoader.playSound("collapse")
             self.closeHolder()
 
-        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.canClick:
+        if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and not self.open and self.canClick:
+            self.game.audioLoader.playSound("expand")
             self.openHolder()
             self.game.clickManager.setClicked(False)
 
