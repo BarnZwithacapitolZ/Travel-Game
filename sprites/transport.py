@@ -268,7 +268,7 @@ class Transport(pygame.sprite.Sprite):
                 person.setCurrentNode(playerNode) # Set the persons current node to the node they're at
                 playerNode.addPerson(person)
                 playerNode.getPersonHolder().addPerson(person)
-                person.switchLayer(self.spriteRenderer.getSpriteLayer(self.currentNode.getConnectionType()), self.spriteRenderer.getSpriteLayer(playerNode.getConnectionType()))
+                person.switchLayer(self.currentNode.getConnectionType(), playerNode.getConnectionType())
                 person.setTravellingOn(None)
 
 

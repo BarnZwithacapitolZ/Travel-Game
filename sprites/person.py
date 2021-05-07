@@ -79,7 +79,7 @@ class Person(pygame.sprite.Sprite):
         self.entities = []
 
         # Switch to the layer that the player spawned on
-        self.switchLayer(self.spriteRenderer.getSpriteLayer(self.startingConnectionType), self.spriteRenderer.getSpriteLayer(self.currentConnectionType))
+        self.switchLayer(self.startingConnectionType, self.currentConnectionType)
         self.currentNode.addPerson(self) # Add the person to the node after they have switched to the correct layer to stop it adding the player back when removed if in personHolder
         self.currentNode.getPersonHolder().addPerson(self)
         self.spawnAnimation()
@@ -245,6 +245,7 @@ class Person(pygame.sprite.Sprite):
     def remove(self):
         self.currentNode.removePerson(self)
         self.currentNode.getPersonHolder().removePerson(self)
+        self.spriteRenderer.getGridLayer(self.currentConnectionType).removePerson(self)
         self.kill()
         self.statusIndicator.kill()
         self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() - 1)
@@ -301,15 +302,24 @@ class Person(pygame.sprite.Sprite):
 
 
     def addToLayer(self, layer = None):
-        layer = self.spriteRenderer.getSpriteLayer(self.currentConnectionType) if layer is None else layer
+        layerName = layer if layer is not None else self.currentConnectionType
+        layer = self.spriteRenderer.getSpriteLayer(layerName)
         layer.add(self)
         layer.add(self.statusIndicator)
 
+        gridLayer = self.spriteRenderer.getGridLayer(layerName)
+        gridLayer.addPerson(self)
+
 
     def removeFromLayer(self, layer = None):
-        layer = self.spriteRenderer.getSpriteLayer(self.currentConnectionType) if layer is None else layer
+        layerName = layer if layer is not None else self.currentConnectionType
+        layer = self.spriteRenderer.getSpriteLayer(layerName)
         layer.remove(self)
         layer.remove(self.statusIndicator)
+
+        gridLayer = self.spriteRenderer.getGridLayer(layerName)
+        gridLayer.removePerson(self)
+
 
     
     # Move the status indicator above the plerson so follow the persons movement
@@ -582,7 +592,7 @@ class Person(pygame.sprite.Sprite):
                     self.currentNode.getPersonHolder().addPerson(self)
 
                 if self.currentConnectionType != self.currentNode.connectionType:
-                    self.switchLayer(self.spriteRenderer.getSpriteLayer(self.currentConnectionType), self.spriteRenderer.getSpriteLayer(self.currentNode.connectionType))
+                    self.switchLayer(self.currentConnectionType, self.currentNode.connectionType)
             
             self.pos += self.vel
             self.rect.topleft = self.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
@@ -749,7 +759,7 @@ class PersonHolder(pygame.sprite.Sprite):
         person.moveStatusIndicator()
 
         person.addToLayer()
-        person.addToLayer(self.spriteRenderer.layer4)
+        person.addToLayer("layer 4")
         person.setCanClick(True)
 
         if len(self.people) > 1 and self.open:
@@ -763,7 +773,7 @@ class PersonHolder(pygame.sprite.Sprite):
 
             person = self.people[0] # Will only ever be one person left so we can just directly modify them
             person.addToLayer()
-            person.addToLayer(self.spriteRenderer.layer4)
+            person.addToLayer("layer 4")
             person.setCanClick(True)
 
             person.pos = (self.target.pos - self.target.offset) + person.offset
@@ -777,7 +787,7 @@ class PersonHolder(pygame.sprite.Sprite):
         for i, person in enumerate(self.people):
             if addToLayers:
                 person.addToLayer()
-                person.addToLayer(self.spriteRenderer.layer4)
+                person.addToLayer("layer 4")
                 person.setCanClick(True)
 
             person.pos = self.drawerPos + offset
@@ -819,7 +829,7 @@ class PersonHolder(pygame.sprite.Sprite):
 
         for person in self.people:
             person.removeFromLayer()
-            person.removeFromLayer(self.spriteRenderer.layer4)
+            person.removeFromLayer("layer 4")
             person.setCanClick(False)
 
             # Reset the players positions

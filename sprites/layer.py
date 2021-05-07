@@ -28,6 +28,7 @@ class Layer():
         self.components = []
         self.lines = []
         self.previousPeopleTypes = []
+        self.people = []
 
         self.number = 1
 
@@ -56,8 +57,26 @@ class Layer():
         return self.number
 
 
+    def getPeople(self):
+        return self.people
+
+
     def setLines(self, lines):
         self.lines = lines
+
+
+    def addPerson(self, person):
+        if person in self.people:
+            return 
+
+        self.people.append(person)
+
+    
+    def removePerson(self, person):
+        if person not in self.people:
+            return
+
+        self.people.remove(person)
 
 
     # Add a component to the layer
@@ -93,7 +112,7 @@ class Layer():
 
 
     # Add a person to the layer
-    def addPerson(self, destinations = None):
+    def createPerson(self, destinations = None):
         # No nodes in the layer to add the person to, or no entrances for person to come from
         destinations = destinations if destinations is not None else self.grid.getDestinations()
 
@@ -113,7 +132,6 @@ class Layer():
         self.previousPeopleTypes.append(type(p))
 
         self.spriteRenderer.setTotalPeople(self.spriteRenderer.getTotalPeople() + 1)
-
         return p
 
 

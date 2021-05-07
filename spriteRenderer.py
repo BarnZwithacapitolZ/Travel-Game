@@ -530,7 +530,7 @@ class SpriteRenderer():
         # Always spawn a person if there is no people left on the map, to stop player having to wait
         if self.timer > self.timeStep:
             self.timer = 0
-            self.gridLayer2.addPerson(self.allDestinations)       
+            self.gridLayer2.createPerson(self.allDestinations)       
 
         if self.totalPeople <= 0:
             if not self.totalPeopleNone:
@@ -540,7 +540,7 @@ class SpriteRenderer():
             # wait 2 seconds before spawing the next person when there is no people left
             if self.timer > 2 and self.totalPeopleNone:
                 self.timer = 0
-                self.gridLayer2.addPerson(self.allDestinations)       
+                self.gridLayer2.createPerson(self.allDestinations)       
                 self.totalPeopleNone = False
 
 
@@ -572,11 +572,23 @@ class SpriteRenderer():
 
 
     def showLayer(self, layer):
+        if not self.rendering:
+            return 
+
         # only switch to a layer that is in the map
         if "layer " + str(layer) in self.connectionTypes:
             self.currentLayer = layer
             self.resize() #redraw the nodes so that the mouse cant collide with them
             self.hud.updateLayerText()
+
+            # We only want the people on the current layer to actually be clickable
+            totalPeople = self.gridLayer1.getPeople() + self.gridLayer2.getPeople() + self.gridLayer3.getPeople() + self.gridLayer4.getPeople()
+            currentLayerPeople = self.getGridLayer("layer " + str(layer)).getPeople()
+            for person in totalPeople:
+                if person in currentLayerPeople:
+                    person.setCanClick(True)
+                else:
+                    person.setCanClick(False)
 
 
     def resize(self):
