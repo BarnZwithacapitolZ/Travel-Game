@@ -215,6 +215,22 @@
             "image": "ui\\ButtonSelected.png",
             "alpha": true
         },
+        "buttonArrowLeft": {
+            "image": "ui\\ButtonArrowLeft.png",
+            "alpha": true
+        },
+        "buttonArrowLeftSelected": {
+            "image": "ui\\ButtonArrowLeftSelected.png",
+            "alpha": true
+        },
+        "buttonArrowRight": {
+            "image": "ui\\ButtonArrowRight.png",
+            "alpha": true
+        },
+        "buttonArrowRightSelected": {
+            "image": "ui\\ButtonArrowRightSelected.png",
+            "alpha": true
+        },
         "locked": {
             "image": "ui\\Locked.png",
             "alpha": true

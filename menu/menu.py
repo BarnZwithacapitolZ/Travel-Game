@@ -181,7 +181,7 @@ class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
         self.currentLevel = 0
-        self.maps = list(self.game.mapLoader.getMaps().keys())
+        self.maps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.levels = {}
         self.backgroundColor = GREEN
 
@@ -381,15 +381,14 @@ class MainMenu(Menu):
     def levelSelect(self, transition = False):
         self.open = True
         self.levelSelectOpen = True
-        # self.backgroundColor = (128, 128, 128)
         self.backgroundColor = BLACK
         self.levels = {}
 
-        back = Image(self, "button", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, 21))
-        backText = Label(self, "Main Menu", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, 27))
+        mainMenu = Image(self, "button", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, 21))
+        mainMenuText = Label(self, "Main Menu", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, 27))
         
-        custom = Image(self, "button", (25, 25), (backText.x + backText.getFontSize()[0] + 10, 21))
-        customText = Label(self, "Custom Levels", 20, CREAM, (backText.x + backText.getFontSize()[0] + 40, 27))
+        custom = Image(self, "button", (25, 25), (mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
+        customText = Label(self, "Custom Levels", 20, CREAM, (mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
 
         self.levelComplete = Image(self, "buttonRed", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, config["graphics"]["displayHeight"] - 42))
         self.levelCompleteText = Label(self, "Level Incomplete", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, config["graphics"]["displayHeight"] - 36))
@@ -399,23 +398,35 @@ class MainMenu(Menu):
         self.keyText = Label(self, str(config["player"]["keys"]), 20, BLACK, (config["graphics"]["displayWidth"] - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - self.spacing - 20, 27))
         self.keyText.setPos((self.keyText.x - (self.keyText.getFontSize()[0] / 2), self.keyText.y))
 
-        back.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
-        back.addEvent(hoverImage, 'onMouseOut', image = "button")
+        levelNext = Image(self, "buttonArrowRight", (25, 25), (config["graphics"]["displayWidth"] - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - self.spacing - 25, config["graphics"]["displayHeight"] - 42))
+        levelBack = Image(self, "buttonArrowLeft", (25, 25), (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
+
+        mainMenu.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
+        mainMenu.addEvent(hoverImage, 'onMouseOut', image = "button")
         custom.addEvent(hoverImage, 'onMouseOver', image = "buttonSelected")
         custom.addEvent(hoverImage, 'onMouseOut', image = "button")
+        levelNext.addEvent(hoverImage, 'onMouseOver', image = "buttonArrowRightSelected")
+        levelNext.addEvent(hoverImage, 'onMouseOut', image = "buttonArrowRight")
+        levelBack.addEvent(hoverImage, 'onMouseOver', image = "buttonArrowLeftSelected")
+        levelBack.addEvent(hoverImage, 'onMouseOut', image = "buttonArrowLeft")
 
-        back.addEvent(openMainMenu, 'onMouseClick')
-        backText.addEvent(openMainMenu, 'onMouseClick')
+        mainMenu.addEvent(openMainMenu, 'onMouseClick')
+        mainMenuText.addEvent(openMainMenu, 'onMouseClick')
+
+        levelNext.addEvent(levelForward, 'onMouseClick')
+        levelBack.addEvent(levelBackward, 'onMouseClick')
 
         self.add(self.levelComplete)
         self.add(self.levelCompleteText)
-        self.add(back)
-        self.add(backText)
+        self.add(mainMenu)
+        self.add(mainMenuText)
         self.add(custom)
         self.add(customText)
         self.add(key)
         self.add(keyTextBackground)
         self.add(self.keyText)
+        self.add(levelNext)
+        self.add(levelBack)
 
 
         #### Adds the maps after eveything else in the menu has been loaded
