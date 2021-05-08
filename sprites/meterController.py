@@ -19,6 +19,18 @@ class MeterController(pygame.sprite.Sprite):
         self.amountToAdd = 0
         self.empty = False
 
+        self.decreaseSpeed = 0.2 # How fast to decrease the meter when slowing down
+        self.increaseSpeed = 0.02 # How fast to increase the meter when not full
+        self.slowDownAmount = 0.5 # How slow to make the game (half its speed currently)
+
+    
+    def getEmpty(self):
+        return self.empty
+
+
+    def getSlowDownAmount(self):
+        return self.slowDownAmount
+
     
     def addToAmountToAdd(self, amountToAdd):
         # only add the extra if the meter isn't already full
@@ -32,21 +44,22 @@ class MeterController(pygame.sprite.Sprite):
         self.spriteRenderer.getHud().updateSlowDownMeter(self.amount)
 
         if removeFromAdd:
-            self.amountToAdd -= 0.2 * 100 * self.game.dt
+            self.amountToAdd -= self.decreaseSpeed * 100 * self.game.dt
 
 
     def events(self):
         # if spacebar is pressed and the flag isn't called
         if self.game.clickManager.getSpaceBar() and not self.empty:
             if self.amount > 0:
-                self.spriteRenderer.setDt(self.spriteRenderer.getStartDt() - 0.5)
-                self.updateAmount(-0.2)
+                self.spriteRenderer.setDt(self.spriteRenderer.getStartDt() - self.slowDownAmount)
+                self.updateAmount(-self.decreaseSpeed)
+            # We have reached the end of the meter
             else:
-                # self.clickManager.setSpaceBarFlag(True)
+                self.game.audioLoader.playSound("slowOut", 1)
                 self.empty = True
                 self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())
                 if self.amount < self.totalAmount:
-                    self.updateAmount(0.02)
+                    self.updateAmount(self.increaseSpeed)
 
         # if the spacebar isn't pressed and the flag is called
         elif not self.game.clickManager.getSpaceBar() and self.empty:
@@ -55,7 +68,7 @@ class MeterController(pygame.sprite.Sprite):
          # if there is amount left in the add
         elif self.amountToAdd > 0:
             if self.amount < self.totalAmount:
-                self.updateAmount(0.2, True)
+                self.updateAmount(self.decreaseSpeed, True)
 
             # when the meter is full we don't want to add the bonus anymore 
             else:
@@ -64,7 +77,7 @@ class MeterController(pygame.sprite.Sprite):
         else:
             self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())
             if self.amount < self.totalAmount:
-                self.updateAmount(0.02)
+                self.updateAmount(self.increaseSpeed)
 
     def update(self):
         self.events()
