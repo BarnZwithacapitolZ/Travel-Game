@@ -1,4 +1,7 @@
 # Hey bro, import "*" is not a good practice
+
+# import os
+# import cProfile
 from config import *
 from engine import *
 from spriteRenderer import *
@@ -8,8 +11,6 @@ from menuComponents import *
 from mapEditor import *
 import pygame
 import sys
-# import os
-# import cProfile
 
 
 # Insert directory paths
