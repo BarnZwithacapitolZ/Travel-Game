@@ -49,8 +49,6 @@ class GridManager:
         self.editorDestinationMappings = {"airport": EditorAirport, "office": EditorOffice, "house": EditorHouse}
 
 
-    #### Getters ####
-    
     def getNodePositions(self):
         return self.nodePositions
 
@@ -107,8 +105,6 @@ class GridManager:
             return self.map
         return {}
         
-
-    #### Setters ####
 
     #generate an 18 * 10 board of possible node positions (x and y locations) for nodes to be added to
     def setNodePositions(self, offx = 1.5, offy = 1.5, width = 18, height = 10):
@@ -249,7 +245,6 @@ class GridManager:
         return n    
 
 
-
     # Create the grid by adding all the nodes and connections to the grid
     def createGrid(self, connectionType):
         currentNodes = []
@@ -333,7 +328,6 @@ class GridManager:
         self.transports.remove(transport)
         transport.remove()
 
-        
            
     @staticmethod
     def getMapValues(width, height, reverse = False):

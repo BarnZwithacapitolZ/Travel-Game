@@ -106,7 +106,7 @@ class SpriteRenderer():
 
 
     def runStartScreen(self):
-        if self.rendering and not self.debug and self.game.paused:
+        if self.rendering and not self.debug:
             self.menu.startScreen()
 
 

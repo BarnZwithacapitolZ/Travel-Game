@@ -10,9 +10,7 @@ class ClickManager:
         self.rightClicked = False
         self.spaceBar = False
 
-    #### Getters
 
-    # Return if the mouse has been pressed
     def getClicked(self):
         return self.clicked
 
@@ -25,15 +23,13 @@ class ClickManager:
         return self.spaceBar
 
 
-    #### Setters ####
-
-    # Set the mouse pressed
     def setClicked(self, clicked):
         self.clicked = clicked
 
     
     def setRightClicked(self, rightClicked):
         self.rightClicked = rightClicked
+
 
     def setSpaceBar(self, spaceBar):
         self.spaceBar = spaceBar
@@ -49,12 +45,10 @@ class ClickManager:
         return adjNodes
 
 
-    '''
-        function: aStartPathFinding
-        input:  Node A
-                Node B
-        output: List path (empty if no path is found)
-    '''
+    # Function: aStartPathFinding
+    # Input:  Node A
+    #         Node B
+    # Output: List path (empty if no path is found)
     def aStarPathFinding(self, A, B):
         openList = []
         closedList = []
@@ -130,17 +124,13 @@ class ClickManager:
         return [] # Return the empty path if route is impossible
 
 
-
 class PersonClickManager(ClickManager):
     def __init__(self, game):
         super().__init__(game)
         self.node = None # A
         self.person = None # B
-
         self.personClicked = False
 
-
-    #### Getters ####
 
     # Return if a person is current selected
     def getPersonClicked(self):
@@ -156,8 +146,6 @@ class PersonClickManager(ClickManager):
     def getNode(self):
         return self.node
 
-
-    #### Setters ####
 
     # Set the person has been selected
     def setPersonClicked(self, personClicked):
@@ -184,12 +172,10 @@ class PersonClickManager(ClickManager):
         self.movePerson()
 
 
-    '''
-        function: pathFinding
-        input:  Node A
-                Node B
-        output: List path (empty if no path is found)
-    '''
+    # Function: pathFinding
+    # Input:  Node A
+    #         Node B
+    # Output: List path (empty if no path is found)
     def pathFinding(self, A = None, B = None):
         A = self.person.getCurrentNode() if A is None else A # Start (where we come from)
         B = self.node if B is None else B # End (Where we are going)
@@ -268,7 +254,6 @@ class PersonClickManager(ClickManager):
                 #after the click is managed, clear the player and the node to allow for another click management
                 # self.person = None
                 self.node = None
-
 
 
 class TransportClickManager(ClickManager):
@@ -350,22 +335,28 @@ class EditorClickManager(ClickManager):
         self.clickType = EditorClickManager.ClickType.CONNECTION
         self.addType = "metro"
 
+
     def clearNodes(self):
         self.startNode = None
         self.endNode = None
         self.tempEndNode = None
 
+
     def getStartNode(self):
         return self.startNode
+
 
     def getEndNode(self):
         return self.endNode
 
+
     def getTempEndNode(self):
         return self.tempEndNode
 
+
     def getClickType(self):
         return self.clickType
+
 
     def getAddType(self):
         return self.addType
@@ -456,6 +447,7 @@ class EditorClickManager(ClickManager):
         if isinstance(node, NODE.Destination):
             self.game.mapEditor.deleteDestination(node.getConnectionType(), node)
 
+
     def deleteConnection(self, connection):
         fromNode = connection.getFrom()
         toNode = connection.getTo()
@@ -472,7 +464,6 @@ class EditorClickManager(ClickManager):
             self.deleteTransport(toNode)
             self.deleteStop(toNode)
             self.deleteDestination(toNode)
-
 
 
     def deleteTransport(self, node):

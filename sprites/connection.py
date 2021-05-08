@@ -28,8 +28,6 @@ class Connection:
 
         self.mouseOver = False
 
-
-    #### Getters ####
     
     # Return the colour of the connection
     def getColor(self):
@@ -74,8 +72,6 @@ class Connection:
         return self.draw
 
 
-    #### Setters ####
-
     # Set the colour of the connection depending on the type 
     def setColor(self):
         if self.connectionType == 1 or self.connectionType == "layer 1":
@@ -109,7 +105,6 @@ class Connection:
         if self.draw:
             layer = self.game.mapEditor.getGridLayer(self.connectionType)
             layer.createConnections()
-
 
 
     def update(self):

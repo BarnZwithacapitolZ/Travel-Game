@@ -87,7 +87,6 @@ class Menu:
                         function(component, self, function, **animation[1])
                         # component.dirty = True
 
-                        
 
     def events(self, component):
         mx, my = pygame.mouse.get_pos()
@@ -749,7 +748,6 @@ class GameMenu(Menu):
             self.game.audioLoader.playSound("swoopIn")    
 
 
-
     def startScreen(self):
         self.open = True
         self.startScreenOpen = True
@@ -815,7 +813,6 @@ class GameHudLayout(Menu):
     def setLifeAmount(self):
         return
 
-    
 
 class GameHud(GameHudLayout):
     def __init__(self, renderer, spacing = (1.5, 1.5)):
@@ -852,12 +849,31 @@ class GameHud(GameHudLayout):
         self.slowDownMeter.addAnimation(transitionY, 'onLoad', speed = speed, transitionDirection = "down", y = self.hudY + 10, callback = callbackY)
 
 
+    def slideRestartIn(self):
+        self.restart.dirty = True # Make sure its resized
+        self.add(self.restart)
+
+        def callback(obj, menu, x):
+            obj.x = x
+
+        self.restart.addAnimation(transitionX, 'onLoad', speed = 5, transitionDirection = "left", x = self.hudX, callback = callback)
+
+
+    def slideRestartOut(self):
+        def callback(obj, menu, x):
+            obj.x = x
+            menu.remove(obj)
+
+        self.restart.addAnimation(transitionX, 'onLoad', speed = -5, transitionDirection = "right", x = self.hudX - 100, callback = callback)
+
+
     def togglePauseGame(self, selected = False):
         self.game.spriteRenderer.togglePaused() 
 
         pauseImage = "play" if self.game.spriteRenderer.getPaused() else "pause"
         pauseImageSelected = "playSelected" if self.game.spriteRenderer.getPaused() else "pauseSelected"
         pauseImage += "White" if self.game.spriteRenderer.getDarkMode() else ""
+        self.slideRestartIn() if self.game.spriteRenderer.getPaused() else self.slideRestartOut()
         
         self.pause.setImageName(pauseImageSelected if selected else pauseImage)
         self.pause.clearEvents()
@@ -866,7 +882,7 @@ class GameHud(GameHudLayout):
         self.pause.addEvent(pauseGame, 'onMouseClick')
         self.pause.dirty = True
 
-
+        
     def main(self, transition = False):
         self.open = True
 
@@ -883,18 +899,24 @@ class GameHud(GameHudLayout):
         playImage = "playWhite" if darkMode else "play"
         playSelectedImage = "playSelected"
         walkingImage = "walkingWhite" if darkMode else "walking"
+        restartImage = "restartWhite" if darkMode else "restart"
+        restartSelectedImage = "restartSelected"
         self.textColor = Color("white") if darkMode else BLACK
 
-    
         self.home = Image(self, homeImage, (50, 50), (self.hudX - 100, 500))
         self.layers = Image(self, layersImage, (50, 50), (self.hudX - 100, 440))
         self.pause = Image(self, pauseImage, (50, 50), (self.hudX - 100, 380))
+        self.restart = Image(self, restartImage, (50, 50), (self.hudX - 100, 320))
 
         self.slowDownMeter = Meter(self, Color("white"), self.textColor, GREEN, (meterWidth, 20), (meterWidth, 20), (config["graphics"]["displayWidth"] - (100 + meterWidth), self.hudY + 10 - 100), 2)
 
         self.completed = Timer(self, self.textColor, YELLOW, 0, self.game.spriteRenderer.getTotalToComplete(), (40, 40), (config["graphics"]["displayWidth"] - 85, self.hudY - 100), 5)
         self.lives = Timer(self, self.textColor, GREEN, 100, self.game.spriteRenderer.getLives(), (48, 48), (config["graphics"]["displayWidth"] - 89, self.hudY - 4 - 100), 5)
         self.completedAmount = Label(self, str(self.game.spriteRenderer.getCompleted()), 20, self.textColor, (self.completed.x + 14.5, self.completed.y + 13)) 
+
+        self.restart.addEvent(hoverImage, 'onMouseOver', image = restartSelectedImage)
+        self.restart.addEvent(hoverImage, 'onMouseOut', image = restartImage)
+        self.restart.addEvent(loadLevel, 'onMouseClick', level = self.game.mapLoader.getMap(self.game.spriteRenderer.getLevel()))
 
         self.pause.addEvent(hoverImage, 'onMouseOver', image = pauseSelectedImage)
         self.pause.addEvent(hoverImage, 'onMouseOut', image = pauseImage)
@@ -910,7 +932,9 @@ class GameHud(GameHudLayout):
 
         self.add(self.home)
         if len(self.game.spriteRenderer.getConnectionTypes()) > 1: self.add(self.layers)
-        else: self.pause.setPos((self.layers.x, self.layers.y))
+        else: 
+            self.restart.setPos((self.pause.x, self.pause.y))
+            self.pause.setPos((self.layers.x, self.layers.y))
         self.add(self.pause)
 
         self.add(self.slowDownMeter)

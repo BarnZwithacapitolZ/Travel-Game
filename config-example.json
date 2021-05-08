@@ -234,6 +234,18 @@
         "keyGreen": {
             "image": "ui\\KeyGreen.png",
             "alpha": true
+        },
+        "restart": {
+            "image": "ui\\Restart.png",
+            "alpha": true
+        },
+        "restartWhite": {
+            "image": "ui\\RestartWhite.png",
+            "alpha": true
+        },
+        "restartSelected": {
+            "image": "ui\\RestartSelected.png",
+            "alpha": true
         }
     }, 
     "audio": {
