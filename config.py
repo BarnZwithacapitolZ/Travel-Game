@@ -1,21 +1,20 @@
-import pygame
+# import pygame
 import json
-import os, sys
-
+import os
+import sys
 
 
 """
-    To do: 
+    To do:
         --- load config from json
         --- dump config to json on save
 """
 
 
 def getFilePath():
-    if getattr(sys, 'frozen', False): #for when .exe
+    if getattr(sys, 'frozen', False):  # for when .exe
         return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(__file__)
+    return os.path.dirname(__file__)
 
 
 with open('config.json') as f:
@@ -52,7 +51,8 @@ DEFAULTLIVES = 3
 # DEFAULTLIVES = 1
 
 # dump config file to json for saving
+
+
 def dump(data):
     with open('config.json', 'w') as f:
         json.dump(data, f)
-
