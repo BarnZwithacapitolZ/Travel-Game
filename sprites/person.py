@@ -270,7 +270,7 @@ class Person(pygame.sprite.Sprite):
     def clearPath(self, newPath):
         # Always remove the player from the first current node when walking ( > 1 path)
         if len(newPath) > 1:
-            self.currentNode.getPersonHolder().removePerson(self, True)
+            self.currentNode.getPersonHolder().removePerson(self)
         
         # When clicking on the same node with no previous path, either switch to the new layer or do nothing (remove path)
         elif len(newPath) == 1 and len(self.path) <= 0:
@@ -300,6 +300,13 @@ class Person(pygame.sprite.Sprite):
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
 
+        if "layer " + str(self.spriteRenderer.getCurrentLayer()) == self.currentConnectionType:
+            self.spriteRenderer.resetPeopleClicks()
+
+        if len(self.path) <= 0:
+            self.currentNode.getPersonHolder().removePerson(self, True)
+            self.currentNode.getPersonHolder().addPerson(self)
+
 
     def addToLayer(self, layer = None):
         layerName = layer if layer is not None else self.currentConnectionType
@@ -319,7 +326,6 @@ class Person(pygame.sprite.Sprite):
 
         gridLayer = self.spriteRenderer.getGridLayer(layerName)
         gridLayer.removePerson(self)
-
 
     
     # Move the status indicator above the plerson so follow the persons movement
@@ -747,7 +753,7 @@ class PersonHolder(pygame.sprite.Sprite):
                 self.closeHolder()
                 
 
-    def removePerson(self, person, audio = False):
+    def removePerson(self, person, switchLayer = False):
         if person not in self.people:
             return
 
@@ -762,11 +768,12 @@ class PersonHolder(pygame.sprite.Sprite):
         person.addToLayer("layer 4")
         person.setCanClick(True)
 
-        if len(self.people) > 1 and self.open:
-            if audio: self.game.audioLoader.playSound("collapse")
+        # We don't want to call this when switching layer
+        if len(self.people) > 1 and self.open and not switchLayer:
+            self.game.audioLoader.playSound("collapse")
             self.closeHolder()
-        elif len(self.people) <= 1 and len(self.people) > 0:
-            if audio: self.game.audioLoader.playSound("collapse")
+        elif len(self.people) == 1:
+            if self.open: self.game.audioLoader.playSound("collapse")
             self.remove(self.groups)
             self.canClick = False
             self.open = False
@@ -886,7 +893,6 @@ class PersonHolder(pygame.sprite.Sprite):
         mx -= difference[0]
         my -= difference[1]
 
-        
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.open:
             self.game.audioLoader.playSound("collapse")
             self.closeHolder()
@@ -908,9 +914,10 @@ class PersonHolder(pygame.sprite.Sprite):
 
 
     def update(self):
-        self.events()
-        
+        if not hasattr(self, 'rect'):
+            return
 
+        self.events()
 
 
 class Particle(pygame.sprite.Sprite):

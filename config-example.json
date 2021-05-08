@@ -345,11 +345,11 @@
     "maps": {
         "builtIn": {
             "London": "map1.json", 
-            "Test": "map2.json"
+            "Test": "map2.json",
+            "leveltest": "map_leveltest.json"
         },
         "custom": {
             "Another test": "map_Another_test.json",
-            "leveltest": "map_leveltest.json",
             "size1": "map_size1.json", 
             "size2": "map_size2.json", 
             "size3": "map_size3.json", 
