@@ -279,6 +279,9 @@ class SpriteRenderer():
     def getPaused(self):
         return self.paused
 
+    def getCurrentLayer(self):
+        return self.currentLayer
+
     def removeLife(self):
         self.lives -= 1
         # remove a heart from the hud here or something
@@ -581,6 +584,24 @@ class SpriteRenderer():
 
             self.game.clickManager.setSpaceBar(False)
 
+    # Make people on the current layer clickable, and the rest non-clickable
+    def resetPeopleClicks(self):
+        totalPeople = (
+            self.gridLayer1.getPeople() +
+            self.gridLayer2.getPeople() +
+            self.gridLayer3.getPeople() +
+            self.gridLayer4.getPeople())
+
+        currentLayerPeople = self.getGridLayer(
+            "layer " + str(self.currentLayer)).getPeople()
+        for person in totalPeople:
+            if person in currentLayerPeople or self.currentLayer == 4:
+                # Always went every person to be clickable on the top layer
+                person.setCanClick(True)
+
+            else:
+                person.setCanClick(False)
+
     def showLayer(self, layer):
         if not self.rendering:
             return
@@ -591,21 +612,7 @@ class SpriteRenderer():
             # Redraw the nodes so that the mouse cant collide with them
             self.resize()
             self.hud.updateLayerText()
-
-            # We only want the people on the
-            # current layer to actually be clickable
-            totalPeople = (
-                self.gridLayer1.getPeople() + self.gridLayer2.getPeople() +
-                self.gridLayer3.getPeople() + self.gridLayer4.getPeople())
-
-            currentLayerPeople = self.getGridLayer(
-                "layer " + str(layer)).getPeople()
-
-            for person in totalPeople:
-                if person in currentLayerPeople:
-                    person.setCanClick(True)
-                else:
-                    person.setCanClick(False)
+            self.resetPeopleClicks()
 
     def resize(self):
         # If a layer has any images, they must be resized here
