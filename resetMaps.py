@@ -1,10 +1,11 @@
-import pygame
 import json
-import os, sys
+import os
+# import sys
+# import pygame
 
 mapFolder = os.path.join(os.path.dirname(__file__), 'maps')
 
-with open ('config.json') as f:
+with open('config.json') as f:
     config = json.load(f)
 
 
@@ -19,16 +20,20 @@ def resetScore(mapData):
         mapData["score"] = 0
     return mapData
 
+
 def resetLocked(mapData):
     mapData["locked"]["isLocked"] = True
     return mapData
 
 
-for key, level in dict(**config["maps"]["builtIn"], **config["maps"]["custom"]).items():
+for key, level in dict(
+    **config["maps"]["builtIn"],
+        **config["maps"]["custom"]).items():
+
     m = os.path.join(mapFolder, level)
     with open(m) as f:
         data = json.load(f)
-    
+
     if data:
         data = resetComplete(data)
         data = resetScore(data)
