@@ -33,6 +33,7 @@ class SpriteRenderer():
 
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
+        self.personHolderClickManager = PersonHolderClickManager(self.game)
 
         self.rendering = False
 
@@ -281,6 +282,9 @@ class SpriteRenderer():
 
     def getCurrentLayer(self):
         return self.currentLayer
+
+    def getPersonHolderClickManager(self):
+        return self.personHolderClickManager
 
     def removeLife(self):
         self.lives -= 1

@@ -47,7 +47,7 @@ class Transport(pygame.sprite.Sprite):
 
         #people travelling in the transport
         self.people = []
-        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self)
+        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
 
         self.imageName = "train"
         self.stopType = (NODE.MetroStation, NODE.Destination)

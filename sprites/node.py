@@ -35,7 +35,7 @@ class Node(pygame.sprite.Sprite):
 
         # all people currently at this node
         self.people = []
-        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self)
+        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
 
         self.dirty = True
 

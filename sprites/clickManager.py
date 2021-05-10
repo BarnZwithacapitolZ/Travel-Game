@@ -124,6 +124,21 @@ class ClickManager:
         return [] # Return the empty path if route is impossible
 
 
+
+class PersonHolderClickManager(ClickManager):
+    def __init__(self, game):
+        super().__init__(game)
+        self.personHolder = None
+
+    
+    def setPersonHolder(self, personHolder):
+        self.personHolder = personHolder
+
+
+    def getPersonHolder(self):
+        return self.personHolder
+
+
 class PersonClickManager(ClickManager):
     def __init__(self, game):
         super().__init__(game)

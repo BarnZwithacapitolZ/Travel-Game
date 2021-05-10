@@ -1,7 +1,15 @@
-# Hey bro, import "*" is not a good practice
+# Hey bro, import "*" is not a good practice - Don't tell me what to do mum :((( - nah im going to fix later
 
 # import os
 # import cProfile
+import pygame
+import sys
+
+# Insert directory paths
+sys.path.insert(0, 'menu')
+sys.path.insert(0, 'menu/functions')
+sys.path.insert(0, 'sprites')
+
 from config import *
 from engine import *
 from spriteRenderer import *
@@ -9,14 +17,6 @@ from menu import *
 from sprites import *
 from menuComponents import *
 from mapEditor import *
-import pygame
-import sys
-
-
-# Insert directory paths
-sys.path.insert(0, 'menu')
-sys.path.insert(0, 'menu/functions')
-sys.path.insert(0, 'sprites')
 
 
 class Game:

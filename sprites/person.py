@@ -491,6 +491,10 @@ class Person(pygame.sprite.Sprite):
             # Click off the transport (if selected)
             if self.transportClickManager.getTransport() is not None:
                 self.transportClickManager.setTransport(None)
+
+            if self.spriteRenderer.getPersonHolderClickManager().getPersonHolder() is not None and self not in self.spriteRenderer.getPersonHolderClickManager().getPersonHolder().getPeople():
+                self.spriteRenderer.getPersonHolderClickManager().getPersonHolder().closeHolder(True)
+
                 
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
@@ -697,12 +701,13 @@ class StatusIndicator(pygame.sprite.Sprite):
 
 
 class PersonHolder(pygame.sprite.Sprite):
-    def __init__(self, game, groups, target):
+    def __init__(self, game, groups, target, clickManager):
         self.groups = groups
         super().__init__([])
         self.game = game
         self.target = target
         self.spriteRenderer = self.target.spriteRenderer
+        self.clickManager = clickManager
         self.width = 20 #TODO: Change the width and height to scale with the number of people in the holder
         self.height = 20
         self.drawerWidth, self.drawerHeight = 0, 0
@@ -723,6 +728,10 @@ class PersonHolder(pygame.sprite.Sprite):
         self.mouseOver = False
 
         self.color = Color("white")
+
+
+    def getPeople(self):
+        return self.people
 
 
     def getOpen(self):
@@ -770,13 +779,13 @@ class PersonHolder(pygame.sprite.Sprite):
 
         # We don't want to call this when switching layer
         if len(self.people) > 1 and self.open and not switchLayer:
-            self.game.audioLoader.playSound("collapse")
-            self.closeHolder()
+            self.closeHolder(True)
         elif len(self.people) == 1:
             if self.open: self.game.audioLoader.playSound("collapse")
             self.remove(self.groups)
             self.canClick = False
             self.open = False
+            self.clickManager.setPersonHolder(None)
 
             person = self.people[0] # Will only ever be one person left so we can just directly modify them
             person.addToLayer()
@@ -812,6 +821,10 @@ class PersonHolder(pygame.sprite.Sprite):
         if len(self.people) <= 1:
             return
 
+        # We want to close any existing open person holders 
+        if self.clickManager.getPersonHolder() is not None:
+            self.clickManager.getPersonHolder().closeHolder()
+
         # Width and height of a person should always be the same, so we can just use the first person in the holder
         personWidth = self.people[0].width
         personHeight = self.people[0].height
@@ -825,12 +838,13 @@ class PersonHolder(pygame.sprite.Sprite):
 
         self.movePeople(True)
 
+        self.clickManager.setPersonHolder(self)
         self.open = True
         self.canClick = False
         self.dirty = True
 
 
-    def closeHolder(self):
+    def closeHolder(self, audio = False):
         if len(self.people) <= 1:
             return
 
@@ -845,6 +859,8 @@ class PersonHolder(pygame.sprite.Sprite):
             person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
             person.moveStatusIndicator()
         
+        if audio: self.game.audioLoader.playSound("collapse")
+        self.clickManager.setPersonHolder(None)
         self.open = False
         self.canClick = True
         self.dirty = True
@@ -894,8 +910,7 @@ class PersonHolder(pygame.sprite.Sprite):
         my -= difference[1]
 
         if not self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and self.open:
-            self.game.audioLoader.playSound("collapse")
-            self.closeHolder()
+            self.closeHolder(True)
 
         if self.rect.collidepoint((mx, my)) and self.game.clickManager.getClicked() and not self.open and self.canClick:
             self.game.audioLoader.playSound("expand")
