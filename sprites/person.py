@@ -494,7 +494,6 @@ class Person(pygame.sprite.Sprite):
 
             if self.spriteRenderer.getPersonHolderClickManager().getPersonHolder() is not None and self not in self.spriteRenderer.getPersonHolderClickManager().getPersonHolder().getPeople():
                 self.spriteRenderer.getPersonHolderClickManager().getPersonHolder().closeHolder(True)
-
                 
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
@@ -746,6 +745,10 @@ class PersonHolder(pygame.sprite.Sprite):
         self.open = open
 
 
+    def setCanClick(self, canClick):
+        self.canClick = canClick
+
+
     def addPerson(self, person):
         if person in self.people:
             return 
@@ -761,7 +764,6 @@ class PersonHolder(pygame.sprite.Sprite):
             else:
                 self.closeHolder()
                 
-
     def removePerson(self, person, switchLayer = False):
         if person not in self.people:
             return
@@ -796,7 +798,6 @@ class PersonHolder(pygame.sprite.Sprite):
             person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
             person.moveStatusIndicator()
 
-
     def movePeople(self, addToLayers = False):
         offset = vec(self.drawerSpacing, self.drawerSpacing)
 
@@ -815,7 +816,6 @@ class PersonHolder(pygame.sprite.Sprite):
             if (i + 1) % self.drawerCols == 0:
                 offset.x = self.drawerSpacing
                 offset.y += person.height + self.drawerSpacing
-
 
     def openHolder(self):
         if len(self.people) <= 1:
@@ -843,7 +843,6 @@ class PersonHolder(pygame.sprite.Sprite):
         self.canClick = False
         self.dirty = True
 
-
     def closeHolder(self, audio = False):
         if len(self.people) <= 1:
             return
@@ -865,6 +864,8 @@ class PersonHolder(pygame.sprite.Sprite):
         self.canClick = True
         self.dirty = True
 
+        # Reset the person holder clicks to stop pressing a holder on a different layer
+        self.spriteRenderer.resetPersonHolderClicks()
 
     def __render(self):
         self.dirty = False

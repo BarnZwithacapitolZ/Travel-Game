@@ -593,11 +593,11 @@ class SpriteRenderer():
         totalPeople = (
             self.gridLayer1.getPeople() +
             self.gridLayer2.getPeople() +
-            self.gridLayer3.getPeople() +
-            self.gridLayer4.getPeople())
+            self.gridLayer3.getPeople())
 
         currentLayerPeople = self.getGridLayer(
             "layer " + str(self.currentLayer)).getPeople()
+
         for person in totalPeople:
             if person in currentLayerPeople or self.currentLayer == 4:
                 # Always went every person to be clickable on the top layer
@@ -605,6 +605,18 @@ class SpriteRenderer():
 
             else:
                 person.setCanClick(False)
+
+    def resetPersonHolderClicks(self):
+        totalNodes = self.getAllNodes()
+
+        for node in totalNodes:
+            if (node.getConnectionType() == "layer " + str(self.currentLayer)
+                    or self.currentLayer == 4):
+                # Always want every person holder to be clickable on the top layer
+                node.getPersonHolder().setCanClick(True)
+            
+            else:
+                node.getPersonHolder().setCanClick(False)
 
     def showLayer(self, layer):
         if not self.rendering:
@@ -617,6 +629,7 @@ class SpriteRenderer():
             self.resize()
             self.hud.updateLayerText()
             self.resetPeopleClicks()
+            self.resetPersonHolderClicks()
 
     def resize(self):
         # If a layer has any images, they must be resized here
