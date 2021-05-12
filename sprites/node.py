@@ -5,6 +5,7 @@ from config import *
 import os
 import math
 
+import personHolder
 import clickManager as CLICKMANAGER
 import person as PERSON
 
@@ -35,7 +36,7 @@ class Node(pygame.sprite.Sprite):
 
         # all people currently at this node
         self.people = []
-        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
+        self.personHolder = personHolder.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
 
         self.dirty = True
 

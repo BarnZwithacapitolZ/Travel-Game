@@ -7,6 +7,7 @@ import random
 import decimal
 import math
 
+import personHolder
 import node as NODE
 import person as PERSON
 import connection as CONNECTION    
@@ -47,7 +48,7 @@ class Transport(pygame.sprite.Sprite):
 
         #people travelling in the transport
         self.people = []
-        self.personHolder = PERSON.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
+        self.personHolder = personHolder.PersonHolder(self.game, self.groups, self, self.spriteRenderer.getPersonHolderClickManager())
 
         self.imageName = "train"
         self.stopType = (NODE.MetroStation, NODE.Destination)
@@ -280,32 +281,29 @@ class Transport(pygame.sprite.Sprite):
         if not self.personHolder.getOpen():
             offset = vec(0, 0)
             for person in list(self.people):
-                person.pos = self.pos + person.offset
-                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-                person.moveStatusIndicator()
+                person.pos.x = self.pos.x + self.width + person.offset.x
+                person.pos.y = self.pos.y + person.offset.y
 
-                # # Check if the person has reached their destination and if they have remove
-                # if person.getDestination().getNumber() == self.currentNode.getNumber():
-                #     person.complete()    
-                #     self.removePerson(person)            
+                person.rect.topleft = person.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+                person.moveStatusIndicator()   
         
         # Move the people inside the person holder if it is open
         else:
             self.personHolder.movePeople()
 
-
     def movePersonHolder(self):
         if not hasattr(self.personHolder, 'rect'):
             return
 
-        self.personHolder.pos = self.pos + self.personHolder.offset
-        self.personHolder.drawerPos = self.pos + self.personHolder.drawerOffset
-
         if self.personHolder.getOpen():
+            self.personHolder.drawerPos.x = self.pos.x + self.width + self.personHolder.offset.x
+            self.personHolder.drawerPos.y = self.pos.y + self.personHolder.drawerOffset.y
             self.personHolder.rect.topleft = self.personHolder.drawerPos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
+        
         else:
+            self.personHolder.pos.x = self.pos.x + self.width + self.personHolder.offset.x
+            self.personHolder.pos.y = self.pos.y + self.personHolder.offset.y
             self.personHolder.rect.topleft = self.personHolder.pos * self.game.renderer.getScale() * self.spriteRenderer.getFixedScale()
-
 
     # Draw how long is left at each stop 
     def drawTimer(self, surface):
@@ -404,6 +402,10 @@ class Transport(pygame.sprite.Sprite):
             # Click off the person (if selected)
             if self.personClickManager.getPerson() is not None:
                 self.personClickManager.setPerson(None)
+
+            # Close the holder (if one is open)
+            if self.spriteRenderer.getPersonHolderClickManager().getPersonHolder() is not None:
+                self.spriteRenderer.getPersonHolderClickManager().getPersonHolder().closeHolder(True)
 
             self.clickManager.setTransport(self)
 

@@ -565,16 +565,6 @@ class SpriteRenderer():
         keys = pygame.key.get_pressed()
         key = [pygame.key.name(k) for k, v in enumerate(keys) if v]
 
-        #     self.dt = self.startDt
-        # keys = pygame.key.get_pressed()
-        # key = [pygame.key.name(k) for k, v in enumerate(keys) if v]
-
-        # if len(key) == 1:
-        #     if key[0] == config["controls"]["dtDown"]:
-        #         self.game.clickManager.setSpaceBar(True)
-        # else:
-        #     self.game.clickManager.setSpaceBar(False)
-
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.game.clickManager.setSpaceBar(True)
 
