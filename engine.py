@@ -1,8 +1,10 @@
 import pygame
 import pygame._sdl2
-from pygame.locals import *
-from config import *
+from config import (
+    config, ASSETSFOLDER, AUDIOFOLDER, MAPSFOLDER, RED, BLACK, TRUEBLACK,
+    SCANLINES)
 import os
+import json
 
 vec = pygame.math.Vector2
 
@@ -195,7 +197,7 @@ class ImageLoader:
             i = pygame.image.load(os.path.join(ASSETSFOLDER, data["image"]))
             i = i.convert_alpha() if data["alpha"] else i.convert()
 
-            self.images[key] = {"image": i,"data": data}
+            self.images[key] = {"image": i, "data": data}
 
     def getImage(self, key, scale=tuple()):
         image = self.images[key]["image"]
@@ -207,6 +209,7 @@ class ImageLoader:
                     image, (
                         int(scale[0] * self.game.renderer.getScale()),
                         int(scale[1] * self.game.renderer.getScale())))
+
             else:
                 image = pygame.transform.scale(image, (
                     int(scale[0] * self.game.renderer.getScale()),
