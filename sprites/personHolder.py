@@ -167,8 +167,6 @@ class PersonHolder(pygame.sprite.Sprite):
         personWidth = self.people[0].width
         personHeight = self.people[0].height
 
-        offset = vec(self.drawerSpacing, self.drawerSpacing)
-
         self.drawerWidth = (
             self.drawerSpacing + (
                 (personWidth + self.drawerSpacing)
