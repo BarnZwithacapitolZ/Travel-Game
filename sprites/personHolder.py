@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import math
-from config import *
+from config import BLACK, GREY
 from transport import Transport
 
 vec = pygame.math.Vector2

@@ -10,7 +10,7 @@ sys.path.insert(0, 'menu')
 sys.path.insert(0, 'menu/functions')
 sys.path.insert(0, 'sprites')
 
-from config import *
+from config import config
 from engine import *
 from spriteRenderer import *
 from menu import *
