@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import *
 import pygame.gfxdraw
 from config import (
     BLACK, RED, GREY, GREEN, YELLOW, TEMPRED, TEMPGREY, TEMPGREEN)
@@ -8,7 +7,9 @@ vec = pygame.math.Vector2
 
 
 class Connection:
-    def __init__(self, spriteRenderer, connectionType, fromNode, toNode, temp, draw=False):
+    def __init__(
+            self, spriteRenderer, connectionType, fromNode, toNode, temp,
+            draw=False):
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
