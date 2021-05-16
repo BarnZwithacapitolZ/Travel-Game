@@ -1,11 +1,11 @@
 import pygame
-from pygame.locals import BLEND_MIN
 import pygame.gfxdraw
-from config import YELLOW, HOVERGREY
 import math
 import personHolder
 import clickManager as CLICKMANAGER
 import person as PERSON
+from pygame.locals import BLEND_MIN
+from config import YELLOW, HOVERGREY
 
 vec = pygame.math.Vector2
 

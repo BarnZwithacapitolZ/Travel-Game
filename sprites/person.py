@@ -1,13 +1,11 @@
 import pygame
-from pygame.locals import *
-import pygame.gfxdraw
-from config import YELLOW, BLACK, HOVERGREY
 import random
 import math
 import numpy
-
-from enum import Enum
 import node as NODE
+from pygame.locals import *
+from config import YELLOW, BLACK, HOVERGREY
+from enum import Enum
 
 vec = pygame.math.Vector2
 
@@ -828,7 +826,8 @@ class Particle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
-        pygame.draw.ellipse(self.image, self.color, Rect(0, 0, *self.size))
+        pygame.draw.ellipse(self.image, self.color, pygame.Rect(
+            0, 0, *self.size))
 
         self.image.set_alpha(self.alpha, pygame.RLEACCEL)
 

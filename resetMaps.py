@@ -1,7 +1,5 @@
 import json
 import os
-# import sys
-# import pygame
 
 mapFolder = os.path.join(os.path.dirname(__file__), 'maps')
 

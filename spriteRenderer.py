@@ -1,15 +1,12 @@
-# import os
-# import json
 import pygame
-from pygame.locals import *
-from config import *
 import random
-from layer import *
-from clickManager import *
-from node import *
-from gridManager import *
-from meterController import *
-from menu import *
+from config import config, dump, DEFAULTLIVES, CREAM
+from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
+from clickManager import (
+    PersonClickManager, TransportClickManager, PersonHolderClickManager)
+from node import Stop, Destination
+from meterController import MeterController
+from menu import GameHud, GameMenu, MessageHud, PreviewHud
 
 
 class SpriteRenderer():
@@ -80,7 +77,7 @@ class SpriteRenderer():
             "difficulty": 1,  # Out of 4
             "total": 8,  # Total to complete the level
             "score": 0,
-            "completion": { "total": 10, "completed": False, "time": 0},
+            "completion": {"total": 10, "completed": False, "time": 0},
             "backgrounds": {
                 "layer 1": CREAM,  # Default color: CREAM :)
                 "layer 2": CREAM,
@@ -343,13 +340,13 @@ class SpriteRenderer():
             self.hud = PreviewHud(self.game, spacing)
         else:
             # self.startingFixedScale = -0.05
-            spacings = {
-                (16, 9): (1.5, 1),
-                (18, 10): (2, 1.5),
-                (20, 11): (1.5, 1),
-                (22, 12): (1.5, 1)}
+            # spacings = {
+            #     (16, 9): (1.5, 1),
+            #     (18, 10): (2, 1.5),
+            #     (20, 11): (1.5, 1),
+            #     (22, 12): (1.5, 1)}
 
-            size = (self.levelData["width"], self.levelData["height"])
+            # size = (self.levelData["width"], self.levelData["height"])
             # spacing = spacings[size]
             spacing = (1.5, 1)
             self.hud = GameHud(self.game, spacing)
@@ -562,9 +559,6 @@ class SpriteRenderer():
                 self.totalPeopleNone = False
 
     def events(self):
-        keys = pygame.key.get_pressed()
-        key = [pygame.key.name(k) for k, v in enumerate(keys) if v]
-
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.game.clickManager.setSpaceBar(True)
 
@@ -572,6 +566,7 @@ class SpriteRenderer():
                 self.dt != self.startDt - self.meter.getSlowDownAmount()
                     and not self.meter.getEmpty()):
                 self.game.audioLoader.playSound("slowIn", 1)
+
         else:
             if self.dt != self.startDt:
                 self.game.audioLoader.playSound("slowOut", 1)
@@ -602,9 +597,10 @@ class SpriteRenderer():
         for node in totalNodes:
             if (node.getConnectionType() == "layer " + str(self.currentLayer)
                     or self.currentLayer == 4):
-                # Always want every person holder to be clickable on the top layer
+                # Always want every person holder to be clickable
+                # on the top layer
                 node.getPersonHolder().setCanClick(True)
-            
+
             else:
                 node.getPersonHolder().setCanClick(False)
 

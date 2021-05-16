@@ -1,8 +1,8 @@
 import pygame
 import pygame.gfxdraw
-from config import config, CREAM
 import random
 import math
+from config import config, CREAM
 from gridManager import GridManager
 from person import Person, Manager, Commuter
 

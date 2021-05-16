@@ -1,10 +1,10 @@
 import pygame
+import os
+import json
 import pygame._sdl2
 from config import (
     config, ASSETSFOLDER, AUDIOFOLDER, MAPSFOLDER, RED, BLACK, TRUEBLACK,
     SCANLINES)
-import os
-import json
 
 vec = pygame.math.Vector2
 

@@ -1,14 +1,12 @@
 import pygame
-from pygame.locals import *
-import pygame.gfxdraw
-from config import *
 import random
 import decimal
 import math
-
 import personHolder
 import node as NODE
-import person as PERSON  
+import person as PERSON
+from config import HOVERGREY, YELLOW
+from pygame.locals import BLEND_MIN
 
 vec = pygame.math.Vector2
 

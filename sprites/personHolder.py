@@ -1,6 +1,6 @@
 import pygame
-from pygame.locals import *
 import math
+from pygame.locals import *
 from config import BLACK, GREY
 from transport import Transport
 

@@ -1,11 +1,14 @@
 # import pygame
 import copy
 import os
-from gridManager import *
-from node import *
-from menu import *
-from spriteRenderer import *
-from clickManager import *
+import json
+from gridManager import GridManager
+from node import EditorNode
+from menu import EditorHud
+from spriteRenderer import SpriteRenderer
+from clickManager import EditorClickManager
+from config import config, dump, MAPSFOLDER
+from layer import EditorLayer1, EditorLayer2, EditorLayer3, EditorLayer4
 
 
 class MapEditor(SpriteRenderer):

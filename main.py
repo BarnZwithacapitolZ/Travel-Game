@@ -1,7 +1,3 @@
-# Hey bro, import "*" is not a good practice - Don't tell me what to do mum :((( - nah im going to fix later
-
-# import os
-# import cProfile
 import pygame
 import sys
 
@@ -11,12 +7,12 @@ sys.path.insert(0, 'menu/functions')
 sys.path.insert(0, 'sprites')
 
 from config import config
-from engine import *
-from spriteRenderer import *
-from menu import *
-from sprites import *
-from menuComponents import *
-from mapEditor import *
+from clickManager import ClickManager
+from engine import Renderer, ImageLoader, MapLoader, AudioLoader
+from spriteRenderer import SpriteRenderer
+from menu import MainMenu, OptionMenu
+from menuComponents import TextHandler
+from mapEditor import MapEditor
 
 
 class Game:
@@ -25,7 +21,9 @@ class Game:
         pygame.init()
         pygame.key.set_repeat(500, 100)
         pygame.font.init()
-        pygame.event.set_allowed([QUIT, VIDEORESIZE, KEYDOWN, MOUSEBUTTONDOWN])
+        pygame.event.set_allowed([
+            pygame.QUIT, pygame.VIDEORESIZE, pygame.KEYDOWN,
+            pygame.MOUSEBUTTONDOWN])
 
         self.playing = True
         self.clock = pygame.time.Clock()
