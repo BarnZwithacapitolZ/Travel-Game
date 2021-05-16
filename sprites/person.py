@@ -3,8 +3,8 @@ import random
 import math
 import numpy
 import node as NODE
-from pygame.locals import *
-from config import YELLOW, BLACK, HOVERGREY
+from pygame.locals import BLEND_MIN
+from config import YELLOW, BLACK, WHITE, HOVERGREY
 from enum import Enum
 
 vec = pygame.math.Vector2
@@ -384,7 +384,7 @@ class Person(pygame.sprite.Sprite):
 
     def drawTimerTime(self, surface=None):
         textColor = (
-            Color("white") if self.spriteRenderer.getDarkMode() else BLACK)
+            WHITE if self.spriteRenderer.getDarkMode() else BLACK)
 
         self.fontImage = self.timerFont.render(
             str(round(self.timer, 1)), True, textColor)

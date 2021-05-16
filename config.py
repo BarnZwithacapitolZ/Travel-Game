@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from pygame.locals import Color
 
 
 def getFilePath():
@@ -27,6 +28,7 @@ AUDIOFOLDER = os.path.join(GAMEFOLDER, 'audio')
 # colours
 TRUEBLACK = (0, 0, 0)
 BLACK = (65, 62, 75)
+WHITE = Color("white")
 GREEN = (0, 169, 132)
 TEMPGREEN = (0, 230, 180)
 LIGHTGREEN = (176, 212, 194)

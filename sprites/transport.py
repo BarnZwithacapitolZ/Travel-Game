@@ -467,9 +467,18 @@ class Transport(pygame.sprite.Sprite):
             if self.currentNode.getMouseOver():
                 self.currentNode.setMouseOver(False)
 
+            # If any person on the current node (stop) or any people
+            # within the transport are hovered over, don't hover over the
+            # transport
             for person in self.currentNode.getPeople() + self.people:
                 if person.getMouseOver():
                     return
+
+            # If the person holder is hovered over, or the current nodes
+            # person holder is hovered over, don't hover over the transport
+            if (self.currentNode.getPersonHolder().getMouseOver()
+                    or self.personHolder.getMouseOver()):
+                return
 
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True

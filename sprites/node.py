@@ -189,11 +189,6 @@ class Node(pygame.sprite.Sprite):
                     return
 
             if len(self.transports) > 0:
-                # if theres a person and a transport on the same node,
-                # press the transport
-                if len(self.people) > 0:
-                    return
-
                 # check the route returned is []
                 # If the route is impossible press the transport,
                 # otherwise press the node
@@ -222,7 +217,7 @@ class Node(pygame.sprite.Sprite):
         if (self.rect.collidepoint((mx, my))
                 and not self.mouseOver
                 and self.transportClickManager.getTransport() is not None):
-            # Prevent the node and the player from being pressed
+            # Prevent the node and the player from being hovered over
             # at the same time
             for person in self.people:
                 if person.getMouseOver():

@@ -1,7 +1,7 @@
 import pygame
 import math
-from pygame.locals import *
-from config import BLACK, GREY
+import node as NODE
+from config import BLACK, GREY, WHITE
 from transport import Transport
 
 vec = pygame.math.Vector2
@@ -43,7 +43,7 @@ class PersonHolder(pygame.sprite.Sprite):
         self.dirty = True
         self.mouseOver = False
 
-        self.color = Color("white")
+        self.color = WHITE
 
     def getPeople(self):
         return self.people
@@ -54,11 +54,17 @@ class PersonHolder(pygame.sprite.Sprite):
     def getCanClick(self):
         return self.canClick
 
+    def getMouseOver(self):
+        return self.mouseOver
+
     def setOpen(self, open):
         self.open = open
 
     def setCanClick(self, canClick):
         self.canClick = canClick
+
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
 
     def addPerson(self, person):
         if person in self.people:
@@ -324,6 +330,18 @@ class PersonHolder(pygame.sprite.Sprite):
 
         if (self.rect.collidepoint((mx, my))
                 and not self.mouseOver and not self.open):
+            # Mainly to stop transport and holder hovering at the
+            # same time
+            if self.target.getMouseOver():
+                return
+
+            # Stop the transport at a stop and the holder being
+            # hovered at the same time
+            elif isinstance(self.target, NODE.Node):
+                for transport in self.target.getTransports():
+                    if transport.getMouseOver():
+                        return
+
             self.mouseOver = True
             self.color = GREY
             self.dirty = True
@@ -331,7 +349,7 @@ class PersonHolder(pygame.sprite.Sprite):
         elif (not self.rect.collidepoint((mx, my))
                 and self.mouseOver and not self.open):
             self.mouseOver = False
-            self.color = Color("white")
+            self.color = WHITE
             self.dirty = True
 
     def update(self):
