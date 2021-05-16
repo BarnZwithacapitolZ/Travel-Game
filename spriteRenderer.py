@@ -440,13 +440,18 @@ class SpriteRenderer():
                 int(config["graphics"]["displayHeight"]
                     * self.game.renderer.getScale()))).convert()
 
-            self.pausedSurface.blit(self.gridLayer4.getLineSurface(), (0, 0))
-            for sprite in self.layer4:
-                # sprite.drawPaused(self.pausedSurface)
-                sprite.makeSurface()
+            lineSurface = (
+                self.getGridLayer("layer " + str(self.currentLayer))
+                .getLineSurface())
+            self.pausedSurface.blit(lineSurface, (0, 0))
 
-                if hasattr(sprite, 'image'):  # Not all sprites have an image
-                    self.pausedSurface.blit(sprite.image, (sprite.rect))
+            for entity in self.entities:
+                entity.drawPaused(self.pausedSurface)
+
+            self.renderPausedLayer(1, self.layer1)
+            self.renderPausedLayer(2, self.layer2)
+            self.renderPausedLayer(3, self.layer3)
+            self.renderPausedLayer(4, self.layer4)
 
             # for component in (
             #     self.hud.getComponents()
@@ -641,11 +646,20 @@ class SpriteRenderer():
 
             self.createPausedSurface()
 
-    def renderLayer(self, layer, gridLayer, group):
-        if self.currentLayer == layer:
+    # Draw all the sprites in a layer, based on what layer the player
+    # is currently on
+    def renderLayer(self, layerInt, gridLayer, group):
+        if self.currentLayer == layerInt:
             gridLayer.draw()
             for sprite in group:
                 sprite.draw()
+
+    # Draw all sprites to the paused surface, based on what layer the player
+    # is currently on
+    def renderPausedLayer(self, layerInt, group):
+        if self.currentLayer == layerInt:
+            for sprite in group:
+                sprite.drawPaused(self.pausedSurface)
 
     def render(self):
         if self.rendering:

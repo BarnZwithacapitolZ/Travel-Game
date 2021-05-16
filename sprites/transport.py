@@ -408,14 +408,12 @@ class Transport(pygame.sprite.Sprite):
 
     def drawPaused(self, surface):
         self.makeSurface()
-        surface.blit(self.image, (self.rect))
 
+        # Want to draw the timer behind the transport
         if self.timer > 0:
             self.drawTimer(surface)
 
-        if self.clickManager.getTransport() == self:
-            self.drawPath(surface)
-            self.drawOutline(surface)
+        surface.blit(self.image, (self.rect))
 
     def draw(self):
         self.makeSurface()

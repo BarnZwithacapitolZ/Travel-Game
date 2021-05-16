@@ -492,19 +492,12 @@ class Person(pygame.sprite.Sprite):
 
     def drawPaused(self, surface):
         self.makeSurface()
-        surface.blit(self.image, (self.rect))
 
-        if self.mouseOver or self.clickManager.getPerson() == self:
-            self.drawTimerTime(surface)
-            self.drawDestination(surface)
-            self.drawTimerOutline(surface)
-
-        if self.clickManager.getPerson() == self:
-            self.drawPath(surface)
-            self.drawOutline(surface)
-
+        # Want to draw the timer behind the transport
         if self.timer <= 20:
             self.drawTimer(surface)
+
+        surface.blit(self.image, (self.rect))
 
     def draw(self):
         self.makeSurface()
