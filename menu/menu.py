@@ -312,13 +312,14 @@ class MainMenu(Menu):
         return False
 
     def changeCurrentCustomLevel(self, change=vec(0, 0)):
-        cols, rows = 5, 3 # TODO: Make this a 2D array of the maps which we can compare against
+        cols, rows = len(self.currentMaps[0]), len(self.currentMaps) # TODO: Make this a 2D array of the maps which we can compare against
 
         if ((change.x > 0 and self.currentCustomLevel.x < cols - 1) 
                 or (change.y > 0 and self.currentCustomLevel.y < rows - 1)
                 or (change.x < 0 and self.currentCustomLevel.x > 0)
                 or (change.y < 0 and self.currentCustomLevel.y > 0)):
             self.currentCustomLevel += change
+            print(self.currentCustomLevel)
             return True
         return False
 
@@ -361,6 +362,49 @@ class MainMenu(Menu):
 
             for index, level in self.getLevels().items():
                 level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+
+
+
+    def customLevelForward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+            def callback(obj, menu, x):
+                obj.x = x
+                menu.setTransitioning(False)
+
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (self.levelWidth + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+    def customLevelBackward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+            def callback(obj, menu, x):
+                obj.x = x
+                menu.setTransitioning(False)
+        
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+    def customLevelUpward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+            def callback(obj, menu, y):
+                obj.y = y
+                menu.setTransitioning(False)
+
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionY, 'onLoad', speed = 30, transitionDirection = "down", y = level.y + (self.levelHeight + self.spacing), callback = callback)
+            self.setTransitioning(True)
+
+    def customLevelDownward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+            def callback(obj, menu, y):
+                obj.y = y
+                menu.setTransitioning(False)
+            
+            for index, level in self.getLevels().items():
+                level.addAnimation(transitionY, 'onLoad', speed = -30, transitionDirection = "up", y = level.y - (self.levelHeight + self.spacing), callback = callback)
             self.setTransitioning(True)
 
     def setLevelsClickable(self):
@@ -407,7 +451,6 @@ class MainMenu(Menu):
 
         self.currentMaps = []
         cols = 4
-        self.currentCustomLevel = vec(0, 1)
 
         for i in range(0, len(self.customMaps), cols):
             self.currentMaps.append(self.customMaps[i : i + cols])
@@ -437,10 +480,13 @@ class MainMenu(Menu):
         print(mapsBefore, mapsAfter)
 
         offset = vec((self.levelWidth + self.spacing) * self.currentCustomLevel.y, (self.levelHeight + self.spacing) * self.currentCustomLevel.x)
+        count = 0
         for y, row in enumerate(mapsBefore):
             for x, level in enumerate(row):
                 level = Map(self, mapsBefore[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offset.x, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y) - offset.y))
                 self.add(level)
+                self.levels[count] = level
+                count += 1
 
         for y, row in enumerate(mapsAfter):
             offx = 0
@@ -450,15 +496,8 @@ class MainMenu(Menu):
             for x, row in enumerate(row):
                 level = Map(self, mapsAfter[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offx, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y)))
                 self.add(level)
-
-
-        # for y, row in enumerate(self.currentMaps):
-        #     for x, level in enumerate(row):
-        #         # self.createCustomLevel(x, y, -((self.levelWidth + self.spacing) * (x + 1)), self.currentMaps)
-        #         level = Map(self, self.currentMaps[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x), (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y)))
-        #         # offset.x += (self.levelWidth + self.spacing)
-        #         self.add(level)
-
+                self.levels[count] = level
+                count += 1
 
         # self.setLevelsClickable()
 
