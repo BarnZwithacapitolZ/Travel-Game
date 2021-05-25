@@ -114,30 +114,12 @@ def unlockLevel(obj, menu, event, level):
 
 # Move the level scroller foward by one level
 def levelForward(obj, menu, event):
-    if not menu.getTransitioning() and menu.increaseCurrentLevel():
-        menu.setLevelsClickable()
-
-        def callback(obj, menu, x):
-            obj.x = x
-            menu.setTransitioning(False)
-
-        for index, level in menu.getLevels().items():
-            level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (menu.levelWidth + menu.spacing), callback = callback)
-        menu.setTransitioning(True)
+    menu.levelForward()
 
 
 # Move the level scroller backwards by one level
 def levelBackward(obj, menu, event):
-    if not menu.getTransitioning() and menu.decreaseCurrentLevel():
-        menu.setLevelsClickable()
-
-        def callback(obj, menu, x):
-            obj.x = x
-            menu.setTransitioning(False)
-
-        for index, level in menu.getLevels().items():
-            level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (menu.levelWidth + menu.spacing), callback = callback)
-        menu.setTransitioning(True)
+    menu.levelBackward()
 
 
 # quit the game
@@ -181,6 +163,11 @@ def showLevelSelect(obj, menu, event):
 
     menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
     menu.loadingScreen()
+
+
+def showCustomLevelSelect(obj, menu, event):
+    menu.close()
+    menu.customLevelSelect()
 
 
 # unpause the game and hide the option menu

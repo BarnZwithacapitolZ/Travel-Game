@@ -11,6 +11,10 @@ from menuComponents import *
 from clickManager import *
 import abc
 import random
+import copy
+
+vec = pygame.math.Vector2
+
 
 class Menu:
     def __init__(self, game):
@@ -181,48 +185,51 @@ class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
         self.currentLevel = 0
-        self.maps = list(self.game.mapLoader.getBuiltInMaps().keys())
+        self.currentCustomLevel = vec(0, 0)  # some level selection have multiple rows, cols
+        self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
+        self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
+        self.currentMaps = self.builtInMaps
         self.levels = {}
         self.backgroundColor = GREEN
+        
+        self.builtInLevelSize = 3.5
+        self.customLevelSize = 2.2
 
-        scaler = 5 # larger scaler = larger image
-        self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / scaler)
-        self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / scaler)
+        self.setLevelSize(self.builtInLevelSize)
         self.spacing = 20
 
         self.transitioning = False
 
-
     def getBackgroundColor(self):
         return self.backgroundColor
-
 
     def getLevels(self):
         return self.levels
 
-
     def getCurrentLevel(self):
         return self.currentLevel
 
-
     def getTransitioning(self):
         return self.transitioning
-
     
     def setTransitioning(self, transitioning):
         self.transitioning = transitioning
 
+    def setLevelSize(self, scaler=5):  # larger scaler = larger image
+        self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / scaler)
+        self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / scaler)
 
     def updateMaps(self):
-        self.maps = list(self.game.mapLoader.getMaps().keys())
+        self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
+        self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
 
-        if self.currentLevel >= len(self.maps):
-            self.currentLevel = len(self.maps) - 1
-
+        if self.currentLevel >= len(self.currentMaps):
+            self.currentLevel = len(self.currentMaps) - 1
 
     def main(self, transition = False):
         self.open = True
         self.levelSelectOpen = False
+        self.customLevelSelectOpen = False
         self.backgroundColor = GREEN
 
         sidebar = Rectangle(self, GREEN, (config["graphics"]["displayWidth"], config["graphics"]["displayHeight"]), (0, 0))
@@ -284,7 +291,6 @@ class MainMenu(Menu):
         self.add(options)
         self.add(end)
 
-
         if transition:
             # set the up transition
             def callback(obj, menu, animation):
@@ -293,13 +299,11 @@ class MainMenu(Menu):
         
             self.slideTransitionY((0, 0), 'second', speed = 40, callback = callback, direction = 'down')
 
-
     def increaseCurrentLevel(self):
-        if self.currentLevel < len(self.maps) - 1:
+        if self.currentLevel < len(self.currentMaps) - 1:
             self.currentLevel += 1
             return True
         return False
-
 
     def decreaseCurrentLevel(self):
         if self.currentLevel > 0:
@@ -307,16 +311,33 @@ class MainMenu(Menu):
             return True
         return False
 
+    def changeCurrentCustomLevel(self, change=vec(0, 0)):
+        cols, rows = 5, 3 # TODO: Make this a 2D array of the maps which we can compare against
 
-    def createLevel(self, levelInt, offset):
-        if levelInt >= 0 and levelInt < len(self.maps):
-            level = Map(self, self.maps[levelInt], levelInt, (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
+        if ((change.x > 0 and self.currentCustomLevel.x < cols - 1) 
+                or (change.y > 0 and self.currentCustomLevel.y < rows - 1)
+                or (change.x < 0 and self.currentCustomLevel.x > 0)
+                or (change.y < 0 and self.currentCustomLevel.y > 0)):
+            self.currentCustomLevel += change
+            return True
+        return False
+
+    def createCustomLevel(self, x, y, offset, maps):
+        if x >= 0 and y >= 0 and x < len(maps[0]) and y < len(maps):
+            level = Map(self, maps[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
+            self.add(level)
+            self.levels[(y, x)] = level
+
+            self.updateLoadingScreen()
+
+    def createLevel(self, levelInt, offset, maps):
+        if levelInt >= 0 and levelInt < len(maps):
+            level = Map(self, maps[levelInt], levelInt, (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
             self.add(level)
             self.levels[levelInt] = level        
 
             # Update the loading screen when the level has loaded
             self.updateLoadingScreen()
-
 
     def levelForward(self):
         if not self.getTransitioning() and self.increaseCurrentLevel():
@@ -330,7 +351,6 @@ class MainMenu(Menu):
                 level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (self.levelWidth + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-
     def levelBackward(self):
         if not self.getTransitioning() and self.decreaseCurrentLevel():
             self.setLevelsClickable()
@@ -342,7 +362,6 @@ class MainMenu(Menu):
             for index, level in self.getLevels().items():
                 level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
             self.setTransitioning(True)
-
 
     def setLevelsClickable(self):
         for index, level in self.levels.items():
@@ -372,17 +391,84 @@ class MainMenu(Menu):
                 self.levelComplete.setImageName(image)
                 self.levelCompleteText.dirty = True
                 self.levelComplete.dirty = True
+
             else:
                 # Remove click event
                 level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
                 level.removeEvent(unlockLevel, 'onMouseClick', level = level)
 
 
-    def levelSelect(self, transition = False):
+    def customLevelSelect(self, transition=False):
+        self.open = True
+        self.customLevelSelectOpen = False
+        self.backgroundColor = GREY  # Change this?
+        self.levels = {}
+        self.setLevelSize(self.customLevelSize)
+
+        self.currentMaps = []
+        cols = 4
+        self.currentCustomLevel = vec(0, 1)
+
+        for i in range(0, len(self.customMaps), cols):
+            self.currentMaps.append(self.customMaps[i : i + cols])
+
+        split = (self.currentCustomLevel.x * cols) + self.currentCustomLevel.y
+        before = self.customMaps[:int(split)]
+        after = self.customMaps[int(split):]
+        mapsBefore, mapsMiddle, mapsAfter, = [], [], []
+
+        for i in range(0, len(before), cols):
+            mapsBefore.append(before[i : i + cols])
+
+        if len(mapsBefore) > 0 and len(mapsBefore[-1]) < cols:
+            difference = cols - len(mapsBefore[-1])
+            difference = min(difference, len(after))
+            middle = copy.copy(after)
+
+            for i in range(0, difference):
+                mapsMiddle.append(middle[i])
+                after.remove(middle[i])
+            
+            mapsAfter.append(mapsMiddle)
+
+        for i in range(0, len(after), cols):
+            mapsAfter.append(after[i : i + cols])
+
+        print(mapsBefore, mapsAfter)
+
+        offset = vec((self.levelWidth + self.spacing) * self.currentCustomLevel.y, (self.levelHeight + self.spacing) * self.currentCustomLevel.x)
+        for y, row in enumerate(mapsBefore):
+            for x, level in enumerate(row):
+                level = Map(self, mapsBefore[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offset.x, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y) - offset.y))
+                self.add(level)
+
+        for y, row in enumerate(mapsAfter):
+            offx = 0
+            if y > 0 and len(mapsAfter[-1]) < cols:
+                offx = (self.levelWidth + self.spacing) * (cols - len(mapsAfter[0]))
+
+            for x, row in enumerate(row):
+                level = Map(self, mapsAfter[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offx, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y)))
+                self.add(level)
+
+
+        # for y, row in enumerate(self.currentMaps):
+        #     for x, level in enumerate(row):
+        #         # self.createCustomLevel(x, y, -((self.levelWidth + self.spacing) * (x + 1)), self.currentMaps)
+        #         level = Map(self, self.currentMaps[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x), (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y)))
+        #         # offset.x += (self.levelWidth + self.spacing)
+        #         self.add(level)
+
+
+        # self.setLevelsClickable()
+
+    def levelSelect(self, transition=False):
         self.open = True
         self.levelSelectOpen = True
         self.backgroundColor = BLACK
         self.levels = {}
+        self.setLevelSize(self.builtInLevelSize)
+        self.currentMaps = self.builtInMaps
 
         mainMenu = Image(self, "button", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, 21))
         mainMenuText = Label(self, "Main Menu", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, 27))
@@ -411,6 +497,7 @@ class MainMenu(Menu):
         levelBack.addEvent(hoverImage, 'onMouseOut', image = "buttonArrowLeft")
 
         mainMenu.addEvent(openMainMenu, 'onMouseClick')
+        custom.addEvent(showCustomLevelSelect, 'onMouseClick')
         mainMenuText.addEvent(openMainMenu, 'onMouseClick')
 
         levelNext.addEvent(levelForward, 'onMouseClick')
@@ -428,19 +515,17 @@ class MainMenu(Menu):
         self.add(levelNext)
         self.add(levelBack)
 
-
         #### Adds the maps after eveything else in the menu has been loaded
 
         # Load levels before current level
-        for i, level in enumerate(reversed(self.maps[:self.currentLevel])):
-            self.createLevel(self.currentLevel - (i + 1), -((self.levelWidth + self.spacing) * (i +1)))
+        for i, level in enumerate(reversed(self.currentMaps[:self.currentLevel])):
+            self.createLevel(self.currentLevel - (i + 1), -((self.levelWidth + self.spacing) * (i + 1)), self.currentMaps)
         
         # Load current level and levels after current level
-        for i, level in enumerate(self.maps[self.currentLevel:]):
-            self.createLevel(self.currentLevel + i, (self.levelWidth + self.spacing) * i)
+        for i, level in enumerate(self.currentMaps[self.currentLevel:]):
+            self.createLevel(self.currentLevel + i, (self.levelWidth + self.spacing) * i, self.currentMaps)
 
         self.setLevelsClickable()
-
 
         if transition:
             # set the up transition
@@ -470,7 +555,7 @@ class OptionMenu(Menu):
                 component.addAnimation(transitionY, 'onLoad', speed = -40, transitionDirection = "up", y = -config["graphics"]["displayHeight"], callback = callback)
 
 
-    def main(self, pausedSurface = True, transition = False):
+    def main(self, pausedSurface=True, transition=False):
         self.open = True
         
         self.game.paused = True
@@ -639,7 +724,7 @@ class GameMenu(Menu):
         self.game.spriteRenderer.createPausedSurface()
 
 
-    def endScreenGameOver(self, transition = False):
+    def endScreenGameOver(self, transition=False):
         self.endScreen()
 
         width = config["graphics"]["displayWidth"] / 2
@@ -695,7 +780,7 @@ class GameMenu(Menu):
             self.game.audioLoader.playSound("swoopIn")    
 
 
-    def endScreenComplete(self, transition = False):
+    def endScreenComplete(self, transition=False):
         self.endScreen()
         self.game.spriteRenderer.setLevelComplete() # Complete the level
         previousKeys, self.keyDifference, self.previousScore = self.game.spriteRenderer.setLevelScore() # Set the score
@@ -826,7 +911,7 @@ class GameHudLayout(Menu):
 
 
 class GameHud(GameHudLayout):
-    def __init__(self, renderer, spacing = (1.5, 1.5)):
+    def __init__(self, renderer, spacing=(1.5, 1.5)):
         super().__init__(renderer)
         self.hearts = []
         self.spacing = spacing
@@ -1570,60 +1655,16 @@ class PreviewHud(GameHudLayout):
             self.completedText.dirty = True
         
 
-
 class MessageHud(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
         self.messages = []
 
-
     def addMessage(self, message):
         self.messages.append(message)
 
-
     def removeMessage(self, message):
         self.messages.remove(message)
-
-    # def addMessage(self, message):
-    #     # add the message to the top of the stack
-    #     # message is displayed in a message box object
-    #     # message box object has animation to come from top right hand corner; starts timer in message box object
-    #     # shift down all other boxes in the messages
-    #     def callback(obj, menu, y):
-    #         obj.y = y
-
-    #     maxCharLimit = 25
-    #     curWord = 0
-    #     finalMessage = ['']
-    #     for word in message.split():
-    #         if len(finalMessage[curWord]) + len(word) < maxCharLimit:
-    #             finalMessage[curWord] += word + ' '
-    #         else:
-    #             finalMessage.append(word + ' ')
-    #             curWord += 1
-
-    #     messages = []
-    #     x, y = 30, 30,
-    #     biggestWidth, totalHeight = 0, 0
-    #     for msg in finalMessage:
-    #         m = Label(self, msg, 25, BLACK, (0, 0)) # first we siet the x and y to 0 since we don't know the width yet
-    #         width, height = m.getFontSize()
-    #         m.setPos((config["graphics"]["displayWidth"] - (width + x), (y + totalHeight) - 100))
-    #         m.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y + totalHeight, callback = callback)
-    #         totalHeight += height
-
-    #         if width > biggestWidth:
-    #             biggestWidth = width
-
-    #         messages.append(m)
-
-    #     box = Rectangle(self, Color("white"), (biggestWidth + 10, totalHeight + 10), ((config["graphics"]["displayWidth"] - (biggestWidth + x)) - 5, (y - 5) - 100), 'rect', 0, [10, 10, 10, 10])
-    #     box.addAnimation(transitionY, 'onLoad', speed = 4, transitionDirection = "down", y = y - 5, callback = callback)
-
-    #     self.add(box)
-    #     for msg in messages:
-    #         self.add(msg)
-
 
     def addMessage(self, message):
         if message in self.messages:
@@ -1641,7 +1682,6 @@ class MessageHud(Menu):
                     if transitionMessageDown not in component.getAnimations():
                         component.addAnimation(transitionMessageDown, 'onLoad', speed = 4, transitionDirection = "down", y = (component.y + messageBox.height) + component.marginY)
 
-     
     def main(self):
         self.open = True
         

@@ -864,18 +864,14 @@ class Map(MenuComponent):
         self.levelInt = levelInt
         self.levelData = menu.game.mapLoader.getMapData(self.levelName)
 
-
     def getLevel(self):
         return self.level
-
 
     def getLevelInt(self):
         return self.levelInt
 
-
     def getLevelData(self):
         return self.levelData
-
 
     # draw scanlines if enabled
     def drawScanlines(self):    
@@ -890,7 +886,6 @@ class Map(MenuComponent):
             scanlines.set_alpha(alpha, pygame.RLEACCEL)
 
             self.image.blit(scanlines, (0, 0))
-
 
     # show that the level is locked
     def drawLocked(self):
@@ -916,7 +911,6 @@ class Map(MenuComponent):
                 overlay.set_alpha(95)
                 self.image.blit(overlay, (0, 0))
 
-
     # make rounded corners
     def roundedCorners(self):
         size = self.image.get_size()
@@ -925,7 +919,6 @@ class Map(MenuComponent):
         self.image.blit(rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
 
         pygame.draw.rect(self.image, self.color, (0, 0, *size), width = int(10 * self.menu.renderer.getScale()), border_radius = int(30 * self.menu.renderer.getScale()))
-
 
     def drawDifficulty(self):
         textColor = BLACK
@@ -939,7 +932,6 @@ class Map(MenuComponent):
 
         difficulty = DifficultyMeter(self.menu, RED, textColor, 4, self.levelData["difficulty"], 2, (15, 15), (30, difficultyText.y + (difficultyText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
         difficulty.drawPaused(self.image)
-
 
     def drawScore(self):
         if "score" not in self.levelData:
@@ -955,7 +947,6 @@ class Map(MenuComponent):
 
         score = DifficultyMeter(self.menu, YELLOW, textColor, 3, self.levelData["score"], 2, (15, 15), (140, scoreText.y + (scoreText.getFontSizeScaled()[1] / self.menu.renderer.getScale() + 5)))
         score.drawPaused(self.image)
-
 
     def __render(self):
         self.dirty = False
@@ -980,11 +971,9 @@ class Map(MenuComponent):
 
         self.finalImage.fill(self.menu.getBackgroundColor())
         self.finalImage.blit(self.image, (0, 0))
-
     
     def makeSurface(self):
         if self.dirty or self.image is None: self.__render()
-
 
     def draw(self):
         self.makeSurface()
