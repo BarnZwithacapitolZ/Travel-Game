@@ -319,7 +319,6 @@ class MainMenu(Menu):
                 or (change.x < 0 and self.currentCustomLevel.x > 0)
                 or (change.y < 0 and self.currentCustomLevel.y > 0)):
             self.currentCustomLevel += change
-            print(self.currentCustomLevel)
             return True
         return False
 
@@ -455,7 +454,7 @@ class MainMenu(Menu):
         for i in range(0, len(self.customMaps), cols):
             self.currentMaps.append(self.customMaps[i : i + cols])
 
-        split = (self.currentCustomLevel.x * cols) + self.currentCustomLevel.y
+        split = (self.currentCustomLevel.y * cols) + self.currentCustomLevel.x
         before = self.customMaps[:int(split)]
         after = self.customMaps[int(split):]
         mapsBefore, mapsMiddle, mapsAfter, = [], [], []
@@ -477,9 +476,7 @@ class MainMenu(Menu):
         for i in range(0, len(after), cols):
             mapsAfter.append(after[i : i + cols])
 
-        print(mapsBefore, mapsAfter)
-
-        offset = vec((self.levelWidth + self.spacing) * self.currentCustomLevel.y, (self.levelHeight + self.spacing) * self.currentCustomLevel.x)
+        offset = vec((self.levelWidth + self.spacing) * self.currentCustomLevel.x, (self.levelHeight + self.spacing) * self.currentCustomLevel.y)
         count = 0
         for y, row in enumerate(mapsBefore):
             for x, level in enumerate(row):
