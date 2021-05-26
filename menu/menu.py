@@ -184,7 +184,7 @@ class Menu:
 class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
-        self.currentLevel = 0
+        self.currentLevel = vec(0, 0)
         self.currentCustomLevel = vec(0, 0)  # some level selection have multiple rows, cols
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
@@ -207,7 +207,10 @@ class MainMenu(Menu):
         return self.levels
 
     def getCurrentLevel(self):
-        return self.currentLevel
+        if self.levelSelectOpen:
+            return self.currentLevel
+        elif self.customLevelSelect:
+            return self.currentCustomLevel
 
     def getTransitioning(self):
         return self.transitioning
@@ -299,49 +302,30 @@ class MainMenu(Menu):
         
             self.slideTransitionY((0, 0), 'second', speed = 40, callback = callback, direction = 'down')
 
-    def increaseCurrentLevel(self):
-        if self.currentLevel < len(self.currentMaps) - 1:
-            self.currentLevel += 1
+    def changeCurrentLevel(self, change=vec(0, 0)):
+        currentLevel = self.getCurrentLevel()
+        if ((change.x > 0 and currentLevel.x < self.getLevelSelectCols() - 1) 
+                or (change.y > 0 and currentLevel.y < self.getLevelSelectRows() - 1)
+                or (change.x < 0 and currentLevel.x > 0)
+                or (change.y < 0 and currentLevel.y > 0)):
+            currentLevel += change
             return True
         return False
 
-    def decreaseCurrentLevel(self):
-        if self.currentLevel > 0:
-            self.currentLevel -= 1
-            return True
-        return False
-
-    def changeCurrentCustomLevel(self, change=vec(0, 0)):
-        cols, rows = len(self.currentMaps[0]), len(self.currentMaps) # TODO: Make this a 2D array of the maps which we can compare against
-
-        if ((change.x > 0 and self.currentCustomLevel.x < cols - 1) 
-                or (change.y > 0 and self.currentCustomLevel.y < rows - 1)
-                or (change.x < 0 and self.currentCustomLevel.x > 0)
-                or (change.y < 0 and self.currentCustomLevel.y > 0)):
-            self.currentCustomLevel += change
-            return True
-        return False
-
-    def createCustomLevel(self, x, y, offset, maps):
+    def createLevel(self, x, y, count, maps, offset=vec(0, 0)):
         if x >= 0 and y >= 0 and x < len(maps[0]) and y < len(maps):
-            level = Map(self, maps[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
+            level = Map(self, maps[y][x], count, (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offset.x, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y) - offset.y))
             self.add(level)
-            self.levels[(y, x)] = level
-
-            self.updateLoadingScreen()
-
-    def createLevel(self, levelInt, offset, maps):
-        if levelInt >= 0 and levelInt < len(maps):
-            level = Map(self, maps[levelInt], levelInt, (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + offset, (config["graphics"]["displayHeight"] - self.levelHeight) / 2))
-            self.add(level)
-            self.levels[levelInt] = level        
+            self.levels[count] = level
 
             # Update the loading screen when the level has loaded
             self.updateLoadingScreen()
 
-    def levelForward(self):
-        if not self.getTransitioning() and self.increaseCurrentLevel():
-            self.setLevelsClickable()
+            return count + 1
+
+    def levelForward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentLevel(change):
+            self.setLevelsClickable(self.getCurrentLevel())
 
             def callback(obj, menu, x):
                 obj.x = x
@@ -351,33 +335,10 @@ class MainMenu(Menu):
                 level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (self.levelWidth + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-    def levelBackward(self):
-        if not self.getTransitioning() and self.decreaseCurrentLevel():
-            self.setLevelsClickable()
+    def levelBackward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentLevel(change):
+            self.setLevelsClickable(self.getCurrentLevel())
 
-            def callback(obj, menu, x):
-                obj.x = x
-                menu.setTransitioning(False)
-
-            for index, level in self.getLevels().items():
-                level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
-            self.setTransitioning(True)
-
-
-
-
-    def customLevelForward(self, change=vec(0, 0)):
-        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
-            def callback(obj, menu, x):
-                obj.x = x
-                menu.setTransitioning(False)
-
-            for index, level in self.getLevels().items():
-                level.addAnimation(transitionX, 'onLoad', speed = -30, transitionDirection = "right", x = level.x - (self.levelWidth + self.spacing), callback = callback)
-            self.setTransitioning(True)
-
-    def customLevelBackward(self, change=vec(0, 0)):
-        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
             def callback(obj, menu, x):
                 obj.x = x
                 menu.setTransitioning(False)
@@ -386,8 +347,10 @@ class MainMenu(Menu):
                 level.addAnimation(transitionX, 'onLoad', speed = 30, transitionDirection = "left", x = level.x + (self.levelWidth + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-    def customLevelUpward(self, change=vec(0, 0)):
-        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+    def levelUpward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentLevel(change):
+            self.setLevelsClickable(self.getCurrentLevel())
+
             def callback(obj, menu, y):
                 obj.y = y
                 menu.setTransitioning(False)
@@ -396,8 +359,10 @@ class MainMenu(Menu):
                 level.addAnimation(transitionY, 'onLoad', speed = 30, transitionDirection = "down", y = level.y + (self.levelHeight + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-    def customLevelDownward(self, change=vec(0, 0)):
-        if not self.getTransitioning() and self.changeCurrentCustomLevel(change):
+    def levelDownward(self, change=vec(0, 0)):
+        if not self.getTransitioning() and self.changeCurrentLevel(change):
+            self.setLevelsClickable(self.getCurrentLevel())
+
             def callback(obj, menu, y):
                 obj.y = y
                 menu.setTransitioning(False)
@@ -406,61 +371,79 @@ class MainMenu(Menu):
                 level.addAnimation(transitionY, 'onLoad', speed = -30, transitionDirection = "up", y = level.y - (self.levelHeight + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-    def setLevelsClickable(self):
-        for index, level in self.levels.items():
-            if index == self.currentLevel:
-                # if the level is not locked make clicking it load the map
-                level.removeEvent(levelForward, 'onMouseClick')
-                level.removeEvent(levelBackward, 'onMouseClick')
+    # def setLevelsClickable(self):
+    #     for index, level in self.levels.items():
+    #         if index == self.currentLevel:
+    #             # if the level is not locked make clicking it load the map
+    #             level.removeEvent(levelForward, 'onMouseClick')
+    #             level.removeEvent(levelBackward, 'onMouseClick')
 
+    #             if not level.getLevelData()["locked"]["isLocked"]:
+    #                 level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+    #             else:
+    #                 level.addEvent(unlockLevel, 'onMouseClick', level = level)
+
+    #             if self.currentLevel < len(self.levels) - 1:
+    #                 self.levels[index + 1].removeEvent(levelForward, 'onMouseClick')
+    #                 self.levels[index + 1].removeEvent(levelBackward, 'onMouseClick')
+    #                 self.levels[index + 1].addEvent(levelForward, 'onMouseClick')
+    #             if self.currentLevel > 0:
+    #                 self.levels[index - 1].removeEvent(levelForward, 'onMouseClick')
+    #                 self.levels[index - 1].removeEvent(levelBackward, 'onMouseClick')
+    #                 self.levels[index - 1].addEvent(levelBackward, 'onMouseClick')
+
+    #             # Set the completed button
+    #             text = "Level Complete!" if level.getLevelData()["completion"]["completed"] else "Level Incomplete"
+    #             image = "buttonGreen" if level.getLevelData()["completion"]["completed"] else "buttonRed"
+    #             self.levelCompleteText.setText(text)
+    #             self.levelComplete.setImageName(image)
+    #             self.levelCompleteText.dirty = True
+    #             self.levelComplete.dirty = True
+
+    #         else:
+    #             # Remove click event
+    #             level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+    #             level.removeEvent(unlockLevel, 'onMouseClick', level = level)
+
+    def setLevelsClickable(self, currentLevel=vec(0, 0)):
+        for index, level in self.levels.items():
+            currentIndex = (currentLevel.y * self.getLevelSelectCols()) + currentLevel.x
+            if index == currentIndex:
                 if not level.getLevelData()["locked"]["isLocked"]:
                     level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
                 else:
                     level.addEvent(unlockLevel, 'onMouseClick', level = level)
-
-                if self.currentLevel < len(self.levels) - 1:
-                    self.levels[index + 1].removeEvent(levelForward, 'onMouseClick')
-                    self.levels[index + 1].removeEvent(levelBackward, 'onMouseClick')
-                    self.levels[index + 1].addEvent(levelForward, 'onMouseClick')
-                if self.currentLevel > 0:
-                    self.levels[index - 1].removeEvent(levelForward, 'onMouseClick')
-                    self.levels[index - 1].removeEvent(levelBackward, 'onMouseClick')
-                    self.levels[index - 1].addEvent(levelBackward, 'onMouseClick')
-
-                # Set the completed button
-                text = "Level Complete!" if level.getLevelData()["completion"]["completed"] else "Level Incomplete"
-                image = "buttonGreen" if level.getLevelData()["completion"]["completed"] else "buttonRed"
-                self.levelCompleteText.setText(text)
-                self.levelComplete.setImageName(image)
-                self.levelCompleteText.dirty = True
-                self.levelComplete.dirty = True
-
             else:
                 # Remove click event
                 level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
                 level.removeEvent(unlockLevel, 'onMouseClick', level = level)
 
+    def getArrangedMaps(self, maps, cols, arrangedMaps=None):
+        arrangedMaps = [] if arrangedMaps is None else arrangedMaps 
+        for i in range(0, len(maps), cols):
+            arrangedMaps.append(maps[i : i + cols])
+        return arrangedMaps
 
-    def customLevelSelect(self, transition=False):
-        self.open = True
-        self.customLevelSelectOpen = False
-        self.backgroundColor = GREY  # Change this?
+    def getLevelSelectCols(self):
+        if len(self.currentMaps) <= 0:
+            return
+
+        return len(self.currentMaps[0])
+
+    def getLevelSelectRows(self):
+        if len(self.currentMaps) <= 0:
+            return
+
+        return len(self.currentMaps)
+
+    def setLevelSelectMaps(self, maps, cols, currentLevel=vec(0, 0)):
         self.levels = {}
-        self.setLevelSize(self.customLevelSize)
-
-        self.currentMaps = []
-        cols = 4
-
-        for i in range(0, len(self.customMaps), cols):
-            self.currentMaps.append(self.customMaps[i : i + cols])
-
-        split = (self.currentCustomLevel.y * cols) + self.currentCustomLevel.x
-        before = self.customMaps[:int(split)]
-        after = self.customMaps[int(split):]
-        mapsBefore, mapsMiddle, mapsAfter, = [], [], []
-
-        for i in range(0, len(before), cols):
-            mapsBefore.append(before[i : i + cols])
+        split = (currentLevel.y * cols) + currentLevel.x
+        before = maps[:int(split)]
+        after = maps[int(split):]
+        mapsMiddle, mapsAfter = [], []
+        
+        mapsBefore = self.getArrangedMaps(before, cols)
 
         if len(mapsBefore) > 0 and len(mapsBefore[-1]) < cols:
             difference = cols - len(mapsBefore[-1])
@@ -472,31 +455,35 @@ class MainMenu(Menu):
                 after.remove(middle[i])
             
             mapsAfter.append(mapsMiddle)
+        
+        mapsAfter = self.getArrangedMaps(after, cols, mapsAfter)
 
-        for i in range(0, len(after), cols):
-            mapsAfter.append(after[i : i + cols])
-
-        offset = vec((self.levelWidth + self.spacing) * self.currentCustomLevel.x, (self.levelHeight + self.spacing) * self.currentCustomLevel.y)
+        offset = vec((self.levelWidth + self.spacing) * currentLevel.x, (self.levelHeight + self.spacing) * currentLevel.y)
         count = 0
+
         for y, row in enumerate(mapsBefore):
             for x, level in enumerate(row):
-                level = Map(self, mapsBefore[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offset.x, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y) - offset.y))
-                self.add(level)
-                self.levels[count] = level
-                count += 1
+                count = self.createLevel(x, y, count, mapsBefore, offset)
+        
+        offset = vec(0, 0)  # Reset offset
 
         for y, row in enumerate(mapsAfter):
-            offx = 0
             if y > 0 and len(mapsAfter[-1]) < cols:
-                offx = (self.levelWidth + self.spacing) * (cols - len(mapsAfter[0]))
+                offset.x = (self.levelWidth + self.spacing) * (cols - len(mapsAfter[0]))
 
-            for x, row in enumerate(row):
-                level = Map(self, mapsAfter[y][x], vec(y, x), (self.levelWidth, self.levelHeight), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + ((self.levelWidth + self.spacing) * x) - offx, (config["graphics"]["displayHeight"] - self.levelHeight) / 2 + ((self.levelHeight + self.spacing) * y)))
-                self.add(level)
-                self.levels[count] = level
-                count += 1
+            for x, level in enumerate(row):
+                count = self.createLevel(x, y, count, mapsAfter, offset)
 
-        # self.setLevelsClickable()
+    def customLevelSelect(self, transition=False):
+        self.open = True
+        self.customLevelSelectOpen = False
+        self.backgroundColor = GREY  # Change this?
+        self.setLevelSize(self.customLevelSize)
+        cols = 4
+        self.currentMaps = self.getArrangedMaps(self.customMaps, cols)
+
+        self.setLevelSelectMaps(self.customMaps, cols, self.currentCustomLevel)
+        self.setLevelsClickable(self.currentCustomLevel)
 
     def levelSelect(self, transition=False):
         self.open = True
@@ -504,7 +491,8 @@ class MainMenu(Menu):
         self.backgroundColor = BLACK
         self.levels = {}
         self.setLevelSize(self.builtInLevelSize)
-        self.currentMaps = self.builtInMaps
+        cols = len(self.builtInMaps)
+        self.currentMaps = self.getArrangedMaps(self.builtInMaps, cols)
 
         mainMenu = Image(self, "button", (25, 25), ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing, 21))
         mainMenuText = Label(self, "Main Menu", 20, CREAM, ((config["graphics"]["displayWidth"] - self.levelWidth) / 2 + self.spacing + 30, 27))
@@ -551,17 +539,9 @@ class MainMenu(Menu):
         self.add(levelNext)
         self.add(levelBack)
 
-        #### Adds the maps after eveything else in the menu has been loaded
-
-        # Load levels before current level
-        for i, level in enumerate(reversed(self.currentMaps[:self.currentLevel])):
-            self.createLevel(self.currentLevel - (i + 1), -((self.levelWidth + self.spacing) * (i + 1)), self.currentMaps)
-        
-        # Load current level and levels after current level
-        for i, level in enumerate(self.currentMaps[self.currentLevel:]):
-            self.createLevel(self.currentLevel + i, (self.levelWidth + self.spacing) * i, self.currentMaps)
-
-        self.setLevelsClickable()
+        # Add the maps after eveything else in the menu has been loaded
+        self.setLevelSelectMaps(self.builtInMaps, cols, self.currentLevel)
+        self.setLevelsClickable(self.currentLevel)
 
         if transition:
             # set the up transition

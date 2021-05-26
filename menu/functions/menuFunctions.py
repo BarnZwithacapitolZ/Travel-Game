@@ -122,6 +122,14 @@ def levelBackward(obj, menu, event):
     menu.levelBackward()
 
 
+def levelUpward(obj, menu, event):
+    menu.levelUpward()
+
+
+def levelDownward(obj, menu, event):
+    menu.levelDownward()
+
+
 # quit the game
 def closeGame(obj, menu, event):
     menu.close()

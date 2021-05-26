@@ -110,15 +110,13 @@ class Game:
                             self.optionMenu.closeTransition()
 
                 elif e.key == pygame.K_RIGHT and self.mainMenu.open:
-                    # self.mainMenu.levelForward()
-                    self.mainMenu.customLevelForward(vec(1, 0))
+                    self.mainMenu.levelForward(vec(1, 0))
                 elif e.key == pygame.K_LEFT and self.mainMenu.open:
-                    # self.mainMenu.levelBackward()
-                    self.mainMenu.customLevelBackward(vec(-1, 0))
+                    self.mainMenu.levelBackward(vec(-1, 0))
                 elif e.key == pygame.K_UP and self.mainMenu.open:
-                    self.mainMenu.customLevelUpward(vec(0, -1))
+                    self.mainMenu.levelUpward(vec(0, -1))
                 elif e.key == pygame.K_DOWN and self.mainMenu.open:
-                    self.mainMenu.customLevelDownward(vec(0, 1))
+                    self.mainMenu.levelDownward(vec(0, 1))
 
                 elif e.key == pygame.K_p:
                     if self.spriteRenderer.getHud().open:
