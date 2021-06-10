@@ -214,6 +214,12 @@ class MainMenu(Menu):
 
     def getTransitioning(self):
         return self.transitioning
+
+    # If either of the level selection screens are open
+    def getLevelSelectOpen(self):
+        if self.levelSelectOpen or self.customLevelSelectOpen:
+            return True
+        return False
     
     def setTransitioning(self, transitioning):
         self.transitioning = transitioning
@@ -222,12 +228,16 @@ class MainMenu(Menu):
         self.levelWidth = config["graphics"]["displayWidth"] - (config["graphics"]["displayWidth"] / scaler)
         self.levelHeight = config["graphics"]["displayHeight"] - (config["graphics"]["displayHeight"] / scaler)
 
-    def updateMaps(self):
-        self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
+    def updateCustomMaps(self):
+        # self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
+        currentIndex = (self.currentCustomLevel.y * self.getLevelSelectCols()) + self.currentCustomLevel.x
 
-        if self.currentLevel >= len(self.currentMaps):
-            self.currentLevel = len(self.currentMaps) - 1
+        if currentIndex >= len(self.customMaps):
+            currentIndex -= 1
+            cy = int(currentIndex / 4)
+            cx = (currentIndex % 4)
+            self.currentCustomLevel = vec(cx, cy)            
 
     def main(self, transition = False):
         self.open = True
@@ -371,48 +381,56 @@ class MainMenu(Menu):
                 level.addAnimation(transitionY, 'onLoad', speed = -30, transitionDirection = "up", y = level.y - (self.levelHeight + self.spacing), callback = callback)
             self.setTransitioning(True)
 
-    # def setLevelsClickable(self):
-    #     for index, level in self.levels.items():
-    #         if index == self.currentLevel:
-    #             # if the level is not locked make clicking it load the map
-    #             level.removeEvent(levelForward, 'onMouseClick')
-    #             level.removeEvent(levelBackward, 'onMouseClick')
-
-    #             if not level.getLevelData()["locked"]["isLocked"]:
-    #                 level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
-    #             else:
-    #                 level.addEvent(unlockLevel, 'onMouseClick', level = level)
-
-    #             if self.currentLevel < len(self.levels) - 1:
-    #                 self.levels[index + 1].removeEvent(levelForward, 'onMouseClick')
-    #                 self.levels[index + 1].removeEvent(levelBackward, 'onMouseClick')
-    #                 self.levels[index + 1].addEvent(levelForward, 'onMouseClick')
-    #             if self.currentLevel > 0:
-    #                 self.levels[index - 1].removeEvent(levelForward, 'onMouseClick')
-    #                 self.levels[index - 1].removeEvent(levelBackward, 'onMouseClick')
-    #                 self.levels[index - 1].addEvent(levelBackward, 'onMouseClick')
-
-    #             # Set the completed button
-    #             text = "Level Complete!" if level.getLevelData()["completion"]["completed"] else "Level Incomplete"
-    #             image = "buttonGreen" if level.getLevelData()["completion"]["completed"] else "buttonRed"
-    #             self.levelCompleteText.setText(text)
-    #             self.levelComplete.setImageName(image)
-    #             self.levelCompleteText.dirty = True
-    #             self.levelComplete.dirty = True
-
-    #         else:
-    #             # Remove click event
-    #             level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
-    #             level.removeEvent(unlockLevel, 'onMouseClick', level = level)
-
     def setLevelsClickable(self, currentLevel=vec(0, 0)):
         for index, level in self.levels.items():
             currentIndex = (currentLevel.y * self.getLevelSelectCols()) + currentLevel.x
             if index == currentIndex:
+                level.removeEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+                level.removeEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+                level.removeEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+                level.removeEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+
                 if not level.getLevelData()["locked"]["isLocked"]:
                     level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
+
                 else:
                     level.addEvent(unlockLevel, 'onMouseClick', level = level)
+
+                if currentIndex < len(self.levels) - 1:
+                    self.levels[currentIndex + 1].removeEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+                    self.levels[currentIndex + 1].removeEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+                    self.levels[currentIndex + 1].removeEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+                    self.levels[currentIndex + 1].removeEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.levels[currentIndex + 1].addEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+
+                if currentIndex < len(self.levels) - 4:
+                    self.levels[currentIndex + 4].removeEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+                    self.levels[currentIndex + 4].removeEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+                    self.levels[currentIndex + 4].removeEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+                    self.levels[currentIndex + 4].removeEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.levels[currentIndex + 4].addEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+
+                if currentIndex > 0:
+                    self.levels[currentIndex - 1].removeEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+                    self.levels[currentIndex - 1].removeEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+                    self.levels[currentIndex - 1].removeEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+                    self.levels[currentIndex - 1].removeEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.levels[currentIndex - 1].addEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+
+                if currentIndex - 3 > 0:
+                    self.levels[currentIndex - 4].removeEvent(levelForward, 'onMouseClick', change=vec(1, 0))
+                    self.levels[currentIndex - 4].removeEvent(levelBackward, 'onMouseClick', change=vec(-1, 0))
+                    self.levels[currentIndex - 4].removeEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+                    self.levels[currentIndex - 4].removeEvent(levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.levels[currentIndex - 4].addEvent(levelUpward, 'onMouseClick', change=vec(0, -1))
+
+                text = "Level Complete!" if level.getLevelData()["completion"]["completed"] else "Level Incomplete"
+                image = "buttonGreen" if level.getLevelData()["completion"]["completed"] else "buttonRed"
+                self.levelCompleteText.setText(text)
+                self.levelComplete.setImageName(image)
+                self.levelCompleteText.dirty = True
+                self.levelComplete.dirty = True
+
             else:
                 # Remove click event
                 level.removeEvent(loadLevel, 'onMouseClick', level = level.getLevel())
@@ -476,7 +494,8 @@ class MainMenu(Menu):
 
     def customLevelSelect(self, transition=False):
         self.open = True
-        self.customLevelSelectOpen = False
+        self.levelSelectOpen = False
+        self.customLevelSelectOpen = True
         self.backgroundColor = GREY  # Change this?
         self.setLevelSize(self.customLevelSize)
         cols = 4
@@ -487,6 +506,7 @@ class MainMenu(Menu):
 
     def levelSelect(self, transition=False):
         self.open = True
+        self.customLevelSelectOpen = False
         self.levelSelectOpen = True
         self.backgroundColor = BLACK
         self.levels = {}

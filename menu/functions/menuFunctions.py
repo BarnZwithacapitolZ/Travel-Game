@@ -9,8 +9,8 @@ import generalFunctions as generalFunctions
 import hudFunctions as hudFunctions
 from transitionFunctions import *
 
+vec = pygame.math.Vector2
 
-###### Main-Menu Functions ######
 
 # load the level and show transition
 def continueGame(obj, menu, event):
@@ -62,6 +62,7 @@ def openMapEditor(obj, menu, event):
             menu.game.mapEditor.setRendering(True, True) #Load the hud
             hudFunctions.addConnection(obj, menu, event) # default option to add connection
             menu.levelSelectOpen = False
+            menu.customLevelSelectOpen = False
             menu.close()
 
     menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
@@ -83,6 +84,7 @@ def loadLevel(obj, menu, event, level):
             menu.game.spriteRenderer.createLevel(levelName)
             menu.game.spriteRenderer.setRendering(True, True) #Load the hud
             menu.levelSelectOpen = False
+            menu.customLevelSelectOpen = False
             menu.close()
 
     menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
@@ -113,21 +115,21 @@ def unlockLevel(obj, menu, event, level):
 
 
 # Move the level scroller foward by one level
-def levelForward(obj, menu, event):
-    menu.levelForward()
+def levelForward(obj, menu, event, change=vec(0, 0)):
+    menu.levelForward(change)
 
 
 # Move the level scroller backwards by one level
-def levelBackward(obj, menu, event):
-    menu.levelBackward()
+def levelBackward(obj, menu, event, change=vec(0, 0)):
+    menu.levelBackward(change)
 
 
-def levelUpward(obj, menu, event):
-    menu.levelUpward()
+def levelUpward(obj, menu, event, change=vec(0, 0)):
+    menu.levelUpward(change)
 
 
-def levelDownward(obj, menu, event):
-    menu.levelDownward()
+def levelDownward(obj, menu, event, change=vec(0, 0)):
+    menu.levelDownward(change)
 
 
 # quit the game

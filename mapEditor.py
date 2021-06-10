@@ -209,7 +209,7 @@ class MapEditor(SpriteRenderer):
         self.game.mapLoader.addMap(
             self.game.textHandler.getString(),
             path, self.game.mapLoader.getCustomMaps())
-        self.game.mainMenu.updateMaps()
+        self.game.mainMenu.updateCustomMaps()
 
     # Remove a map, which has already been saved,
     # from the maps folder and references in config
@@ -223,7 +223,8 @@ class MapEditor(SpriteRenderer):
             # Delete the level
             os.remove(path)
             self.game.mapLoader.removeMap(self.levelData["mapName"])
-            self.game.mainMenu.updateMaps()
+            self.game.mapLoader.removeCustomMap(self.levelData["mapName"])
+            self.game.mainMenu.updateCustomMaps()
             del config["maps"]["custom"][self.levelData["mapName"]]
             dump(config)
 

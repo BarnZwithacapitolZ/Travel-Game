@@ -159,7 +159,7 @@ class Renderer:
 
         self.gameDisplay.blit(self.fontImage, (950, 10))
 
-        if not self.game.mainMenu.levelSelectOpen:
+        if not self.game.mainMenu.getLevelSelectOpen():
             if config["graphics"]["scanlines"]["enabled"]:
                 self.gameDisplay.blit(self.scanlines, (0, 0))
                 pygame.draw.rect(
@@ -303,6 +303,12 @@ class MapLoader:
 
     def removeMap(self, mapName):
         del self.maps[mapName]
+
+    def removeCustomMap(self, mapName):
+        del self.customMaps[mapName]
+
+    def removeBuiltInMap(self, mapName):
+        del self.builtInMaps[mapName] 
 
     def loadMaps(self, maps, mapDict):
         for key, level in maps.items():
