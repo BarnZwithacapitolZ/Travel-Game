@@ -11,6 +11,17 @@ from transitionFunctions import *
 
 ##### Hud Functions #####
 
+def hoverOverHudButton(obj, menu, event, image=None):
+    menu.setHudButtonHoverOver(True)
+    if image is not None:
+        generalFunctions.hoverImage(obj, menu, event, image=image)
+
+
+def hoverOutHudButton(obj, menu, event, image=None):
+    menu.setHudButtonHoverOver(False)
+    if image is not None:
+        generalFunctions.hoverImage(obj, menu, event, image=image)
+
 # Change the layer showing on the screen
 def changeGameLayer(obj, menu, event):
     current = menu.game.spriteRenderer.getLayer()

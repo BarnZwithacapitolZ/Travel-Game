@@ -26,7 +26,7 @@ class MeterController(pygame.sprite.Sprite):
         self.slowDownAmount = 0.5
 
         # How fast to make the game when fast forwarding
-        self.speedUpAmount = self.slowDownAmount * 1.5
+        self.speedUpAmount = self.slowDownAmount
 
     def getEmpty(self):
         return self.empty

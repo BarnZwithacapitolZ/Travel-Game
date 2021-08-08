@@ -528,7 +528,8 @@ class Person(pygame.sprite.Sprite):
         # unset the person from the clickmanager (no one clicked)
         # Unlick event
         if (not self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()):
+                and self.game.clickManager.getClicked()
+                and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
             self.clickManager.setPerson(None)
 
         # Click event

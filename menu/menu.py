@@ -1167,8 +1167,16 @@ class GameHud(GameHudLayout):
         self.hearts = []
         self.spacing = spacing
 
+        self.hudButtonHoverOver = False
+
         self.hudX = 15
         self.hudY = 15
+
+    def getHudButtonHoverOver(self):
+        return self.hudButtonHoverOver
+
+    def setHudButtonHoverOver(self, hudButtonHoverOver):
+        self.hudButtonHoverOver = hudButtonHoverOver
 
     def updateSlowDownMeter(self, amount):
         if hasattr(self, 'slowDownMeter'):
@@ -1296,9 +1304,10 @@ class GameHud(GameHudLayout):
             self.textColor, (self.completed.x + 14.5, self.completed.y + 13))
 
         self.fastForward.addEvent(
-            gf.hoverImage, 'onMouseOver', image=fastForwardSelectedImage)
+            hf.hoverOverHudButton, 'onMouseOver',
+            image=fastForwardSelectedImage)
         self.fastForward.addEvent(
-            gf.hoverImage, 'onMouseOut', image=fastForwardImage)
+            hf.hoverOutHudButton, 'onMouseOut', image=fastForwardImage)
         self.fastForward.addEvent(hf.fastForwardGame, 'onMouseLongClick')
 
         self.restart.addEvent(
@@ -1309,20 +1318,20 @@ class GameHud(GameHudLayout):
                 self.game.spriteRenderer.getLevel()))
 
         self.pause.addEvent(
-            gf.hoverImage, 'onMouseOver', image=pauseSelectedImage)
+            hf.hoverOverHudButton, 'onMouseOver', image=pauseSelectedImage)
         self.pause.addEvent(
-            gf.hoverImage, 'onMouseOut', image=pauseImage)
+            hf.hoverOutHudButton, 'onMouseOut', image=pauseImage)
         self.pause.addEvent(hf.pauseGame, 'onMouseClick')
 
         self.layers.addEvent(
-            gf.hoverImage, 'onMouseOver', image=layersSelectedImage)
+            hf.hoverOverHudButton, 'onMouseOver', image=layersSelectedImage)
         self.layers.addEvent(
-            gf.hoverImage, 'onMouseOut', image=layersImage)
+            hf.hoverOutHudButton, 'onMouseOut', image=layersImage)
         self.layers.addEvent(hf.changeGameLayer, 'onMouseClick')
 
         self.home.addEvent(
-            gf.hoverImage, 'onMouseOver', image=homeSelectedImage)
-        self.home.addEvent(gf.hoverImage, 'onMouseOut', image=homeImage)
+            hf.hoverOverHudButton, 'onMouseOver', image=homeSelectedImage)
+        self.home.addEvent(hf.hoverOutHudButton, 'onMouseOut', image=homeImage)
         self.home.addEvent(hf.goHome, 'onMouseClick')
 
         self.add(self.home)
