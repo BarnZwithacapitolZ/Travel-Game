@@ -106,6 +106,14 @@ class Menu:
                             e['function'](component, self, e, **e['kwargs'])
                             # component.dirty = True
 
+                    if e['event'] == 'onMouseLongClick':
+                        if (component.rect.collidepoint((mx, my))
+                                and pygame.mouse.get_pressed()[0]):
+                            if self.game.clickManager.getClicked():
+                                self.clickButton()
+                                self.game.clickManager.setClicked(False)
+                            e['function'](component, self, e, **e['kwargs'])
+
                     if e['event'] == 'onMouseOver':
                         if (component.rect.collidepoint((mx, my))
                                 and not component.mouseOver):
@@ -1176,6 +1184,9 @@ class GameHud(GameHudLayout):
 
         speed = 5
 
+        self.fastForward.addAnimation(
+            tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
+            x=self.hudX, callback=callbackX)
         self.pause.addAnimation(
             tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
             x=self.hudX, callback=callbackX)
@@ -1253,14 +1264,18 @@ class GameHud(GameHudLayout):
         pauseSelectedImage = "pauseSelected"
         restartImage = "restartWhite" if darkMode else "restart"
         restartSelectedImage = "restartSelected"
+        fastForwardImage = "fastForwardWhite" if darkMode else "fastForward"
+        fastForwardSelectedImage = "fastForwardSelected"
         self.textColor = WHITE if darkMode else BLACK
 
         self.home = Image(self, homeImage, (50, 50), (self.hudX - 100, 500))
         self.layers = Image(
             self, layersImage, (50, 50), (self.hudX - 100, 440))
-        self.pause = Image(self, pauseImage, (50, 50), (self.hudX - 100, 380))
+        self.pause = Image(self, pauseImage, (50, 50), (self.hudX - 100, 320))
         self.restart = Image(
-            self, restartImage, (50, 50), (self.hudX - 100, 320))
+            self, restartImage, (50, 50), (self.hudX - 100, 260))
+        self.fastForward = Image(
+            self, fastForwardImage, (50, 50), (self.hudX - 100, 380))
 
         self.slowDownMeter = Meter(
             self, WHITE, self.textColor, GREEN, (meterWidth, 20),
@@ -1279,6 +1294,12 @@ class GameHud(GameHudLayout):
         self.completedAmount = Label(
             self, str(self.game.spriteRenderer.getCompleted()), 20,
             self.textColor, (self.completed.x + 14.5, self.completed.y + 13))
+
+        self.fastForward.addEvent(
+            gf.hoverImage, 'onMouseOver', image=fastForwardSelectedImage)
+        self.fastForward.addEvent(
+            gf.hoverImage, 'onMouseOut', image=fastForwardImage)
+        self.fastForward.addEvent(hf.fastForwardGame, 'onMouseLongClick')
 
         self.restart.addEvent(
             gf.hoverImage, 'onMouseOver', image=restartSelectedImage)
@@ -1311,8 +1332,9 @@ class GameHud(GameHudLayout):
         else:
             self.restart.setPos((self.pause.x, self.pause.y))
             self.pause.setPos((self.layers.x, self.layers.y))
-        self.add(self.pause)
 
+        self.add(self.fastForward)
+        self.add(self.pause)
         self.add(self.slowDownMeter)
         self.add(self.lives)
         self.add(self.completed)

@@ -25,6 +25,9 @@ class MeterController(pygame.sprite.Sprite):
         # How slow to make the game (half its speed currently)
         self.slowDownAmount = 0.5
 
+        # How fast to make the game when fast forwarding
+        self.speedUpAmount = self.slowDownAmount * 1.5
+
     def getEmpty(self):
         return self.empty
 
@@ -72,6 +75,10 @@ class MeterController(pygame.sprite.Sprite):
             # When the meter is full we don't want to add the bonus anymore
             else:
                 self.amountToAdd = 0
+
+        elif self.game.clickManager.getSpeedUp():
+            self.spriteRenderer.setDt(
+                self.spriteRenderer.getStartDt() + self.speedUpAmount)
 
         else:
             self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())

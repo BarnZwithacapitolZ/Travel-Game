@@ -37,6 +37,10 @@ def pauseGame(obj, menu, event):
     menu.togglePauseGame(True)
 
 
+# Speed up the game so you don't have to wait for things to move
+def fastForwardGame(obj, menu, event):
+    menu.game.clickManager.setSpeedUp(True)
+
 #### Editor Hud Function ####
 
 def closeMapEditor(obj, menu, event):

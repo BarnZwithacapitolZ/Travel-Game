@@ -9,6 +9,7 @@ class ClickManager:
         self.clicked = False
         self.rightClicked = False
         self.spaceBar = False
+        self.speedUp = False
 
     def getClicked(self):
         return self.clicked
@@ -19,6 +20,9 @@ class ClickManager:
     def getSpaceBar(self):
         return self.spaceBar
 
+    def getSpeedUp(self):
+        return self.speedUp
+
     def setClicked(self, clicked):
         self.clicked = clicked
 
@@ -27,6 +31,9 @@ class ClickManager:
 
     def setSpaceBar(self, spaceBar):
         self.spaceBar = spaceBar
+
+    def setSpeedUp(self, speedUp):
+        self.speedUp = speedUp
 
     # for a given node, return the adjacent nodes
     def getAdjacentNodes(self, n):

@@ -572,11 +572,15 @@ class SpriteRenderer():
                     and not self.meter.getEmpty()):
                 self.game.audioLoader.playSound("slowIn", 1)
 
+        elif pygame.key.get_pressed()[pygame.K_f]:
+            self.game.clickManager.setSpeedUp(True)
+
         else:
-            if self.dt != self.startDt:
+            if self.dt < self.startDt:
                 self.game.audioLoader.playSound("slowOut", 1)
 
             self.game.clickManager.setSpaceBar(False)
+            self.game.clickManager.setSpeedUp(False)
 
     # Make people on the current layer clickable, and the rest non-clickable
     def resetPeopleClicks(self):

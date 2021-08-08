@@ -262,6 +262,18 @@
         "restartSelected": {
             "image": "ui\\RestartSelected.png",
             "alpha": true
+        },
+        "fastForward": {
+            "image": "ui\\FastForward.png",
+            "alpha": true
+        },
+        "fastForwardWhite": {
+            "image": "ui\\FastForwardWhite.png",
+            "alpha": true
+        },
+        "fastForwardSelected": {
+            "image": "ui\\FastForwardSelected.png",
+            "alpha": true
         }
     }, 
     "audio": {
