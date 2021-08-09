@@ -197,6 +197,11 @@ def showGraphics(obj, menu, event):
     menu.graphics()
 
 
+def showAudio(obj, menu, event):
+    menu.close()
+    menu.audio()
+
+
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
     menu.close()

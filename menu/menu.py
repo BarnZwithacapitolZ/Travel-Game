@@ -696,6 +696,8 @@ class OptionMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
 
+        self.x = 100
+
     def closeTransition(self):
         self.game.spriteRenderer.getHud().setOpen(True)
         # self.game.mapEditor.getMessageSystem().setOpen(True)
@@ -724,36 +726,36 @@ class OptionMenu(Menu):
             self.game.spriteRenderer.createPausedSurface()
             self.game.mapEditor.createPausedSurface()
 
-        x = 100
-
         background = Rectangle(
             self, GREEN, (
                 config["graphics"]["displayWidth"],
                 config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
-        paused = Label(self, "Paused", 70, WHITE, (x, 100))
+        paused = Label(self, "Paused", 70, WHITE, (self.x, 100))
 
-        options = Label(self, "Options", 50,  WHITE, (x, 200))
-        levelSelect = Label(self, "Level Selection", 50, WHITE, (x, 260))
-        mainMenu = Label(self, "Main Menu", 50, WHITE, (x, 320))
-        close = Label(self, "Close", 30, WHITE, (x, 440))
+        options = Label(self, "Options", 50,  WHITE, (self.x, 200))
+        levelSelect = Label(self, "Level Selection", 50, WHITE, (self.x, 260))
+        mainMenu = Label(self, "Main Menu", 50, WHITE, (self.x, 320))
+        close = Label(self, "Close", 30, WHITE, (self.x, 440))
 
         options.addEvent(mf.showOptions, 'onMouseClick')
-        options.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        options.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        options.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        options.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         levelSelect.addEvent(mf.showLevelSelect, 'onMouseClick')
         levelSelect.addEvent(
-            gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        levelSelect.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        levelSelect.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         mainMenu.addEvent(mf.showMainMenu, 'onMouseClick')
-        mainMenu.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        mainMenu.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        mainMenu.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        mainMenu.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         close.addEvent(mf.unpause, 'onMouseClick')
-        close.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        close.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        close.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        close.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         # background.add(paused)
         self.add(background)
@@ -779,27 +781,30 @@ class OptionMenu(Menu):
     def options(self):
         self.open = True
 
-        x = 100
-
         background = Rectangle(
             self, GREEN, (
                 config["graphics"]["displayWidth"],
                 config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
-        options = Label(self, "Options", 70, WHITE, (x, 100))
+        options = Label(self, "Options", 70, WHITE, (self.x, 100))
 
-        graphics = Label(self, "Graphics", 50, WHITE, (x, 200))
-        controls = Label(self, "Controls", 50, WHITE, (x, 260))
-        audio = Label(self, "Audio", 50, WHITE, (x, 320))
-        back = Label(self, "Back", 30,  WHITE, (x, 440))
+        graphics = Label(self, "Graphics", 50, WHITE, (self.x, 200))
+        controls = Label(self, "Controls", 50, WHITE, (self.x, 260))
+        audio = Label(self, "Audio", 50, WHITE, (self.x, 320))
+        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         graphics.addEvent(mf.showGraphics, 'onMouseClick')
-        graphics.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        graphics.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        graphics.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        graphics.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
+        audio.addEvent(mf.showAudio, 'onMouseClick')
+        audio.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        audio.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         back.addEvent(mf.showMain, 'onMouseClick')
-        back.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        back.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         self.add(background)
         self.add(options)
@@ -808,17 +813,35 @@ class OptionMenu(Menu):
         self.add(audio)
         self.add(back)
 
-    def graphics(self):
+    def audio(self):
         self.open = True
-
-        x = 100
 
         background = Rectangle(
             self, GREEN, (
                 config["graphics"]["displayWidth"],
                 config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
-        graphics = Label(self, "Graphics", 70, WHITE, (x, 100))
+        audio = Label(self, "Audio", 70, WHITE, (self.x, 100))
+
+        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+
+        back.addEvent(mf.showOptions, 'onMouseClick')
+        back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
+        self.add(background)
+        self.add(audio)
+        self.add(back)
+
+    def graphics(self):
+        self.open = True
+
+        background = Rectangle(
+            self, GREEN, (
+                config["graphics"]["displayWidth"],
+                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
+
+        graphics = Label(self, "Graphics", 70, WHITE, (self.x, 100))
 
         fullscreenText = "On" if self.game.fullscreen else "Off"
         scanlinesText = (
@@ -828,33 +851,38 @@ class OptionMenu(Menu):
         vsyncText = "On" if config["graphics"]["vsync"] else "Off"
 
         fullscreen = Label(
-            self, "Fullscreen: " + fullscreenText, 50, WHITE, (x, 200))
+            self, "Fullscreen: " + fullscreenText, 50, WHITE, (self.x, 200))
         scanlines = Label(
-            self, "Scanlines: " + scanlinesText, 50, WHITE, (x, 260))
-        scaling = Label(self, "Scaling: " + scalingText, 50, WHITE, (x, 320))
-        vsync = Label(self, "Vsync: " + vsyncText, 50, WHITE, (x + 500, 200))
-        back = Label(self, "Back", 30,  WHITE, (x, 440))
+            self, "Scanlines: " + scanlinesText, 50, WHITE, (self.x, 260))
+        scaling = Label(
+            self, "Scaling: " + scalingText, 50, WHITE, (self.x, 320))
+        vsync = Label(
+            self, "Vsync: " + vsyncText, 50, WHITE, (self.x + 500, 200))
+        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         fullscreen.addEvent(mf.toggleFullscreen, 'onMouseClick')
-        fullscreen.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        fullscreen.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        fullscreen.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        fullscreen.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         scanlines.addEvent(mf.toggleScanlines, 'onMouseClick')
-        scanlines.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        scanlines.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        scanlines.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        scanlines.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         scaling.addEvent(mf.toggleScalingMode, 'onMouseClick')
-        scaling.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        scaling.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        scaling.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        scaling.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         vsync.addEvent(mf.toggleVsync, 'onMouseClick')
         vsync.addEvent(
-            gf.hoverOver, 'onMouseOver', x=x + 500 + 10, color=BLACK)
-        vsync.addEvent(gf.hoverOut, 'onMouseOut', x=x + 500, color=WHITE)
+            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+        vsync.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
 
         back.addEvent(mf.showOptions, 'onMouseClick')
-        back.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10, color=BLACK)
-        back.addEvent(gf.hoverOut, 'onMouseOut', x=x, color=WHITE)
+        back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         self.add(background)
         self.add(graphics)
