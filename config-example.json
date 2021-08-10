@@ -277,6 +277,11 @@
         }
     }, 
     "audio": {
+        "volume": {
+            "sounds": 1.0,
+            "music": 1.0,
+            "master": 1.0
+        },
         "sounds": {
             "click1": {
                 "file": "ui\\Menu-Selection-Change-G.wav",

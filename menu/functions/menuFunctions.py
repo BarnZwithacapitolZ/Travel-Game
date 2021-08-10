@@ -1,13 +1,7 @@
 
 import pygame
-from pygame.locals import *
-from config import *
-from clickManager import *
-import time
-
-import generalFunctions as generalFunctions
-import hudFunctions as hudFunctions
-from transitionFunctions import *
+from config import config, dump
+import hudFunctions as hf
 
 vec = pygame.math.Vector2
 
@@ -15,12 +9,14 @@ vec = pygame.math.Vector2
 # load the level and show transition
 def continueGame(obj, menu, event):
     def callback(obj, menu):
-        menu.game.spriteRenderer.createLevel(menu.game.mapLoader.getMap("Test"))
-        menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+        menu.game.spriteRenderer.createLevel(
+            menu.game.mapLoader.getMap("Test"))
+        menu.game.spriteRenderer.setRendering(True, True)  # Load the hud
         menu.close()
         obj.y = 0
 
-    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY(
+        (0, config["graphics"]["displayHeight"]), 'first', callback=callback)
 
 
 def openLevelSelect(obj, menu, event):
@@ -32,12 +28,16 @@ def openLevelSelect(obj, menu, event):
             menu.close()
             menu.levelSelect(True)
 
-    # menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
-    menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
+    # menu.slideTransitionY(
+    #   (0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
     menu.loadingScreen()
 
 
-# Navigate back to the main page of the main menu (from within the main menu itself)
+# Navigate back to the main page of the main menu
+# (from within the main menu itself)
 def openMainMenu(obj, menu, event):
     def callback(obj, menu, animation):
         obj.y = 0
@@ -47,7 +47,9 @@ def openMainMenu(obj, menu, event):
             menu.close()
             menu.main(True)
 
-    menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
 
 
 # load the map editor and show transition
@@ -58,21 +60,24 @@ def openMapEditor(obj, menu, event):
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
             menu.game.paused = False
-            menu.game.mapEditor.createLevel(clearChanges = True)
-            menu.game.mapEditor.setRendering(True, True) #Load the hud
-            hudFunctions.addConnection(obj, menu, event) # default option to add connection
+            menu.game.mapEditor.createLevel(clearChanges=True)
+            # Load the hud
+            menu.game.mapEditor.setRendering(True, True)
+            # Default option to add connection
+            hf.addConnection(obj, menu, event)
             menu.levelSelectOpen = False
             menu.customLevelSelectOpen = False
             menu.close()
 
-    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY(
+        (0, config["graphics"]["displayHeight"]), 'first', callback=callback)
 
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, level):
     if hasattr(menu, 'transitioning') and menu.getTransitioning():
         return
-    
+
     global levelName
     levelName = level
 
@@ -82,31 +87,33 @@ def loadLevel(obj, menu, event, level):
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
             menu.game.spriteRenderer.createLevel(levelName)
-            menu.game.spriteRenderer.setRendering(True, True) #Load the hud
+            menu.game.spriteRenderer.setRendering(True, True)  # Load the hud
             menu.levelSelectOpen = False
             menu.customLevelSelectOpen = False
             menu.close()
 
-    menu.slideTransitionY((0, config["graphics"]["displayHeight"]), 'first', callback = callback)
+    menu.slideTransitionY(
+        (0, config["graphics"]["displayHeight"]), 'first', callback=callback)
 
 
 # Check if a level can be unlocked with the amount of keys the player has,
 # if it can then unlock the level, else play an error sound
 def unlockLevel(obj, menu, event, level):
     if not level.getLevelData()["locked"]["isLocked"]:
-        return 
-    
+        return
+
     if config["player"]["keys"] >= level.getLevelData()["locked"]["unlock"]:
         menu.game.audioLoader.playSound("uiSuccess", 0)
         config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
         level.getLevelData()["locked"]["isLocked"] = False
-        menu.game.mapLoader.saveMap(level.getLevelData()["mapName"], level.getLevelData())
+        menu.game.mapLoader.saveMap(
+            level.getLevelData()["mapName"], level.getLevelData())
         dump(config)
 
         # if successful update menu
         menu.keyText.setText(str(config["player"]["keys"]))
-        level.addEvent(loadLevel, 'onMouseClick', level = level.getLevel())
-        level.removeEvent(unlockLevel, 'onMouseClick', level = level)
+        level.addEvent(loadLevel, 'onMouseClick', level=level.getLevel())
+        level.removeEvent(unlockLevel, 'onMouseClick', level=level)
         level.dirty = True
         menu.keyText.dirty = True
 
@@ -138,7 +145,7 @@ def closeGame(obj, menu, event):
     menu.game.playing = False
 
 
-###### Option-Menu Functions ######
+# ----Option-Menu Functions----
 
 # Exit the game and return to the main menu with transition
 def showMainMenu(obj, menu, event):
@@ -148,13 +155,18 @@ def showMainMenu(obj, menu, event):
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
             menu.game.paused = True
-            menu.game.spriteRenderer.setRendering(False) # Always close the Game
-            menu.game.mapEditor.setRendering(False) # Always close the Editor
-            menu.game.textHandler.setActive(False) # Always close any open inputs
+            # Always close the Game
+            menu.game.spriteRenderer.setRendering(False)
+            # Always close the Editor
+            menu.game.mapEditor.setRendering(False)
+            # Always close any open inputs
+            menu.game.textHandler.setActive(False)
             menu.game.mainMenu.main(True)
             menu.close()
 
-    menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
 
 
 # Exit the game and return to the level selection screen with transition
@@ -165,13 +177,18 @@ def showLevelSelect(obj, menu, event):
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
             menu.game.paused = True
-            menu.game.spriteRenderer.setRendering(False) # Always close the Game
-            menu.game.mapEditor.setRendering(False) # Always close the Editor
-            menu.game.textHandler.setActive(False) # Always close any open inputs
+            # Always close the Game
+            menu.game.spriteRenderer.setRendering(False)
+            # Always close the Editor
+            menu.game.mapEditor.setRendering(False)
+            # Always close any open inputs
+            menu.game.textHandler.setActive(False)
             menu.game.mainMenu.levelSelect(True)
             menu.close()
 
-    menu.slideTransitionY((0, -config["graphics"]["displayHeight"]), 'first', speed = 40, callback = callback, direction = 'down')
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
     menu.loadingScreen()
 
 
@@ -202,6 +219,12 @@ def showAudio(obj, menu, event):
     menu.audio()
 
 
+def setMasterVolume(slider):
+    slider.menu.game.audioLoader.setMasterVolume(slider.getAmount())
+    config["audio"]["volume"]["master"] = slider.getAmount()
+    dump(config)
+
+
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
     menu.close()
@@ -226,8 +249,11 @@ def toggleFullscreen(obj, menu, event):
 
     text = "On" if menu.game.fullscreen else "Off"
 
-    if menu.game.fullscreen: menu.renderer.setFullscreen()
-    else: menu.renderer.unsetFullscreen()
+    if menu.game.fullscreen:
+        menu.renderer.setFullscreen()
+
+    else:
+        menu.renderer.unsetFullscreen()
 
     obj.setText("Fullscreen: " + text)
 
@@ -257,7 +283,9 @@ def toggleScalingMode(obj, menu, event):
     obj.setText("Scaling: " + text)
 
     dump(config)
-    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)
+    menu.renderer.setScale(
+        (menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()),
+        menu.game.fullscreen)
 
 
 # Toggle vsync between on and off
@@ -271,4 +299,6 @@ def toggleVsync(obj, menu, event):
     config["graphics"]["vsync"] = menu.game.vsync
     dump(config)
 
-    menu.renderer.setScale((menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()), menu.game.fullscreen)
+    menu.renderer.setScale(
+        (menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()),
+        menu.game.fullscreen)

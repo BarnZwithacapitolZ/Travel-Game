@@ -238,6 +238,7 @@ class AudioLoader:
 
         self.setChannels()
         self.loadAllSounds()
+        self.setMasterVolume(config["audio"]["volume"]["master"])
 
     def getSound(self, key):
         return self.sounds[key]
@@ -257,6 +258,10 @@ class AudioLoader:
         # Channel 2 reserved for extra game sounds
         self.channels = [
             pygame.mixer.Channel(i) for i in range(self.numChannels)]
+
+    def setMasterVolume(self, volume=1):
+        for channel in self.channels:
+            channel.set_volume(volume)
 
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():

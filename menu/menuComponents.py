@@ -112,6 +112,7 @@ class MenuComponent:
         self.responsive = True
 
         self.mouseOver = False
+        self.clicked = False
 
         self.timer = 0  # For use in animation the component
 
@@ -433,15 +434,22 @@ class Shape(MenuComponent):
     def setAlpha(self, alpha):
         self.alpha = alpha
 
-    def __render(self):
-        self.dirty = False
-
+    def setRect(self):
         pos = vec(self.x, self.y) * self.menu.renderer.getScale()
         size = vec(self.width, self.height) * self.menu.renderer.getScale()
         self.rect = pygame.Rect(pos, size)
+        return pos, size
+
+    def setBorder(self):
         self.outline = self.shapeOutline * self.menu.renderer.getScale()
         self.borderRadius = [
             i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+
+    def __render(self):
+        self.dirty = False
+
+        pos, size = self.setRect()
+        self.setBorder()
 
         # Create the image for blitting onto other
         # surfaces, even if its not used in this shape
@@ -499,15 +507,19 @@ class Rectangle(Shape):
             menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha,
             fill)
 
-    def drawShape(self, surface, color=None, rect=None, outline=None):
+    def drawShape(
+            self, surface, color=None, rect=None, outline=None,
+            borderRadius=None):
         color, rect, outline = self.getShapeComponents(color, rect, outline)
+        borderRadius = (
+            self.borderRadius if borderRadius is None else borderRadius)
 
         pygame.draw.rect(
             surface, color, rect, int(outline),
-            border_top_left_radius=int(self.borderRadius[0]),
-            border_top_right_radius=int(self.borderRadius[1]),
-            border_bottom_left_radius=int(self.borderRadius[2]),
-            border_bottom_right_radius=int(self.borderRadius[3]))
+            border_top_left_radius=int(borderRadius[0]),
+            border_top_right_radius=int(borderRadius[1]),
+            border_bottom_left_radius=int(borderRadius[2]),
+            border_bottom_right_radius=int(borderRadius[3]))
 
 
 # Rectangle with on border radius that is made filling a shape,
@@ -521,9 +533,8 @@ class FillRectangle(Rectangle):
     def __render(self):
         self.dirty = False
 
-        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
-        size = vec(self.width, self.height) * self.menu.renderer.getScale()
-        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        pos, size = self.setRect()
+        self.setBorder()
         self.borderRadius = [0, 0, 0, 0]  # Cant have a radius on a surface
         fillColor = self.fill if self.outline > 0 else self.color
 
@@ -571,18 +582,13 @@ class Meter(Rectangle):
     def __render(self):
         self.dirty = False
 
-        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
-        size = vec(self.width, self.height) * self.menu.renderer.getScale()
+        pos, size = self.setRect()
         sizeAmount = (
             vec(self.amount[0], self.amount[1])
             * self.menu.renderer.getScale())
-
-        self.rect = pygame.Rect(pos, size)
         self.rectAmount = pygame.Rect(pos, sizeAmount)
 
-        self.outline = self.shapeOutline * self.menu.renderer.getScale()
-        self.borderRadius = [
-            i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+        self.setBorder()
 
         self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
         self.drawShape(
@@ -636,12 +642,8 @@ class DifficultyMeter(Rectangle):
     def __render(self):
         self.dirty = False
 
-        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
-        size = vec(self.width, self.height) * self.menu.renderer.getScale()
-        self.rect = pygame.Rect(pos, size)
-        self.outline = self.shapeOutline * self.menu.renderer.getScale()
-        self.borderRadius = [
-            i * self.menu.renderer.getScale() for i in self.shapeBorderRadius]
+        pos, size = self.setRect()
+        self.setBorder()
         self.gap = self.spacing * self.menu.renderer.getScale()
 
         self.fullsize = copy.copy(size)
@@ -669,6 +671,93 @@ class DifficultyMeter(Rectangle):
             newRect = pygame.Rect(offx, rect.y, rect.width, rect.height)
             super().drawShape(surface, self.backgroundColor, newRect, outline)
             offx += rect.width + self.gap
+
+    def makeSurface(self):
+        if self.dirty or self.rect is None:
+            self.__render()
+
+
+class Slider(Rectangle):
+    def __init__(
+            self, menu, color, amount, callback, size=tuple(), pos=tuple(), shapeOutline=0,
+            shapeBorderRadius=[0, 0, 0, 0], alpha=None, fill=None):
+        super().__init__(
+            menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha,
+            fill)
+        self.totalAmount = 100
+        self.amount = amount * self.totalAmount
+        self.callback = callback
+        self.y -= (self.height / 2)
+
+        self.handleWidth = 10
+        self.handleX = self.x + (self.amount * (
+            (self.width - self.handleWidth) / self.totalAmount))
+
+    def getAmount(self):
+        return self.amount / self.totalAmount
+
+    def __render(self):
+        self.dirty = False
+
+        pos, size = self.setRect()
+        posBar = vec(self.x, self.y + (self.height / 2)) * self.menu.renderer.getScale()
+        posHandle = vec(self.handleX, self.y) * self.menu.renderer.getScale()
+        sizeHandle = vec(self.handleWidth, self.height * 2) * self.menu.renderer.getScale()
+        self.rectBar = pygame.Rect(posBar, size)
+        self.rectHandle = pygame.Rect(posHandle, sizeHandle)
+
+        self.setBorder()
+
+        fullSize = vec(size[0], sizeHandle[1])
+
+        self.image = pygame.Surface(fullSize).convert()
+        if self.alpha is not None:
+            self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+        if self.fill is not None:
+            self.drawShape(self.image, self.fill, pygame.Rect(0, (self.height / 2) * self.menu.renderer.getScale(), *size), pygame.Rect(0, 0, *sizeHandle), 0)
+        self.drawShape(
+            self.image, self.color, pygame.Rect(0, (self.height / 2) * self.menu.renderer.getScale(), *size), pygame.Rect(0, 0, *sizeHandle), self.outline)
+
+        self.addComponents()
+
+    def drawShape(
+            self, surface, color=None, rect=None, rectHandle=None,
+            outline=None):
+        rect = self.rectBar if rect is None else rect
+        rectHandle = self.rectHandle if rectHandle is None else rectHandle
+
+        super().drawShape(surface, color, rect, outline)
+        super().drawShape(surface, BLACK, rectHandle, 0, [5, 5, 5, 5])
+
+    def draw(self):
+        super().draw()
+
+        mx, my = pygame.mouse.get_pos()
+        difference = self.menu.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
+
+        self.amount = (
+            (self.handleX - self.x)
+            / ((self.width - self.handleWidth) / self.totalAmount))
+
+        if (self.rectHandle.collidepoint((mx, my))
+                and pygame.mouse.get_pressed()[0]):
+            self.clicked = True
+        elif not pygame.mouse.get_pressed()[0] and self.clicked:
+            self.clicked = False
+            self.callback(self)
+
+        if self.clicked:
+            self.handleX = (
+                (mx / self.menu.renderer.getScale()) - (self.handleWidth / 2))
+
+            if self.handleX <= self.x:
+                self.handleX = self.x
+            elif self.handleX >= (self.x + self.width) - self.handleWidth:
+                self.handleX = (self.x + self.width) - self.handleWidth
+
+            self.rectHandle.x = self.handleX * self.menu.renderer.getScale()
 
     def makeSurface(self):
         if self.dirty or self.rect is None:
@@ -733,10 +822,8 @@ class Timer(Arc):
         self.startAngle = math.pi / 2 + math.pi * step
         self.stopAngle = math.pi / 2
 
-        pos = vec(self.x, self.y) * self.menu.renderer.getScale()
-        size = vec(self.width, self.height) * self.menu.renderer.getScale()
-        self.rect = pygame.Rect(pos, size)
-        self.outline = self.shapeOutline * self.menu.renderer.getScale()
+        pos, size = self.setRect()
+        self.setBorder()
 
         self.image = pygame.Surface(size, pygame.SRCALPHA, 32).convert_alpha()
         # self.image.fill(BLACK)

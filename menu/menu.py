@@ -8,7 +8,7 @@ import hudFunctions as hf
 import transitionFunctions as tf
 from menuComponents import (
     Image, Label, InputBox, Rectangle, Meter, DifficultyMeter,
-    Timer, MessageBox, Map)
+    Timer, MessageBox, Map, Slider)
 from clickManager import EditorClickManager
 import abc
 import random
@@ -822,7 +822,10 @@ class OptionMenu(Menu):
                 config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
         audio = Label(self, "Audio", 70, WHITE, (self.x, 100))
-
+        test = Label(self, "test", 30, BLACK, (100, 200))
+        slider = Slider(
+            self, WHITE, config["audio"]["volume"]["master"],
+            mf.setMasterVolume, (200, 20), (200, 200))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         back.addEvent(mf.showOptions, 'onMouseClick')
@@ -831,6 +834,8 @@ class OptionMenu(Menu):
 
         self.add(background)
         self.add(audio)
+        self.add(test)
+        self.add(slider)
         self.add(back)
 
     def graphics(self):
