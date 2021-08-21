@@ -564,7 +564,7 @@ class SpriteRenderer():
                 self.totalPeopleNone = False
 
     def events(self):
-        if pygame.key.get_pressed()[pygame.K_SPACE]:
+        if pygame.key.get_pressed()[config["controls"]["slowdown"]]:
             self.game.clickManager.setSpaceBar(True)
 
             if (
@@ -572,7 +572,7 @@ class SpriteRenderer():
                     and not self.meter.getEmpty()):
                 self.game.audioLoader.playSound("slowIn", 1)
 
-        elif pygame.key.get_pressed()[pygame.K_f]:
+        elif pygame.key.get_pressed()[config["controls"]["fastforward"]]:
             self.game.clickManager.setSpeedUp(True)
 
         else:

@@ -354,10 +354,13 @@
         "layer2": "2", 
         "layer3": "3", 
         "layer4": "4",
-        "dtDown": "space",
-        "dtUp": "s",
         "left": "left",
-        "right": "right"
+        "right": "right",
+        "up": "up",
+        "down": "down",
+        "pause": "p",
+        "slowdown": 32,
+        "fastforward": 102
     }, 
     "saves": [], 
     "maps": {

@@ -109,16 +109,20 @@ class Game:
                         elif self.optionMenu.open:
                             self.optionMenu.closeTransition()
 
-                elif e.key == pygame.K_RIGHT and self.mainMenu.open:
+                elif (pygame.key.name(e.key) == config["controls"]["right"]
+                        and self.mainMenu.open):
                     self.mainMenu.levelForward(vec(1, 0))
-                elif e.key == pygame.K_LEFT and self.mainMenu.open:
+                elif (pygame.key.name(e.key) == config["controls"]["left"]
+                        and self.mainMenu.open):
                     self.mainMenu.levelBackward(vec(-1, 0))
-                elif e.key == pygame.K_UP and self.mainMenu.open:
+                elif (pygame.key.name(e.key) == config["controls"]["up"]
+                        and self.mainMenu.open):
                     self.mainMenu.levelUpward(vec(0, -1))
-                elif e.key == pygame.K_DOWN and self.mainMenu.open:
+                elif (pygame.key.name(e.key) == config["controls"]["down"]
+                        and self.mainMenu.open):
                     self.mainMenu.levelDownward(vec(0, 1))
 
-                elif e.key == pygame.K_p:
+                elif pygame.key.name(e.key) == config["controls"]["pause"]:
                     if self.spriteRenderer.getHud().open:
                         self.spriteRenderer.getHud().togglePauseGame()
 
