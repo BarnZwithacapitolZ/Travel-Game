@@ -586,6 +586,14 @@ class MainMenu(Menu):
         self.setLevelSelectMaps(self.customMaps, cols, self.currentCustomLevel)
         self.setLevelsClickable(self.currentCustomLevel)
 
+        if transition:
+            # set the up transition
+            def callback(obj, menu, animation):
+                obj.removeAnimation(animation)
+                menu.remove(obj)
+
+            self.slideTransitionY((0, 0), 'second', callback=callback)
+
     def levelSelect(self, transition=False):
         self.open = True
         self.customLevelSelectOpen = False
@@ -664,8 +672,8 @@ class MainMenu(Menu):
         custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
         mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
 
-        levelNext.addEvent(mf.levelForward, 'onMouseClick')
-        levelBack.addEvent(mf.levelBackward, 'onMouseClick')
+        levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
+        levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
         self.add(self.levelComplete)
         self.add(self.levelCompleteText)

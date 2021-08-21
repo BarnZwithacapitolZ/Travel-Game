@@ -193,8 +193,19 @@ def showLevelSelect(obj, menu, event):
 
 
 def showCustomLevelSelect(obj, menu, event):
-    menu.close()
-    menu.customLevelSelect()
+    def callback(obj, menu, animation):
+        obj.y = 0
+
+        if obj.rect.y == 0:
+            obj.removeAnimation(animation)
+
+            menu.close()
+            menu.game.mainMenu.customLevelSelect(True)
+
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
+    menu.loadingScreen()
 
 
 # unpause the game and hide the option menu
