@@ -28,7 +28,9 @@
     }, 
     "player": {
         "tutorial": false,
-        "keys": 0
+        "keys": 0,
+        "currentLevel": [0, 0],
+        "currentCustomLevel": [0, 0]
     },
     "fonts": {
         "whiteRabbit": "whitrabt.ttf",

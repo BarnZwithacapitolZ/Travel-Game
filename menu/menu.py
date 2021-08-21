@@ -1,7 +1,6 @@
 import pygame
 from config import (
-    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, BLUE)
-
+    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, dump)
 import generalFunctions as gf
 import menuFunctions as mf
 import hudFunctions as hf
@@ -205,8 +204,12 @@ class Menu:
 class MainMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
-        self.currentLevel = vec(0, 0)
-        self.currentCustomLevel = vec(0, 0)
+        self.currentLevel = vec(
+            config["player"]["currentLevel"][0],
+            config["player"]["currentLevel"][1])
+        self.currentCustomLevel = vec(
+            config["player"]["currentCustomLevel"][0],
+            config["player"]["currentCustomLevel"][1])
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
         self.currentMaps = self.builtInMaps
@@ -338,6 +341,14 @@ class MainMenu(Menu):
                 (0, 0), 'second', speed=40, callback=callback,
                 direction='down')
 
+    def saveCurrentLevel(self, currentLevel):
+        if self.levelSelectOpen:
+            config["player"]["currentLevel"] = [currentLevel.x, currentLevel.y]
+        elif self.customLevelSelect:
+            config["player"]["currentCustomLevel"] = [
+                currentLevel.x, currentLevel.y]
+        dump(config)
+
     def changeCurrentLevel(self, change=vec(0, 0)):
         currentLevel = self.getCurrentLevel()
         if ((change.x > 0 and currentLevel.x < self.getLevelSelectCols() - 1)
@@ -346,6 +357,7 @@ class MainMenu(Menu):
                 or (change.x < 0 and currentLevel.x > 0)
                 or (change.y < 0 and currentLevel.y > 0)):
             currentLevel += change
+            self.saveCurrentLevel(currentLevel)
             return True
         return False
 
@@ -582,7 +594,7 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = True
-        self.backgroundColor = GREEN  # Change this?
+        self.backgroundColor = CREAM  # Change this?
         self.setLevelSize(self.customLevelSize)
         cols = 4
         self.currentMaps = self.getArrangedMaps(self.customMaps, cols)
@@ -591,7 +603,7 @@ class MainMenu(Menu):
         self.setLevelsClickable(self.currentCustomLevel)
 
         background = Rectangle(
-            self, BLACK, (self.levelWidth, 60), (
+            self, GREEN, (self.levelWidth, 60), (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2, 0),
             shapeBorderRadius=[0, 0, 20, 20], alpha=150)
         mainMenu = Image(
