@@ -1,6 +1,6 @@
 import pygame
 from config import (
-    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW)
+    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, BLUE)
 
 import generalFunctions as gf
 import menuFunctions as mf
@@ -64,13 +64,17 @@ class Menu:
     def display(self):
         # We use list so we can delete from the array whilst looping through
         # it (without causing flicking with double blits)
-        for component in list(self.components):
+        # We use the reversed list so that the items added first (bottom)
+        # are the last in the event loop
+        allComponents = zip(
+            list(self.components), reversed(list(self.components)))
+        for component, tangibleComponent in allComponents:
             component.draw()
 
             # only if the menu is open do we want to allow for interactions
             if self.open:
-                self.events(component)
-                self.animate(component)
+                self.events(tangibleComponent)
+                self.animate(tangibleComponent)
 
     def animate(self, component):
         if hasattr(component, 'rect'):
@@ -578,13 +582,49 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = True
-        self.backgroundColor = GREY  # Change this?
+        self.backgroundColor = GREEN  # Change this?
         self.setLevelSize(self.customLevelSize)
         cols = 4
         self.currentMaps = self.getArrangedMaps(self.customMaps, cols)
 
         self.setLevelSelectMaps(self.customMaps, cols, self.currentCustomLevel)
         self.setLevelsClickable(self.currentCustomLevel)
+
+        background = Rectangle(
+            self, BLACK, (self.levelWidth, 60), (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2, 0),
+            shapeBorderRadius=[0, 0, 20, 20], alpha=150)
+        mainMenu = Image(
+            self, "button", (25, 25), (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2
+                + self.spacing, 21))
+        mainMenuText = Label(
+            self, "Main Menu", 20, CREAM, (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2
+                + self.spacing + 30, 27))
+        levelSelect = Image(
+            self, "button", (25, 25), (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
+        levelSelectText = Label(
+            self, "Level Selection", 20, CREAM, (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
+
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        levelSelect.addEvent(
+            gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        levelSelect.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+
+        mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
+        mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
+        levelSelect.addEvent(mf.openLevelSelect, 'onMouseClick')
+        levelSelectText.addEvent(mf.openLevelSelect, 'onMouseClick')
+
+        self.add(background)
+        self.add(mainMenu)
+        self.add(mainMenuText)
+        self.add(levelSelect)
+        self.add(levelSelectText)
 
         if transition:
             # set the up transition
@@ -669,8 +709,9 @@ class MainMenu(Menu):
             gf.hoverImage, 'onMouseOut', image="buttonArrowLeft")
 
         mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
-        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
         mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
+        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
+        customText.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
 
         levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))

@@ -236,4 +236,9 @@ if __name__ == "__main__":
     g = Game()
     g.run()
     # cProfile.run('g.run()')
-    pygame.quit()
+
+    # Kill the game
+    if pygame.mixer.get_init() is not None:
+        pygame.mixer.quit()
+    if pygame.get_init():
+        pygame.quit()

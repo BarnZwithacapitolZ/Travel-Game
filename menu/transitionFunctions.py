@@ -108,7 +108,7 @@ def slideTransitionX(obj, menu, animation, speed, half, callback):
 
 
 def increaseTimer(obj, menu, animation, speed, finish, direction = "forwards", callback = None):
-    obj.timer += speed * 100 * menu.game.dt
+    obj.timer += speed * 100 * menu.game.dt * menu.game.spriteRenderer.getDt()
 
     if obj.timer >= finish and direction == "forwards" or obj.timer <= finish and direction == "backwards":
         obj.removeAnimation(animation)
