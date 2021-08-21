@@ -225,6 +225,18 @@ def setMasterVolume(slider):
     dump(config)
 
 
+def setSoundVolume(slider):
+    slider.menu.game.audioLoader.setSoundVolume(slider.getAmount())
+    config["audio"]["volume"]["sounds"] = slider.getAmount()
+    dump(config)
+
+
+def setMusicVolume(slider):
+    slider.menu.game.audioLoader.setMusicVolume(slider.getAmount())
+    config["audio"]["volume"]["music"] = slider.getAmount()
+    dump(config)
+
+
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
     menu.close()

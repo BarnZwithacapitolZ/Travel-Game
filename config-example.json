@@ -307,10 +307,6 @@
                 "file": "game\\swoopOut.wav",
                 "volume": 0.7
             },
-            "boot": {
-                "file": "boot.wav",
-                "volume": 1.0
-            },
             "bell": {
                 "file": "game\\Bell.wav",
                 "volume": 0.7
@@ -345,7 +341,10 @@
             }
         },
         "music": {
-            
+            "boot": {
+                "file": "boot.wav",
+                "volume": 0.2
+            }
         }
     }, 
     "controls": {

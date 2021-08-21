@@ -822,10 +822,18 @@ class OptionMenu(Menu):
                 config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
         audio = Label(self, "Audio", 70, WHITE, (self.x, 100))
-        test = Label(self, "test", 30, BLACK, (100, 200))
-        slider = Slider(
+        master = Label(self, "Master Volume:", 50, WHITE, (self.x, 200))
+        sound = Label(self, "Sound Volume:", 50, WHITE, (self.x, 280))
+        music = Label(self, "Music Volume:", 50, WHITE, (self.x, 360))
+        masterVolume = Slider(
             self, WHITE, config["audio"]["volume"]["master"],
-            mf.setMasterVolume, (200, 20), (200, 200))
+            mf.setMasterVolume, (300, 30), (550, 205))
+        soundVolume = Slider(
+            self, WHITE, config["audio"]["volume"]["sounds"],
+            mf.setSoundVolume, (300, 30), (550, 285))
+        musicVolume = Slider(
+            self, WHITE, config["audio"]["volume"]["music"],
+            mf.setMusicVolume, (300, 30), (550, 365))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         back.addEvent(mf.showOptions, 'onMouseClick')
@@ -834,8 +842,12 @@ class OptionMenu(Menu):
 
         self.add(background)
         self.add(audio)
-        self.add(test)
-        self.add(slider)
+        self.add(master)
+        self.add(sound)
+        self.add(music)
+        self.add(masterVolume)
+        self.add(soundVolume)
+        self.add(musicVolume)
         self.add(back)
 
     def graphics(self):

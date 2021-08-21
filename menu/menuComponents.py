@@ -689,7 +689,7 @@ class Slider(Rectangle):
         self.callback = callback
         self.y -= (self.height / 2)
 
-        self.handleWidth = 10
+        self.handleWidth = max(self.width / 20, 10)
         self.handleX = self.x + (self.amount * (
             (self.width - self.handleWidth) / self.totalAmount))
 
@@ -727,7 +727,7 @@ class Slider(Rectangle):
         rectHandle = self.rectHandle if rectHandle is None else rectHandle
 
         super().drawShape(surface, color, rect, outline)
-        super().drawShape(surface, BLACK, rectHandle, 0, [5, 5, 5, 5])
+        super().drawShape(surface, BLACK, rectHandle, 0, [20, 20, 20, 20])
 
     def draw(self):
         super().draw()

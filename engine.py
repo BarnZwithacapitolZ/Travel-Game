@@ -3,8 +3,8 @@ import os
 import json
 import pygame._sdl2
 from config import (
-    config, ASSETSFOLDER, AUDIOFOLDER, MAPSFOLDER, RED, BLACK, TRUEBLACK,
-    SCANLINES)
+    config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MAPSFOLDER, RED, BLACK,
+    TRUEBLACK, SCANLINES)
 
 vec = pygame.math.Vector2
 
@@ -236,8 +236,12 @@ class AudioLoader:
         self.sounds = {}
         self.music = {}
 
+        self.masterBuffer = 1.0
+        self.musicBuffer = 1.0
+
         self.setChannels()
         self.loadAllSounds()
+        self.loadAllMusic()
         self.setMasterVolume(config["audio"]["volume"]["master"])
 
     def getSound(self, key):
@@ -252,6 +256,12 @@ class AudioLoader:
     def fadeOutSound(self, duration, chan=0):
         self.channels[chan].fadeout(duration)
 
+    def playMusic(self, key, loop=0):
+        pygame.mixer.music.load(self.music[key]["path"])
+        self.musicBuffer = 1.0 / self.music[key]["volume"]
+        self.setMusicVolume(config["audio"]["volume"]["music"])
+        pygame.mixer.music.play(loop)
+
     def setChannels(self):
         # Channel 0 reserved for hud sounds
         # Channel 1 reserved for game sounds
@@ -260,14 +270,36 @@ class AudioLoader:
             pygame.mixer.Channel(i) for i in range(self.numChannels)]
 
     def setMasterVolume(self, volume=1):
+        self.masterBuffer = 1.0 / volume if volume > 0 else None
+        self.setSoundVolume(config["audio"]["volume"]["sounds"])
+        self.setMusicVolume(config["audio"]["volume"]["music"])
+
+    def setSoundVolume(self, volume=1):
         for channel in self.channels:
-            channel.set_volume(volume)
+            amount = (
+                volume / self.masterBuffer if self.masterBuffer is not None
+                else 0.0)
+            channel.set_volume(amount)
+
+    def setMusicVolume(self, volume=1):
+        amount = (
+            (volume / self.musicBuffer) / self.masterBuffer
+            if self.masterBuffer is not None else 0.0)
+        pygame.mixer.music.set_volume(amount)
 
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():
             a = pygame.mixer.Sound(os.path.join(AUDIOFOLDER, audio["file"]))
             a.set_volume(audio["volume"])
             self.sounds[key] = a
+
+    def loadAllMusic(self):
+        for key, audio in config["audio"]["music"].items():
+            path = os.path.join(MUSICFOLDER, audio["file"])
+            self.music[key] = {
+                "path": path,
+                "volume": audio["volume"]
+            }
 
 
 class MapLoader:
