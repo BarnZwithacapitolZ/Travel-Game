@@ -11,7 +11,8 @@ def hoverColor(obj, menu, event, color=None):
 # hover over the object and add a hover animation
 def hoverOver(obj, menu, event, speed=1, x=110, color=WHITE):
     if tf.hoverOverAnimation not in obj.getAnimations():
-        obj.addAnimation(tf.hoverOverAnimation, 'onMouseOver', speed=speed, x=x)
+        obj.addAnimation(
+            tf.hoverOverAnimation, 'onMouseOver', speed=speed, x=x)
     obj.setColor(color)
 
 

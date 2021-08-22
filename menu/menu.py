@@ -7,7 +7,7 @@ import hudFunctions as hf
 import transitionFunctions as tf
 from menuComponents import (
     Image, Label, InputBox, Rectangle, Meter, DifficultyMeter,
-    Timer, MessageBox, Map, Slider)
+    Timer, MessageBox, Map, Slider, ControlLabel)
 from clickManager import EditorClickManager
 import abc
 import random
@@ -859,6 +859,11 @@ class OptionMenu(Menu):
             gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         graphics.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
+        controls.addEvent(mf.showControls, 'onMouseClick')
+        controls.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        controls.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
         audio.addEvent(mf.showAudio, 'onMouseClick')
         audio.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         audio.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
@@ -909,6 +914,85 @@ class OptionMenu(Menu):
         self.add(masterVolume)
         self.add(soundVolume)
         self.add(musicVolume)
+        self.add(back)
+
+    def controls(self):
+        self.open = True
+
+        background = Rectangle(
+            self, GREEN, (
+                config["graphics"]["displayWidth"],
+                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
+
+        controls = Label(self, "Controls", 70, WHITE, (self.x, 100))
+
+        layer1 = ControlLabel(
+            self, "Layer 1:", "layer1", 40, WHITE, (self.x, 200))
+        layer2 = ControlLabel(
+            self, "Layer 2:", "layer2", 40, WHITE, (self.x, 250))
+        layer3 = ControlLabel(
+            self, "Layer 3:", "layer3", 40, WHITE, (self.x, 300))
+        layer4 = ControlLabel(
+            self, "Layer 4:", "layer4", 40, WHITE, (self.x, 350))
+        pause = ControlLabel(
+            self, "Pause:", "pause", 40, WHITE, (self.x + 500, 200))
+        slowdown = ControlLabel(
+            self, "Slowdown:", "slowdown", 40, WHITE, (self.x + 500, 250))
+        fastforward = ControlLabel(
+            self, "Fastforward:", "fastforward", 40, WHITE,
+            (self.x + 500, 300))
+        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+
+        layer1.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        layer1.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+        layer1.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        layer2.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        layer2.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+        layer2.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        layer3.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        layer3.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+        layer3.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        layer4.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        layer4.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+        layer4.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        pause.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+        pause.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+        pause.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        slowdown.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+        slowdown.addEvent(
+            gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+        slowdown.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        fastforward.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+        fastforward.addEvent(
+            gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+        fastforward.addEvent(mf.clearKeyText, 'onMouseClick')
+
+        back.addEvent(mf.showOptions, 'onMouseClick')
+        back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
+        self.add(background)
+        self.add(controls)
+        self.add(layer1)
+        self.add(layer2)
+        self.add(layer3)
+        self.add(layer4)
+        self.add(pause)
+        self.add(slowdown)
+        self.add(fastforward)
         self.add(back)
 
     def graphics(self):

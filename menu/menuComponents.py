@@ -22,12 +22,16 @@ class TextHandler:
 
         self.keys = list(string.ascii_letters) + list(string.digits)
         self.keys.append(" ")
+        self.currentKey = None
 
     def getActive(self):
         return self.active
 
     def getPressed(self):
         return self.pressed
+
+    def getCurrentKey(self):
+        return self.currentKey
 
     def getLengthReached(self):
         return self.lengthReached
@@ -42,6 +46,9 @@ class TextHandler:
 
     def setPressed(self, pressed):
         self.pressed = pressed
+
+    def setCurrentKey(self, currentKey):
+        self.currentKey = currentKey
 
     def setString(self, string=[]):
         self.string = string
@@ -65,6 +72,7 @@ class TextHandler:
 
         if self.active:
             self.string = []
+            self.pointer = 0
 
     def events(self, event):
         if self.active:
@@ -217,7 +225,7 @@ class Label(MenuComponent):
             backgroundColor=None):
         super().__init__(menu, color, (1, 1), pos)
 
-        self.text = text
+        self.text = str(text)
         # self.fontName = pygame.font.get_default_font()
         self.fontName = os.path.join(
             FONTFOLDER, config["fonts"]["whiteRabbit"])
@@ -244,6 +252,9 @@ class Label(MenuComponent):
     def getFontSizeScaled(self, text=None):
         text = self.text if text is None else text
         return self.font.size(text)
+
+    def getFontSizeInt(self):
+        return self.fontSize
 
     def getCharPositions(self, text=None):
         text = self.text if text is None else text
@@ -296,16 +307,142 @@ class Label(MenuComponent):
 
         self.rect = self.image.get_rect()
 
-        # Scale down as font is automatically sized to scale when set
-        self.width = self.rect.width / self.menu.renderer.getScale()
-        self.height = self.rect.height / self.menu.renderer.getScale()
+        # Set the width, height to the exact size of the font
+        self.width = self.getFontSize()[0]
+        self.height = self.getFontSize()[1]
 
+        # Reset the x, y coordinates since these are set to 0 in get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
+
+
+class ControlKey(Label):
+    def __init__(self, menu, text, fontSize, color, pos=tuple(), border=True):
+        super().__init__(menu, text, fontSize, color, pos)
+        self.offset = vec(20, 10)
+        self.border = border
+
+    def getBorder(self):
+        return self.border
+
+    def setBorder(self, border):
+        self.border = border
+
+    def __render(self):
+        super().makeSurface()
+
+        # Increase the width and height to include the offset for the border
+        # since it currently just has the size for the label
+        self.width += self.offset.x
+        self.height += self.offset.y
+
+        self.finalImage = pygame.Surface((
+            self.width * self.menu.renderer.getScale(),
+            self.height * self.menu.renderer.getScale()),
+            pygame.SRCALPHA, 32).convert_alpha()
+        self.finalImage.blit(self.image, (
+            (self.offset.x / 2) * self.menu.renderer.getScale(),
+            (self.offset.y / 2 + 1) * self.menu.renderer.getScale()))
+        self.rect = self.finalImage.get_rect()
+
+        # Reset the x, y coordinates since these are set to 0 in get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = (self.y - 5) * self.menu.renderer.getScale()
+
+        # Add the border to the image
+        if self.border:
+            border = Rectangle(
+                self.menu, self.color, (self.width, self.height), (0, 0),
+                shapeOutline=3, shapeBorderRadius=[10, 10, 10, 10])
+            border.drawPaused(self.finalImage)
+
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.finalImage, self.rect)
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.finalImage, (self.rect))
+
+
+class ControlLabel(Label):
+    def __init__(self, menu, text, keyName, fontSize, color, pos=tuple()):
+        super().__init__(menu, text, fontSize, color, pos)
+        self.keyName = keyName
+        self.keyText = pygame.key.name(config["controls"][keyName])
+        self.keyTextFontSize = self.fontSize
+        self.keyTextBorder = True
+        self.spacing = 15
+
+    def getKeyName(self):
+        return self.keyName
+
+    def getKeyText(self):
+        return self.keyText
+
+    def getKeyTextFontSize(self):
+        return self.keyTextFontSize
+
+    def getKeyTextBorder(self):
+        return self.keyTextBorder
+
+    def setKeyText(self, keyText):
+        self.keyText = keyText
+
+    def setKeyTextFontSize(self, keyTextFontSize):
+        self.keyTextFontSize = keyTextFontSize
+
+    def setKeyTextBorder(self, keyTextBorder):
+        self.keyTextBorder = keyTextBorder
+
+    def __render(self):
+        super().makeSurface()
+        key = ControlKey(
+            self.menu, self.keyText, self.keyTextFontSize, self.color, (0, 0),
+            self.keyTextBorder)
+        key.setPos(
+            (self.width + self.spacing, key.getOffset().y / 2))
+
+        # Increase the width and height to include the key
+        self.width += (
+            key.getOffset().x + self.spacing + key.getFontSize()[0])
+        self.height += key.getOffset().y
+
+        self.finalImage = pygame.Surface((
+            self.width * self.menu.renderer.getScale(),
+            self.height * self.menu.renderer.getScale()),
+            pygame.SRCALPHA, 32).convert_alpha()
+        self.finalImage.blit(self.image, (
+            0, (key.getOffset().y / 2) * self.menu.renderer.getScale()))
+        self.rect = self.finalImage.get_rect()
+
+        # Reset the x, y coordinates since these are set to 0 in get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = (
+            (self.y - (key.getOffset().y / 2))
+            * self.menu.renderer.getScale())
+
+        key.drawPaused(self.finalImage)
+
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.finalImage, self.rect)
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.finalImage, (self.rect))
 
 
 class InputBox(Label):

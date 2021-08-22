@@ -230,6 +230,11 @@ def showAudio(obj, menu, event):
     menu.audio()
 
 
+def showControls(obj, menu, event):
+    menu.close()
+    menu.controls()
+
+
 def setMasterVolume(slider):
     slider.menu.game.audioLoader.setMasterVolume(slider.getAmount())
     config["audio"]["volume"]["master"] = slider.getAmount()
@@ -325,3 +330,25 @@ def toggleVsync(obj, menu, event):
     menu.renderer.setScale(
         (menu.renderer.getWindowWidth(), menu.renderer.getWindowHeight()),
         menu.game.fullscreen)
+
+
+def clearKeyText(obj, menu, event):
+    obj.setKeyText("Press new key")
+    obj.setKeyTextFontSize(30)
+    obj.setKeyTextBorder(False)
+    obj.addEvent(setKeyText, 'onKeyPress')
+    menu.game.textHandler.setActive(True)
+    obj.dirty = True
+
+
+def setKeyText(obj, menu, event):
+    newKey = menu.game.textHandler.getCurrentKey()
+    obj.setKeyText(pygame.key.name(newKey))
+    obj.setKeyTextFontSize(obj.getFontSizeInt())
+    obj.setKeyTextBorder(True)
+    menu.game.textHandler.setActive(False)
+
+    config["controls"][obj.getKeyName()] = newKey
+    dump(config)
+
+    obj.removeEvent(setKeyText, 'onKeyPress')
