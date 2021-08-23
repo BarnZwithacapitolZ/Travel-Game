@@ -352,12 +352,28 @@ def setKeyText(obj, menu, event):
     obj.setKeyText(pygame.key.name(newKey))
     obj.setKeyTextFontSize(obj.getFontSizeInt())
     obj.setKeyTextBorder(True)
-    menu.game.textHandler.setActive(False)
 
     config["controls"][obj.getKeyName()]["current"] = newKey
     dump(config)
 
+    menu.game.textHandler.setActive(False)
     obj.removeEvent(setKeyText, 'onKeyPress')
 
     if pressedObj and obj.getKeyName() != pressedObj.getKeyName():
         clearKeyText(pressedObj, menu, event)
+
+
+def resetControls(obj, menu, event):
+    for key, control in menu.controlKeys.items():
+        newKey = config["controls"][control.getKeyName()]["default"]
+        control.setKeyInt(newKey)
+        control.setKeyText(pygame.key.name(newKey))
+        control.setKeyTextFontSize(control.getFontSizeInt())
+        control.setKeyTextBorder(True)
+        control.dirty = True
+
+        config["controls"][control.getKeyName()]["current"] = newKey
+        dump(config)
+
+        menu.game.textHandler.setActive(False)
+        control.removeEvent(setKeyText, 'onKeyPress')

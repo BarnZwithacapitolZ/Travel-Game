@@ -952,6 +952,7 @@ class OptionMenu(Menu):
             self, "Fastforward:", "fastforward", 40, WHITE,
             (self.x + 400, 300))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+        reset = Label(self, "Reset Default", 30, WHITE, (self.x + 400, 440))
 
         layer1.addEvent(
             gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
@@ -990,9 +991,14 @@ class OptionMenu(Menu):
             gf.hoverOut, 'onMouseOut', x=self.x + 400, color=WHITE)
         fastforward.addEvent(mf.clearKeyText, 'onMouseClick')
 
-        back.addEvent(mf.showOptions, 'onMouseClick')
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+        back.addEvent(mf.showOptions, 'onMouseClick')
+
+        reset.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 400 + 10, color=BLACK)
+        reset.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 400, color=WHITE)
+        reset.addEvent(mf.resetControls, 'onMouseClick')
 
         allControls = [
             layer1, layer2, layer3, layer4, pause, slowdown, fastforward]
@@ -1005,6 +1011,7 @@ class OptionMenu(Menu):
             self.controlKeys[control.getKeyName()] = control
 
         self.add(back)
+        self.add(reset)
 
     def graphics(self):
         self.open = True
