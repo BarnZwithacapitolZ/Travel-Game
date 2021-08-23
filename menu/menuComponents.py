@@ -16,7 +16,6 @@ class TextHandler:
     def __init__(self):
         self.active = False
         self.lengthReached = False
-        self.pressed = False
         self.pointer = 0
         self.string = []
 
@@ -28,7 +27,7 @@ class TextHandler:
         return self.active
 
     def getPressed(self):
-        return self.pressed
+        return False if self.currentKey is None else True
 
     def getCurrentKey(self):
         return self.currentKey
@@ -43,9 +42,6 @@ class TextHandler:
         return (
             ''.join(self.string[:self.pointer]) if pointer
             else ''.join(self.string))
-
-    def setPressed(self, pressed):
-        self.pressed = pressed
 
     def setCurrentKey(self, currentKey):
         self.currentKey = currentKey
@@ -75,6 +71,8 @@ class TextHandler:
             self.pointer = 0
 
     def events(self, event):
+        self.setCurrentKey(event.key)
+
         if self.active:
             if event.key == pygame.K_BACKSPACE:
                 self.removeLast()
@@ -91,9 +89,9 @@ class TextHandler:
 
                     self.pointer += 1
 
-                if pygame.key.name(event.key) == config["controls"]["left"]:
+                if event.key == config["controls"]["left"]["current"]:
                     self.setPointer(self.pointer - 1)
-                elif pygame.key.name(event.key) == config["controls"]["right"]:
+                elif event.key == config["controls"]["right"]["current"]:
                     self.setPointer(self.pointer + 1)
 
 
@@ -377,13 +375,17 @@ class ControlLabel(Label):
     def __init__(self, menu, text, keyName, fontSize, color, pos=tuple()):
         super().__init__(menu, text, fontSize, color, pos)
         self.keyName = keyName
-        self.keyText = pygame.key.name(config["controls"][keyName])
+        self.keyInt = config["controls"][keyName]["current"]
+        self.keyText = pygame.key.name(self.keyInt)
         self.keyTextFontSize = self.fontSize
         self.keyTextBorder = True
         self.spacing = 15
 
     def getKeyName(self):
         return self.keyName
+
+    def getKeyInt(self):
+        return self.keyInt
 
     def getKeyText(self):
         return self.keyText
@@ -393,6 +395,9 @@ class ControlLabel(Label):
 
     def getKeyTextBorder(self):
         return self.keyTextBorder
+
+    def setKeyInt(self, keyInt):
+        self.keyInt = keyInt
 
     def setKeyText(self, keyText):
         self.keyText = keyText
@@ -1035,7 +1040,7 @@ class MessageBox(Rectangle):
 
         biggestWidth, totalHeight = 0, 0
         for msg in finalMessage:
-            # first we siet the x and y to 0 since we don't know the width yet
+            # first we set the x and y to 0 since we don't know the width yet
             m = Label(self.menu, msg, 25, Color("white"), (0, 0))
             width, height = m.getFontSize()
             m.setOffset(vec(0, totalHeight))

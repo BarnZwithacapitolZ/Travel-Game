@@ -345,7 +345,7 @@ class MapLoader:
         del self.customMaps[mapName]
 
     def removeBuiltInMap(self, mapName):
-        del self.builtInMaps[mapName] 
+        del self.builtInMaps[mapName]
 
     def loadMaps(self, maps, mapDict):
         for key, level in maps.items():

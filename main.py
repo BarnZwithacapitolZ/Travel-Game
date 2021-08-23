@@ -96,8 +96,6 @@ class Game:
 
             if e.type == pygame.KEYDOWN:
                 self.textHandler.events(e)
-                self.textHandler.setPressed(True)
-                self.textHandler.setCurrentKey(e.key)
 
                 # Only open the option manu if the game isn't paused
                 # and the main menu isn't open
@@ -110,20 +108,20 @@ class Game:
                         elif self.optionMenu.open:
                             self.optionMenu.closeTransition()
 
-                elif (e.key == config["controls"]["right"]
+                elif (e.key == config["controls"]["right"]["current"]
                         and self.mainMenu.open):
                     self.mainMenu.levelForward(vec(1, 0))
-                elif (e.key == config["controls"]["left"]
+                elif (e.key == config["controls"]["left"]["current"]
                         and self.mainMenu.open):
                     self.mainMenu.levelBackward(vec(-1, 0))
-                elif (e.key == config["controls"]["up"]
+                elif (e.key == config["controls"]["up"]["current"]
                         and self.mainMenu.open):
                     self.mainMenu.levelUpward(vec(0, -1))
-                elif (e.key == config["controls"]["down"]
+                elif (e.key == config["controls"]["down"]["current"]
                         and self.mainMenu.open):
                     self.mainMenu.levelDownward(vec(0, 1))
 
-                elif e.key == config["controls"]["pause"]:
+                elif e.key == config["controls"]["pause"]["current"]:
                     if self.spriteRenderer.getHud().open:
                         self.spriteRenderer.getHud().togglePauseGame()
 
@@ -132,16 +130,16 @@ class Game:
                 if (not self.paused and not self.mainMenu.open
                         and not self.textHandler.getActive()):
                     # Show / Hide the different layers depending on key press
-                    if e.key == config["controls"]["layer1"]:
+                    if e.key == config["controls"]["layer1"]["current"]:
                         self.spriteRenderer.showLayer(1)
                         self.mapEditor.showLayer(1)
-                    elif e.key == config["controls"]["layer2"]:
+                    elif e.key == config["controls"]["layer2"]["current"]:
                         self.spriteRenderer.showLayer(2)
                         self.mapEditor.showLayer(2)
-                    elif e.key == config["controls"]["layer3"]:
+                    elif e.key == config["controls"]["layer3"]["current"]:
                         self.spriteRenderer.showLayer(3)
                         self.mapEditor.showLayer(3)
-                    elif e.key == config["controls"]["layer4"]:
+                    elif e.key == config["controls"]["layer4"]["current"]:
                         self.spriteRenderer.showLayer(4)
                         self.mapEditor.showLayer(4)
 
@@ -164,7 +162,6 @@ class Game:
                     self.mapEditor.createLevel(level, layer=layer)
 
             elif e.type == pygame.KEYUP:
-                self.textHandler.setPressed(False)
                 self.textHandler.setCurrentKey(None)
 
             # Just for fun :) - And refactoring ( ͡° ͜ʖ ͡°)

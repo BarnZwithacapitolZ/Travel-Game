@@ -350,17 +350,50 @@
         }
     }, 
     "controls": {
-        "layer1": 49, 
-        "layer2": 50, 
-        "layer3": 51, 
-        "layer4": 52,
-        "left": 1073741904,
-        "right": 1073741903,
-        "up": 1073741906,
-        "down": 1073741905,
-        "pause": 112,
-        "slowdown": 32,
-        "fastforward": 102
+        "layer1": {
+            "default": 49,
+            "current": 49
+        }, 
+        "layer2": {
+            "default": 50,
+            "current": 50
+        }, 
+        "layer3": {
+            "default": 51,
+            "current": 51
+        }, 
+        "layer4": {
+            "default": 52,
+            "current": 52
+        },
+        "left": {
+            "default": 1073741904,
+            "current": 1073741904
+        },
+        "right": {
+            "default": 1073741903,
+            "current": 1073741903
+        },
+        "up": {
+            "default": 1073741906,
+            "current": 1073741906
+        },
+        "down": {
+            "default": 1073741905,
+            "current": 1073741905
+        },
+        "pause": {
+            "default": 112,
+            "current": 112
+        },
+        "slowdown": {
+            "default": 32,
+            "current": 32
+        },
+        "fastforward": {
+            "default": 102,
+            "current": 102
+        }
     }, 
     "saves": [], 
     "maps": {

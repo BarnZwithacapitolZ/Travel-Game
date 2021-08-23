@@ -133,8 +133,10 @@ class Menu:
 
                     if e['event'] == 'onKeyPress':
                         if self.game.textHandler.getPressed():
-                            self.game.textHandler.setPressed(False)
                             e['function'](component, self, e, **e['kwargs'])
+                            # Reset the key since we only want the function to
+                            # be called once
+                            self.game.textHandler.setCurrentKey(None)
                             component.dirty = True
 
     # define where key events will be called
@@ -916,8 +918,16 @@ class OptionMenu(Menu):
         self.add(musicVolume)
         self.add(back)
 
+    def checkForExistingControl(self, key):
+        if hasattr(self, 'controlKeys'):
+            duplicates = [
+                v for v in self.controlKeys.values() if v.getKeyInt() == key]
+            return duplicates[0] if len(duplicates) > 0 else False
+        return False
+
     def controls(self):
         self.open = True
+        self.controlKeys = {}
 
         background = Rectangle(
             self, GREEN, (
@@ -935,12 +945,12 @@ class OptionMenu(Menu):
         layer4 = ControlLabel(
             self, "Layer 4:", "layer4", 40, WHITE, (self.x, 350))
         pause = ControlLabel(
-            self, "Pause:", "pause", 40, WHITE, (self.x + 500, 200))
+            self, "Pause:", "pause", 40, WHITE, (self.x + 400, 200))
         slowdown = ControlLabel(
-            self, "Slowdown:", "slowdown", 40, WHITE, (self.x + 500, 250))
+            self, "Slowdown:", "slowdown", 40, WHITE, (self.x + 400, 250))
         fastforward = ControlLabel(
             self, "Fastforward:", "fastforward", 40, WHITE,
-            (self.x + 500, 300))
+            (self.x + 400, 300))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         layer1.addEvent(
@@ -964,35 +974,36 @@ class OptionMenu(Menu):
         layer4.addEvent(mf.clearKeyText, 'onMouseClick')
 
         pause.addEvent(
-            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+            gf.hoverOver, 'onMouseOver', x=self.x + 400 + 10, color=BLACK)
         pause.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
         pause.addEvent(mf.clearKeyText, 'onMouseClick')
 
         slowdown.addEvent(
-            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+            gf.hoverOver, 'onMouseOver', x=self.x + 400 + 10, color=BLACK)
         slowdown.addEvent(
-            gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+            gf.hoverOut, 'onMouseOut', x=self.x + 400, color=WHITE)
         slowdown.addEvent(mf.clearKeyText, 'onMouseClick')
 
         fastforward.addEvent(
-            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+            gf.hoverOver, 'onMouseOver', x=self.x + 400 + 10, color=BLACK)
         fastforward.addEvent(
-            gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+            gf.hoverOut, 'onMouseOut', x=self.x + 400, color=WHITE)
         fastforward.addEvent(mf.clearKeyText, 'onMouseClick')
 
         back.addEvent(mf.showOptions, 'onMouseClick')
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
+        allControls = [
+            layer1, layer2, layer3, layer4, pause, slowdown, fastforward]
+
         self.add(background)
         self.add(controls)
-        self.add(layer1)
-        self.add(layer2)
-        self.add(layer3)
-        self.add(layer4)
-        self.add(pause)
-        self.add(slowdown)
-        self.add(fastforward)
+
+        for control in allControls:
+            self.add(control)
+            self.controlKeys[control.getKeyName()] = control
+
         self.add(back)
 
     def graphics(self):

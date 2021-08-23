@@ -215,6 +215,8 @@ def unpause(obj, menu, event):
 
 # show the options screen
 def showOptions(obj, menu, event):
+    # Reset texthandler in case it is left active
+    menu.game.textHandler.setActive(False)
     menu.close()
     menu.options()
 
@@ -333,22 +335,29 @@ def toggleVsync(obj, menu, event):
 
 
 def clearKeyText(obj, menu, event):
-    obj.setKeyText("Press new key")
-    obj.setKeyTextFontSize(30)
-    obj.setKeyTextBorder(False)
-    obj.addEvent(setKeyText, 'onKeyPress')
-    menu.game.textHandler.setActive(True)
-    obj.dirty = True
+    if not menu.game.textHandler.getActive():
+        obj.setKeyText("Press new key")
+        obj.setKeyTextFontSize(30)
+        obj.setKeyTextBorder(False)
+        obj.addEvent(setKeyText, 'onKeyPress')
+        menu.game.textHandler.setActive(True)
+        obj.dirty = True
 
 
 def setKeyText(obj, menu, event):
     newKey = menu.game.textHandler.getCurrentKey()
+    pressedObj = menu.checkForExistingControl(newKey)
+
+    obj.setKeyInt(newKey)
     obj.setKeyText(pygame.key.name(newKey))
     obj.setKeyTextFontSize(obj.getFontSizeInt())
     obj.setKeyTextBorder(True)
     menu.game.textHandler.setActive(False)
 
-    config["controls"][obj.getKeyName()] = newKey
+    config["controls"][obj.getKeyName()]["current"] = newKey
     dump(config)
 
     obj.removeEvent(setKeyText, 'onKeyPress')
+
+    if pressedObj and obj.getKeyName() != pressedObj.getKeyName():
+        clearKeyText(pressedObj, menu, event)
