@@ -84,6 +84,7 @@ class Game:
         return self.paused
 
     def __quit(self):
+        self.optionMenu.checkForExistingControls()
         self.playing = False
 
     def __events(self):

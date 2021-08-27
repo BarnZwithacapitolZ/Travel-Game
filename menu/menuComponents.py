@@ -95,6 +95,40 @@ class TextHandler:
                     self.setPointer(self.pointer + 1)
 
 
+# class ControlHandler:
+#     def __init__(self):
+#         self.controls = {}
+#         self.defaultControls = {}
+
+#         self.loadAllControls()
+#         self.checkForDuplicateControls()
+
+#     def updateControl(self, key, newControl):
+#         if key in self.controls:
+#             self.controls[key] = newControl
+
+#     def resetControls(self):
+#         self.controls = copy.deepcopy(self.defaultControls)
+#         self.saveCurrentControls()
+
+#     def checkForDuplicateControls(self):
+#         seen = set()
+#         duplicates = set(k for k, v in self.controls.items() if v in seen or seen.add(v))
+#         # TODO: we just want to put the controls back to the previous working state
+#         if len(duplicates) > 0:
+#             self.resetControls()
+
+#     def loadAllControls(self):
+#         for key, control in config["controls"].items():
+#             self.controls[key] = control['current']
+#             self.defaultControls[key] = control['default']
+
+#     def saveCurrentControls(self):
+#         for key, control in self.controls.items():
+#             config["controls"][key]["current"] = control
+#         dump(config)
+
+
 class MenuComponent:
     def __init__(self, menu, color=None, size=tuple(), pos=tuple()):
         self.menu = menu
@@ -376,6 +410,7 @@ class ControlLabel(Label):
         super().__init__(menu, text, fontSize, color, pos)
         self.keyName = keyName
         self.keyInt = config["controls"][keyName]["current"]
+        self.initialKeyInt = copy.deepcopy(self.keyInt)
         self.keyText = pygame.key.name(self.keyInt)
         self.keyTextFontSize = self.fontSize
         self.keyTextBorder = True
@@ -386,6 +421,9 @@ class ControlLabel(Label):
 
     def getKeyInt(self):
         return self.keyInt
+
+    def getInitialKeyInt(self):
+        return self.initialKeyInt
 
     def getKeyText(self):
         return self.keyText

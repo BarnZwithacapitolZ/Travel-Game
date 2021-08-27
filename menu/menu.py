@@ -925,6 +925,20 @@ class OptionMenu(Menu):
             return duplicates[0] if len(duplicates) > 0 else False
         return False
 
+    def checkForExistingControls(self):
+        if hasattr(self, 'controlKeys'):
+            seen = set()
+            duplicates = set(
+                k for k, v in self.controlKeys.items() if v.getKeyInt()
+                in seen or seen.add(v.getKeyInt()))
+            # If we find duplicates, return to the state when we loaded the
+            # controls (so change nothing)
+            if len(duplicates) > 0:
+                for key, controlKey in self.controlKeys.items():
+                    config["controls"][key]["current"] \
+                        = controlKey.getInitialKeyInt()
+                dump(config)
+
     def controls(self):
         self.open = True
         self.controlKeys = {}

@@ -217,6 +217,9 @@ def unpause(obj, menu, event):
 def showOptions(obj, menu, event):
     # Reset texthandler in case it is left active
     menu.game.textHandler.setActive(False)
+    # Check for any duplicate controls in case of exit before entry
+    menu.checkForExistingControls()
+
     menu.close()
     menu.options()
 
@@ -343,6 +346,9 @@ def clearKeyText(obj, menu, event):
         menu.game.textHandler.setActive(True)
         obj.dirty = True
 
+    else:
+        print("we need to do something here")
+
 
 def setKeyText(obj, menu, event):
     newKey = menu.game.textHandler.getCurrentKey()
@@ -362,18 +368,19 @@ def setKeyText(obj, menu, event):
     if pressedObj and obj.getKeyName() != pressedObj.getKeyName():
         clearKeyText(pressedObj, menu, event)
 
+    # We have reached the end of the setting stream,
+    # now we can save our progress by reloading the menu
+    else:
+        showControls(obj, menu, event)
+
 
 def resetControls(obj, menu, event):
     for key, control in menu.controlKeys.items():
         newKey = config["controls"][control.getKeyName()]["default"]
-        control.setKeyInt(newKey)
-        control.setKeyText(pygame.key.name(newKey))
-        control.setKeyTextFontSize(control.getFontSizeInt())
-        control.setKeyTextBorder(True)
-        control.dirty = True
-
         config["controls"][control.getKeyName()]["current"] = newKey
         dump(config)
 
         menu.game.textHandler.setActive(False)
         control.removeEvent(setKeyText, 'onKeyPress')
+
+        showControls(obj, menu, event)
