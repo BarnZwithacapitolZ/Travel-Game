@@ -918,10 +918,11 @@ class OptionMenu(Menu):
         self.add(musicVolume)
         self.add(back)
 
-    def checkForExistingControl(self, key):
+    def checkForExistingControl(self, key, currentName):
         if hasattr(self, 'controlKeys'):
             duplicates = [
-                v for v in self.controlKeys.values() if v.getKeyInt() == key]
+                v for v in self.controlKeys.values() if v.getKeyInt() == key
+                and v.getKeyName() != currentName]
             return duplicates[0] if len(duplicates) > 0 else False
         return False
 
@@ -990,7 +991,7 @@ class OptionMenu(Menu):
 
         pause.addEvent(
             gf.hoverOver, 'onMouseOver', x=self.x + 400 + 10, color=BLACK)
-        pause.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+        pause.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 400, color=WHITE)
         pause.addEvent(mf.clearKeyText, 'onMouseClick')
 
         slowdown.addEvent(

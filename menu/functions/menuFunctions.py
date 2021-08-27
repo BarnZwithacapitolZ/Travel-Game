@@ -352,7 +352,7 @@ def clearKeyText(obj, menu, event):
 
 def setKeyText(obj, menu, event):
     newKey = menu.game.textHandler.getCurrentKey()
-    pressedObj = menu.checkForExistingControl(newKey)
+    pressedObj = menu.checkForExistingControl(newKey, obj.getKeyName())
 
     obj.setKeyInt(newKey)
     obj.setKeyText(pygame.key.name(newKey))
