@@ -340,7 +340,7 @@ def toggleVsync(obj, menu, event):
 def clearKeyText(obj, menu, event):
     if not menu.game.textHandler.getActive():
         obj.setKeyText("Press new key")
-        obj.setKeyTextFontSize(30)
+        obj.setKeyTextFontSize(23)
         obj.setKeyTextBorder(False)
         obj.addEvent(setKeyText, 'onKeyPress')
         menu.game.textHandler.setActive(True)
