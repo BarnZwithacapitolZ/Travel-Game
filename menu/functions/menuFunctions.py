@@ -338,16 +338,25 @@ def toggleVsync(obj, menu, event):
 
 
 def clearKeyText(obj, menu, event):
-    if not menu.game.textHandler.getActive():
+    if menu.controlClickManager.getControlKey() is None:
         obj.setKeyText("Press new key")
         obj.setKeyTextFontSize(23)
         obj.setKeyTextBorder(False)
         obj.addEvent(setKeyText, 'onKeyPress')
+        menu.controlClickManager.setControlKey(obj)
         menu.game.textHandler.setActive(True)
         obj.dirty = True
 
     else:
-        print("we need to do something here")
+        previousKey = menu.controlClickManager.getControlKey()
+        previousKey.setKeyText(pygame.key.name(previousKey.getKeyInt()))
+        previousKey.setKeyTextFontSize(previousKey.getFontSizeInt())
+        previousKey.setKeyTextBorder(True)
+        previousKey.removeEvent(setKeyText, 'onKeyPress')
+        menu.controlClickManager.setControlKey(None)
+        previousKey.dirty = True
+
+        clearKeyText(obj, menu, event)
 
 
 def setKeyText(obj, menu, event):

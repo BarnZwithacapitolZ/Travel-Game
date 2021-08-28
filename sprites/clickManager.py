@@ -502,3 +502,15 @@ class EditorClickManager(ClickManager):
         # Make sure it is actually a stop
         if isinstance(node, NODE.Stop):
             self.game.mapEditor.deleteStop(node.getConnectionType(), node)
+
+
+class ControlClickManager(ClickManager):
+    def __init__(self, game):
+        super().__init__(game)
+        self.controlKey = None
+
+    def getControlKey(self):
+        return self.controlKey
+
+    def setControlKey(self, controlKey):
+        self.controlKey = controlKey

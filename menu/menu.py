@@ -8,7 +8,7 @@ import transitionFunctions as tf
 from menuComponents import (
     Image, Label, InputBox, Rectangle, Meter, DifficultyMeter,
     Timer, MessageBox, Map, Slider, ControlLabel)
-from clickManager import EditorClickManager
+from clickManager import EditorClickManager, ControlClickManager
 import abc
 import random
 import copy
@@ -942,6 +942,7 @@ class OptionMenu(Menu):
 
     def controls(self):
         self.open = True
+        self.controlClickManager = ControlClickManager(self.game)
         self.controlKeys = {}
 
         background = Rectangle(

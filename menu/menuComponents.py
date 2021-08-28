@@ -95,40 +95,6 @@ class TextHandler:
                     self.setPointer(self.pointer + 1)
 
 
-# class ControlHandler:
-#     def __init__(self):
-#         self.controls = {}
-#         self.defaultControls = {}
-
-#         self.loadAllControls()
-#         self.checkForDuplicateControls()
-
-#     def updateControl(self, key, newControl):
-#         if key in self.controls:
-#             self.controls[key] = newControl
-
-#     def resetControls(self):
-#         self.controls = copy.deepcopy(self.defaultControls)
-#         self.saveCurrentControls()
-
-#     def checkForDuplicateControls(self):
-#         seen = set()
-#         duplicates = set(k for k, v in self.controls.items() if v in seen or seen.add(v))
-#         # TODO: we just want to put the controls back to the previous working state
-#         if len(duplicates) > 0:
-#             self.resetControls()
-
-#     def loadAllControls(self):
-#         for key, control in config["controls"].items():
-#             self.controls[key] = control['current']
-#             self.defaultControls[key] = control['default']
-
-#     def saveCurrentControls(self):
-#         for key, control in self.controls.items():
-#             config["controls"][key]["current"] = control
-#         dump(config)
-
-
 class MenuComponent:
     def __init__(self, menu, color=None, size=tuple(), pos=tuple()):
         self.menu = menu
