@@ -940,6 +940,13 @@ class OptionMenu(Menu):
                         = controlKey.getInitialKeyInt()
                 dump(config)
 
+    # Check the if the user is midway through selecting a control key
+    def checkKeySelection(self):
+        if (hasattr(self, 'controlClickManager')
+                and self.controlClickManager.getControlKey() is not None):
+            return True
+        return False
+
     def controls(self):
         self.open = True
         self.controlClickManager = ControlClickManager(self.game)

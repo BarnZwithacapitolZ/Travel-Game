@@ -106,7 +106,8 @@ class Game:
                     if not self.mapEditor.isDropdownsClosed():
                         if not self.optionMenu.open:
                             self.optionMenu.main(True, True)
-                        elif self.optionMenu.open:
+                        elif (self.optionMenu.open
+                                and not self.optionMenu.checkKeySelection()):
                             self.optionMenu.closeTransition()
 
                 elif (e.key == config["controls"]["right"]["current"]
