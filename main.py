@@ -100,36 +100,37 @@ class Game:
 
                 # Only open the option manu if the game isn't paused
                 # and the main menu isn't open
-                if (e.key == pygame.K_ESCAPE and not self.mainMenu.open
-                        and not self.spriteRenderer.getMenu().open):
+                if (e.key == pygame.K_ESCAPE and not self.mainMenu.getOpen()
+                        and not self.spriteRenderer.getMenu().getOpen()
+                        and not self.optionMenu.getOptionsOpen()):
                     # Close the dropdowns first
                     if not self.mapEditor.isDropdownsClosed():
-                        if not self.optionMenu.open:
+                        if not self.optionMenu.getOpen():
                             self.optionMenu.main(True, True)
-                        elif (self.optionMenu.open
+                        elif (self.optionMenu.getOpen()
                                 and not self.optionMenu.checkKeySelection()):
                             self.optionMenu.closeTransition()
 
                 elif (e.key == config["controls"]["right"]["current"]
-                        and self.mainMenu.open):
+                        and self.mainMenu.getOpen()):
                     self.mainMenu.levelForward(vec(1, 0))
                 elif (e.key == config["controls"]["left"]["current"]
-                        and self.mainMenu.open):
+                        and self.mainMenu.getOpen()):
                     self.mainMenu.levelBackward(vec(-1, 0))
                 elif (e.key == config["controls"]["up"]["current"]
-                        and self.mainMenu.open):
+                        and self.mainMenu.getOpen()):
                     self.mainMenu.levelUpward(vec(0, -1))
                 elif (e.key == config["controls"]["down"]["current"]
-                        and self.mainMenu.open):
+                        and self.mainMenu.getOpen()):
                     self.mainMenu.levelDownward(vec(0, 1))
 
                 elif e.key == config["controls"]["pause"]["current"]:
-                    if self.spriteRenderer.getHud().open:
+                    if self.spriteRenderer.getHud().getOpen():
                         self.spriteRenderer.getHud().togglePauseGame()
 
                 # If the game is not paused and the main menu
                 # isnt open and no text inputs are open
-                if (not self.paused and not self.mainMenu.open
+                if (not self.paused and not self.mainMenu.getOpen()
                         and not self.textHandler.getActive()):
                     # Show / Hide the different layers depending on key press
                     if e.key == config["controls"]["layer1"]["current"]:
@@ -147,7 +148,7 @@ class Game:
 
                 if (e.key == pygame.K_z
                     and pygame.key.get_mods() & pygame.KMOD_CTRL
-                        and not self.paused and not self.mainMenu.open):
+                        and not self.paused and not self.mainMenu.getOpen()):
                     self.mapEditor.undoChange()
                     level = self.mapEditor.getLevelData()
                     layer = self.mapEditor.getLayer()
@@ -156,7 +157,7 @@ class Game:
 
                 elif (e.key == pygame.K_y
                         and pygame.key.get_mods() & pygame.KMOD_CTRL
-                        and not self.paused and not self.mainMenu.open):
+                        and not self.paused and not self.mainMenu.getOpen()):
                     self.mapEditor.redoChange()
                     level = self.mapEditor.getLevelData()
                     layer = self.mapEditor.getLayer()
@@ -208,14 +209,16 @@ class Game:
 
     def __update(self):
         # print(self.paused)
-        if not self.paused and not self.mainMenu.open:
+        if not self.paused and not self.mainMenu.getOpen():
             self.spriteRenderer.update()
             self.mapEditor.update()
 
     def __draw(self):
         # Add sprites
-        if self.mainMenu.open:
+        if self.mainMenu.getOpen():
             self.renderer.prepareSurface(self.mainMenu.getBackgroundColor())
+        elif self.optionMenu.getOptionsOpen():
+            self.renderer.prepareSurface(self.optionMenu.getBackgroundColor())
 
         self.spriteRenderer.render()
         self.mapEditor.render()
@@ -224,7 +227,7 @@ class Game:
         if self.paused:
             # To Do:Different option menus for sprite renderer and level editor
             self.optionMenu.display()
-        if self.mainMenu.open:
+        if self.mainMenu.getOpen():
             self.mainMenu.display()
 
         # render everything

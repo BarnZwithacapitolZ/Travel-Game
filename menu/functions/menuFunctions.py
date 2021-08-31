@@ -73,6 +73,18 @@ def openMapEditor(obj, menu, event):
         (0, config["graphics"]["displayHeight"]), 'first', callback=callback)
 
 
+def openOptionsMenu(obj, menu, event):
+    menu.close()
+    menu.game.optionMenu.setOptionsOpen(True)
+    menu.game.optionMenu.options()
+
+
+def closeOptionsMenu(obj, menu, event):
+    menu.close()
+    menu.setOptionsOpen(False)
+    menu.game.mainMenu.main()
+
+
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, level):
     if hasattr(menu, 'transitioning') and menu.getTransitioning():

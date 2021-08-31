@@ -24,6 +24,7 @@ class Menu:
         self.game = game
         self.renderer = game.renderer
         self.components = []  # Components to render to the screen
+        self.backgroundColor = WHITE
 
         self.clicked = False
 
@@ -32,14 +33,17 @@ class Menu:
                 (config["graphics"]["displayWidth"] / 2) - 50,
                 (config["graphics"]["displayHeight"] / 2) - 36))
 
-    def setOpen(self, hudOpen):
-        self.open = hudOpen
-
     def getOpen(self):
         return self.open
 
     def getComponents(self):
         return self.components
+
+    def getBackgroundColor(self):
+        return self.backgroundColor
+
+    def setOpen(self, hudOpen):
+        self.open = hudOpen
 
     def add(self, component):
         self.components.append(component)
@@ -226,9 +230,6 @@ class MainMenu(Menu):
 
         self.transitioning = False
 
-    def getBackgroundColor(self):
-        return self.backgroundColor
-
     def getLevels(self):
         return self.levels
 
@@ -315,6 +316,7 @@ class MainMenu(Menu):
         editor.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
         editor.addEvent(gf.hoverOut, 'onMouseOut', x=x)
 
+        options.addEvent(mf.openOptionsMenu, 'onMouseClick')
         options.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
         options.addEvent(gf.hoverOut, 'onMouseOut', x=x)
 
@@ -758,8 +760,15 @@ class MainMenu(Menu):
 class OptionMenu(Menu):
     def __init__(self, renderer):
         super().__init__(renderer)
-
+        # If the option menu is accessed through the main menu
+        self.optionsOpen = False
         self.x = 100
+
+    def getOptionsOpen(self):
+        return self.optionsOpen
+
+    def setOptionsOpen(self, optionsOpen):
+        self.optionsOpen = optionsOpen
 
     def closeTransition(self):
         self.game.spriteRenderer.getHud().setOpen(True)
@@ -779,7 +788,8 @@ class OptionMenu(Menu):
 
     def main(self, pausedSurface=True, transition=False):
         self.open = True
-
+        # If we access through main we know its not from the main menu
+        self.optionsOpen = False
         self.game.paused = True
         self.game.spriteRenderer.getHud().setOpen(False)
         # self.game.mapEditor.getMessageSystem().setOpen(False)
@@ -843,6 +853,7 @@ class OptionMenu(Menu):
 
     def options(self):
         self.open = True
+        self.backgroundColor = GREEN
 
         background = Rectangle(
             self, GREEN, (
@@ -854,7 +865,9 @@ class OptionMenu(Menu):
         graphics = Label(self, "Graphics", 50, WHITE, (self.x, 200))
         controls = Label(self, "Controls", 50, WHITE, (self.x, 260))
         audio = Label(self, "Audio", 50, WHITE, (self.x, 320))
-        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+        back = Label(
+            self, "Back" if not self.optionsOpen else "Main Menu", 30,
+            WHITE, (self.x, 440))
 
         graphics.addEvent(mf.showGraphics, 'onMouseClick')
         graphics.addEvent(
@@ -870,11 +883,16 @@ class OptionMenu(Menu):
         audio.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         audio.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
-        back.addEvent(mf.showMain, 'onMouseClick')
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
-        self.add(background)
+        if not self.optionsOpen:
+            back.addEvent(mf.showMain, 'onMouseClick')
+            self.add(background)
+
+        else:
+            back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
+
         self.add(options)
         self.add(graphics)
         self.add(controls)
