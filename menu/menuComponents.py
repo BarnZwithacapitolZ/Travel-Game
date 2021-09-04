@@ -873,8 +873,9 @@ class DifficultyMeter(Rectangle):
 
 class Slider(Rectangle):
     def __init__(
-            self, menu, color, amount, callback, size=tuple(), pos=tuple(), shapeOutline=0,
-            shapeBorderRadius=[0, 0, 0, 0], alpha=None, fill=None):
+            self, menu, color, amount, callback, size=tuple(), pos=tuple(),
+            shapeOutline=0, shapeBorderRadius=[0, 0, 0, 0], alpha=None,
+            fill=None):
         super().__init__(
             menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha,
             fill)

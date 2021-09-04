@@ -23,7 +23,9 @@ def transitionFadeOut(obj, menu, animation):
         menu.close()
 
 
-def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
+def transitionX(
+        obj, menu, animation, speed, transitionDirection, x, callback,
+        dirty=False):
     obj.x += speed * 100 * menu.game.dt
 
     if (transitionDirection == "left" and obj.x >= x) or (
@@ -33,8 +35,14 @@ def transitionX(obj, menu, animation, speed, transitionDirection, x, callback):
 
     obj.rect.x = obj.x * menu.renderer.getScale()
 
+    # For components that need to be redrawn (such as sliders)
+    if dirty:
+        obj.dirty = True
 
-def transitionY(obj, menu, animation, speed, transitionDirection, y, callback):
+
+def transitionY(
+        obj, menu, animation, speed, transitionDirection, y, callback,
+        dirty=False):
     obj.y += speed * 100 * menu.game.dt
 
     if (transitionDirection == "down" and obj.y >= y) or (
@@ -43,6 +51,10 @@ def transitionY(obj, menu, animation, speed, transitionDirection, y, callback):
         callback(obj, menu, y)
 
     obj.rect.y = obj.y * menu.renderer.getScale()
+
+    # For components that need to be redrawn (such as sliders)
+    if dirty:
+        obj.dirty = True
 
 
 def transitionMessageDown(obj, menu, animation, speed, transitionDirection, y):

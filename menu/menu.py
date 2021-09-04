@@ -89,15 +89,12 @@ class Menu:
                 for function, animation in list(component.animations.items()):
                     if animation[0] == 'onMouseOver':
                         function(component, self, function, **animation[1])
-                        # component.dirty = True
 
                     if animation[0] == 'onMouseOut':
                         function(component, self, function, **animation[1])
-                        # component.dirty = True
 
                     if animation[0] == 'onLoad':
                         function(component, self, function, **animation[1])
-                        # component.dirty = True
 
     def events(self, component):
         mx, my = pygame.mouse.get_pos()
@@ -785,10 +782,13 @@ class OptionMenu(Menu):
 
         for component in self.components:
             if tf.transitionY not in component.getAnimations():
+                dirty = True if isinstance(component, Slider) else False
+
                 component.addAnimation(
                     tf.transitionY, 'onLoad', speed=-40,
                     transitionDirection="up",
-                    y=-config["graphics"]["displayHeight"], callback=callback)
+                    y=-config["graphics"]["displayHeight"], callback=callback,
+                    dirty=dirty)
 
     def main(self, pausedSurface=True, transition=False):
         self.open = True
