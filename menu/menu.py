@@ -64,6 +64,10 @@ class Menu:
             if isinstance(component, InputBox):
                 component.resizeIndicator()
 
+    def update(self):
+        for component in self.components:
+            component.update()
+
     def display(self):
         # We use list so we can delete from the array whilst looping through
         # it (without causing flicking with double blits)

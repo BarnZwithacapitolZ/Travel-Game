@@ -67,8 +67,8 @@ class SpriteRenderer():
             "mapName": "",
             "locked": {"isLocked": False, "unlock": 0},  # Amount to unlock
 
-            # Map can / cannot be deleted; maps that cant be
-            # deleted cant be opened in the editor
+            # Map can / cannot be deleted; maps that can't be
+            # deleted can't be opened in the editor
             "deletable": True,
 
             "saved": False,  # Has the map been saved before
@@ -534,10 +534,37 @@ class SpriteRenderer():
 
         return bottomNode
 
+    def events(self):
+        if pygame.key.get_pressed()[config["controls"]["slowdown"]["current"]]:
+            self.game.clickManager.setSpaceBar(True)
+
+            if (
+                self.dt != self.startDt - self.meter.getSlowDownAmount()
+                    and not self.meter.getEmpty()):
+                self.game.audioLoader.playSound("slowIn", 1)
+
+        elif pygame.key.get_pressed()[
+                config["controls"]["fastforward"]["current"]]:
+            self.game.clickManager.setSpeedUp(True)
+
+        else:
+            if self.dt < self.startDt:
+                self.game.audioLoader.playSound("slowOut", 1)
+
+            self.game.clickManager.setSpaceBar(False)
+            self.game.clickManager.setSpeedUp(False)
+
     def update(self):
+        # If we're not rendering, do nothing
         if not self.rendering:
             return
+
+        # If we're rendering but paused, we still want to update the sprites
+        # so that we can still hover over them, draw destination etc.
         self.allSprites.update()
+        self.hud.update()
+        self.messageSystem.update()
+        self.menu.update()
 
         if self.paused:
             return
@@ -545,8 +572,8 @@ class SpriteRenderer():
         self.events()
         self.timer += self.game.dt * self.dt
 
-        # Always spawn a person if there is no people
-        # left on the map, to stop player having to wait
+        # Always spawn a person if there is no people left on the map,
+        # to stop player having to wait
         if self.timer > self.timeStep:
             self.timer = 0
             self.gridLayer2.createPerson(self.allDestinations)
@@ -562,25 +589,6 @@ class SpriteRenderer():
                 self.timer = 0
                 self.gridLayer2.createPerson(self.allDestinations)
                 self.totalPeopleNone = False
-
-    def events(self):
-        if pygame.key.get_pressed()[config["controls"]["slowdown"]["current"]]:
-            self.game.clickManager.setSpaceBar(True)
-
-            if (
-                self.dt != self.startDt - self.meter.getSlowDownAmount()
-                    and not self.meter.getEmpty()):
-                self.game.audioLoader.playSound("slowIn", 1)
-
-        elif pygame.key.get_pressed()[config["controls"]["fastforward"]["current"]]:
-            self.game.clickManager.setSpeedUp(True)
-
-        else:
-            if self.dt < self.startDt:
-                self.game.audioLoader.playSound("slowOut", 1)
-
-            self.game.clickManager.setSpaceBar(False)
-            self.game.clickManager.setSpeedUp(False)
 
     # Make people on the current layer clickable, and the rest non-clickable
     def resetPeopleClicks(self):

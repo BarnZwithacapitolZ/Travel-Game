@@ -413,6 +413,8 @@ class MapEditor(SpriteRenderer):
     def update(self):
         if self.rendering:
             self.allSprites.update()
+            self.hud.update()
+            self.messageSystem.update()
 
             # if there is a click and a connection is not set,
             # then remove the start node

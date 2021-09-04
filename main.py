@@ -167,18 +167,6 @@ class Game:
             elif e.type == pygame.KEYUP:
                 self.textHandler.setCurrentKey(None)
 
-            # Just for fun :) - And refactoring ( ͡° ͜ʖ ͡°)
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 4:
-                    self.spriteRenderer.setFixedScale(
-                        self.spriteRenderer.getFixedScale() + 0.1)
-                    self.spriteRenderer.resize()
-
-                elif e.button == 5:
-                    self.spriteRenderer.setFixedScale(
-                        self.spriteRenderer.getFixedScale() - 0.1)
-                    self.spriteRenderer.resize()
-
             # Make left click set the destination on the click manager instead
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
@@ -213,22 +201,28 @@ class Game:
             self.spriteRenderer.update()
             self.mapEditor.update()
 
+        elif self.mainMenu.getOpen():
+            self.mainMenu.update()
+
+        elif self.paused:
+            self.optionMenu.update()
+
     def __draw(self):
-        # Add sprites
+        # Draw the background colors (may be replaced with image)
         if self.mainMenu.getOpen():
             self.renderer.prepareSurface(self.mainMenu.getBackgroundColor())
         elif self.optionMenu.getOptionsOpen():
             self.renderer.prepareSurface(self.optionMenu.getBackgroundColor())
 
+        # Add sprites
         self.spriteRenderer.render()
         self.mapEditor.render()
 
         # Add menus when not paused
-        if self.paused:
-            # To Do:Different option menus for sprite renderer and level editor
-            self.optionMenu.display()
         if self.mainMenu.getOpen():
             self.mainMenu.display()
+        elif self.paused:
+            self.optionMenu.display()
 
         # render everything
         self.renderer.render()

@@ -9,12 +9,12 @@ def getFilePath():
         return os.path.dirname(sys.executable)
     return os.path.dirname(__file__)
 
-
+# dump config file to json for saving
 def dump(data):
     with open('config.json', 'w') as f:
         json.dump(data, f)
 
-
+# Load the config from json
 with open('config.json') as f:
     config = json.load(f)
 
@@ -48,6 +48,3 @@ SCANLINESBLUE = (0, 102, 255, 20)
 SCANLINES = SCANLINESGREEN
 
 DEFAULTLIVES = 3
-# DEFAULTLIVES = 1
-
-# dump config file to json for saving

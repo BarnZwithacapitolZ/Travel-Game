@@ -106,8 +106,6 @@ class MenuComponent:
         self.size = size
 
         self.pos = vec(self.x, self.y)
-        self.vel = vec(0, 0)
-        self.acc = vec(0, 0)
         self.offset = vec(0, 0)
 
         self.events = []
@@ -180,14 +178,9 @@ class MenuComponent:
         for component in self.components:
             component.resize()
 
+    @abc.abstractmethod
     def update(self):
-        self.acc += self.vel * 0.5
-        self.vel += self.acc * self.menu.game.dt
-        self.pos += (
-            self.vel * self.menu.game.dt + 10 * self.acc
-            * self.menu.game.dt ** 2)
-
-        self.rect.topleft = self.pos * self.menu.renderer.getScale()
+        return
 
     @abc.abstractmethod
     def __render(self):
@@ -508,13 +501,11 @@ class InputBox(Label):
         surface.blit(self.image, (self.rect))
         self.indicator.drawPaused(surface)
 
-    def draw(self):
-        super().draw()
+    def update(self):
+        if not hasattr(self, 'rect'):
+            return
 
         self.setFlashing()
-
-        if self.flashing:
-            self.indicator.draw()
 
         # change the text
         if self.menu.game.textHandler.getActive():
@@ -547,6 +538,12 @@ class InputBox(Label):
             # of the text, set the pointer to the max position
             if mx > self.rect.x + self.rect.width:
                 self.menu.game.textHandler.setPointer(len(self.text))
+
+    def draw(self):
+        super().draw()
+
+        if self.flashing:
+            self.indicator.draw()
 
 
 class Shape(MenuComponent):
@@ -881,8 +878,9 @@ class Slider(Rectangle):
         super().drawShape(surface, color, rect, outline)
         super().drawShape(surface, BLACK, rectHandle, 0, [20, 20, 20, 20])
 
-    def draw(self):
-        super().draw()
+    def update(self):
+        if not hasattr(self, 'rect'):
+            return
 
         mx, my = pygame.mouse.get_pos()
         difference = self.menu.renderer.getDifference()
@@ -1088,11 +1086,7 @@ class MessageBox(Rectangle):
         self.makeSurface()
         self.drawShape(surface)
 
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(None, None, self.drawShape)
-        # self.menu.renderer.addSurface(self.image, (self.rect))
-
+    def update(self):
         self.timer += self.menu.game.dt
 
         if self.timer > 4:
@@ -1102,6 +1096,11 @@ class MessageBox(Rectangle):
             # self.menu.components.remove(self)
             # for message in self.messages:
             #     self.menu.components.remove(message)
+
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(None, None, self.drawShape)
+        # self.menu.renderer.addSurface(self.image, (self.rect))
 
 
 class Map(MenuComponent):
