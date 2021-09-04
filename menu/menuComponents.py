@@ -217,6 +217,7 @@ class Label(MenuComponent):
         super().__init__(menu, color, (1, 1), pos)
 
         self.text = str(text)
+        self.finalMessage = []
         # self.fontName = pygame.font.get_default_font()
         self.fontName = os.path.join(
             FONTFOLDER, config["fonts"]["whiteRabbit"])
@@ -227,35 +228,56 @@ class Label(MenuComponent):
         self.underline = False
         self.backgroundColor = backgroundColor
 
+        self.finalMessage = self.splitText()
+
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
 
     def setBackgrondColor(self, backgroundColor):
         self.backgroundColor = backgroundColor
 
+    # get the total font size of all msg components in the finalMessage
+    def getTotalFontSize(self, font, finalMessage):
+        size = vec(0, 0)
+        for msg in finalMessage:
+            size.x += font.size(msg)[0]
+            size.y += font.size(msg)[1]
+        return size
+
     # we don't want to use self.font since this is multiplied by the
     # display size, which we don't want
     def getFontSize(self, text=None):
         text = self.text if text is None else text
-        return pygame.font.Font(self.fontName, int(self.fontSize)).size(text)
+        finalMessage = self.splitText(text)  # split into components
+
+        font = pygame.font.Font(self.fontName, int(self.fontSize))
+        font.set_bold(self.bold)
+        font.set_italic(self.italic)
+        font.set_underline(self.underline)
+
+        return self.getTotalFontSize(font, finalMessage)
 
     # get the scaled font size by using the label font
     def getFontSizeScaled(self, text=None):
         text = self.text if text is None else text
-        return self.font.size(text)
+        finalMessage = self.splitText(text)
+        return self.getTotalFontSize(self.font, finalMessage)
 
     def getFontSizeInt(self):
         return self.fontSize
 
     def getCharPositions(self, text=None):
         text = self.text if text is None else text
-        runningString = ''
-        positions = []
+        finalMessage = self.splitText(text)
 
-        for char in list(text):
-            runningString += char
-            pos = self.getFontSizeScaled(runningString)
-            positions.append(pos)
+        positions = []
+        runningString = ''
+        for msg in finalMessage:
+            for char in list(msg):
+                runningString += char
+                pos = self.getFontSizeScaled(runningString)
+                positions.append(pos)
+            runningString += '\n'
         return positions
 
     def setFontName(self, fontName):
@@ -263,6 +285,7 @@ class Label(MenuComponent):
 
     def setText(self, text):
         self.text = text
+        self.finalMessage = self.splitText()
 
     def setBold(self, bold):
         self.bold = bold
@@ -276,6 +299,19 @@ class Label(MenuComponent):
     def getText(self):
         return self.text
 
+    # Split the message at \n into individual components
+    def splitText(self, text=None):
+        text = self.text if text is None else text
+        finalMessage = []
+
+        if "\n" in text:
+            for word in text.split("\n"):
+                finalMessage.append(word.strip())
+
+        else:
+            finalMessage = [text]
+        return finalMessage
+
     def __render(self):
         self.dirty = False
 
@@ -286,21 +322,36 @@ class Label(MenuComponent):
         self.font.set_italic(self.italic)
         self.font.set_underline(self.underline)
 
-        self.image = self.font.render(
-            self.text, config["graphics"]["antiAliasing"], self.color,
-            self.backgroundColor)
+        labels = []
+        width = height = y = 0
+        for msg in self.finalMessage:
+            label = self.font.render(
+                msg, config["graphics"]["antiAliasing"], self.color,
+                self.backgroundColor)
+            width += label.get_rect().width / self.menu.renderer.getScale()
+            height += label.get_rect().height / self.menu.renderer.getScale()
+            labels.append(label)
 
         if self.backgroundColor is None:
-            self.image.convert_alpha()
+            self.image = pygame.Surface((
+                width * self.menu.renderer.getScale(),
+                height * self.menu.renderer.getScale()),
+                pygame.SRCALPHA, 32).convert_alpha()
 
         else:
-            self.image.convert()
+            self.image = pygame.Surface((
+                width * self.menu.renderer.getScale(),
+                height * self.menu.renderer.getScale())).convert()
+
+        for label in labels:
+            self.image.blit(label, (0, y))
+            y += label.get_rect().height
 
         self.rect = self.image.get_rect()
 
         # Set the width, height to the exact size of the font
-        self.width = self.getFontSize()[0]
-        self.height = self.getFontSize()[1]
+        self.width = width
+        self.height = height
 
         # Reset the x, y coordinates since these are set to 0 in get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
@@ -475,7 +526,7 @@ class InputBox(Label):
             return
 
         if self.text != self.menu.game.textHandler.getString():
-            self.text = self.menu.game.textHandler.getString()
+            super().setText(self.menu.game.textHandler.getString())
             self.dirty = True
 
     def setFlashing(self):
