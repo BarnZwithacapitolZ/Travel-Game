@@ -911,30 +911,37 @@ class OptionMenu(Menu):
         master = Label(self, "Master Volume:", 50, WHITE, (self.x, 200))
         sound = Label(self, "Sound Volume:", 50, WHITE, (self.x, 280))
         music = Label(self, "Music Volume:", 50, WHITE, (self.x, 360))
-        masterVolume = Slider(
-            self, WHITE, config["audio"]["volume"]["master"],
-            mf.setMasterVolume, (300, 30), (550, 205))
-        soundVolume = Slider(
-            self, WHITE, config["audio"]["volume"]["sounds"],
-            mf.setSoundVolume, (300, 30), (550, 285))
-        musicVolume = Slider(
-            self, WHITE, config["audio"]["volume"]["music"],
-            mf.setMusicVolume, (300, 30), (550, 365))
+        self.masterVolume = Slider(
+            self, WHITE, config["audio"]["volume"]["master"]["current"],
+            mf.setMasterVolume, (300, 30), (self.x + 450, 205))
+        self.soundVolume = Slider(
+            self, WHITE, config["audio"]["volume"]["sounds"]["current"],
+            mf.setSoundVolume, (300, 30), (self.x + 450, 285))
+        self.musicVolume = Slider(
+            self, WHITE, config["audio"]["volume"]["music"]["current"],
+            mf.setMusicVolume, (300, 30), (self.x + 450, 365))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+        reset = Label(self, "Reset Default", 30, WHITE, (self.x + 450, 440))
 
         back.addEvent(mf.showOptions, 'onMouseClick')
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
+        reset.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 450 + 10, color=BLACK)
+        reset.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 450, color=WHITE)
+        reset.addEvent(mf.resetAudio, 'onMouseClick')
 
         self.add(background)
         self.add(audio)
         self.add(master)
         self.add(sound)
         self.add(music)
-        self.add(masterVolume)
-        self.add(soundVolume)
-        self.add(musicVolume)
+        self.add(self.masterVolume)
+        self.add(self.soundVolume)
+        self.add(self.musicVolume)
         self.add(back)
+        self.add(reset)
 
     def checkForExistingControl(self, key, currentName):
         if hasattr(self, 'controlKeys'):

@@ -842,6 +842,12 @@ class Slider(Rectangle):
     def getAmount(self):
         return self.amount / self.totalAmount
 
+    def setAmount(self, amount):
+        self.amount = amount * self.totalAmount
+        self.handleX = self.x + (self.amount * (
+            (self.width - self.handleWidth) / self.totalAmount))
+        self.dirty = True
+
     def __render(self):
         self.dirty = False
 
@@ -892,7 +898,7 @@ class Slider(Rectangle):
             self.clicked = True
         elif not pygame.mouse.get_pressed()[0] and self.clicked:
             self.clicked = False
-            self.callback(self)
+            self.callback(self, self.getAmount())
 
         if self.clicked:
             self.handleX = (

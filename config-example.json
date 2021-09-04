@@ -280,9 +280,18 @@
     }, 
     "audio": {
         "volume": {
-            "sounds": 1.0,
-            "music": 1.0,
-            "master": 1.0
+            "sounds": {
+                "current": 1.0,
+                "default": 1.0
+            },
+            "music": {
+                "current": 1.0,
+                "default": 1.0
+            },
+            "master": {
+                "current": 1.0,
+                "default": 1.0
+            }
         },
         "sounds": {
             "click1": {

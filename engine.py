@@ -242,7 +242,7 @@ class AudioLoader:
         self.setChannels()
         self.loadAllSounds()
         self.loadAllMusic()
-        self.setMasterVolume(config["audio"]["volume"]["master"])
+        self.setMasterVolume(config["audio"]["volume"]["master"]["current"])
 
     def getSound(self, key):
         return self.sounds[key]
@@ -259,7 +259,7 @@ class AudioLoader:
     def playMusic(self, key, loop=0):
         pygame.mixer.music.load(self.music[key]["path"])
         self.musicBuffer = 1.0 / self.music[key]["volume"]
-        self.setMusicVolume(config["audio"]["volume"]["music"])
+        self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
         pygame.mixer.music.play(loop)
 
     def setChannels(self):
@@ -271,8 +271,8 @@ class AudioLoader:
 
     def setMasterVolume(self, volume=1):
         self.masterBuffer = 1.0 / volume if volume > 0 else None
-        self.setSoundVolume(config["audio"]["volume"]["sounds"])
-        self.setMusicVolume(config["audio"]["volume"]["music"])
+        self.setSoundVolume(config["audio"]["volume"]["sounds"]["current"])
+        self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
 
     def setSoundVolume(self, volume=1):
         for channel in self.channels:

@@ -252,21 +252,24 @@ def showControls(obj, menu, event):
     menu.controls()
 
 
-def setMasterVolume(slider):
-    slider.menu.game.audioLoader.setMasterVolume(slider.getAmount())
-    config["audio"]["volume"]["master"] = slider.getAmount()
+def setMasterVolume(slider, amount):
+    slider.menu.game.audioLoader.setMasterVolume(amount)
+    slider.setAmount(amount)
+    config["audio"]["volume"]["master"]["current"] = amount
     dump(config)
 
 
-def setSoundVolume(slider):
-    slider.menu.game.audioLoader.setSoundVolume(slider.getAmount())
-    config["audio"]["volume"]["sounds"] = slider.getAmount()
+def setSoundVolume(slider, amount):
+    slider.menu.game.audioLoader.setSoundVolume(amount)
+    slider.setAmount(amount)
+    config["audio"]["volume"]["sounds"]["current"] = amount
     dump(config)
 
 
-def setMusicVolume(slider):
-    slider.menu.game.audioLoader.setMusicVolume(slider.getAmount())
-    config["audio"]["volume"]["music"] = slider.getAmount()
+def setMusicVolume(slider, amount):
+    slider.menu.game.audioLoader.setMusicVolume(amount)
+    slider.setAmount(amount)
+    config["audio"]["volume"]["music"]["current"] = amount
     dump(config)
 
 
@@ -405,3 +408,9 @@ def resetControls(obj, menu, event):
         control.removeEvent(setKeyText, 'onKeyPress')
 
         showControls(obj, menu, event)
+
+
+def resetAudio(obj, menu, event):
+    setMasterVolume(menu.masterVolume, config["audio"]["volume"]["master"]["default"])
+    setSoundVolume(menu.soundVolume, config["audio"]["volume"]["sounds"]["default"])
+    setMusicVolume(menu.musicVolume, config["audio"]["volume"]["music"]["default"])
