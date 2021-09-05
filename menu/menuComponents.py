@@ -527,6 +527,7 @@ class InputBox(Label):
             self.menu.game.textHandler.removeLast()
             return
 
+        # Update the text of the inputbox to be the new string
         super().setText(self.menu.game.textHandler.getString())
         self.dirty = True
 
@@ -580,6 +581,7 @@ class InputBox(Label):
             positions = [x[0] for x in self.getCharPositions()]
             positions.insert(0, 0)
 
+            # Get the positions in the center of each character
             newPositions = []
             for x in range(len(positions) - 1):
                 newPositions.append(
@@ -608,6 +610,7 @@ class InputBox(Label):
             if mx > self.rect.x + self.rect.width:
                 self.menu.game.textHandler.setPointer(len(self.text))
                 self.moveIndicator()
+            # Anywhere in the box less than the position of the text
             elif mx < self.rect.x:
                 self.menu.game.textHandler.setPointer(0)
                 self.moveIndicator()
