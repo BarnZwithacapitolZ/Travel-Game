@@ -228,6 +228,7 @@ class Layer():
     def draw(self):
         if len(self.lines) > 0:
             self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
+
         else:
             pygame.draw.rect(
                 self.game.renderer.gameDisplay, self.backgroundColor,

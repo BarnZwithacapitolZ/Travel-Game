@@ -1,4 +1,4 @@
-# import pygame
+import pygame
 import copy
 import os
 import json
@@ -27,6 +27,8 @@ class MapEditor(SpriteRenderer):
 
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
+        self.previousLayer = None
+
     def getSaved(self):
         return self.levelData["saved"]
 
@@ -44,6 +46,9 @@ class MapEditor(SpriteRenderer):
 
     def getPoppedLevelChanges(self):
         return self.poppedLevelChanges
+
+    def getPreviousLayer(self):
+        return self.previousLayer
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
@@ -256,6 +261,10 @@ class MapEditor(SpriteRenderer):
             layer.addTempConnections(newConnections)
             layer.createConnections()
 
+        # Add the new temp connections to layer 4 for previewing
+        self.gridLayer4.addLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
     def createConnection(self, connectionType, startNode, endNode):
         layer = self.getGridLayer(connectionType)
         connections = self.getIntersetingConnections(layer, startNode, endNode)
@@ -395,6 +404,7 @@ class MapEditor(SpriteRenderer):
             if len(self.levelData["connections"][connectionType]) <= 0:
                 del self.levelData["connections"][connectionType]
             self.addChange()
+
         else:
             return
 
@@ -405,27 +415,54 @@ class MapEditor(SpriteRenderer):
         layer.getGrid().removeTempConnections()
         layer.createConnections()
 
+        # remove the new temp connections to layer 4 for previewing
+        self.gridLayer4.addLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
     def updateConnection(self, layer, group):
         if self.currentLayer == layer:
             for connection in group.getGrid().getConnections():
                 connection.update()
 
+    def events(self):
+        if (pygame.mouse.get_pressed()[2]
+                and self.game.clickManager.getRightClicked()
+                and self.currentLayer != 4):
+            self.game.clickManager.setRightClicked(False)
+            self.previousLayer = self.currentLayer
+            self.showLayer(4)
+
+            # Show the currently selected node at the top
+            if self.clickManager.getStartNode() is not None:
+                node = self.getTopNode(self.clickManager.getStartNode())
+                self.clickManager.setPreviewStartNode(node)
+                # Change the image of the top node to match the one beneath it
+                node.setMouseOver(True)
+
+        elif (not pygame.mouse.get_pressed()[2]
+                and self.previousLayer is not None):
+            self.showLayer(self.previousLayer)
+            self.previousLayer = None
+
     def update(self):
-        if self.rendering:
-            self.allSprites.update()
-            self.hud.update()
-            self.messageSystem.update()
+        if not self.rendering:
+            return
 
-            # if there is a click and a connection is not set,
-            # then remove the start node
+        self.allSprites.update()
+        self.hud.update()
+        self.messageSystem.update()
 
-            if (self.clickManager.getStartNode() is not None
-                    and self.game.clickManager.getClicked()):
-                self.clickManager.setStartNode(None)
-                self.game.clickManager.setClicked(False)
+        self.events()
 
-            if (self.clickManager.getClickType()
-                    == EditorClickManager.ClickType.DCONNECTION):
-                self.updateConnection(1, self.gridLayer1)
-                self.updateConnection(2, self.gridLayer2)
-                self.updateConnection(3, self.gridLayer3)
+        # if there is a click and a connection is not set,
+        # then remove the start node
+        if (self.clickManager.getStartNode() is not None
+                and self.game.clickManager.getClicked()):
+            self.clickManager.setStartNode(None)
+            self.game.clickManager.setClicked(False)
+
+        if (self.clickManager.getClickType()
+                == EditorClickManager.ClickType.DCONNECTION):
+            self.updateConnection(1, self.gridLayer1)
+            self.updateConnection(2, self.gridLayer2)
+            self.updateConnection(3, self.gridLayer3)

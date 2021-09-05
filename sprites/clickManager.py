@@ -358,6 +358,8 @@ class EditorClickManager(ClickManager):
         super().__init__(game)
         self.startNode = None  # A
         self.endNode = None  # B
+        self.previewStartNode = None
+        self.previewEndNode = None
         self.tempEndNode = None  # used for visualizing path
 
         self.clickType = EditorClickManager.ClickType.CONNECTION
@@ -377,6 +379,9 @@ class EditorClickManager(ClickManager):
     def getTempEndNode(self):
         return self.tempEndNode
 
+    def getPreviewStartNode(self):
+        return self.previewStartNode
+
     def getClickType(self):
         return self.clickType
 
@@ -392,6 +397,22 @@ class EditorClickManager(ClickManager):
         if self.clickType != EditorClickManager.ClickType.CONNECTION:
             if self.startNode is not None:
                 self.startNode = None
+
+    def setPreviewStartNode(self, previewStartNode):
+        if previewStartNode == self.startNode:
+            return
+
+        self.previewStartNode = previewStartNode
+        if self.previewStartNode is not None:
+            self.previewStartNode.setCurrentImage(1)
+
+    def setPreviewEndNode(self, previewEndNode):
+        if previewEndNode == self.endNode:
+            return
+
+        self.previewEndNode = previewEndNode
+        if self.previewEndNode is not None:
+            self.previewEndNode.setCurrentImage(2)
 
     def setStartNode(self, node):
         self.startNode = node
@@ -452,6 +473,8 @@ class EditorClickManager(ClickManager):
 
             self.startNode = None
             self.endNode = None
+            self.previewStartNode = None
+            self.previewEndNode = None
 
     def addTransport(self, node):
         # No connections to the node, we cant add any transport

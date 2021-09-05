@@ -279,14 +279,27 @@ class EditorNode(Node):
                 and self.game.mapEditor.getAllowEdits()):  # click event
             self.game.clickManager.setClicked(False)
 
-            if self.game.mapEditor.getLayer() != 4:
+            if (self.game.mapEditor.getLayer() != 4
+                    or self.game.mapEditor.getPreviousLayer() is not None):
                 # Add a connection
                 if (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.CONNECTION):
-                    (self.clickManager.setStartNode(self)
-                        if self.clickManager.getStartNode() is None
-                        else self.clickManager.setEndNode(self))
+                    node = self
+                    if self.game.mapEditor.getPreviousLayer() is not None:
+                        node = self.spriteRenderer.getNodeFromDifferentLayer(
+                            self, self.game.mapEditor.getPreviousLayer())
+                        (self.clickManager.setPreviewStartNode(self)
+                            if self.clickManager.getPreviewStartNode() is None
+                            else self.clickManager.setPreviewEndNode(self))
+
+                    if node is not None:
+                        # If its the preview node we want to make it mouseover
+                        # to change the image to the same as the node below it
+                        node.mouseOver = True
+                        (self.clickManager.setStartNode(node)
+                            if self.clickManager.getStartNode() is None
+                            else self.clickManager.setEndNode(node))
 
                 # Add a transport
                 elif (self.clickManager.getClickType()
@@ -329,18 +342,31 @@ class EditorNode(Node):
         # hover over event
         elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
                 and self.clickManager.getStartNode() != self
-                and self.game.mapEditor.getLayer() != 4
+                and self.clickManager.getPreviewStartNode() != self
+                and (
+                    self.game.mapEditor.getLayer() != 4
+                    or self.game.mapEditor.getPreviousLayer() is not None)
                 and self.game.mapEditor.getAllowEdits()):  # Hover over event
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
 
             if self.clickManager.getStartNode() is not None:
-                self.clickManager.setTempEndNode(self)
+                node = self
+                if self.game.mapEditor.getPreviousLayer() is not None:
+                    node = self.spriteRenderer.getNodeFromDifferentLayer(
+                        self, self.game.mapEditor.getPreviousLayer())
+
+                if node is not None:
+                    self.clickManager.setTempEndNode(node)
 
         # hover out event
         elif (not self.rect.collidepoint((mx, my)) and self.mouseOver
                 and self.clickManager.getStartNode() != self
-                and self.game.mapEditor.getLayer() != 4):  # Hover out event
+                and self.clickManager.getPreviewStartNode() != self
+                and (
+                    self.game.mapEditor.getLayer() != 4
+                    or self.game.mapEditor.getPreviousLayer() is not None
+                )):  # Hover out event
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True

@@ -342,6 +342,7 @@ class Label(MenuComponent):
             self.image = pygame.Surface((
                 width * self.menu.renderer.getScale(),
                 height * self.menu.renderer.getScale())).convert()
+            self.image.fill(self.backgroundColor)
 
         for label in labels:
             self.image.blit(label, (0, y))

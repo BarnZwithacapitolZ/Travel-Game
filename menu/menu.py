@@ -280,13 +280,9 @@ class MainMenu(Menu):
         # x = (config["graphics"]["displayWidth"] / 2) - 180
         x = 100
 
-        title1 = Label(self, "Transport", 70, WHITE, (x, 80), GREEN)
-        title2 = Label(self, "The", 30, WHITE, (x, title1.y + 70), GREEN)
-        title3 = Label(self, "Public", 70, WHITE, (x, title2.y + 30), GREEN)
-
-        title1.setItalic(True)
-        title2.setItalic(True)
-        title3.setItalic(True)
+        title = Label(
+            self, "Transport \n The \n Public", 70, WHITE, (x, 80), GREEN)
+        title.setItalic(True)
 
         cont = Label(self, "Continue", 50,  BLACK, (x, 290), GREEN)
         editor = Label(
@@ -328,9 +324,7 @@ class MainMenu(Menu):
         # self.add(sidebar)
         # self.add(otherbar)
 
-        self.add(title1)
-        self.add(title2)
-        self.add(title3)
+        self.add(title)
         self.add(cont)
         self.add(editor)
         self.add(options)
@@ -1405,6 +1399,10 @@ class GameHudLayout(Menu):
         super().__init__(renderer)
 
     @abc.abstractmethod
+    def getHudButtonHoverOver(self):
+        return
+
+    @abc.abstractmethod
     def updateLayerText(self):
         return
 
@@ -1427,6 +1425,8 @@ class GameHud(GameHudLayout):
         self.hearts = []
         self.spacing = spacing
 
+        # TODO Currently preview hud has no buttons but if we add buttons to it
+        # we will want to make this an attribute of the preview hud too
         self.hudButtonHoverOver = False
 
         self.hudX = 15

@@ -403,7 +403,7 @@ class SpriteRenderer():
                 self.getGridLayer(self.connectionTypes[0]).getNumber())
 
     # Draw the level to a surface and return this surface for blitting
-    # (i.e on the level selection screen)
+    # (i.e for maps on the level selection screen)
     def createLevelSurface(self, level):
         self.clearLevel()
         self.startingFixedScale = -0.2
@@ -430,7 +430,6 @@ class SpriteRenderer():
     # Create a new surface when the game is paused with all the sprites
     # currently in the game, so these don't have to be drawn every frame
     # (as they are not moving)
-
     def createPausedSurface(self):
         if self.rendering and self.game.paused:
             self.pausedSurface = pygame.Surface((
@@ -533,6 +532,16 @@ class SpriteRenderer():
                 return node
 
         return bottomNode
+
+    # if there is an equivelant node on a different layer, return it,
+    # else return none (no node)
+    def getNodeFromDifferentLayer(self, currentNode, differentLayer):
+        layer = self.getGridLayer("layer " + str(differentLayer))
+
+        for node in layer.getGrid().getNodes():
+            if node.getNumber() == currentNode.getNumber():
+                return node
+        return None
 
     def events(self):
         if pygame.key.get_pressed()[config["controls"]["slowdown"]["current"]]:
