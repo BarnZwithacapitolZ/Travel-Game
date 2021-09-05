@@ -2276,7 +2276,7 @@ class EditorHud(GameHudLayout):
             self, WHITE, (width - 40, 50), (x + 20, y + 80))
         mapName = InputBox(
             self, 30, BLACK, self.inputBox, self.inputBox.width - 50,
-            (x + 40, y + 92))
+            (x + 40, y + 94))
         saveBox = Rectangle(
             self, BLACK, (100, 50), (
                 (x + width) - 120 - box.x, (y + height) - 70 - box.y))

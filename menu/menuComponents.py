@@ -511,7 +511,8 @@ class InputBox(Label):
         self.flashing = True
         self.background = background
         self.indicator = Rectangle(
-            self.menu, self.color, (3, fontSize), self.pos)
+            self.menu, self.color, (
+                3, self.getFontSize("hello world!")[1]), self.pos)
 
     def setText(self):
         width = (self.getFontSizeScaled(
@@ -526,24 +527,27 @@ class InputBox(Label):
             self.menu.game.textHandler.removeLast()
             return
 
-        if self.text != self.menu.game.textHandler.getString():
-            super().setText(self.menu.game.textHandler.getString())
-            self.dirty = True
+        super().setText(self.menu.game.textHandler.getString())
+        self.dirty = True
 
-    def setFlashing(self):
+    def moveIndicator(self):
         if hasattr(self.indicator, 'rect'):
             self.indicator.x = (self.x + self.getFontSizeScaled(
-                self.menu.game.textHandler.getString(True))[0]
-                / self.menu.renderer.getScale())
+                    self.menu.game.textHandler.getString(True))[0]
+                    / self.menu.renderer.getScale())
             self.indicator.rect.x = (
                 self.indicator.x * self.menu.renderer.getScale())
 
-            self.timer += 60 * self.menu.game.dt
+    def setFlashing(self):
+        if (self.text != self.menu.game.textHandler.getString()):
+            self.moveIndicator()
 
-            # when timer hits 25 toggle flassing on / off
-            if self.timer >= 25:
-                self.flashing = not self.flashing
-                self.timer = 0
+        self.timer += 60 * self.menu.game.dt
+
+        # when timer hits 25 toggle flassing on / off
+        if self.timer >= 25:
+            self.flashing = not self.flashing
+            self.timer = 0
 
     def resizeIndicator(self):
         self.indicator.dirty = True
@@ -560,7 +564,8 @@ class InputBox(Label):
         self.setFlashing()
 
         # change the text
-        if self.menu.game.textHandler.getActive():
+        if (self.menu.game.textHandler.getActive()
+                and self.text != self.menu.game.textHandler.getString()):
             self.setText()
 
         mx, my = pygame.mouse.get_pos()
@@ -573,16 +578,28 @@ class InputBox(Label):
             self.menu.game.clickManager.setClicked(False)
             indicatorPos = 0
             positions = [x[0] for x in self.getCharPositions()]
+            positions.insert(0, 0)
 
-            for x in range(len(positions)):
-                if (mx - self.rect.x > positions[x]
-                        and mx - self.rect.x < positions[x + 1]):
+            newPositions = []
+            for x in range(len(positions) - 1):
+                newPositions.append(
+                    positions[x] + ((positions[x + 1] - positions[x]) / 2))
+
+            for x in range(len(newPositions)):
+                # Final character in the list
+                if (x + 1 >= len(newPositions)
+                        and mx - self.rect.x > newPositions[x]):
+                    indicatorPos = x + 1
+                    break
+                elif (mx - self.rect.x > newPositions[x]
+                        and mx - self.rect.x < newPositions[x + 1]):
                     indicatorPos = x + 1
                     break
 
             self.menu.game.textHandler.setPointer(indicatorPos)
+            self.moveIndicator()
 
-        if (self.background.rect.collidepoint((mx, my))
+        elif (self.background.rect.collidepoint((mx, my))
                 and self.menu.game.clickManager.getClicked()):
             self.menu.game.clickManager.setClicked(False)
 
@@ -590,6 +607,10 @@ class InputBox(Label):
             # of the text, set the pointer to the max position
             if mx > self.rect.x + self.rect.width:
                 self.menu.game.textHandler.setPointer(len(self.text))
+                self.moveIndicator()
+            elif mx < self.rect.x:
+                self.menu.game.textHandler.setPointer(0)
+                self.moveIndicator()
 
     def draw(self):
         super().draw()
