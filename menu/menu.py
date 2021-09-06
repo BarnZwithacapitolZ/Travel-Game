@@ -1671,6 +1671,12 @@ class EditorHud(GameHudLayout):
         self.deleteLocation = self.addLocation + 65  # 170
         self.runLocation = self.deleteLocation + 100  # 280
 
+        self.topBarHeight = 40  # Height of selection topbar
+        self.boxWidth = 220  # Width of all the dropdowns
+        self.padX = 15  # Padding x from box and text
+        self.padY = 15  # Padding y between rows
+        self.topPadY = 10  # Padding y for first row
+
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
             self.currentLayer.setText(
@@ -1745,23 +1751,34 @@ class EditorHud(GameHudLayout):
         self.editSizeDropdownOpen = False
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Rectangle(
-            self, BLACK, (200, 150), (self.editLocation, 40), 0,
-            [0, 0, 10, 10])
+        textX = self.editLocation + self.padX
 
-        textX = self.editLocation + 10
-
-        size = Label(self, "Map Size", 25, WHITE, (textX, 50), BLACK)
+        # Change map Size
+        size = Label(self, "Map Size", 25, WHITE, (
+            textX, self.topBarHeight + self.topPadY), BLACK)
+        # Change map background colour
+        background = Label(
+            self, "Background \n colour", 25, WHITE,
+            (textX, size.getBottomY() + self.padY), BLACK)
+        # Change total number of people needed to complete map
+        total = Label(
+            self, "Total to \n complete", 25, WHITE,
+            (textX, background.getBottomY() + self.padY), BLACK)
+        # Undo changes to map
         undo = Label(
             self, "Undo", 25,
             WHITE if len(self.game.mapEditor.getLevelChanges()) > 1 else GREY,
-            (textX, 85), BLACK)
+            (textX, total.getBottomY() + self.padY), BLACK)
+        # Redo changes to map
         redo = Label(
             self, "Redo", 25,
-            (WHITE if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1
-                else GREY), (textX, 120), BLACK)
-
-        self.add(box)
+            (WHITE if len(
+                self.game.mapEditor.getPoppedLevelChanges()) >= 1 else GREY),
+            (textX, undo.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK,
+            (self.boxWidth, redo.getBottomY() + self.padY - self.topBarHeight),
+            (self.editLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         size.addEvent(hf.toggleEditSizeDropdown, 'onMouseClick')
 
@@ -1775,7 +1792,8 @@ class EditorHud(GameHudLayout):
             redo.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             redo.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
 
-        labels = [size]
+        self.add(box)
+        labels = [size, background, total]
         for label in labels:
             label.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             label.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -1802,27 +1820,34 @@ class EditorHud(GameHudLayout):
         size3Selected = (
             True if currentWidth == 22 and currentHeight == 12 else False)
 
-        boxX = self.editLocation + 200
-        textX = boxX + 10
+        boxX = self.editLocation + self.boxWidth
+        textX = boxX + self.padX
 
-        box = Rectangle(self, BLACK, (110, 150), (boxX, 85))
-        size0Box = Rectangle(self, GREEN, (110, 33), (boxX, 90))
-        size1Box = Rectangle(self, GREEN, (110, 33), (boxX, 126))
-        size2Box = Rectangle(self, GREEN, (110, 33), (boxX, 161))
-        size3Box = Rectangle(self, GREEN, (110, 33), (boxX, 195))
-
+        # 16 X 9 map size
         size0 = Label(
-            self, "16 x 9", 25, WHITE, (textX, 95),
-            (GREEN if size0Selected else BLACK))
+            self, ("- " if size0Selected else "") + "16 x 9", 25,
+            GREEN if size0Selected else WHITE,
+            (textX, self.topBarHeight + self.topPadY), BLACK)
+        # 18 X 10 map size
         size1 = Label(
-            self, "18 x 10", 25, WHITE, (textX, 130),
-            (GREEN if size1Selected else BLACK))
+            self, ("- " if size1Selected else "") + "18 x 10", 25,
+            GREEN if size1Selected else WHITE,
+            (textX, size0.getBottomY() + self.padY), BLACK)
+        # 20 X 11 map size
         size2 = Label(
-            self, "20 x 11", 25, WHITE, (textX, 165),
-            (GREEN if size2Selected else BLACK))
+            self, ("- " if size2Selected else "") + "20 x 11", 25,
+            GREEN if size2Selected else WHITE,
+            (textX, size1.getBottomY() + self.padY), BLACK)
+        # 22 X 12 map size
         size3 = Label(
-            self, "22 x 12", 25, WHITE, (textX, 200),
-            (GREEN if size3Selected else BLACK))
+            self, ("- " if size3Selected else "") + "22 x 12", 25,
+            GREEN if size3Selected else WHITE,
+            (textX, size2.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                size3.getBottomY() + self.padY - self.topBarHeight),
+            (boxX, self.topBarHeight), 0, [0, 10, 10, 10])
 
         size0.addEvent(hf.setSize0, 'onMouseClick')
         size1.addEvent(hf.setSize1, 'onMouseClick')
@@ -1830,25 +1855,13 @@ class EditorHud(GameHudLayout):
         size3.addEvent(hf.setSize3, 'onMouseClick')
 
         self.add(box)
-        if size0Selected:
-            self.add(size0Box)
-        elif size1Selected:
-            self.add(size1Box)
-        elif size2Selected:
-            self.add(size2Box)
-        elif size3Selected:
-            self.add(size3Box)
-
         labels = [
             (size0, size0Selected), (size1, size1Selected),
             (size2, size2Selected), (size3, size3Selected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def addDropdown(self):
@@ -1873,56 +1886,49 @@ class EditorHud(GameHudLayout):
             True if clickType == EditorClickManager.ClickType.DESTINATION
             else False)
 
-        box = Rectangle(
-            self, BLACK, (200, 150), (self.addLocation, 40), 0, [0, 0, 10, 10])
-        connectionBox = Rectangle(
-            self, GREEN, (200, 33), (self.addLocation, 45))
-        stopBox = Rectangle(self, GREEN, (200, 33), (self.addLocation, 81))
-        transportBox = Rectangle(
-            self, GREEN, (200, 33), (self.addLocation, 116))
-        destinationBox = Rectangle(
-            self, GREEN, (200, 33), (self.addLocation, 151))
+        textX = self.addLocation + self.padX
 
-        textX = self.addLocation + 10  # x position of text within box
-
+        # Add a connection to the map
         connection = Label(
-            self, "Connection", 25, WHITE, (textX, 50),
-            (GREEN if connectionSelected else BLACK))
-        stop = Label(
-            self, "Stop", 25, WHITE, (textX, 85),
-            (GREEN if stopSelected else BLACK))
-        transport = Label(
-            self, "Transport", 25, WHITE, (textX, 120),
-            (GREEN if transportSelected else BLACK))
-        destination = Label(
-            self, "Location", 25, WHITE, (textX, 155),
-            (GREEN if destinationSelected else BLACK))
+            self, ("- " if connectionSelected else "") + "Connection", 25,
+            GREEN if connectionSelected else WHITE,
+            (textX, self.topBarHeight + self.topPadY), BLACK)
+        # Add a type of stop to the map
+        self.stop = Label(
+            self, ("- " if stopSelected else "") + "Stop", 25,
+            GREEN if stopSelected else WHITE,
+            (textX, connection.getBottomY() + self.padY), BLACK)
+        # Add a type of transport to the map
+        self.transport = Label(
+            self, ("- " if transportSelected else "") + "Transport", 25,
+            GREEN if transportSelected else WHITE,
+            (textX, self.stop.getBottomY() + self.padY), BLACK)
+        # Add a type of destination to the map
+        self.destination = Label(
+            self, ("- " if destinationSelected else "") + "Location", 25,
+            GREEN if destinationSelected else WHITE,
+            (textX, self.transport.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                self.destination.getBottomY() + self.padY - self.topBarHeight),
+            (self.addLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         connection.addEvent(hf.addConnection, 'onMouseClick')
-        stop.addEvent(hf.toggleAddStopDropdown, 'onMouseClick')
-        transport.addEvent(hf.toggleAddTransportDropdown, 'onMouseClick')
-        destination.addEvent(hf.toggleAddDestinationDropdown, 'onMouseClick')
+        self.stop.addEvent(hf.toggleAddStopDropdown, 'onMouseClick')
+        self.transport.addEvent(hf.toggleAddTransportDropdown, 'onMouseClick')
+        self.destination.addEvent(
+            hf.toggleAddDestinationDropdown, 'onMouseClick')
 
         self.add(box)
-        if connectionSelected:
-            self.add(connectionBox)
-        elif stopSelected:
-            self.add(stopBox)
-        elif transportSelected:
-            self.add(transportBox)
-        elif destinationSelected:
-            self.add(destinationBox)
-
         labels = [
-            (connection, connectionSelected), (stop, stopSelected),
-            (transport, transportSelected), (destination, destinationSelected)]
+            (connection, connectionSelected), (self.stop, stopSelected),
+            (self.transport, transportSelected),
+            (self.destination, destinationSelected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def addStopDropdown(self):
@@ -1936,46 +1942,42 @@ class EditorHud(GameHudLayout):
         busSelected = True if addType == "bus" else False
         tramSelected = True if addType == "tram" else False
 
-        boxX = self.addLocation + 200
-        textX = boxX + 10
+        boxX = self.addLocation + self.boxWidth
+        textX = boxX + self.padX
 
-        box = Rectangle(self, BLACK, (200, 114), (boxX, 85))
-        metroBox = Rectangle(self, GREEN, (200, 33), (boxX, 90))
-        busBox = Rectangle(self, GREEN, (200, 33), (boxX, 126))
-        tramBox = Rectangle(self, GREEN, (200, 33), (boxX, 161))
-
+        # Add a metro station to the map
         metroStation = Label(
-            self, "Metro Station", 25, WHITE, (textX, 95),
-            (GREEN if metroSelected else BLACK))
+            self, ("- " if metroSelected else "") + "Metro \n Station", 25,
+            GREEN if metroSelected else WHITE,
+            (textX, self.stop.y + self.padY), BLACK)
+        # Add a bus stop to the map
         busStop = Label(
-            self, "Bus Stop", 25, WHITE, (textX, 130),
-            (GREEN if busSelected else BLACK))
+            self, ("- " if busSelected else "") + "Bus Stop", 25,
+            GREEN if busSelected else WHITE,
+            (textX, metroStation.getBottomY() + self.padY), BLACK)
+        # Add a tram stop to the map
         tramStop = Label(
-            self, "Tram Stop", 25, WHITE, (textX, 165),
-            (GREEN if tramSelected else BLACK))
-
-        self.add(box)
-        if metroSelected:
-            self.add(metroBox)
-        elif busSelected:
-            self.add(busBox)
-        elif tramSelected:
-            self.add(tramBox)
+            self, ("- " if tramSelected else "") + "Tram Stop", 25,
+            GREEN if tramSelected else WHITE,
+            (textX, busStop.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                tramStop.getBottomY() + self.padY - self.stop.y),
+            (boxX, self.stop.y), 0, [0, 10, 10, 10])
 
         metroStation.addEvent(hf.addMetro, 'onMouseClick')
         busStop.addEvent(hf.addBus, 'onMouseClick')
         tramStop.addEvent(hf.addTram, 'onMouseClick')
 
+        self.add(box)
         labels = [
             (metroStation, metroSelected), (busStop, busSelected),
             (tramStop, tramSelected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def addTransportDropdown(self):
@@ -1990,53 +1992,48 @@ class EditorHud(GameHudLayout):
         tramSelected = True if addType == "tram" else False
         taxiSelected = True if addType == "taxi" else False
 
-        boxX = self.addLocation + 200
-        textX = boxX + 10
+        boxX = self.addLocation + self.boxWidth
+        textX = boxX + self.padX
 
-        box = Rectangle(self, BLACK, (110, 150), (boxX, 120))
-        metroBox = Rectangle(self, GREEN, (110, 33), (boxX, 125))
-        busBox = Rectangle(self, GREEN, (110, 33), (boxX, 161))
-        tramBox = Rectangle(self, GREEN, (110, 33), (boxX, 196))
-        taxiBox = Rectangle(self, GREEN, (110, 33), (boxX, 231))
-
+        # Add a metro to the map
         metro = Label(
-            self, "Metro", 25, WHITE, (textX, 130),
-            (GREEN if metroSelected else BLACK))
+            self, ("- " if metroSelected else "") + "Metro", 25,
+            GREEN if metroSelected else WHITE,
+            (textX, self.transport.y + self.padY), BLACK)
+        # Add a bus to the map
         bus = Label(
-            self, "Bus", 25, WHITE, (textX, 165),
-            (GREEN if busSelected else BLACK))
+            self, ("- " if busSelected else "") + "Bus", 25,
+            GREEN if busSelected else WHITE,
+            (textX, metro.getBottomY() + self.padY), BLACK)
+        # Add a tram to the map
         tram = Label(
-            self, "Tram", 25, WHITE, (textX, 200),
-            (GREEN if tramSelected else BLACK))
+            self, ("- " if tramSelected else "") + "Tram", 25,
+            GREEN if tramSelected else WHITE,
+            (textX, bus.getBottomY() + self.padY), BLACK)
+        # Add a taxi to the map
         taxi = Label(
-            self, "Taxi", 25, WHITE, (textX, 235),
-            (GREEN if taxiSelected else BLACK))
-
-        self.add(box)
-        if metroSelected:
-            self.add(metroBox)
-        elif busSelected:
-            self.add(busBox)
-        elif tramSelected:
-            self.add(tramBox)
-        elif taxiSelected:
-            self.add(taxiBox)
+            self, ("- " if taxiSelected else "") + "Taxi", 25,
+            GREEN if taxiSelected else WHITE,
+            (textX, tram.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                taxi.getBottomY() + self.padY - self.transport.y),
+            (boxX, self.transport.y), 0, [0, 10, 10, 10])
 
         metro.addEvent(hf.addMetro, 'onMouseClick')
         bus.addEvent(hf.addBus, 'onMouseClick')
         tram.addEvent(hf.addTram, 'onMouseClick')
         taxi.addEvent(hf.addTaxi, 'onMouseClick')
 
+        self.add(box)
         labels = [
             (metro, metroSelected), (bus, busSelected), (tram, tramSelected),
             (taxi, taxiSelected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def addDestinationDropdown(self):
@@ -2049,48 +2046,43 @@ class EditorHud(GameHudLayout):
         airportSelected = True if addType == 'airport' else False
         officeSelected = True if addType == 'office' else False
         houseSelected = True if addType == 'house' else False
-        # TO DO: Add other types of transportation
 
-        boxX = self.addLocation + 200
-        textX = boxX + 10
+        boxX = self.addLocation + self.boxWidth
+        textX = boxX + self.padX
 
-        box = Rectangle(self, BLACK, (200, 114), (boxX, 155))
-        airportBox = Rectangle(self, GREEN, (200, 33), (boxX, 160))
-        officeBox = Rectangle(self, GREEN, (200, 33), (boxX, 196))
-        houseBox = Rectangle(self, GREEN, (200, 33), (boxX, 228))
-
+        # Add an airport location to the map
         airport = Label(
-            self, "Airport", 25, WHITE, (textX, 165),
-            (GREEN if airportSelected else BLACK))
+            self, ("- " if airportSelected else "") + "Airport", 25,
+            GREEN if airportSelected else WHITE,
+            (textX, self.destination.y + self.padY), BLACK)
+        # Add an office location to the map
         office = Label(
-            self, "Office", 25, WHITE, (textX, 200),
-            (GREEN if officeSelected else BLACK))
+            self, ("- " if officeSelected else "") + "Office", 25,
+            GREEN if officeSelected else WHITE,
+            (textX, airport.getBottomY() + self.padY), BLACK)
+        # Add a house location to the map
         house = Label(
-            self, "House", 25, WHITE, (textX, 233),
-            (GREEN if houseSelected else BLACK))
-
-        self.add(box)
-        if airportSelected:
-            self.add(airportBox)
-        elif officeSelected:
-            self.add(officeBox)
-        elif houseSelected:
-            self.add(houseBox)
+            self, ("- " if houseSelected else "") + "House", 25,
+            GREEN if houseSelected else WHITE,
+            (textX, office.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                house.getBottomY() + self.padY - self.destination.y),
+            (boxX, self.destination.y), 0, [0, 10, 10, 10])
 
         airport.addEvent(hf.addAirport, 'onMouseClick')
         office.addEvent(hf.addOffice, 'onMouseClick')
         house.addEvent(hf.addHouse, 'onMouseClick')
 
+        self.add(box)
         labels = [
             (airport, airportSelected), (office, officeSelected),
             (house, houseSelected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def deleteDropdown(self):
@@ -2113,31 +2105,33 @@ class EditorHud(GameHudLayout):
             True if clickType == EditorClickManager.ClickType.DDESTINATION
             else False)
 
-        box = Rectangle(
-            self, BLACK, (200, 150), (self.deleteLocation, 40), 0,
-            [0, 0, 10, 10])
-        connectionBox = Rectangle(
-            self, GREEN, (200, 33), (self.deleteLocation, 45))
-        stopBox = Rectangle(self, GREEN, (200, 33), (self.deleteLocation, 81))
-        transportBox = Rectangle(
-            self, GREEN, (200, 33), (self.deleteLocation, 116))
-        destinationBox = Rectangle(
-            self, GREEN, (200, 33), (self.deleteLocation, 151))
+        textX = self.deleteLocation + self.padX
 
-        textX = self.deleteLocation + 10
-
+        # Delete a connection from the map
         connection = Label(
-            self, "Connection", 25, WHITE, (textX, 50),
-            (GREEN if connectionSelected else BLACK))
+            self, ("- " if connectionSelected else "") + "Connection", 25,
+            GREEN if connectionSelected else WHITE,
+            (textX, self.topBarHeight + self.topPadY), BLACK)
+        # Delete a type of stop from the map
         stop = Label(
-            self, "Stop", 25, WHITE, (textX, 85),
-            (GREEN if stopSelected else BLACK))
+            self, ("- " if stopSelected else "") + "Stop", 25,
+            GREEN if stopSelected else WHITE,
+            (textX, connection.getBottomY() + self.padY), BLACK)
+        # Delete a type of transport from the map
         transport = Label(
-            self, "Transport", 25, WHITE, (textX, 120),
-            (GREEN if transportSelected else BLACK))
+            self, ("- " if transportSelected else "") + "Transport", 25,
+            GREEN if transportSelected else WHITE,
+            (textX, stop.getBottomY() + self.padY), BLACK)
+        # Delete a type of destination from the map
         destination = Label(
-            self, "Destination", 25, WHITE, (textX, 155),
-            (GREEN if destinationSelected else BLACK))
+            self, ("- " if destinationSelected else "") + "Destination", 25,
+            GREEN if destinationSelected else WHITE,
+            (textX, transport.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                destination.getBottomY() + self.padY - self.topBarHeight),
+            (self.deleteLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         connection.addEvent(hf.deleteConnection, 'onMouseClick')
         stop.addEvent(hf.deleteStop, 'onMouseClick')
@@ -2145,25 +2139,13 @@ class EditorHud(GameHudLayout):
         destination.addEvent(hf.deleteDestination, 'onMouseClick')
 
         self.add(box)
-        if connectionSelected:
-            self.add(connectionBox)
-        elif stopSelected:
-            self.add(stopBox)
-        elif transportSelected:
-            self.add(transportBox)
-        elif destinationSelected:
-            self.add(destinationBox)
-
         labels = [
             (connection, connectionSelected), (stop, stopSelected),
             (transport, transportSelected), (destination, destinationSelected)]
         for label in labels:
-            if label[1]:
-                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
-
-            else:
+            if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-            label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
     def fileDropdown(self):
@@ -2175,33 +2157,44 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        box = Rectangle(
-            self, BLACK, (130, 220), (self.fileLocation, 40), 0,
-            [0, 0, 10, 10])
+        textX = self.fileLocation + self.padX
 
-        textX = self.fileLocation + 10
-
-        new = Label(self, "New", 25, WHITE, (textX, 50), BLACK)
-        load = Label(self, "Open", 25, WHITE, (textX, 85), BLACK)
+        # Create a new map / reset
+        new = Label(
+            self, "New", 25, WHITE, (textX, self.topBarHeight + self.topPadY),
+            BLACK)
+        # Load an existing map
+        self.load = Label(
+            self, "Open", 25, WHITE, (textX, new.getBottomY() + self.padY),
+            BLACK)
+        # Save a map with the new changes
         save = Label(
-            self, "Save", 25, (
-                WHITE if self.game.mapEditor.getDeletable() else GREY),
-            (textX, 120), BLACK)
+            self, "Save", 25,
+            (WHITE if self.game.mapEditor.getDeletable() else GREY),
+            (textX, self.load.getBottomY() + self.padY), BLACK)
+        # Save a new map for the first time
         saveAs = Label(
-            self, "Save as", 25, (
-                WHITE if self.game.mapEditor.getDeletable() else GREY),
-            (textX, 155), BLACK)
-
-        # Must be already saved and be a deletable map
+            self, "Save as", 25,
+            (WHITE if self.game.mapEditor.getDeletable() else GREY),
+            (textX, save.getBottomY() + self.padY), BLACK)
+        # Delete an existing map - Must be already saved and be a deletable map
         delete = Label(
             self, "Delete", 25, (
                 WHITE if self.game.mapEditor.getSaved()
                 and self.game.mapEditor.getDeletable() else GREY),
-            (textX, 190), BLACK)
-        close = Label(self, "Exit", 25, WHITE, (textX, 225), BLACK)
+            (textX, saveAs.getBottomY() + self.padY), BLACK)
+        # Close the Map Editor
+        close = Label(
+            self, "Exit", 25, WHITE, (textX, delete.getBottomY() + self.padY),
+            BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                close.getBottomY() + self.padY - self.topBarHeight),
+            (self.fileLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         new.addEvent(hf.newMap, 'onMouseClick')
-        load.addEvent(hf.toggleLoadDropdown, 'onMouseClick')
+        self.load.addEvent(hf.toggleLoadDropdown, 'onMouseClick')
         close.addEvent(hf.closeMapEditor, 'onMouseClick')
 
         if self.game.mapEditor.getDeletable():
@@ -2223,7 +2216,7 @@ class EditorHud(GameHudLayout):
         self.add(delete)
 
         # Add each of the labels
-        labels = [new, load, close]
+        labels = [new, self.load, close]
         for label in labels:
             label.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             label.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -2235,10 +2228,11 @@ class EditorHud(GameHudLayout):
 
         self.game.mapEditor.setAllowEdits(False)
 
-        boxX = self.fileLocation + 130
-        textX = boxX + 10
-        y = 95
-        maxWidth = 130  # Min width
+        boxX = self.fileLocation + self.boxWidth
+        textX = boxX + self.padX
+
+        y = self.load.y + self.padY
+        maxWidth = self.boxWidth
         maps = []
         for mapName, path in self.game.mapLoader.getMaps().items():
             m = Label(self, mapName, 25, WHITE, (textX, y), BLACK)
@@ -2246,16 +2240,15 @@ class EditorHud(GameHudLayout):
             m.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             m.addEvent(hf.loadEditorMap, 'onMouseClick')
             if m.getFontSize()[0] > maxWidth:
-                maxWidth = m.getFontSize()[0]
+                maxWidth = m.getFontSize()[0] + (self.padX * 2)
             maps.append(m)
-            y += 30
+            y = m.getBottomY() + self.padY
 
         box = Rectangle(
-            self, BLACK, (
-                maxWidth + 20,
-                20 + (30 * len(self.game.mapLoader.getMaps()))), (boxX, 85))
-        self.add(box)
+            self, BLACK, (maxWidth, y - self.load.y), (boxX, self.load.y), 0,
+            [0, 10, 10, 10])
 
+        self.add(box)
         for m in maps:
             self.add(m)
 

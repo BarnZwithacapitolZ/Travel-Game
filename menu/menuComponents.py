@@ -16,7 +16,7 @@ class TextHandler:
     def __init__(self):
         self.active = False
         self.lengthReached = False
-        self.pointer = 0
+        self.pointer = self.previousPointer = 0
         self.string = []
 
         self.keys = list(string.ascii_letters) + list(string.digits)
@@ -38,6 +38,9 @@ class TextHandler:
     def getPointer(self):
         return self.pointer
 
+    def getPreviousPointer(self):
+        return self.previousPointer
+
     def getString(self, pointer=False):
         return (
             ''.join(self.string[:self.pointer]) if pointer
@@ -55,12 +58,16 @@ class TextHandler:
     def setPointer(self, pointer):
         if pointer > len(self.string) or pointer < 0:
             return
+        self.previousPointer = self.pointer
         self.pointer = pointer
+
+    def setPreviousPointer(self, previousPointer):
+        self.previousPointer = previousPointer
 
     def removeLast(self):
         if self.pointer > 0:
             del self.string[self.pointer - 1]
-            self.pointer -= 1
+            self.setPointer(self.pointer - 1)
 
     # When active clear the text so its ready for input
     def setActive(self, active):
@@ -87,7 +94,7 @@ class TextHandler:
                         b[insert:insert] = [event.unicode]
                         self.string = b
 
-                    self.pointer += 1
+                    self.setPointer(self.pointer + 1)
 
                 if event.key == config["controls"]["left"]["current"]:
                     self.setPointer(self.pointer - 1)
@@ -131,6 +138,9 @@ class MenuComponent:
 
     def getTimer(self):
         return self.timer
+
+    def getBottomY(self):
+        return self.y + self.height
 
     def setSize(self, size=tuple()):
         self.width = size[0]
@@ -218,7 +228,7 @@ class Label(MenuComponent):
 
         self.text = str(text)
         self.finalMessage = []
-        # self.fontName = pygame.font.get_default_font()
+        self.fontName = pygame.font.get_default_font()
         self.fontName = os.path.join(
             FONTFOLDER, config["fonts"]["whiteRabbit"])
         # self.fontName = os.path.join(FONTFOLDER, config["fonts"]["bitwise"])
@@ -229,6 +239,9 @@ class Label(MenuComponent):
         self.backgroundColor = backgroundColor
 
         self.finalMessage = self.splitText()
+
+    def getBottomY(self):
+        return self.y + self.getFontSize()[1]
 
     def setFontSize(self, fontSize):
         self.fontSize = fontSize
@@ -328,7 +341,12 @@ class Label(MenuComponent):
             label = self.font.render(
                 msg, config["graphics"]["antiAliasing"], self.color,
                 self.backgroundColor)
-            width += label.get_rect().width / self.menu.renderer.getScale()
+            labelWidth = label.get_rect().width / self.menu.renderer.getScale()
+
+            # We want the width of the label to be the width of the max word
+            if labelWidth > width:
+                width = labelWidth
+
             height += label.get_rect().height / self.menu.renderer.getScale()
             labels.append(label)
 
@@ -540,12 +558,15 @@ class InputBox(Label):
                 self.indicator.x * self.menu.renderer.getScale())
 
     def setFlashing(self):
-        if (self.text != self.menu.game.textHandler.getString()):
+        if (self.menu.game.textHandler.getPointer()
+                != self.menu.game.textHandler.getPreviousPointer()):
             self.moveIndicator()
+            self.menu.game.textHandler.setPreviousPointer(
+                self.menu.game.textHandler.getPointer())
 
         self.timer += 60 * self.menu.game.dt
 
-        # when timer hits 25 toggle flassing on / off
+        # every 25ms
         if self.timer >= 25:
             self.flashing = not self.flashing
             self.timer = 0
@@ -573,11 +594,11 @@ class InputBox(Label):
         difference = self.menu.renderer.getDifference()
         mx -= difference[0]
         my -= difference[1]
+        indicatorPos = 0
 
         if (self.rect.collidepoint((mx, my))
                 and self.menu.game.clickManager.getClicked()):
             self.menu.game.clickManager.setClicked(False)
-            indicatorPos = 0
             positions = [x[0] for x in self.getCharPositions()]
             positions.insert(0, 0)
 
@@ -599,7 +620,6 @@ class InputBox(Label):
                     break
 
             self.menu.game.textHandler.setPointer(indicatorPos)
-            self.moveIndicator()
 
         elif (self.background.rect.collidepoint((mx, my))
                 and self.menu.game.clickManager.getClicked()):
@@ -608,12 +628,9 @@ class InputBox(Label):
             # if we click anywhere in the box greater than the length
             # of the text, set the pointer to the max position
             if mx > self.rect.x + self.rect.width:
-                self.menu.game.textHandler.setPointer(len(self.text))
-                self.moveIndicator()
-            # Anywhere in the box less than the position of the text
-            elif mx < self.rect.x:
-                self.menu.game.textHandler.setPointer(0)
-                self.moveIndicator()
+                indicatorPos = len(self.text)
+
+            self.menu.game.textHandler.setPointer(indicatorPos)
 
     def draw(self):
         super().draw()
