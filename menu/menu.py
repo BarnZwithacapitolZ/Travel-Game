@@ -207,6 +207,52 @@ class Menu:
             self.loadingImage.setImageName("loading1")
         self.loadingImage.dirty = True
 
+    # Create a confirm box and return an empty box
+    # with confirm and cancel actions
+    def createConfirmBox(
+            self, width, height, title, ok="Ok", cancel="Cancel", padX=15,
+            padY=15):
+        # Set x, y to be center of display
+        x = (config["graphics"]["displayWidth"] / 2) - (width / 2)
+        y = (config["graphics"]["displayHeight"] / 2) - (height / 2)
+
+        box = Rectangle(self, GREEN, (width, height), (x, y))
+        title = Label(
+            self, title, 30, WHITE, ((x + padX) - box.x, (y + padY) - box.y),
+            GREEN)
+
+        # Set confirm box with label centered
+        confirm = Label(self, ok, 25, WHITE, (0, 0), BLACK)
+        cw = confirm.getFontSize()[0] + (padX * 2)
+        ch = confirm.getFontSize()[1] + (padY * 2)
+        confirmBox = Rectangle(self, BLACK, (cw, ch), (
+            box.getRightX() - padX - cw - box.x,
+            box.getBottomY() - padY - ch - box.y))
+        confirm.setPos((
+            confirmBox.x + padX + box.x,
+            confirmBox.y + padY + box.y))
+
+        # Set cancel box with label centered
+        cancel = Label(self, cancel, 25, WHITE, (0, 0), BLACK)
+        cw = cancel.getFontSize()[0] + (padX * 2)
+        ch = cancel.getFontSize()[1] + (padY * 2)
+        cancelBox = Rectangle(self, BLACK, (cw, ch), (
+            confirmBox.x - padX - cw, confirmBox.y))
+        cancel.setPos((
+            cancelBox.x + padX + box.x,
+            cancelBox.y + padY + box.y))
+
+        confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+        cancel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        cancel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Add static components to the box
+        box.add(title)
+        box.add(confirmBox)
+        box.add(cancelBox)
+        return box, confirm, cancel
+
 
 class MainMenu(Menu):
     def __init__(self, renderer):
@@ -1749,6 +1795,7 @@ class EditorHud(GameHudLayout):
         self.open = True
         self.editDropdownOpen = True
         self.editSizeDropdownOpen = False
+        self.totalToCompleteBoxOpen = False
         self.game.mapEditor.setAllowEdits(False)
 
         textX = self.editLocation + self.padX
@@ -1781,6 +1828,7 @@ class EditorHud(GameHudLayout):
             (self.editLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         size.addEvent(hf.toggleEditSizeDropdown, 'onMouseClick')
+        total.addEvent(hf.toggleTotalToCompleteBox, 'onMouseClick')
 
         if len(self.game.mapEditor.getLevelChanges()) > 1:
             undo.addEvent(hf.undoChange, 'onMouseClick')
@@ -1863,6 +1911,26 @@ class EditorHud(GameHudLayout):
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
                 label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
+
+    def totalToCompleteBox(self):
+        self.open = True
+        self.totalToCompleteBoxOpen = True
+
+        width = self.boxWidth * 2
+        height = 240
+
+        box, confirm, cancel = self.createConfirmBox(
+            width, height, "Total to complete", padX=self.padX, padY=self.padY)
+
+        self.inputBox = Rectangle(self, WHITE, (width - 40, 50), (box.x + 20, box.y + 80))
+        total = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (box.x + 40, box.y + 94))
+        total.setDefaultText(0)
+
+        self.add(box)
+        self.add(self.inputBox)
+        self.add(total)
+        self.add(confirm)
+        self.add(cancel)
 
     def addDropdown(self):
         self.open = True
@@ -2258,44 +2326,22 @@ class EditorHud(GameHudLayout):
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240
-        x = width - (width / 2)
-        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(
-            self, "Map name", 30, WHITE, ((x + 20) - box.x, (y + 20) - box.y),
-            GREEN)
-        self.inputBox = Rectangle(
-            self, WHITE, (width - 40, 50), (x + 20, y + 80))
+        box, save, cancel = self.createConfirmBox(
+            width, height, "Map Name", ok="Save", padX=self.padX,
+            padY=self.padY)
+
+        self.inputBox = Rectangle(self, WHITE, (width - (self.padX * 2), 50), (
+            box.x + self.padX, box.getBottomY() - (height / 2) - 30))
         mapName = InputBox(
-            self, 30, BLACK, self.inputBox, self.inputBox.width - 50,
-            (x + 40, y + 94))
-        saveBox = Rectangle(
-            self, BLACK, (100, 50), (
-                (x + width) - 120 - box.x, (y + height) - 70 - box.y))
-        save = Label(
-            self, "Save", 25, WHITE, ((x + width) - 100, (y + height) - 55),
-            BLACK)
-        cancelBox = Rectangle(
-            self, BLACK, (100, 50), (
-                (x + width) - 240 - box.x, (y + height) - 70 - box.y))
-        cancel = Label(
-            self, "Cancel", 23, WHITE, ((x + width) - 229, (y + height) - 55),
-            BLACK)
+            self, 30, BLACK, self.inputBox,
+            self.inputBox.width - (self.padX * 2),
+            (self.inputBox.x + self.padX, self.inputBox.y + self.padY))
 
         self.inputBox.addEvent(gf.hoverColor, 'onKeyPress', color=WHITE)
-
-        save.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        save.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         save.addEvent(hf.saveMap, 'onMouseClick')
-
-        cancel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        cancel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         cancel.addEvent(hf.toggleSaveBox, 'onMouseClick')
 
-        box.add(title)
-        box.add(saveBox)
-        box.add(cancelBox)
         self.add(box)
         self.add(self.inputBox)
         self.add(mapName)
@@ -2308,47 +2354,18 @@ class EditorHud(GameHudLayout):
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240
-        x = width - (width / 2)
-        y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
-        box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(
-            self, "Delete", 30, WHITE, ((x + 20) - box.x, (y + 20) - box.y),
-            GREEN)
-        title.setUnderline(True)
-        confirm1 = Label(
-            self, "Are you sure you want to", 30, WHITE, (
-                (x + 40) - box.x, (y + 82) - box.y), GREEN)
-        confirm2 = Label(
-            self, "delete this map?", 30, WHITE, ((
-                x + 40) - box.x, (y + 115) - box.y), GREEN)
+        box, confirm, cancel = self.createConfirmBox(
+            width, height, "Delete?", ok="Yes", padX=self.padX, padY=self.padY)
 
-        confirmBox = Rectangle(
-            self, BLACK, (100, 50), (
-                (x + width) - 120 - box.x, (y + height) - 70 - box.y))
-        confirm = Label(
-            self, "Yes", 25, WHITE, ((x + width) - 93, (y + height) - 55),
-            BLACK)
-        cancelBox = Rectangle(
-            self, BLACK, (100, 50), (
-                (x + width) - 240 - box.x, (y + height) - 70 - box.y))
-        cancel = Label(
-            self, "Cancel", 23, WHITE, ((x + width) - 229, (y + height) - 55),
-            BLACK)
+        confirmText = Label(
+            self, "Are you sure you want to \n delete this map?", 30, WHITE,
+            (40, 82), GREEN)
 
-        confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         confirm.addEvent(hf.deleteMap, 'onMouseClick')
-
-        cancel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        cancel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         cancel.addEvent(hf.toggleConfirmBox, 'onMouseClick')
 
-        box.add(title)
-        box.add(confirm1)
-        box.add(confirm2)
-        box.add(confirmBox)
-        box.add(cancelBox)
+        box.add(confirmText)
         self.add(box)
         self.add(confirm)
         self.add(cancel)

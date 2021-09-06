@@ -139,6 +139,9 @@ class MenuComponent:
     def getTimer(self):
         return self.timer
 
+    def getRightX(self):
+        return self.x + self.width
+
     def getBottomY(self):
         return self.y + self.height
 
@@ -240,6 +243,11 @@ class Label(MenuComponent):
 
         self.finalMessage = self.splitText()
 
+    # Ovverride
+    def getRightX(self):
+        return self.x + self.getFontSize()[0]
+
+    # Override
     def getBottomY(self):
         return self.y + self.getFontSize()[1]
 
@@ -531,6 +539,10 @@ class InputBox(Label):
         self.indicator = Rectangle(
             self.menu, self.color, (
                 3, self.getFontSize("hello world!")[1]), self.pos)
+
+    def setDefaultText(self, defaultText):
+        self.menu.game.textHandler.setString(str(defaultText))
+        self.menu.game.textHandler.setPointer(len(str(defaultText)))
 
     def setText(self):
         width = (self.getFontSizeScaled(

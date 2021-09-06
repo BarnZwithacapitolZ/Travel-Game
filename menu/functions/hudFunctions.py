@@ -176,6 +176,19 @@ def toggleConfirmBox(obj, menu, event):
         menu.fileDropdown()
 
 
+def toggleTotalToCompleteBox(obj, menu, event):
+    if not menu.totalToCompleteBoxOpen:
+        menu.game.textHandler.setActive(True)
+        generalFunctions.clearMenu(obj, menu)
+        menu.editDropdown()
+        menu.totalToCompleteBox()
+
+    else:
+        menu.game.textHandler.setActive(False)
+        generalFunctions.clearMenu(obj, menu)
+        menu.editDropdown()
+
+
 def saveMap(obj, menu, event):
     # Make sure the input is not blank
     text = menu.game.textHandler.getString()
