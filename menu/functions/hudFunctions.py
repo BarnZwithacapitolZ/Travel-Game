@@ -213,6 +213,30 @@ def saveMap(obj, menu, event):
         closeMapEditor(obj, menu, event)
 
 
+def incrementTotalToComplete(obj, menu, event):
+    total = int(menu.total.getText())
+
+    # TODO: make a cap for total needed to complete level
+    if total + 1 <= 20:
+        menu.total.setText(total + 1)
+        menu.total.dirty = True
+
+
+def decrementTotalToComplete(obj, menu, event):
+    total = int(menu.total.getText())
+
+    if total - 1 >= 1:
+        menu.total.setText(total - 1)
+        menu.total.dirty = True
+
+
+def setTotalToComplete(obj, menu, event):
+    total = int(menu.total.getText())
+    menu.game.mapEditor.setTotalToComplete(total)
+    menu.game.textHandler.setActive(False)
+    generalFunctions.clearMenu(obj, menu)
+
+
 def toggleEditSizeDropdown(obj, menu, event):
     if not menu.editSizeDropdownOpen:
         generalFunctions.clearMenu(obj, menu)
@@ -279,7 +303,6 @@ def setSize2(obj, menu, event):
     level = menu.game.mapEditor.getLevelData()
     menu.game.mapEditor.createLevel(level) #reload the level
     generalFunctions.clearMenu(obj, menu)
-
     
 
 def setSize3(obj, menu, event):

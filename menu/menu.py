@@ -6,8 +6,8 @@ import menuFunctions as mf
 import hudFunctions as hf
 import transitionFunctions as tf
 from menuComponents import (
-    Image, Label, InputBox, Rectangle, Meter, DifficultyMeter,
-    Timer, MessageBox, Map, Slider, ControlLabel)
+    Image, Label, InputBox, NumberIncrementer, Rectangle, Meter,
+    DifficultyMeter, Timer, MessageBox, Map, Slider, ControlLabel)
 from clickManager import EditorClickManager, ControlClickManager
 import abc
 import random
@@ -1934,13 +1934,51 @@ class EditorHud(GameHudLayout):
         box, confirm, cancel = self.createConfirmBox(
             width, height, "Total to complete", padX=self.padX, padY=self.padY)
 
-        self.inputBox = Rectangle(self, WHITE, (width - 40, 50), (box.x + 20, box.y + 80))
-        total = InputBox(self, 30, BLACK, self.inputBox, self.inputBox.width - 50, (box.x + 40, box.y + 94))
-        total.setDefaultText(0)
+        padCenterX = 100
+        totalText = Label(
+            self, "Total:", 30, WHITE, (padCenterX, box.height / 2 - 15))
+        inputBox = Rectangle(self, WHITE, (120, 50), (
+            box.getRightX() - padCenterX - 120,
+            box.getBottomY() - (height / 2) - 30))
+        self.total = Label(
+            self, self.game.mapEditor.getLevelData()['total'], 30, BLACK,
+            (inputBox.x + self.padX, inputBox.y + self.padY))
 
+        upArrowBox = Rectangle(
+            self, BLACK, (inputBox.width / 4, inputBox.height / 2),
+            (inputBox.getRightX() - (inputBox.width / 4) - inputBox.x, 0))
+        downArrowBox = Rectangle(
+            self, BLACK, (inputBox.width / 4, inputBox.height / 2),
+            (inputBox.getRightX() - (inputBox.width / 4) - inputBox.x,
+                inputBox.height / 2))
+        upArrow = Image(self, "arrowWhite", (25, 25), (
+            upArrowBox.getRightX() - (upArrowBox.width / 2) - 12.5
+            + inputBox.x, upArrowBox.y + inputBox.y))
+        downArrow = Image(self, "arrowWhite", (25, 25), (
+            downArrowBox.getRightX() - (downArrowBox.width / 2) - 12.5
+            + inputBox.x, downArrowBox.y + inputBox.y))
+        upArrow.rotateImage(90)
+        downArrow.rotateImage(270)
+
+        upArrow.addEvent(gf.hoverImage, 'onMouseOver', image="arrowGreen")
+        upArrow.addEvent(gf.hoverImage, 'onMouseOut', image="arrowWhite")
+        upArrow.addEvent(hf.incrementTotalToComplete, 'onMouseClick')
+
+        downArrow.addEvent(gf.hoverImage, 'onMouseOver', image="arrowGreen")
+        downArrow.addEvent(gf.hoverImage, 'onMouseOut', image="arrowWhite")
+        downArrow.addEvent(hf.decrementTotalToComplete, 'onMouseClick')
+
+        confirm.addEvent(hf.setTotalToComplete, 'onMouseClick')
+        cancel.addEvent(hf.toggleTotalToCompleteBox, 'onMouseClick')
+
+        box.add(totalText)
+        inputBox.add(upArrowBox)
+        inputBox.add(downArrowBox)
         self.add(box)
-        self.add(self.inputBox)
-        self.add(total)
+        self.add(inputBox)
+        self.add(self.total)
+        self.add(upArrow)
+        self.add(downArrow)
         self.add(confirm)
         self.add(cancel)
 

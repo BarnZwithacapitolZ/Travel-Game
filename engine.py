@@ -219,6 +219,14 @@ class ImageLoader:
         return image
 
     @staticmethod
+    def flipImage(image, xbool, ybool):
+        return pygame.transform.flip(image, xbool, ybool)
+
+    @staticmethod
+    def rotateImage(image, angle):
+        return pygame.transform.rotate(image, angle)
+
+    @staticmethod
     def changeImageColor(image, newColor, oldColor=None):
         for x in range(image.get_width()):
             for y in range(image.get_height()):

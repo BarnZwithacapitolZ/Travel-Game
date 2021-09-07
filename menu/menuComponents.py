@@ -3,6 +3,7 @@ from pygame.locals import Color
 from config import (
     config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW)
 from transitionFunctions import transitionMessageRight
+from engine import ImageLoader
 import string
 import abc
 import math
@@ -305,7 +306,7 @@ class Label(MenuComponent):
         self.fontName = fontName
 
     def setText(self, text):
-        self.text = text
+        self.text = str(text)
         self.finalMessage = self.splitText()
 
     def setBold(self, bold):
@@ -540,6 +541,7 @@ class InputBox(Label):
             self.menu, self.color, (
                 3, self.getFontSize("hello world!")[1]), self.pos)
 
+    # TODO: a better way to do this without using the textHandler (just setting the string directly)
     def setDefaultText(self, defaultText):
         self.menu.game.textHandler.setString(str(defaultText))
         self.menu.game.textHandler.setPointer(len(str(defaultText)))
@@ -585,11 +587,6 @@ class InputBox(Label):
 
     def resizeIndicator(self):
         self.indicator.dirty = True
-
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-        self.indicator.drawPaused(surface)
 
     def update(self):
         if not hasattr(self, 'rect'):
@@ -649,6 +646,48 @@ class InputBox(Label):
 
         if self.flashing:
             self.indicator.draw()
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+        self.indicator.drawPaused(surface)
+
+
+# TODO: finish this implementation
+class NumberIncrementer(Label):
+    def __init__(
+            self, menu, defaultAmount, fontSize, color, pos=tuple(),
+            backgroundColor=None, minAmount=0, maxAmount=10):
+        self.defaultAmount = int(defaultAmount)
+        self.minAmount = int(minAmount)
+        self.maxAmount = int(maxAmount)
+
+        # Check default value in range
+        if (self.defaultAmount < self.minAmount
+                or self.defaultAmount > self.maxAmount):
+            self.defaultAmount = int(
+                round((self.minAmount + self.maxAmount) / 2, 0))
+
+        super().__init__(
+            menu, self.defaultAmount, fontSize, color, pos, backgroundColor)
+
+    def __render(self):
+        super().makeSurface()
+
+        print(self.getFontSize())
+
+        upArrowBox = Rectangle(self.menu, BLACK, (5, self.getFontSize()[1] / 2), (0, 0))
+        downArrowBox = Rectangle(self.menu, RED, (5, self.getFontSize()[1] / 2), (0, 11))
+
+        upArrowBox.drawPaused(self.image)
+        downArrowBox.drawPaused(self.image)
+
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    def update(self):
+        return
 
 
 class Shape(MenuComponent):
@@ -1376,6 +1415,9 @@ class Image(MenuComponent):
         super().__init__(menu, None, size, pos)
         self.imageName = imageName
         self.alpha = alpha
+        self.xbool = False
+        self.ybool = False
+        self.rot = 0
 
     def getImageName(self):
         return self.imageName
@@ -1389,15 +1431,30 @@ class Image(MenuComponent):
     def setAlpha(self, alpha):
         self.alpha = alpha
 
+    def flipImage(self, xbool, ybool):
+        self.xbool = xbool
+        self.ybool = ybool
+
+    def rotateImage(self, angle):
+        self.rot = angle
+
     def __render(self):
         self.dirty = False
         self.image = self.menu.game.imageLoader.getImage(
             self.imageName, (self.width, self.height))
+
+        if self.xbool or self.ybool:
+            self.image = ImageLoader.flipImage(self.image, self.xbool, self.ybool)
+        if self.rot > 0:
+            self.image = ImageLoader.rotateImage(self.image, self.rot)
+
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
+
         if self.alpha is not None:
             self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+
         self.addComponents()
 
     def makeSurface(self):

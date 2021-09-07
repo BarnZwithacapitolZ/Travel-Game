@@ -276,6 +276,18 @@
         "fastForwardSelected": {
             "image": "ui\\FastForwardSelected.png",
             "alpha": true
+        },
+        "arrow": {
+            "image": "ui\\Arrow.png",
+            "alpha": true
+        },
+        "arrowWhite": {
+            "image": "ui\\ArrowWhite.png",
+            "alpha": true
+        },
+        "arrowGreen": {
+            "image": "ui\\ArrowGreen.png",
+            "alpha": true
         }
     }, 
     "audio": {

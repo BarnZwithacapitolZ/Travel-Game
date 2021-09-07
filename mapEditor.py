@@ -128,6 +128,13 @@ class MapEditor(SpriteRenderer):
 
         self.addChange()
 
+    def setTotalToComplete(self, total):
+        if not hasattr(self, 'levelData'):
+            return
+
+        self.levelData['total'] = total
+        self.addChange()
+
     # Returns true if dropdowns have been closed, false otherwise
     def isDropdownsClosed(self):
         if self.rendering and not self.allowEdits:
@@ -187,7 +194,7 @@ class MapEditor(SpriteRenderer):
             return False, "There must be a road for people to travel on!"
 
         elif len(self.levelData['destinations']) <= 0:
-            return False, "There is no destinations for people to reach!"
+            return False, "There is no locations for people to reach!"
 
         return [True]
 
