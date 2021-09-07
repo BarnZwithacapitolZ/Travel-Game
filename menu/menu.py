@@ -1709,19 +1709,19 @@ class EditorHud(GameHudLayout):
     def __init__(self, renderer):
         super().__init__(renderer)
 
-        # Locations of each option
-        self.fileLocation = 20
         self.textY = 12
-        self.editLocation = self.fileLocation + 75  # 90
-        self.addLocation = self.editLocation + 75  # 90
-        self.deleteLocation = self.addLocation + 65  # 170
-        self.runLocation = self.deleteLocation + 100  # 280
-
         self.topBarHeight = 40  # Height of selection topbar
         self.boxWidth = 220  # Width of all the dropdowns
         self.padX = 15  # Padding x from box and text
         self.padY = 15  # Padding y between rows
         self.topPadY = 10  # Padding y for first row
+
+        # Locations of each option
+        self.fileLocation = 25
+        self.editLocation = self.fileLocation + 75  # 90
+        self.addLocation = self.editLocation + 75  # 90
+        self.deleteLocation = self.addLocation + 65  # 170
+        self.runLocation = self.deleteLocation + 100  # 280
 
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
@@ -1746,22 +1746,34 @@ class EditorHud(GameHudLayout):
         topbar = Rectangle(
             self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
 
+        # File operations
         fileSelect = Label(
             self, "File", 25, WHITE, (self.fileLocation, self.textY), BLACK)
+        self.editLocation = fileSelect.getRightX() + self.padX
+        # Edit the map type, size, color etc.
         edit = Label(
             self, "Edit", 25, WHITE, (self.editLocation, self.textY), BLACK)
+        self.addLocation = edit.getRightX() + self.padX
+        # Add stuff to the map
         add = Label(
             self, "Add", 25, WHITE, (self.addLocation, self.textY), BLACK)
+        self.deleteLocation = add.getRightX() + self.padX
+        # Remove things from the map
         delete = Label(
             self, "Delete", 25, WHITE, (self.deleteLocation, self.textY),
             BLACK)
+        self.runLocation = delete.getRightX() + self.padX
+        # Run the map in no-fail mode
         run = Label(
             self, "Run", 25, WHITE, (self.runLocation, self.textY), BLACK)
 
-        layers = Image(self, "layersWhite", (25, 25), (880, self.textY - 3))
-        self.currentLayer = Label(
-            self, "layer " + str(self.game.mapEditor.getLayer()), 25, WHITE,
-            (915, self.textY), BLACK)
+        self.currentLayer = Label(self, "layer " + str(
+            self.game.mapEditor.getLayer()), 25, WHITE, (0, 0), BLACK)
+        self.currentLayer.setPos((
+            config["graphics"]["displayWidth"] - self.fileLocation
+            - self.currentLayer.getFontSize()[0], self.textY))
+        layers = Image(self, "layersWhite", (25, 25), (
+            self.currentLayer.x - self.padX - 25, self.textY - 3))
 
         layers.addEvent(gf.hoverImage, 'onMouseOver', image="layersSelected")
         layers.addEvent(gf.hoverImage, 'onMouseOut', image="layersWhite")

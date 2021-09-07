@@ -411,6 +411,9 @@ def resetControls(obj, menu, event):
 
 
 def resetAudio(obj, menu, event):
-    setMasterVolume(menu.masterVolume, config["audio"]["volume"]["master"]["default"])
-    setSoundVolume(menu.soundVolume, config["audio"]["volume"]["sounds"]["default"])
-    setMusicVolume(menu.musicVolume, config["audio"]["volume"]["music"]["default"])
+    setMasterVolume(
+        menu.masterVolume, config["audio"]["volume"]["master"]["default"])
+    setSoundVolume(
+        menu.soundVolume, config["audio"]["volume"]["sounds"]["default"])
+    setMusicVolume(
+        menu.musicVolume, config["audio"]["volume"]["music"]["default"])

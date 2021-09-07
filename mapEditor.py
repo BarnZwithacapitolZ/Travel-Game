@@ -444,16 +444,6 @@ class MapEditor(SpriteRenderer):
             self.showLayer(self.previousLayer)
             self.previousLayer = None
 
-    def update(self):
-        if not self.rendering:
-            return
-
-        self.allSprites.update()
-        self.hud.update()
-        self.messageSystem.update()
-
-        self.events()
-
         # if there is a click and a connection is not set,
         # then remove the start node
         if (self.clickManager.getStartNode() is not None
@@ -466,3 +456,13 @@ class MapEditor(SpriteRenderer):
             self.updateConnection(1, self.gridLayer1)
             self.updateConnection(2, self.gridLayer2)
             self.updateConnection(3, self.gridLayer3)
+
+    def update(self):
+        if not self.rendering:
+            return
+
+        self.allSprites.update()
+        self.hud.update()
+        self.messageSystem.update()
+
+        self.events()
