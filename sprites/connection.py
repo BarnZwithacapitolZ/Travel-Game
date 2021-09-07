@@ -116,6 +116,7 @@ class Connection:
             vec(mx, my) - vec(10, 10) * scale)
             - (self.toNode.pos - self.toNode.offset) * scale).length()
 
+        # Click event, delete the selected connection
         if (d1 + d2 >= self.distance * scale - buffer
                 and d1 + d2 <= self.distance * scale + buffer
                 and self.game.clickManager.getClicked()):
@@ -123,6 +124,7 @@ class Connection:
             self.game.clickManager.setClicked(False)
             self.updateConnections()
 
+        # Hover over event, highlight the selected connection
         elif (d1 + d2 >= self.distance * scale - buffer
                 and d1 + d2 <= self.distance * scale + buffer
                 and not self.mouseOver):
@@ -130,6 +132,7 @@ class Connection:
             self.mouseOver = True
             self.updateConnections()
 
+        # Hover out event, un-highlight the selected connection
         elif (not (
             d1 + d2 >= self.distance * scale - buffer
                 and d1 + d2 <= self.distance * scale + buffer)

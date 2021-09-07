@@ -281,60 +281,68 @@ class EditorNode(Node):
 
             if (self.game.mapEditor.getLayer() != 4
                     or self.game.mapEditor.getPreviousLayer() is not None):
+                node = self
+                # If they are on the preview layer,
+                # get the preview node from the top layer
+                if self.game.mapEditor.getPreviousLayer() is not None:
+                    node = self.spriteRenderer.getNodeFromDifferentLayer(
+                        self, self.game.mapEditor.getPreviousLayer())
+
+                # Only want to check click events if we know the node exists
+                if node is None:
+                    return
+
                 # Add a connection
                 if (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.CONNECTION):
-                    node = self
-                    if self.game.mapEditor.getPreviousLayer() is not None:
-                        node = self.spriteRenderer.getNodeFromDifferentLayer(
-                            self, self.game.mapEditor.getPreviousLayer())
+                    # Set the preview start node if its on the top layer
+                    if self != node:
                         (self.clickManager.setPreviewStartNode(self)
                             if self.clickManager.getPreviewStartNode() is None
                             else self.clickManager.setPreviewEndNode(self))
 
-                    if node is not None:
-                        # If its the preview node we want to make it mouseover
-                        # to change the image to the same as the node below it
-                        node.mouseOver = True
-                        (self.clickManager.setStartNode(node)
-                            if self.clickManager.getStartNode() is None
-                            else self.clickManager.setEndNode(node))
+                    # If its the preview node we want to make it mouseover
+                    # to change the image to the same as the node below it
+                    node.mouseOver = True
+                    (self.clickManager.setStartNode(node)
+                        if self.clickManager.getStartNode() is None
+                        else self.clickManager.setEndNode(node))
 
                 # Add a transport
                 elif (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.TRANSPORT):
-                    self.clickManager.addTransport(self)
+                    self.clickManager.addTransport(node)
 
                 # Add a stop
                 elif (self.clickManager.getClickType()
                         == CLICKMANAGER.EditorClickManager.ClickType.STOP):
-                    self.clickManager.addStop(self)
+                    self.clickManager.addStop(node)
 
                 # Add a destination
                 elif (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.DESTINATION):
-                    self.clickManager.addDestination(self)
+                    self.clickManager.addDestination(node)
 
                 # Delete a transport
                 elif (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT):
-                    self.clickManager.deleteTransport(self)
+                    self.clickManager.deleteTransport(node)
 
                 # Delete a stop
                 elif (self.clickManager.getClickType()
                         == CLICKMANAGER.EditorClickManager.ClickType.DSTOP):
-                    self.clickManager.deleteStop(self)
+                    self.clickManager.deleteStop(node)
 
                 # Delete a destination
                 elif (self.clickManager.getClickType()
                         ==
                         (CLICKMANAGER.EditorClickManager.ClickType
                             .DDESTINATION)):
-                    self.clickManager.deleteDestination(self)
+                    self.clickManager.deleteDestination(node)
             else:
                 self.spriteRenderer.messageSystem.addMessage(
                     "You cannot place items on the top layer!")
