@@ -1,6 +1,6 @@
 import person as PERSON
 import node as NODE
-from enum import Enum
+from enum import Enum, auto
 
 
 class ClickManager:
@@ -343,16 +343,16 @@ class TransportClickManager(ClickManager):
 
 class EditorClickManager(ClickManager):
     class ClickType(Enum):
-        CONNECTION = 1
-        STOP = 2
-        TRANSPORT = 3
-        DESTINATION = 4
+        CONNECTION = auto()
+        STOP = auto()
+        TRANSPORT = auto()
+        DESTINATION = auto()
 
         # D at front signifies deletion options
-        DCONNECTION = 5
-        DSTOP = 6
-        DTRANSPORT = 7
-        DDESTINATION = 8
+        DCONNECTION = auto()
+        DSTOP = auto()
+        DTRANSPORT = auto()
+        DDESTINATION = auto()
 
     def __init__(self, game):
         super().__init__(game)

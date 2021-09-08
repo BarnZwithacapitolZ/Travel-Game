@@ -2,6 +2,7 @@
 import pygame
 from config import config, dump
 import hudFunctions as hf
+import menu as MENU
 
 vec = pygame.math.Vector2
 
@@ -198,7 +199,14 @@ def showLevelSelect(obj, menu, event):
             menu.game.mapEditor.setRendering(False)
             # Always close any open inputs
             menu.game.textHandler.setActive(False)
-            menu.game.mainMenu.levelSelect(True)
+
+            levelSelectType = menu.game.mainMenu.getPreviousLevelSelect()
+            if levelSelectType == MENU.MainMenu.LevelSelect.LEVELSELECT:
+                menu.game.mainMenu.levelSelect(True)
+            elif (levelSelectType
+                    == MENU.MainMenu.LevelSelect.CUSTOMLEVELSELECT):
+                menu.game.mainMenu.customLevelSelect(True)
+
             menu.close()
 
     menu.slideTransitionY(

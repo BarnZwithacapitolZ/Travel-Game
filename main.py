@@ -228,7 +228,7 @@ class Game:
         self.renderer.render()
 
 
-if __name__ == "__main__":
+def main():
     g = Game()
     g.run()
     # cProfile.run('g.run()')
@@ -240,3 +240,7 @@ if __name__ == "__main__":
         pygame.font.quit()
     if pygame.get_init():
         pygame.quit()
+
+
+if __name__ == "__main__":
+    main()

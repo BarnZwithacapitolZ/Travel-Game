@@ -10,6 +10,7 @@ from menuComponents import (
     Image, Label, InputBox, NumberIncrementer, Rectangle, Meter,
     DifficultyMeter, Timer, MessageBox, Map, Slider, ControlLabel)
 from clickManager import EditorClickManager, ControlClickManager
+from enum import Enum, auto
 import abc
 import random
 import copy
@@ -256,6 +257,10 @@ class Menu:
 
 
 class MainMenu(Menu):
+    class LevelSelect(Enum):
+        LEVELSELECT = auto()
+        CUSTOMLEVELSELECT = auto()
+
     def __init__(self, game):
         super().__init__(game)
         self.currentLevel = vec(
@@ -264,6 +269,7 @@ class MainMenu(Menu):
         self.currentCustomLevel = vec(
             config["player"]["currentCustomLevel"][0],
             config["player"]["currentCustomLevel"][1])
+        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
         self.currentMaps = self.builtInMaps
@@ -286,6 +292,9 @@ class MainMenu(Menu):
             return self.currentLevel
         elif self.customLevelSelect:
             return self.currentCustomLevel
+
+    def getPreviousLevelSelect(self):
+        return self.previousLevelSelect
 
     def getTransitioning(self):
         return self.transitioning
@@ -556,6 +565,11 @@ class MainMenu(Menu):
                     self.levels[currentIndex - 4].addEvent(
                         mf.levelUpward, 'onMouseClick', change=vec(0, -1))
 
+                # For non custom level select only
+                if (not hasattr(self, 'levelComplete')
+                        or not hasattr(self, 'levelCompleteText')):
+                    return
+
                 text = (
                     "Level Complete!"
                     if level.getLevelData()["completion"]["completed"]
@@ -639,6 +653,7 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = True
+        self.previousLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
         self.backgroundColor = CREAM  # Change this?
         self.setLevelSize(self.customLevelSize)
         cols = 4
@@ -695,6 +710,7 @@ class MainMenu(Menu):
         self.open = True
         self.customLevelSelectOpen = False
         self.levelSelectOpen = True
+        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.backgroundColor = BLACK
         self.levels = {}
         self.setLevelSize(self.builtInLevelSize)

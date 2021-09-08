@@ -5,7 +5,7 @@ import numpy
 import node as NODE
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY
-from enum import Enum
+from enum import Enum, auto
 
 vec = pygame.math.Vector2
 
@@ -13,14 +13,14 @@ vec = pygame.math.Vector2
 class Person(pygame.sprite.Sprite):
     # Players different status's
     class Status(Enum):
-        UNASSIGNED = 0
-        WALKING = 1
-        WAITING = 2
-        BOARDING = 3
-        BOARDINGTAXI = 4
-        MOVING = 5
-        DEPARTING = 6
-        FLAG = 7
+        UNASSIGNED = auto()
+        WALKING = auto()
+        WAITING = auto()
+        BOARDING = auto()
+        BOARDINGTAXI = auto()
+        MOVING = auto()
+        DEPARTING = auto()
+        FLAG = auto()
 
     def __init__(
             self, spriteRenderer, groups, clickManager, transportClickManager,
@@ -748,7 +748,7 @@ class StatusIndicator(pygame.sprite.Sprite):
             self.images = [
                 None, "walking", "waiting", "boarding", "boarding", None,
                 "departing", "flag"]
-        self.currentState = self.currentPerson.getStatusValue()
+        self.currentState = self.currentPerson.getStatusValue() - 1
 
     def __render(self):
         self.dirty = False
@@ -781,9 +781,9 @@ class StatusIndicator(pygame.sprite.Sprite):
             self.game.renderer.addSurface(self.image, (self.rect))
 
     def update(self):
-        if self.currentPerson.getStatusValue() != self.currentState:
+        if (self.currentPerson.getStatusValue() - 1) != self.currentState:
             self.dirty = True
-            self.currentState = self.currentPerson.getStatusValue()
+            self.currentState = self.currentPerson.getStatusValue() - 1
 
 
 class Particle(pygame.sprite.Sprite):
