@@ -53,7 +53,7 @@ class Game:
 
         # Menu's
         self.mainMenu = MainMenu(self)
-        self.optionMenu = OptionMenu(self)
+        self.optionMenu = OptionMenu(self, self.spriteRenderer, self.mapEditor)
 
         if self.fullscreen:
             self.renderer.setFullscreen()
@@ -151,7 +151,7 @@ class Game:
                         and not self.paused and not self.mainMenu.getOpen()):
                     self.mapEditor.undoChange()
                     level = self.mapEditor.getLevelData()
-                    layer = self.mapEditor.getLayer()
+                    layer = self.mapEditor.getCurrentLayer()
                     # Reload the level
                     self.mapEditor.createLevel(level, layer=layer)
 
@@ -160,7 +160,7 @@ class Game:
                         and not self.paused and not self.mainMenu.getOpen()):
                     self.mapEditor.redoChange()
                     level = self.mapEditor.getLevelData()
-                    layer = self.mapEditor.getLayer()
+                    layer = self.mapEditor.getCurrentLayer()
                     # Reload the level
                     self.mapEditor.createLevel(level, layer=layer)
 

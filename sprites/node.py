@@ -279,7 +279,7 @@ class EditorNode(Node):
                 and self.game.mapEditor.getAllowEdits()):  # click event
             self.game.clickManager.setClicked(False)
 
-            if (self.game.mapEditor.getLayer() != 4
+            if (self.game.mapEditor.getCurrentLayer() != 4
                     or self.game.mapEditor.getPreviousLayer() is not None):
                 node = self
                 # If they are on the preview layer,
@@ -352,7 +352,7 @@ class EditorNode(Node):
                 and self.clickManager.getStartNode() != self
                 and self.clickManager.getPreviewStartNode() != self
                 and (
-                    self.game.mapEditor.getLayer() != 4
+                    self.game.mapEditor.getCurrentLayer() != 4
                     or self.game.mapEditor.getPreviousLayer() is not None)
                 and self.game.mapEditor.getAllowEdits()):  # Hover over event
             self.mouseOver = True
@@ -372,7 +372,7 @@ class EditorNode(Node):
                 and self.clickManager.getStartNode() != self
                 and self.clickManager.getPreviewStartNode() != self
                 and (
-                    self.game.mapEditor.getLayer() != 4
+                    self.game.mapEditor.getCurrentLayer() != 4
                     or self.game.mapEditor.getPreviousLayer() is not None
                 )):  # Hover out event
             self.mouseOver = False

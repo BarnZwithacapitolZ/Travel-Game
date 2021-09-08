@@ -24,8 +24,8 @@ class SpriteRenderer():
         self.level = ""
 
         # Hud for when the game is running
-        self.hud = GameHud(self.game)
-        self.menu = GameMenu(self.game)
+        self.hud = GameHud(self)
+        self.menu = GameMenu(self)
         self.messageSystem = MessageHud(self.game)
 
         self.personClickManager = PersonClickManager(self.game)
@@ -201,7 +201,6 @@ class SpriteRenderer():
     def togglePaused(self):
         self.dt = 0
         self.paused = not self.paused
-        # self.game.paused = not self.game.paused
         # self.createPausedSurface()
 
     def getStartDt(self):
@@ -236,9 +235,6 @@ class SpriteRenderer():
 
     def getTransportClickManager(self):
         return self.transportClickManager
-
-    def getLayer(self):
-        return self.currentLayer
 
     def getCompleted(self):
         return self.completed
@@ -337,19 +333,10 @@ class SpriteRenderer():
         if self.debug:
             # Push the level down since we have hud at the top
             spacing = (1.5, 1.5)
-            self.hud = PreviewHud(self.game, spacing)
+            self.hud = PreviewHud(self, spacing)
         else:
-            # self.startingFixedScale = -0.05
-            # spacings = {
-            #     (16, 9): (1.5, 1),
-            #     (18, 10): (2, 1.5),
-            #     (20, 11): (1.5, 1),
-            #     (22, 12): (1.5, 1)}
-
-            # size = (self.levelData["width"], self.levelData["height"])
-            # spacing = spacings[size]
             spacing = (1.5, 1)
-            self.hud = GameHud(self.game, spacing)
+            self.hud = GameHud(self, spacing)
 
         # we want to get which connectionTypes are available in the map
         for connectionType in self.levelData['connections']:

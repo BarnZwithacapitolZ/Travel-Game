@@ -1,6 +1,7 @@
 import pygame
 from config import (
-    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, dump)
+    config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, dump,
+    BACKGROUNDCOLORS)
 import generalFunctions as gf
 import menuFunctions as mf
 import hudFunctions as hf
@@ -255,8 +256,8 @@ class Menu:
 
 
 class MainMenu(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, game):
+        super().__init__(game)
         self.currentLevel = vec(
             config["player"]["currentLevel"][0],
             config["player"]["currentLevel"][1])
@@ -305,7 +306,6 @@ class MainMenu(Menu):
             config["graphics"]["displayHeight"] / scaler)
 
     def updateCustomMaps(self):
-        # self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
         currentIndex = ((
             self.currentCustomLevel.y * self.getLevelSelectCols())
@@ -799,8 +799,11 @@ class MainMenu(Menu):
 
 
 class OptionMenu(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, game, spriteRenderer, mapEditor):
+        super().__init__(game)
+        self.spriteRenderer = spriteRenderer
+        self.mapEditor = mapEditor
+
         # If the option menu is accessed through the main menu
         self.optionsOpen = False
         self.x = 100
@@ -812,9 +815,8 @@ class OptionMenu(Menu):
         self.optionsOpen = optionsOpen
 
     def closeTransition(self):
-        self.game.spriteRenderer.getHud().setOpen(True)
-        # self.game.mapEditor.getMessageSystem().setOpen(True)
-        self.game.mapEditor.getHud().setOpen(True)
+        self.spriteRenderer.getHud().setOpen(True)
+        self.mapEditor.getHud().setOpen(True)
 
         def callback(obj, menu, y):
             menu.game.paused = False
@@ -835,13 +837,12 @@ class OptionMenu(Menu):
         # If we access through main we know its not from the main menu
         self.optionsOpen = False
         self.game.paused = True
-        self.game.spriteRenderer.getHud().setOpen(False)
-        # self.game.mapEditor.getMessageSystem().setOpen(False)
-        self.game.mapEditor.getHud().setOpen(False)
+        self.spriteRenderer.getHud().setOpen(False)
+        self.mapEditor.getHud().setOpen(False)
 
         if pausedSurface:
-            self.game.spriteRenderer.createPausedSurface()
-            self.game.mapEditor.createPausedSurface()
+            self.spriteRenderer.createPausedSurface()
+            self.mapEditor.createPausedSurface()
 
         background = Rectangle(
             self, GREEN, (
@@ -1166,14 +1167,15 @@ class OptionMenu(Menu):
 
 
 class GameMenu(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, spriteRenderer):
+        super().__init__(spriteRenderer.game)
+        self.spriteRenderer = spriteRenderer
         self.startScreenOpen = False
         self.endScreenOpen = False
 
     def closeTransition(self):
         self.game.audioLoader.playSound("swoopOut")
-        self.game.spriteRenderer.getHud().setOpen(True)
+        self.spriteRenderer.getHud().setOpen(True)
 
         def callback(obj, menu, x):
             menu.game.paused = False
@@ -1195,9 +1197,9 @@ class GameMenu(Menu):
         self.startScreenOpen = False
 
         self.game.paused = True
-        self.game.spriteRenderer.getHud().setOpen(False)
+        self.spriteRenderer.getHud().setOpen(False)
 
-        self.game.spriteRenderer.createPausedSurface()
+        self.spriteRenderer.createPausedSurface()
 
     def endScreenGameOver(self, transition=False):
         self.endScreen()
@@ -1215,7 +1217,7 @@ class GameMenu(Menu):
         scoreText = Label(self, "Highest Score", 25, WHITE, (width - 87, 210))
         self.score = DifficultyMeter(
             self, YELLOW, WHITE, 3,
-            self.game.spriteRenderer.getLevelData()["score"], 5, (40, 40),
+            self.spriteRenderer.getLevelData()["score"], 5, (40, 40),
             (width - 50, scoreText.y + scoreText.getFontSize()[1] + 10),
             shapeBorderRadius=[5, 5, 5, 5])
         self.score.setPos(
@@ -1257,7 +1259,7 @@ class GameMenu(Menu):
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         retry.addEvent(
             mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.game.spriteRenderer.getLevel()))
+                self.spriteRenderer.getLevel()))
 
         self.add(background)
         self.add(failed)
@@ -1287,11 +1289,11 @@ class GameMenu(Menu):
 
     def endScreenComplete(self, transition=False):
         self.endScreen()
-        self.game.spriteRenderer.setLevelComplete()  # Complete the level
+        self.spriteRenderer.setLevelComplete()  # Complete the level
         # Set the score
         (previousKeys,
             self.keyDifference,
-            self.previousScore) = self.game.spriteRenderer.setLevelScore()
+            self.previousScore) = self.spriteRenderer.setLevelScore()
 
         width = config["graphics"]["displayWidth"] / 2
         x = width - (width / 2)
@@ -1347,7 +1349,7 @@ class GameMenu(Menu):
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         retry.addEvent(
             mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.game.spriteRenderer.getLevel()))
+                self.spriteRenderer.getLevel()))
 
         self.add(background)
         self.add(success)
@@ -1393,8 +1395,7 @@ class GameMenu(Menu):
 
         # show this before the game is unpaused so we don't need this
         self.game.paused = True
-        self.game.spriteRenderer.getHud().setOpen(False)
-        # self.game.mapEditor.getHud().setOpen(False)
+        self.spriteRenderer.getHud().setOpen(False)
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240
@@ -1402,7 +1403,7 @@ class GameMenu(Menu):
         y = config["graphics"]["displayHeight"] / 2 - (height / 2)
 
         totalText = (
-            "Transport " + str(self.game.spriteRenderer.getTotalToComplete())
+            "Transport " + str(self.spriteRenderer.getTotalToComplete())
             + " people!")
 
         background = Rectangle(self, GREEN, (width, height), (x - 400, y))
@@ -1441,8 +1442,8 @@ class GameMenu(Menu):
 
 # Anything that all the game huds will use
 class GameHudLayout(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, game):
+        super().__init__(game)
 
     @abc.abstractmethod
     def getHudButtonHoverOver(self):
@@ -1466,8 +1467,10 @@ class GameHudLayout(Menu):
 
 
 class GameHud(GameHudLayout):
-    def __init__(self, renderer, spacing=(1.5, 1.5)):
-        super().__init__(renderer)
+    def __init__(self, spriteRenderer, spacing=(1.5, 1.5)):
+        super().__init__(spriteRenderer.game)
+        self.spriteRenderer = spriteRenderer
+
         self.hearts = []
         self.spacing = spacing
 
@@ -1545,15 +1548,15 @@ class GameHud(GameHudLayout):
             x=self.hudX - 100, callback=callback)
 
     def togglePauseGame(self, selected=False):
-        self.game.spriteRenderer.togglePaused()
+        self.spriteRenderer.togglePaused()
 
         pauseImage = (
-            "play" if self.game.spriteRenderer.getPaused() else "pause")
+            "play" if self.spriteRenderer.getPaused() else "pause")
         pauseImageSelected = (
-            "playSelected" if self.game.spriteRenderer.getPaused()
+            "playSelected" if self.spriteRenderer.getPaused()
             else "pauseSelected")
-        pauseImage += "White" if self.game.spriteRenderer.getDarkMode() else ""
-        (self.slideRestartIn() if self.game.spriteRenderer.getPaused()
+        pauseImage += "White" if self.spriteRenderer.getDarkMode() else ""
+        (self.slideRestartIn() if self.spriteRenderer.getPaused()
             else self.slideRestartOut())
 
         self.pause.setImageName(pauseImageSelected if selected else pauseImage)
@@ -1567,8 +1570,8 @@ class GameHud(GameHudLayout):
     def main(self, transition=False):
         self.open = True
 
-        meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
-        darkMode = self.game.spriteRenderer.getDarkMode()
+        meterWidth = self.spriteRenderer.getSlowDownMeterAmount()
+        darkMode = self.spriteRenderer.getDarkMode()
 
         layersImage = "layersWhite" if darkMode else "layers"
         layersSelectedImage = "layersSelected"
@@ -1599,14 +1602,14 @@ class GameHud(GameHudLayout):
 
         self.completed = Timer(
             self, self.textColor, YELLOW, 0,
-            self.game.spriteRenderer.getTotalToComplete(), (40, 40),
+            self.spriteRenderer.getTotalToComplete(), (40, 40),
             (config["graphics"]["displayWidth"] - 85, self.hudY - 100), 5)
         self.lives = Timer(
             self, self.textColor, GREEN, 100,
-            self.game.spriteRenderer.getLives(), (48, 48),
+            self.spriteRenderer.getLives(), (48, 48),
             (config["graphics"]["displayWidth"] - 89, self.hudY - 4 - 100), 5)
         self.completedAmount = Label(
-            self, str(self.game.spriteRenderer.getCompleted()), 20,
+            self, str(self.spriteRenderer.getCompleted()), 20,
             self.textColor, (self.completed.x + 14.5, self.completed.y + 13))
 
         self.fastForward.addEvent(
@@ -1621,7 +1624,7 @@ class GameHud(GameHudLayout):
         self.restart.addEvent(gf.hoverImage, 'onMouseOut', image=restartImage)
         self.restart.addEvent(
             mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.game.spriteRenderer.getLevel()))
+                self.spriteRenderer.getLevel()))
 
         self.pause.addEvent(
             hf.hoverOverHudButton, 'onMouseOver', image=pauseSelectedImage)
@@ -1641,7 +1644,7 @@ class GameHud(GameHudLayout):
         self.home.addEvent(hf.goHome, 'onMouseClick')
 
         self.add(self.home)
-        if len(self.game.spriteRenderer.getConnectionTypes()) > 1:
+        if len(self.spriteRenderer.getConnectionTypes()) > 1:
             self.add(self.layers)
 
         else:
@@ -1673,7 +1676,7 @@ class GameHud(GameHudLayout):
 
             self.lives.addAnimation(
                 tf.increaseTimer, 'onLoad', speed=-0.2, finish=(
-                    self.game.spriteRenderer.getLives()
+                    self.spriteRenderer.getLives()
                     * self.lives.getStep()), direction="backwards",
                 callback=callback)
 
@@ -1687,10 +1690,10 @@ class GameHud(GameHudLayout):
 
             self.completed.addAnimation(
                 tf.increaseTimer, 'onLoad', speed=0.2, finish=(
-                    self.game.spriteRenderer.getCompleted()
+                    self.spriteRenderer.getCompleted()
                     * self.completed.getStep()), callback=callback)
             self.completedAmount.setText(
-                str(self.game.spriteRenderer.getCompleted()))
+                str(self.spriteRenderer.getCompleted()))
 
             width = (
                 self.completedAmount.getFontSizeScaled()[0]
@@ -1706,8 +1709,9 @@ class GameHud(GameHudLayout):
 
 
 class EditorHud(GameHudLayout):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, mapEditor):
+        super().__init__(mapEditor.game)
+        self.mapEditor = mapEditor
 
         self.textY = 12
         self.topBarHeight = 40  # Height of selection topbar
@@ -1726,7 +1730,7 @@ class EditorHud(GameHudLayout):
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
             self.currentLayer.setText(
-                "layer " + str(self.game.mapEditor.getLayer()))
+                "layer " + str(self.mapEditor.getCurrentLayer()))
 
     def closeDropdowns(self):
         # we always want to disable text inputs when we close the menus
@@ -1740,8 +1744,7 @@ class EditorHud(GameHudLayout):
         self.editDropdownOpen = False
         self.addDropdownOpen = False
         self.deleteDropdownOpen = False
-
-        self.game.mapEditor.setAllowEdits(True)
+        self.mapEditor.setAllowEdits(True)
 
         topbar = Rectangle(
             self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
@@ -1768,7 +1771,7 @@ class EditorHud(GameHudLayout):
             self, "Run", 25, WHITE, (self.runLocation, self.textY), BLACK)
 
         self.currentLayer = Label(self, "layer " + str(
-            self.game.mapEditor.getLayer()), 25, WHITE, (0, 0), BLACK)
+            self.mapEditor.getCurrentLayer()), 25, WHITE, (0, 0), BLACK)
         self.currentLayer.setPos((
             config["graphics"]["displayWidth"] - self.fileLocation
             - self.currentLayer.getFontSize()[0], self.textY))
@@ -1807,8 +1810,9 @@ class EditorHud(GameHudLayout):
         self.open = True
         self.editDropdownOpen = True
         self.editSizeDropdownOpen = False
+        self.editBackgroundDropdownOpen = False
         self.totalToCompleteBoxOpen = False
-        self.game.mapEditor.setAllowEdits(False)
+        self.mapEditor.setAllowEdits(False)
 
         textX = self.editLocation + self.padX
 
@@ -1816,23 +1820,23 @@ class EditorHud(GameHudLayout):
         size = Label(self, "Map Size", 25, WHITE, (
             textX, self.topBarHeight + self.topPadY), BLACK)
         # Change map background colour
-        background = Label(
+        self.background = Label(
             self, "Background \n colour", 25, WHITE,
             (textX, size.getBottomY() + self.padY), BLACK)
         # Change total number of people needed to complete map
         total = Label(
             self, "Total to \n complete", 25, WHITE,
-            (textX, background.getBottomY() + self.padY), BLACK)
+            (textX, self.background.getBottomY() + self.padY), BLACK)
         # Undo changes to map
         undo = Label(
             self, "Undo", 25,
-            WHITE if len(self.game.mapEditor.getLevelChanges()) > 1 else GREY,
+            WHITE if len(self.mapEditor.getLevelChanges()) > 1 else GREY,
             (textX, total.getBottomY() + self.padY), BLACK)
         # Redo changes to map
         redo = Label(
             self, "Redo", 25,
             (WHITE if len(
-                self.game.mapEditor.getPoppedLevelChanges()) >= 1 else GREY),
+                self.mapEditor.getPoppedLevelChanges()) >= 1 else GREY),
             (textX, undo.getBottomY() + self.padY), BLACK)
         box = Rectangle(
             self, BLACK,
@@ -1840,20 +1844,22 @@ class EditorHud(GameHudLayout):
             (self.editLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         size.addEvent(hf.toggleEditSizeDropdown, 'onMouseClick')
+        self.background.addEvent(
+            hf.toggleEditBackgroundDropdown, 'onMouseClick')
         total.addEvent(hf.toggleTotalToCompleteBox, 'onMouseClick')
 
-        if len(self.game.mapEditor.getLevelChanges()) > 1:
+        if len(self.mapEditor.getLevelChanges()) > 1:
             undo.addEvent(hf.undoChange, 'onMouseClick')
             undo.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             undo.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
 
-        if len(self.game.mapEditor.getPoppedLevelChanges()) >= 1:
+        if len(self.mapEditor.getPoppedLevelChanges()) >= 1:
             redo.addEvent(hf.redoChange, 'onMouseClick')
             redo.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             redo.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
 
         self.add(box)
-        labels = [size, background, total]
+        labels = [size, self.background, total]
         for label in labels:
             label.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             label.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -1865,11 +1871,10 @@ class EditorHud(GameHudLayout):
     def editSizeDropdown(self):
         self.open = True
         self.editSizeDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        currentWidth = self.game.mapEditor.getLevelData()["width"]
-        currentHeight = self.game.mapEditor.getLevelData()["height"]
+        currentWidth = self.mapEditor.getLevelData()["width"]
+        currentHeight = self.mapEditor.getLevelData()["height"]
 
         size0Selected = (
             True if currentWidth == 16 and currentHeight == 9 else False)
@@ -1924,6 +1929,44 @@ class EditorHud(GameHudLayout):
                 label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
 
+    def editBackgroundDrodown(self):
+        self.open = True
+        self.editBackgroundDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
+
+        boxX = self.editLocation + self.boxWidth
+        textX = boxX + self.padX
+
+        currentLayer = self.mapEditor.getCurrentLayer()
+        currentBackground = self.mapEditor.getLevelData()["backgrounds"][
+            "layer " + str(currentLayer)]
+
+        y = self.background.y + self.padY
+        backgrounds = []
+        for colorName, color in BACKGROUNDCOLORS.items():
+            current = (
+                True if tuple(color) == tuple(currentBackground) else False)
+            b = Label(
+                self, ("- " if current else "") + colorName, 25,
+                GREEN if current else WHITE, (textX, y), BLACK)
+
+            if not current:
+                b.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+                b.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+                b.addEvent(
+                    hf.setBackgroundColor, 'onMouseClick', layer=currentLayer,
+                    color=color)
+
+            backgrounds.append(b)
+            y = b.getBottomY() + self.padY
+
+        box = Rectangle(self, BLACK, (self.boxWidth, y - self.background.y), (
+            boxX, self.background.y), 0, [0, 10, 10, 10])
+
+        self.add(box)
+        for background in backgrounds:
+            self.add(background)
+
     def totalToCompleteBox(self):
         self.open = True
         self.totalToCompleteBoxOpen = True
@@ -1941,7 +1984,7 @@ class EditorHud(GameHudLayout):
             box.getRightX() - padCenterX - 120,
             box.getBottomY() - (height / 2) - 30))
         self.total = Label(
-            self, self.game.mapEditor.getLevelData()['total'], 30, BLACK,
+            self, self.mapEditor.getLevelData()['total'], 30, BLACK,
             (inputBox.x + self.padX, inputBox.y + self.padY))
 
         upArrowBox = Rectangle(
@@ -1988,10 +2031,9 @@ class EditorHud(GameHudLayout):
         self.addStopDropdownOpen = False
         self.addTransportDropdownOpen = False
         self.addDestinationDropdownOpen = False
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        clickType = self.game.mapEditor.getClickManager().getClickType()
+        clickType = self.mapEditor.getClickManager().getClickType()
         connectionSelected = (
             True if clickType == EditorClickManager.ClickType.CONNECTION
             else False)
@@ -2052,10 +2094,9 @@ class EditorHud(GameHudLayout):
     def addStopDropdown(self):
         self.open = True
         self.addStopDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        addType = self.game.mapEditor.getClickManager().getAddType()
+        addType = self.mapEditor.getClickManager().getAddType()
         metroSelected = True if addType == "metro" else False
         busSelected = True if addType == "bus" else False
         tramSelected = True if addType == "tram" else False
@@ -2101,10 +2142,9 @@ class EditorHud(GameHudLayout):
     def addTransportDropdown(self):
         self.open = True
         self.addTransportDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        addType = self.game.mapEditor.getClickManager().getAddType()
+        addType = self.mapEditor.getClickManager().getAddType()
         metroSelected = True if addType == "metro" else False
         busSelected = True if addType == "bus" else False
         tramSelected = True if addType == "tram" else False
@@ -2157,10 +2197,9 @@ class EditorHud(GameHudLayout):
     def addDestinationDropdown(self):
         self.open = True
         self.addDestinationDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        addType = self.game.mapEditor.getClickManager().getAddType()
+        addType = self.mapEditor.getClickManager().getAddType()
         airportSelected = True if addType == 'airport' else False
         officeSelected = True if addType == 'office' else False
         houseSelected = True if addType == 'house' else False
@@ -2206,10 +2245,9 @@ class EditorHud(GameHudLayout):
     def deleteDropdown(self):
         self.open = True
         self.deleteDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
-        self.game.mapEditor.setAllowEdits(False)
-
-        clickType = self.game.mapEditor.getClickManager().getClickType()
+        clickType = self.mapEditor.getClickManager().getClickType()
         connectionSelected = (
             True if clickType == EditorClickManager.ClickType.DCONNECTION
             else False)
@@ -2272,8 +2310,7 @@ class EditorHud(GameHudLayout):
         self.saveBoxOpen = False
         self.loadBoxOpen = False
         self.confirmBoxOpen = False
-
-        self.game.mapEditor.setAllowEdits(False)
+        self.mapEditor.setAllowEdits(False)
 
         textX = self.fileLocation + self.padX
 
@@ -2288,18 +2325,18 @@ class EditorHud(GameHudLayout):
         # Save a map with the new changes
         save = Label(
             self, "Save", 25,
-            (WHITE if self.game.mapEditor.getDeletable() else GREY),
+            (WHITE if self.mapEditor.getDeletable() else GREY),
             (textX, self.load.getBottomY() + self.padY), BLACK)
         # Save a new map for the first time
         saveAs = Label(
             self, "Save as", 25,
-            (WHITE if self.game.mapEditor.getDeletable() else GREY),
+            (WHITE if self.mapEditor.getDeletable() else GREY),
             (textX, save.getBottomY() + self.padY), BLACK)
         # Delete an existing map - Must be already saved and be a deletable map
         delete = Label(
             self, "Delete", 25, (
-                WHITE if self.game.mapEditor.getSaved()
-                and self.game.mapEditor.getDeletable() else GREY),
+                WHITE if self.mapEditor.getSaved()
+                and self.mapEditor.getDeletable() else GREY),
             (textX, saveAs.getBottomY() + self.padY), BLACK)
         # Close the Map Editor
         close = Label(
@@ -2315,7 +2352,7 @@ class EditorHud(GameHudLayout):
         self.load.addEvent(hf.toggleLoadDropdown, 'onMouseClick')
         close.addEvent(hf.closeMapEditor, 'onMouseClick')
 
-        if self.game.mapEditor.getDeletable():
+        if self.mapEditor.getDeletable():
             save.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             save.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             save.addEvent(hf.toggleSaveBox, 'onMouseClick')
@@ -2323,7 +2360,7 @@ class EditorHud(GameHudLayout):
             saveAs.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             saveAs.addEvent(hf.toggleSaveAsBox, 'onMouseClick')
 
-            if self.game.mapEditor.getSaved():
+            if self.mapEditor.getSaved():
                 delete.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
                 delete.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
                 delete.addEvent(hf.toggleConfirmBox, 'onMouseClick')
@@ -2343,8 +2380,7 @@ class EditorHud(GameHudLayout):
     def loadDropdown(self):
         self.open = True
         self.loadBoxOpen = True
-
-        self.game.mapEditor.setAllowEdits(False)
+        self.mapEditor.setAllowEdits(False)
 
         boxX = self.fileLocation + self.boxWidth
         textX = boxX + self.padX
@@ -2422,8 +2458,9 @@ class EditorHud(GameHudLayout):
 
 
 class PreviewHud(GameHudLayout):
-    def __init__(self, renderer, spacing):
-        super().__init__(renderer)
+    def __init__(self, spriteRenderer, spacing):
+        super().__init__(spriteRenderer.game)
+        self.spriteRenderer = spriteRenderer
         self.spacing = spacing
 
     def updateSlowDownMeter(self, amount):
@@ -2434,7 +2471,7 @@ class PreviewHud(GameHudLayout):
     def main(self, transition=False):
         self.open = True
 
-        meterWidth = self.game.spriteRenderer.getSlowDownMeterAmount()
+        meterWidth = self.spriteRenderer.getSlowDownMeterAmount()
 
         topbar = Rectangle(
             self, BLACK, (config["graphics"]["displayWidth"], 40), (0, 0))
@@ -2446,7 +2483,7 @@ class PreviewHud(GameHudLayout):
             self, "walkingWhite", (30, 30),
             (config["graphics"]["displayWidth"] - 68, 7))
         self.completedText = Label(
-            self, str(self.game.spriteRenderer.getCompleted()), 25, WHITE,
+            self, str(self.spriteRenderer.getCompleted()), 25, WHITE,
             (config["graphics"]["displayWidth"] - 40, 14), BLACK)
 
         stop.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
@@ -2462,13 +2499,13 @@ class PreviewHud(GameHudLayout):
     def setCompletedAmount(self):
         if hasattr(self, 'completedText'):
             self.completedText.setText(
-                str(self.game.spriteRenderer.getCompleted()))
+                str(self.spriteRenderer.getCompleted()))
             self.completedText.dirty = True
 
 
 class MessageHud(Menu):
-    def __init__(self, renderer):
-        super().__init__(renderer)
+    def __init__(self, game):
+        super().__init__(game)
         self.messages = []
 
     def removeMessage(self, message):

@@ -2,6 +2,7 @@ import pygame
 import copy
 import os
 import json
+from pygame.locals import Color
 from gridManager import GridManager
 from node import EditorNode
 from menu import EditorHud
@@ -16,7 +17,7 @@ class MapEditor(SpriteRenderer):
         super().__init__(game)
 
         # Hud for when the game is running
-        self.hud = EditorHud(self.game)
+        self.hud = EditorHud(self)
         self.clickManager = EditorClickManager(self.game)
         # Array to hold all the changes made to the map. TODO:
         #   should this have a limit on the size
@@ -133,6 +134,18 @@ class MapEditor(SpriteRenderer):
             return
 
         self.levelData['total'] = total
+        self.addChange()
+
+    def setBackgroundColor(self, layer, backgroundColor):
+        if not hasattr(self, 'levelData'):
+            return
+
+        # Cast to array if Color object
+        if type(backgroundColor) is Color:
+            backgroundColor = [
+                backgroundColor[0], backgroundColor[1], backgroundColor[2]]
+
+        self.levelData['backgrounds']["layer " + str(layer)] = backgroundColor
         self.addChange()
 
     # Returns true if dropdowns have been closed, false otherwise

@@ -63,8 +63,11 @@ def openMapEditor(obj, menu, event):
             menu.game.mapEditor.createLevel(clearChanges=True)
             # Load the hud
             menu.game.mapEditor.setRendering(True, True)
+
             # Default option to add connection
-            hf.addConnection(obj, menu, event)
+            # TODO: do I need this?
+            # hf.addConnection(obj, menu, event)
+
             menu.levelSelectOpen = False
             menu.customLevelSelectOpen = False
             menu.close()
