@@ -1815,14 +1815,15 @@ class EditorHud(GameHudLayout):
         self.mapEditor.setAllowEdits(False)
 
         textX = self.editLocation + self.padX
+        currentLayer = self.mapEditor.getCurrentLayer()
 
         # Change map Size
         size = Label(self, "Map Size", 25, WHITE, (
             textX, self.topBarHeight + self.topPadY), BLACK)
         # Change map background colour
         self.background = Label(
-            self, "Background \n colour", 25, WHITE,
-            (textX, size.getBottomY() + self.padY), BLACK)
+            self, f"Background \n colour \n (layer {str(currentLayer)})", 25,
+            WHITE, (textX, size.getBottomY() + self.padY), BLACK)
         # Change total number of people needed to complete map
         total = Label(
             self, "Total to \n complete", 25, WHITE,
@@ -1943,7 +1944,10 @@ class EditorHud(GameHudLayout):
 
         y = self.background.y + self.padY
         backgrounds = []
-        for colorName, color in BACKGROUNDCOLORS.items():
+        for colorName, colorData in BACKGROUNDCOLORS.items():
+            color = colorData["color"]
+            darkMode = colorData["darkMode"]
+
             current = (
                 True if tuple(color) == tuple(currentBackground) else False)
             b = Label(
@@ -1955,7 +1959,7 @@ class EditorHud(GameHudLayout):
                 b.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
                 b.addEvent(
                     hf.setBackgroundColor, 'onMouseClick', layer=currentLayer,
-                    color=color)
+                    color=color, darkMode=darkMode)
 
             backgrounds.append(b)
             y = b.getBottomY() + self.padY
@@ -2316,8 +2320,8 @@ class EditorHud(GameHudLayout):
 
         # Create a new map / reset
         new = Label(
-            self, "New", 25, WHITE, (textX, self.topBarHeight + self.topPadY),
-            BLACK)
+            self, "New (Reset)", 25, WHITE,
+            (textX, self.topBarHeight + self.topPadY), BLACK)
         # Load an existing map
         self.load = Label(
             self, "Open", 25, WHITE, (textX, new.getBottomY() + self.padY),
@@ -2393,7 +2397,8 @@ class EditorHud(GameHudLayout):
             m.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             m.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             m.addEvent(hf.loadEditorMap, 'onMouseClick')
-            if m.getFontSize()[0] > maxWidth:
+
+            if m.getFontSize()[0] + (self.padX * 2) > maxWidth:
                 maxWidth = m.getFontSize()[0] + (self.padX * 2)
             maps.append(m)
             y = m.getBottomY() + self.padY

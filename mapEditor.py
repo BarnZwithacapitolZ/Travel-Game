@@ -136,7 +136,7 @@ class MapEditor(SpriteRenderer):
         self.levelData['total'] = total
         self.addChange()
 
-    def setBackgroundColor(self, layer, backgroundColor):
+    def setBackgroundColor(self, layer, backgroundColor, darkMode=False):
         if not hasattr(self, 'levelData'):
             return
 
@@ -146,6 +146,7 @@ class MapEditor(SpriteRenderer):
                 backgroundColor[0], backgroundColor[1], backgroundColor[2]]
 
         self.levelData['backgrounds']["layer " + str(layer)] = backgroundColor
+        self.levelData['backgrounds']['darkMode'] = darkMode
         self.addChange()
 
     # Returns true if dropdowns have been closed, false otherwise
@@ -194,6 +195,11 @@ class MapEditor(SpriteRenderer):
 
     # Check the user can save the level by meeting the criteria
     def canSaveLevel(self):
+        # Get the total amount of locations from each layer for comparison
+        totalDestinations = 0
+        for desintations in self.levelData['destinations'].values():
+            totalDestinations += len(desintations)
+
         if ('layer 1' not in self.levelData['connections'] and
             'layer 2' not in self.levelData['connections']
                 and 'layer 3' not in self.levelData['connections']):
@@ -206,8 +212,9 @@ class MapEditor(SpriteRenderer):
 
             return False, "There must be a road for people to travel on!"
 
-        elif len(self.levelData['destinations']) <= 0:
-            return False, "There is no locations for people to reach!"
+        elif totalDestinations <= 1:
+            return False, "There must be at least 2 locations \
+                for people to spawn on and reach!"
 
         return [True]
 

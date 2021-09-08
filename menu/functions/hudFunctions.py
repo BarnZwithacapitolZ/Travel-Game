@@ -308,7 +308,8 @@ def setSize0(obj, menu, event):
     menu.mapEditor.setMapSize((16, 9))
 
     level = menu.mapEditor.getLevelData()
-    menu.mapEditor.createLevel(level)  # Reload the level
+    layer = menu.mapEditor.getCurrentLayer()
+    menu.mapEditor.createLevel(level, layer=layer)  # Reload the level
     gf.clearMenu(obj, menu)
 
 
@@ -316,7 +317,8 @@ def setSize1(obj, menu, event):
     menu.mapEditor.setMapSize((18, 10))
 
     level = menu.mapEditor.getLevelData()
-    menu.mapEditor.createLevel(level)  # Reload the level
+    layer = menu.mapEditor.getCurrentLayer()
+    menu.mapEditor.createLevel(level, layer=layer)  # Reload the level
     gf.clearMenu(obj, menu)
 
 
@@ -324,7 +326,8 @@ def setSize2(obj, menu, event):
     menu.mapEditor.setMapSize((20, 11))
 
     level = menu.mapEditor.getLevelData()
-    menu.mapEditor.createLevel(level)  # Reload the level
+    layer = menu.mapEditor.getCurrentLayer()
+    menu.mapEditor.createLevel(level, layer=layer)  # Reload the level
     gf.clearMenu(obj, menu)
 
 
@@ -332,12 +335,13 @@ def setSize3(obj, menu, event):
     menu.mapEditor.setMapSize((22, 12))
 
     level = menu.mapEditor.getLevelData()
-    menu.mapEditor.createLevel(level)  # Reload the level
+    layer = menu.mapEditor.getCurrentLayer()
+    menu.mapEditor.createLevel(level, layer=layer)  # Reload the level
     gf.clearMenu(obj, menu)
 
 
-def setBackgroundColor(obj, menu, event, layer, color):
-    menu.mapEditor.setBackgroundColor(layer, color)
+def setBackgroundColor(obj, menu, event, layer, color, darkMode=False):
+    menu.mapEditor.setBackgroundColor(layer, color, darkMode)
 
     level = menu.mapEditor.getLevelData()
     layer = menu.mapEditor.getCurrentLayer()

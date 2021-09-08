@@ -44,11 +44,30 @@ TEMPGREY = (228, 227, 232)
 HOVERGREY = (153, 153, 153)
 
 BACKGROUNDCOLORS = {
-    "Black": BLACK,
-    "White": CREAM,
-    "Red": RED,
-    "Blue": BLUE,
-    "Green": GREEN
+    "Black": {
+        "color": BLACK,
+        "darkMode": True
+    },
+    "White": {
+        "color": CREAM,
+        "darkMode": False
+    },
+    "Grey": {
+        "color": TEMPGREY,
+        "darkMode": False
+    },
+    "Red": {
+        "color": TEMPRED,
+        "darkMode": True
+    },
+    "Blue": {
+        "color": BLUE,
+        "darkMode": True
+    },
+    "Green": {
+        "color": TEMPGREEN,
+        "darkMode": False
+    }
 }
 
 SCANLINESGREEN = (38, 127, 0, 20)
