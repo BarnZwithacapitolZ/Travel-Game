@@ -2314,6 +2314,7 @@ class EditorHud(GameHudLayout):
         self.saveBoxOpen = False
         self.loadBoxOpen = False
         self.confirmBoxOpen = False
+        self.confirmExitBoxOpen = False
         self.mapEditor.setAllowEdits(False)
 
         textX = self.fileLocation + self.padX
@@ -2354,7 +2355,7 @@ class EditorHud(GameHudLayout):
 
         new.addEvent(hf.newMap, 'onMouseClick')
         self.load.addEvent(hf.toggleLoadDropdown, 'onMouseClick')
-        close.addEvent(hf.closeMapEditor, 'onMouseClick')
+        close.addEvent(hf.toggleConfirmExitBox, 'onMouseClick')
 
         if self.mapEditor.getDeletable():
             save.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
@@ -2455,6 +2456,30 @@ class EditorHud(GameHudLayout):
 
         confirm.addEvent(hf.deleteMap, 'onMouseClick')
         cancel.addEvent(hf.toggleConfirmBox, 'onMouseClick')
+
+        box.add(confirmText)
+        self.add(box)
+        self.add(confirm)
+        self.add(cancel)
+
+    def confirmExitBox(self):
+        self.open = True
+        self.confirmExitBoxOpen = True
+
+        width = config["graphics"]["displayWidth"] / 2
+        height = 240
+
+        box, confirm, cancel = self.createConfirmBox(
+            width, height, "Unsaved changes?", ok="Yes", cancel="No",
+            padX=self.padX, padY=self.padY)
+
+        confirmText = Label(
+            self, "Are you sure you want exit \n without saving? \n \
+                (Any unsaved changes will \n be lost)", 30, WHITE, (40, 70),
+            GREEN)
+
+        confirm.addEvent(hf.closeMapEditor, 'onMouseClick')
+        cancel.addEvent(hf.toggleConfirmExitBox, 'onMouseClick')
 
         box.add(confirmText)
         self.add(box)

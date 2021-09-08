@@ -187,6 +187,21 @@ def toggleConfirmBox(obj, menu, event):
         menu.fileDropdown()
 
 
+def toggleConfirmExitBox(obj, menu, event):
+    if not menu.confirmExitBoxOpen:
+        if len(menu.mapEditor.getLevelChanges()) > 1:
+            gf.clearMenu(obj, menu)
+            menu.fileDropdown()
+            menu.confirmExitBox()
+
+        else:
+            closeMapEditor(obj, menu, event)
+
+    else:
+        gf.clearMenu(obj, menu)
+        menu.fileDropdown()
+
+
 def toggleTotalToCompleteBox(obj, menu, event):
     if not menu.totalToCompleteBoxOpen:
         menu.game.textHandler.setActive(True)
