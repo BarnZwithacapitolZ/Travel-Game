@@ -1,10 +1,10 @@
 import random
 import json
 from node import (
-    Node, MetroStation, BusStop, TramStop, EditorNode,
-    EditorMetroStation, EditorBusStop, EditorTramStop,
-    Airport, Office, House,
-    EditorAirport, EditorOffice, EditorHouse)
+    Node, NoWalkNode, MetroStation, BusStop, TramStop, EditorNode,
+    EditorMetroStation, EditorBusStop, EditorTramStop, EditorNoWalkNode,
+    Airport, Office, House, Destination,
+    EditorAirport, EditorOffice, EditorHouse, NodeType)
 from connection import Connection
 from transport import Metro, Bus, Tram, Taxi
 
@@ -43,6 +43,7 @@ class GridManager:
         self.entryTopPositions = self.setNodePositions(1.5, -0.5, 18, 1)
         self.entryBottomPositions = self.setNodePositions(1.5, 11.5, 18, 1)
 
+        # Mappings between name and the element being added to the map
         self.transportMappings = {
             "metro": Metro,
             "bus": Bus,
@@ -69,6 +70,17 @@ class GridManager:
             "office": EditorOffice,
             "house": EditorHouse
         }
+        self.specialsMappings = {
+            "noWalkNode": NoWalkNode
+        }
+        self.editorSpecialsMappings = {
+            "noWalkNode": EditorNoWalkNode
+        }
+        self.editorTypeMappings = {
+            NodeType.STOP.value: self.editorStopMappings,
+            NodeType.DESTINATION.value: self.editorDestinationMappings,
+            NodeType.SPECIAL.value: self.editorSpecialsMappings
+        }
 
     def getNodePositions(self):
         return self.nodePositions
@@ -76,17 +88,19 @@ class GridManager:
     def getTransportMappings(self):
         return self.transportMappings
 
-    def getStopMappings(self):
-        return self.stopMappings
-
     def getEditorStopMappings(self):
         return self.editorStopMappings
 
-    def getDestinationMappings(self):
-        return self.destinationMappings
-
     def getEditorDestinationMappings(self):
         return self.editorDestinationMappings
+
+    def getEditorSpecialsMappings(self):
+        return self.editorSpecialsMappings
+
+    def getEditorMappingsByType(self, nodeType):
+        if nodeType not in self.editorTypeMappings:
+            return
+        return self.editorTypeMappings[nodeType]
 
     def getLevelName(self):
         return self.levelName
@@ -165,6 +179,7 @@ class GridManager:
         # There is no opposite connection
         return False
 
+    # From the search node, return the key from the mappings dicts
     def reverseMappingsSearch(self, dic, searchValue):
         for key, value in dic.items():
             if isinstance(searchValue, value):
@@ -193,15 +208,23 @@ class GridManager:
 
             n = None
 
-            n = self.addStop(
-                n, self.stopMappings, connectionType, connection[direction],
-                clickManagers)
+            # Check and add all special nodes
+            n = self.addNodeType(
+                NodeType.SPECIAL.value, n, self.specialsMappings,
+                connectionType, connection[direction], clickManagers)
 
-            n = self.addDestination(
-                n, self.destinationMappings, connectionType,
+            # Check and add all stop nodes
+            n = self.addNodeType(
+                NodeType.STOP.value, n, self.stopMappings, connectionType,
                 connection[direction], clickManagers)
 
-            if n is None:  # no stop was found at this node
+            # Check and add all destination nodes
+            n = self.addNodeType(
+                NodeType.DESTINATION.value, n, self.destinationMappings,
+                connectionType, connection[direction], clickManagers)
+
+            # Add regular nodes
+            if n is None:
                 n = Node(
                     self.spriteRenderer, self.groups, connection[direction],
                     connectionType,
@@ -210,65 +233,41 @@ class GridManager:
                     self.spriteRenderer.getPersonClickManager(),
                     self.spriteRenderer.getTransportClickManager())
 
+            elif isinstance(n, Destination):
+                self.destinations.append(n)
+
             self.nodes.append(n)
             currentNodes.append(connection[direction])
 
         return currentNodes
 
-    # Add a stop, instead of a node, to the grid
-    def addStop(
-            self, n, mappings, connectionType, number, clickManagers=[],
-            x=None, y=None):
+    def addNodeType(
+                self, nodeType, n, mappings, connectionType, number,
+                clickManagers=[], x=None, y=None):
+        if (nodeType not in self.map
+                or connectionType not in self.map[nodeType]):
+            return n
+
         if x is None:
             x = self.nodePositions[number][0]
 
         if y is None:
             y = self.nodePositions[number][1]
 
-        # Change if to a for to show all stops from other layers on each layer
-        # (i.e metro stations on layer 2, etc.)
-        if connectionType in self.map["stops"]:
-            for stop in self.map["stops"][connectionType]:
-                if stop["location"] == number:
-                    if len(clickManagers) <= 2:
-                        n = mappings[stop["type"]](
-                            self.spriteRenderer, self.groups, number,
-                            connectionType, x, y, clickManagers[0],
-                            clickManagers[1])
+        for node in self.map[nodeType][connectionType]:
+            if node["location"] == number:
+                if len(clickManagers) <= 2:
+                    n = mappings[node["type"]](
+                        self.spriteRenderer, self.groups, number,
+                        connectionType, x, y, clickManagers[0],
+                        clickManagers[1])
 
-                    else:
-                        n = mappings[stop["type"]](
-                            self.spriteRenderer, self.groups, number,
-                            connectionType, x, y, clickManagers[0],
-                            clickManagers[1], clickManagers[2])
-                    break
-        return n
-
-    def addDestination(
-            self, n, mappings, connectionType, number, clickManagers=[],
-            x=None, y=None):
-        if x is None:
-            x = self.nodePositions[number][0]
-
-        if y is None:
-            y = self.nodePositions[number][1]
-
-        if connectionType in self.map["destinations"]:
-            for destination in self.map["destinations"][connectionType]:
-                if destination["location"] == number:
-                    if len(clickManagers) <= 2:
-                        n = mappings[destination["type"]](
-                            self.spriteRenderer, self.groups, number,
-                            connectionType, x, y, clickManagers[0],
-                            clickManagers[1])
-
-                    else:
-                        n = mappings[destination["type"]](
-                            self.spriteRenderer, self.groups, number,
-                            connectionType, x, y, clickManagers[0],
-                            clickManagers[1], clickManagers[2])
-                    self.destinations.append(n)
-                    break
+                else:
+                    n = mappings[node["type"]](
+                        self.spriteRenderer, self.groups, number,
+                        connectionType, x, y, clickManagers[0],
+                        clickManagers[1], clickManagers[2])
+                break
         return n
 
     def replaceNode(self, connectionType, node, nodeType):
@@ -342,18 +341,35 @@ class GridManager:
             # Loop through all the node positions
             for number, position in enumerate(self.nodePositions):
                 n = None
-                n = self.addStop(
-                    n, self.editorStopMappings, connectionType, number,
-                    clickManagers, position[0], position[1])
-                n = self.addDestination(
-                    n, self.editorDestinationMappings, connectionType, number,
+
+                # Check and add all special editor nodes
+                n = self.addNodeType(
+                    NodeType.SPECIAL.value, n, self.editorSpecialsMappings,
+                    connectionType, number, clickManagers, position[0],
+                    position[1])
+
+                # Check and add all stop editor nodes
+                n = self.addNodeType(
+                    NodeType.STOP.value, n, self.editorStopMappings,
+                    connectionType, number, clickManagers, position[0],
+                    position[1])
+
+                # Check and add all destination editor nodes
+                n = self.addNodeType(
+                    NodeType.DESTINATION.value, n,
+                    self.editorDestinationMappings, connectionType, number,
                     clickManagers, position[0], position[1])
 
+                # Add regular nodes
                 if n is None:
                     n = EditorNode(
                         self.spriteRenderer, self.groups, number,
                         connectionType, position[0], position[1],
                         clickManagers[0], clickManagers[1], clickManagers[2])
+
+                elif isinstance(n, Destination):
+                    self.destinations.append(n)
+
                 self.nodes.append(n)
 
             if connectionType in self.map["connections"]:

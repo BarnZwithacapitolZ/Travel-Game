@@ -52,11 +52,6 @@ class ClickManager:
         openList = []
         closedList = []
 
-        # startNode.g = startNode.h = startNode.f = 0
-        # startNode.parent = None
-        # endNode.h = endNode.h = endNode.f = 0
-        # endNode.parent = None
-
         startNode = {"node": A, "g": 0, "h": 0, "f": 0, "parent": None}
         endNode = {"node": B, "g": 0, "h": 0, "f": 0, "parent": None}
 
@@ -187,6 +182,17 @@ class PersonClickManager(ClickManager):
         # Set the new person
         self.person = person
         self.movePerson()
+
+    # Override
+    def getAdjacentNodes(self, n):
+        adjNodes = []
+
+        for connection in n["node"].getConnections():
+            # We don't want to include no walk nodes
+            if not isinstance(connection.getTo(), NODE.NoWalkNode):
+                node = {"node": connection.getTo(), "parent": n}
+                adjNodes.append(node)
+        return adjNodes
 
     # Function: pathFinding
     # Input:  Node A
@@ -347,12 +353,14 @@ class EditorClickManager(ClickManager):
         STOP = auto()
         TRANSPORT = auto()
         DESTINATION = auto()
+        SPECIAL = auto()
 
         # D at front signifies deletion options
         DCONNECTION = auto()
         DSTOP = auto()
         DTRANSPORT = auto()
         DDESTINATION = auto()
+        DSPECIAL = auto()
 
     def __init__(self, game):
         super().__init__(game)
@@ -482,21 +490,24 @@ class EditorClickManager(ClickManager):
             self.game.mapEditor.addTransport(
                 node.getConnectionType(), node.getConnections()[0])
 
-    def addStop(self, node):
-        # No connections to the node,
-        # we dont want to add a stop if nothing can stop at it
-        if len(node.getConnections()) > 0 and not isinstance(node, NODE.Stop):
-            self.game.mapEditor.addStop(node.getConnectionType(), node)
+    def addNode(self, node, nodeType):
+        if len(node.getConnections()) <= 0:
+            return
+        # Its not a regular node, we want to swap the nodes instead of adding
+        if not NODE.Node.checkRegularNode(node):
+            self.game.mapEditor.swapNode(
+                node.getType().value, nodeType, node.getConnectionType(), node)
 
-    def addDestination(self, node):
-        if (len(node.getConnections()) > 0 and not isinstance(node, NODE.Stop)
-                and not isinstance(node, NODE.Destination)):
-            self.game.mapEditor.addDestination(node.getConnectionType(), node)
+        else:
+            self.game.mapEditor.addNode(
+                nodeType, node.getConnectionType(), node)
 
-    def deleteDestination(self, node):
-        if isinstance(node, NODE.Destination):
-            self.game.mapEditor.deleteDestination(
-                node.getConnectionType(), node)
+    # TODO: make this delete whichever node is selected, instead of just the type from the menu
+    def deleteNode(self, node, instance, nodeType):
+        if not isinstance(node, instance):
+            return
+        self.game.mapEditor.deleteNode(
+            nodeType, node.getConnectionType(), node)
 
     def deleteConnection(self, connection):
         fromNode = connection.getFrom()
@@ -520,11 +531,6 @@ class EditorClickManager(ClickManager):
         # Check that there is a transportation to delete
         if len(node.getTransports()) >= 1:
             self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
-
-    def deleteStop(self, node):
-        # Make sure it is actually a stop
-        if isinstance(node, NODE.Stop):
-            self.game.mapEditor.deleteStop(node.getConnectionType(), node)
 
 
 class ControlClickManager(ClickManager):

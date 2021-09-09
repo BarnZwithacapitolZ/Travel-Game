@@ -318,6 +318,18 @@ def toggleAddDestinationDropdown(obj, menu, event):
         menu.addDropdown()
 
 
+def toggleAddSpecialsDropdown(obj, menu, event):
+    if not menu.addSpecialsDropdownOpen:
+        gf.clearMenu(obj, menu)
+        addSpecials(obj, menu, event)
+        menu.addDropdown()
+        menu.addSpecialsDropdown()
+
+    else:
+        gf.clearMenu(obj, menu)
+        menu.addDropdown()
+
+
 # Setting the different map sizes
 def setSize0(obj, menu, event):
     menu.mapEditor.setMapSize((16, 9))
@@ -416,6 +428,11 @@ def addDestination(obj, menu, event):
         EditorClickManager.ClickType.DESTINATION)
 
 
+def addSpecials(obj, menu, event):
+    menu.mapEditor.getClickManager().setClickType(
+        EditorClickManager.ClickType.SPECIAL)
+
+
 # ----Adding different stop and transport types----
 
 def addMetro(obj, menu, event):
@@ -452,6 +469,13 @@ def addOffice(obj, menu, event):
 
 def addHouse(obj, menu, event):
     menu.mapEditor.getClickManager().setAddType("house")
+    gf.clearMenu(obj, menu)
+
+
+# ----Adding special node types----
+
+def addNoWalkNode(obj, menu, event):
+    menu.mapEditor.getClickManager().setAddType("noWalkNode")
     gf.clearMenu(obj, menu)
 
 

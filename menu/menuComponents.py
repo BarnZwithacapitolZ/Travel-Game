@@ -1431,7 +1431,7 @@ class Image(MenuComponent):
     def setAlpha(self, alpha):
         self.alpha = alpha
 
-    def flipImage(self, xbool, ybool):
+    def flipImage(self, xbool=False, ybool=False):
         self.xbool = xbool
         self.ybool = ybool
 
@@ -1444,7 +1444,8 @@ class Image(MenuComponent):
             self.imageName, (self.width, self.height))
 
         if self.xbool or self.ybool:
-            self.image = ImageLoader.flipImage(self.image, self.xbool, self.ybool)
+            self.image = ImageLoader.flipImage(
+                self.image, self.xbool, self.ybool)
         if self.rot > 0:
             self.image = ImageLoader.rotateImage(self.image, self.rot)
 

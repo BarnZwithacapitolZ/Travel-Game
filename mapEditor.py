@@ -4,7 +4,7 @@ import os
 import json
 from pygame.locals import Color
 from gridManager import GridManager
-from node import EditorNode
+from node import EditorNode, NodeType
 from menu import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
@@ -70,7 +70,9 @@ class MapEditor(SpriteRenderer):
 
     def addChange(self):
         change = copy.deepcopy(self.levelData)
-        self.levelChanges.append(change)
+        # Only add the changes if it actually changes the level data
+        if change != self.levelChanges[-1]:
+            self.levelChanges.append(change)
 
     def translateConnections(self, layer, oldMapPos, newMapPos):
         if layer not in self.levelData["connections"]:
@@ -100,6 +102,11 @@ class MapEditor(SpriteRenderer):
             else:
                 del self.levelData[nodeType][layer][key]
 
+    def translateNodeSet(self, nodeType, oldMapPos, newMapPos):
+        self.translateNodes(nodeType, "layer 1", oldMapPos, newMapPos)
+        self.translateNodes(nodeType, "layer 2", oldMapPos, newMapPos)
+        self.translateNodes(nodeType, "layer 3", oldMapPos, newMapPos)
+
     def setMapSize(self, size=(18, 10)):
         if not hasattr(self, 'levelData'):
             return
@@ -112,17 +119,17 @@ class MapEditor(SpriteRenderer):
         self.translateConnections("layer 2", oldMapPos, newMapPos)
         self.translateConnections("layer 3", oldMapPos, newMapPos)
 
-        self.translateNodes("transport", "layer 1", oldMapPos, newMapPos)
-        self.translateNodes("transport", "layer 2", oldMapPos, newMapPos)
-        self.translateNodes("transport", "layer 3", oldMapPos, newMapPos)
+        # Move transports to new position for each layer
+        self.translateNodeSet("transport", oldMapPos, newMapPos)
 
-        self.translateNodes("stops", "layer 1", oldMapPos, newMapPos)
-        self.translateNodes("stops", "layer 2", oldMapPos, newMapPos)
-        self.translateNodes("stops", "layer 3", oldMapPos, newMapPos)
+        # Move special nodes to new positions for each layer
+        self.translateNodeSet(NodeType.SPECIAL.value, oldMapPos, newMapPos)
 
-        self.translateNodes("destinations", "layer 1", oldMapPos, newMapPos)
-        self.translateNodes("destinations", "layer 2", oldMapPos, newMapPos)
-        self.translateNodes("destinations", "layer 3", oldMapPos, newMapPos)
+        # Move stops to new positions for each layer
+        self.translateNodeSet(NodeType.STOP.value, oldMapPos, newMapPos)
+
+        # Move destinations to new positions for each layer
+        self.translateNodeSet(NodeType.DESTINATION.value, oldMapPos, newMapPos)
 
         self.levelData["width"] = size[0]
         self.levelData["height"] = size[1]
@@ -331,53 +338,53 @@ class MapEditor(SpriteRenderer):
 
         self.addChange()
 
-    # TO DO: Maybe let the user select the stop type they want to add,
-    # so there can be different types of stops on each layer?
-    def addStop(self, connectionType, node):
+    def swapNode(self, oldNodeType, newNodeType, connectionType, node):
+        self.deleteNode(oldNodeType, connectionType, node, False, False)
+        self.addNode(newNodeType, connectionType, node)
+
+    def addNode(
+            self, nodeType, connectionType, node, replaceNode=True,
+            addChange=True):
         layer = self.getGridLayer(connectionType)
 
         key = self.clickManager.getAddType()
-        mappings = layer.getGrid().getEditorStopMappings()
+        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
 
         if key in mappings:
-            newNode = layer.getGrid().replaceNode(
-                connectionType, node, mappings[key])
+            if replaceNode:
+                # Replace the current node with the one we want to place down
+                layer.getGrid().replaceNode(
+                    connectionType, node, mappings[key])
 
-            self.levelData["stops"].setdefault(connectionType, []).append({
-                "location": newNode.getNumber(), "type": str(key)})
+            # Add the node to the data, or if the connection type doesn't exist
+            # set its default to the empty list (for adding to later)
+            self.levelData[nodeType].setdefault(connectionType, []).append({
+                "location": node.getNumber(), "type": str(key)})
 
-        self.addChange()
+        if addChange:
+            self.addChange()
 
-    def addDestination(self, connectionType, node):
+    def deleteNode(
+            self, nodeType, connectionType, node, replaceNode=True,
+            addChange=True):
         layer = self.getGridLayer(connectionType)
 
-        key = self.clickManager.getAddType()
-        mappings = layer.getGrid().getEditorDestinationMappings()
-
-        if key in mappings:
-            newNode = layer.getGrid().replaceNode(
-                connectionType, node, mappings[key])
-
-            self.levelData["destinations"].setdefault(
-                connectionType, []).append({
-                    "location": newNode.getNumber(), "type": str(key)})
-
-        self.addChange()
-
-    def deleteDestination(self, connectionType, node):
-        layer = self.getGridLayer(connectionType)
-
-        mappings = layer.getGrid().getEditorDestinationMappings()
+        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
         key = layer.getGrid().reverseMappingsSearch(mappings, node)
 
         if key:
-            newNode = layer.getGrid().replaceNode(
-                connectionType, node, EditorNode)
+            if replaceNode:
+                # Replace with default editor node
+                layer.getGrid().replaceNode(
+                    connectionType, node, EditorNode)
 
-            self.levelData["destinations"][connectionType].remove({
-                "location": newNode.getNumber(), "type": str(key)})
+            # Remove the node from the data
+            self.levelData[nodeType][connectionType].remove({
+                "location": node.getNumber(),
+                "type": str(key)})
 
-        self.addChange()
+        if addChange:
+            self.addChange()
 
     def deleteTransport(self, connectionType, node):
         layer = self.getGridLayer(connectionType)
@@ -394,23 +401,6 @@ class MapEditor(SpriteRenderer):
 
             self.levelData["transport"][connectionType].remove({
                 "location": node.getNumber(), "type": str(key)})
-
-        self.addChange()
-
-    def deleteStop(self, connectionType, node):
-        layer = self.getGridLayer(connectionType)
-
-        mappings = layer.getGrid().getEditorStopMappings()
-        key = layer.getGrid().reverseMappingsSearch(mappings, node)
-
-        if key:
-            newNode = layer.getGrid().replaceNode(
-                connectionType, node, EditorNode)
-
-            self.levelData["stops"][connectionType].remove({
-                "location": newNode.getNumber(),
-                "type": str(key)
-            })
 
         self.addChange()
 

@@ -61,6 +61,10 @@
             "image": "game\\node\\NodeEnd.png",
             "alpha": true
         }, 
+        "nodeNoWalking": {
+            "image": "game\\node\\NodeNoWalking.png",
+            "alpha": true
+        },
         "train": {
             "image": "game\\transport\\Train.png",
             "alpha": true
@@ -217,20 +221,12 @@
             "image": "ui\\ButtonSelected.png",
             "alpha": true
         },
-        "buttonArrowLeft": {
-            "image": "ui\\ButtonArrowLeft.png",
+        "buttonArrow": {
+            "image": "ui\\ButtonArrow.png",
             "alpha": true
         },
-        "buttonArrowLeftSelected": {
-            "image": "ui\\ButtonArrowLeftSelected.png",
-            "alpha": true
-        },
-        "buttonArrowRight": {
-            "image": "ui\\ButtonArrowRight.png",
-            "alpha": true
-        },
-        "buttonArrowRightSelected": {
-            "image": "ui\\ButtonArrowRightSelected.png",
+        "buttonArrowSelected": {
+            "image": "ui\\ButtonArrowSelected.png",
             "alpha": true
         },
         "locked": {

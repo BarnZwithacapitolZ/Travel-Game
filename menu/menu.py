@@ -760,12 +760,13 @@ class MainMenu(Menu):
             self.keyText.y))
 
         levelNext = Image(
-            self, "buttonArrowRight", (25, 25), (
+            self, "buttonArrow", (25, 25), (
                 config["graphics"]["displayWidth"]
                 - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2)
                 - self.spacing - 25, config["graphics"]["displayHeight"] - 42))
+        levelNext.flipImage(True, False)
         levelBack = Image(
-            self, "buttonArrowLeft", (25, 25),
+            self, "buttonArrow", (25, 25),
             (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
 
         mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
@@ -773,13 +774,13 @@ class MainMenu(Menu):
         custom.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
         custom.addEvent(gf.hoverImage, 'onMouseOut', image="button")
         levelNext.addEvent(
-            gf.hoverImage, 'onMouseOver', image="buttonArrowRightSelected")
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
         levelNext.addEvent(
-            gf.hoverImage, 'onMouseOut', image="buttonArrowRight")
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
         levelBack.addEvent(
-            gf.hoverImage, 'onMouseOver', image="buttonArrowLeftSelected")
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
         levelBack.addEvent(
-            gf.hoverImage, 'onMouseOut', image="buttonArrowLeft")
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
 
         mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
         mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
@@ -2051,6 +2052,7 @@ class EditorHud(GameHudLayout):
         self.addStopDropdownOpen = False
         self.addTransportDropdownOpen = False
         self.addDestinationDropdownOpen = False
+        self.addSpecialsDropdownOpen = False
         self.mapEditor.setAllowEdits(False)
 
         clickType = self.mapEditor.getClickManager().getClickType()
@@ -2064,6 +2066,9 @@ class EditorHud(GameHudLayout):
             else False)
         destinationSelected = (
             True if clickType == EditorClickManager.ClickType.DESTINATION
+            else False)
+        specialsSelected = (
+            True if clickType == EditorClickManager.ClickType.SPECIAL
             else False)
 
         textX = self.addLocation + self.padX
@@ -2088,10 +2093,15 @@ class EditorHud(GameHudLayout):
             self, ("- " if destinationSelected else "") + "Location", 25,
             GREEN if destinationSelected else WHITE,
             (textX, self.transport.getBottomY() + self.padY), BLACK)
+        # Add a type of special node to the map (nowalknodes etc.)
+        self.specials = Label(
+            self, ("- " if specialsSelected else "") + "Specials", 25,
+            GREEN if specialsSelected else WHITE,
+            (textX, self.destination.getBottomY() + self.padY), BLACK)
         box = Rectangle(
             self, BLACK, (
                 self.boxWidth,
-                self.destination.getBottomY() + self.padY - self.topBarHeight),
+                self.specials.getBottomY() + self.padY - self.topBarHeight),
             (self.addLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         connection.addEvent(hf.addConnection, 'onMouseClick')
@@ -2099,12 +2109,14 @@ class EditorHud(GameHudLayout):
         self.transport.addEvent(hf.toggleAddTransportDropdown, 'onMouseClick')
         self.destination.addEvent(
             hf.toggleAddDestinationDropdown, 'onMouseClick')
+        self.specials.addEvent(hf.toggleAddSpecialsDropdown, 'onMouseClick')
 
         self.add(box)
         labels = [
             (connection, connectionSelected), (self.stop, stopSelected),
             (self.transport, transportSelected),
-            (self.destination, destinationSelected)]
+            (self.destination, destinationSelected),
+            (self.specials, specialsSelected)]
         for label in labels:
             if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
@@ -2261,6 +2273,37 @@ class EditorHud(GameHudLayout):
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
                 label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
             self.add(label[0])
+
+    def addSpecialsDropdown(self):
+        self.open = True
+        self.addSpecialsDropdownOpen = True
+
+        addType = self.mapEditor.getClickManager().getAddType()
+        noWalkNodeSelected = True if addType == 'noWalkNode' else False
+
+        boxX = self.addLocation + self.boxWidth
+        textX = boxX + self.padX
+
+        noWalkNode = Label(
+            self, ("- " if noWalkNodeSelected else "") + "No walking \n node",
+            25, GREEN if noWalkNodeSelected else WHITE,
+            (textX, self.specials.y + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                noWalkNode.getBottomY() + self.padY - self.specials.y),
+            (boxX, self.specials.y), 0, [0, 10, 10, 10])
+
+        noWalkNode.addEvent(hf.addNoWalkNode, 'onMouseClick')
+
+        self.add(box)
+        labels = [(noWalkNode, noWalkNodeSelected)]
+        for label in labels:
+            if not label[1]:
+                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+            self.add(label[0])
+        self.add(noWalkNode)
 
     def deleteDropdown(self):
         self.open = True

@@ -6,8 +6,16 @@ import clickManager as CLICKMANAGER
 import person as PERSON
 from pygame.locals import BLEND_MIN
 from config import YELLOW, HOVERGREY
+from enum import Enum
 
 vec = pygame.math.Vector2
+
+
+class NodeType(Enum):
+    REGULAR = "regular"
+    STOP = "stops"
+    DESTINATION = "destinations"
+    SPECIAL = "specials"
 
 
 class Node(pygame.sprite.Sprite):
@@ -41,11 +49,21 @@ class Node(pygame.sprite.Sprite):
             self.game, self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
+        self.type = NodeType.REGULAR
+
         self.dirty = True
 
         self.mouseOver = False
         self.images = ["node"]
         self.currentImage = 0
+
+    @staticmethod
+    def checkRegularNode(node):
+        instances = [Stop, Destination, NoWalkNode]
+        for instance in instances:
+            if isinstance(node, instance):
+                return False
+        return True
 
     # Return the connections, in a list, of the node
     def getConnections(self):
@@ -72,6 +90,9 @@ class Node(pygame.sprite.Sprite):
 
     def getPersonHolder(self):
         return self.personHolder
+
+    def getType(self):
+        return self.type
 
     def setCurrentImage(self, image):
         self.currentImage = image
@@ -318,13 +339,19 @@ class EditorNode(Node):
                 # Add a stop
                 elif (self.clickManager.getClickType()
                         == CLICKMANAGER.EditorClickManager.ClickType.STOP):
-                    self.clickManager.addStop(node)
+                    self.clickManager.addNode(node, NodeType.STOP.value)
 
                 # Add a destination
                 elif (self.clickManager.getClickType()
                         ==
                         CLICKMANAGER.EditorClickManager.ClickType.DESTINATION):
-                    self.clickManager.addDestination(node)
+                    self.clickManager.addNode(node, NodeType.DESTINATION.value)
+
+                # Add a special node type
+                elif (self.clickManager.getClickType()
+                        ==
+                        CLICKMANAGER.EditorClickManager.ClickType.SPECIAL):
+                    self.clickManager.addNode(node, NodeType.SPECIAL.value)
 
                 # Delete a transport
                 elif (self.clickManager.getClickType()
@@ -335,14 +362,24 @@ class EditorNode(Node):
                 # Delete a stop
                 elif (self.clickManager.getClickType()
                         == CLICKMANAGER.EditorClickManager.ClickType.DSTOP):
-                    self.clickManager.deleteStop(node)
+                    self.clickManager.deleteNode(
+                        node, Stop, NodeType.STOP.value)
 
                 # Delete a destination
                 elif (self.clickManager.getClickType()
                         ==
                         (CLICKMANAGER.EditorClickManager.ClickType
                             .DDESTINATION)):
-                    self.clickManager.deleteDestination(node)
+                    self.clickManager.deleteNode(
+                        node, Destination, NodeType.DESTINATION.value)
+
+                # Delete a special node type
+                elif (self.clickManager.getClickType()
+                        ==
+                        CLICKMANAGER.EditorClickManager.ClickType.DSPECIAL):
+                    self.clickManager.deleteNode(
+                        node, NoWalkNode, NodeType.SPECIAL.value)
+
             else:
                 self.spriteRenderer.messageSystem.addMessage(
                     "You cannot place items on the top layer!")
@@ -383,6 +420,21 @@ class EditorNode(Node):
                 self.clickManager.removeTempEndNode()
 
 
+class NoWalkNode(Node):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
+        super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+        self.images = ["nodeNoWalking"]
+        self.type = NodeType.SPECIAL
+
+
+class EditorNoWalkNode(EditorNode, NoWalkNode):
+    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
+        EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
+        NoWalkNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+
+        self.images = ["nodeNoWalking", "nodeStart", "nodeEnd"]
+
+
 # To Do: Parent class for all stops
 class Stop(Node):
     def __init__(
@@ -395,6 +447,8 @@ class Stop(Node):
         self.height = 25
         self.offset = vec(-2.5, -2.5)
         self.pos = self.pos + self.offset
+
+        self.type = NodeType.STOP
 
 
 class BusStop(Stop):
@@ -477,6 +531,8 @@ class Destination(Node):
         self.height = 30
         self.offset = vec(-5, -5)
         self.pos = self.pos + self.offset
+
+        self.type = NodeType.DESTINATION
 
 
 class Airport(Destination):

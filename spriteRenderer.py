@@ -4,7 +4,7 @@ from config import config, dump, DEFAULTLIVES, CREAM
 from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
-from node import Stop, Destination
+from node import Stop, Destination, NoWalkNode
 from meterController import MeterController
 from menu import GameHud, GameMenu, MessageHud, PreviewHud
 
@@ -87,7 +87,8 @@ class SpriteRenderer():
             "connections": {},
             "transport": {},
             "stops": {},
-            "destinations": {}
+            "destinations": {},
+            "specials": {}  # For special ndes, such as no walk nodes etc.
         }  # Level data to be stored, for export to JSON
 
     # Save function, for when the level has already
@@ -494,7 +495,9 @@ class SpriteRenderer():
         if allNodes is None:
             allNodes = self.getAllNodes()
 
-        # Make sure stops are at the front of the list, so they are not removed
+        # Make any node that is not a regular node is at the front of the list,
+        # so they are not removed and the regular node is
+        allNodes = sorted(allNodes, key=lambda x: isinstance(x, NoWalkNode))
         allNodes = sorted(allNodes, key=lambda x: isinstance(x, Stop))
         allNodes = sorted(allNodes, key=lambda x: isinstance(x, Destination))
         allNodes = allNodes[::-1]  # Reverse the list so they're at the front
