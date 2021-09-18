@@ -274,8 +274,13 @@ class Transport(pygame.sprite.Sprite):
                 self.removePerson(person)
                 self.personHolder.removePerson(person)
 
+                playerNode = self.currentNode
                 # Add the player to the top node (on the highest layer)
-                playerNode = self.spriteRenderer.getTopNode(self.currentNode)
+                # if not the current layer
+                if (self.currentNode.getConnectionType()
+                        != self.spriteRenderer.getCurrentLayerString()):
+                    playerNode = self.spriteRenderer.getTopNode(
+                        self.currentNode)
 
                 # Set the person to unassigned so they can be moved
                 person.setStatus(PERSON.Person.Status.UNASSIGNED)

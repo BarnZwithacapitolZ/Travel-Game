@@ -277,6 +277,9 @@ class SpriteRenderer():
     def getCurrentLayer(self):
         return self.currentLayer
 
+    def getCurrentLayerString(self):
+        return "layer " + str(self.currentLayer)
+
     def getPersonHolderClickManager(self):
         return self.personHolderClickManager
 
@@ -428,7 +431,7 @@ class SpriteRenderer():
                     * self.game.renderer.getScale()))).convert()
 
             lineSurface = (
-                self.getGridLayer("layer " + str(self.currentLayer))
+                self.getGridLayer(self.getCurrentLayerString())
                 .getLineSurface())
             self.pausedSurface.blit(lineSurface, (0, 0))
 
@@ -597,7 +600,7 @@ class SpriteRenderer():
             self.gridLayer3.getPeople())
 
         currentLayerPeople = self.getGridLayer(
-            "layer " + str(self.currentLayer)).getPeople()
+            self.getCurrentLayerString()).getPeople()
 
         for person in totalPeople:
             if person in currentLayerPeople or self.currentLayer == 4:
@@ -611,7 +614,7 @@ class SpriteRenderer():
         totalNodes = self.getAllNodes()
 
         for node in totalNodes:
-            if (node.getConnectionType() == "layer " + str(self.currentLayer)
+            if (node.getConnectionType() == self.getCurrentLayerString()
                     or self.currentLayer == 4):
                 # Always want every person holder to be clickable
                 # on the top layer

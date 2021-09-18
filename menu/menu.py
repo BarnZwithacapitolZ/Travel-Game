@@ -1746,8 +1746,7 @@ class EditorHud(GameHudLayout):
 
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
-            self.currentLayer.setText(
-                "layer " + str(self.mapEditor.getCurrentLayer()))
+            self.currentLayer.setText(self.mapEditor.getCurrentLayerString())
 
     def closeDropdowns(self):
         # we always want to disable text inputs when we close the menus
@@ -1787,8 +1786,9 @@ class EditorHud(GameHudLayout):
         run = Label(
             self, "Run", 25, WHITE, (self.runLocation, self.textY), BLACK)
 
-        self.currentLayer = Label(self, "layer " + str(
-            self.mapEditor.getCurrentLayer()), 25, WHITE, (0, 0), BLACK)
+        self.currentLayer = Label(
+            self, self.mapEditor.getCurrentLayerString(), 25, WHITE, (0, 0),
+            BLACK)
         self.currentLayer.setPos((
             config["graphics"]["displayWidth"] - self.fileLocation
             - self.currentLayer.getFontSize()[0], self.textY))

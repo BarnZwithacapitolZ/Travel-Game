@@ -305,7 +305,7 @@ class Person(pygame.sprite.Sprite):
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
 
-        if ("layer " + str(self.spriteRenderer.getCurrentLayer())
+        if (self.spriteRenderer.getCurrentLayerString()
                 == self.currentConnectionType):
             self.spriteRenderer.resetPeopleClicks()
 
