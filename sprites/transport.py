@@ -7,8 +7,16 @@ import node as NODE
 import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
+from enum import Enum
 
 vec = pygame.math.Vector2
+
+
+class TransportType(Enum):
+    METRO = "metro"
+    BUS = "bus"
+    TRAM = "tram"
+    TAXI = "taxi"
 
 
 class Transport(pygame.sprite.Sprite):
@@ -34,6 +42,8 @@ class Transport(pygame.sprite.Sprite):
 
         self.speed = float(decimal.Decimal(random.randrange(50, 60)))
         # self.speed = float(decimal.Decimal(random.randrange(55, 65)))
+
+        self.type = TransportType.METRO
 
         self.mouseOver = False
         self.dirty = True
@@ -682,7 +692,8 @@ class Taxi(Transport):
 
     # Check if the person travelling on the taxi wants to leave the taxi
     def checkPersonStop(self, node):
-        if len(self.people) <= 0:
+        # People can't get off at no walk nodes
+        if len(self.people) <= 0 or isinstance(node, NODE.NoWalkNode):
             return False
 
         for person in self.people:
@@ -829,6 +840,23 @@ class Taxi(Transport):
                 * self.spriteRenderer.getFixedScale())
 
 
+class EditorTransport(Transport):
+    def __init__(
+            self, spriteRenderer, groups, currentConnection, running,
+            clickManager, personClickManager):
+        super().__init__(
+            spriteRenderer, groups, currentConnection, running, clickManager,
+            personClickManager)
+        self.width = 20
+        self.height = 20
+
+        self.offset = vec(
+            -(self.currentNode.width / 2), -(self.currentNode.height / 2))
+        self.pos = (
+            self.currentConnection.getFrom().pos
+            - self.currentConnection.getFrom().offset) + self.offset
+
+
 class Bus(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
@@ -838,6 +866,18 @@ class Bus(Transport):
             personClickManager)
         self.imageName = "bus"
         self.stopType = (NODE.BusStop, NODE.Destination)
+
+
+class EditorBus(EditorTransport, Bus):
+    def __init__(
+            self, spriteRenderer, groups, currentConnection, running,
+            clickManager, personClickManager):
+        Bus.__init__(
+            self, spriteRenderer, groups, currentConnection, running,
+            clickManager, personClickManager)
+        EditorTransport.__init__(
+            self, spriteRenderer, groups, currentConnection, running,
+            clickManager, personClickManager)
 
 
 class Tram(Transport):
@@ -851,6 +891,12 @@ class Tram(Transport):
         self.stopType = (NODE.TramStop, NODE.Destination)
 
 
+class EditorTram(EditorTransport, Tram):
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        Tram.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
+        EditorTransport.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
+
+
 class Metro(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
@@ -858,3 +904,9 @@ class Metro(Transport):
         super().__init__(
             spriteRenderer, groups, currentConnection, running, clickManager,
             personClickManager)
+
+
+class EditorMetro(EditorTransport, Metro):
+    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
+        Metro.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
+        EditorTransport.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)

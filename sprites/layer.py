@@ -132,17 +132,20 @@ class Layer():
         return p
 
     # Create the connections by drawing them to the screen
-    def createConnections(self):
+    def createConnections(self, connections=None):
         connections = (
-            self.grid.getTempConnections() + self.grid.getConnections())
+            self.grid.getTempConnections() + self.grid.getConnections()
+            if connections is None else connections)
         self.lines = []
 
         for connection in connections:
             if connection.getDraw():
+                # Center "main" line
                 self.createLines(
                     connection.getColor(), connection.getFrom(),
                     connection.getTo(), 10, 10)
 
+                # Outer "border" lines
                 if connection.getSideColor() is not None:
                     self.createLines(
                         connection.getSideColor(), connection.getFrom(),
