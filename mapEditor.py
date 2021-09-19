@@ -25,6 +25,7 @@ class MapEditor(SpriteRenderer):
         self.levelChanges = []
         self.poppedLevelChanges = []
         self.allowEdits = True
+        self.showTransport = True
 
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
@@ -38,6 +39,9 @@ class MapEditor(SpriteRenderer):
 
     def getAllowEdits(self):
         return self.allowEdits
+
+    def getShowTransport(self):
+        return self.showTransport
 
     def getClickManager(self):
         return self.clickManager
@@ -53,6 +57,9 @@ class MapEditor(SpriteRenderer):
 
     def setAllowEdits(self, allowEdits):
         self.allowEdits = allowEdits
+
+    def setShowTransport(self, showTransport):
+        self.showTransport = showTransport
 
     def undoChange(self):
         if self.rendering:
@@ -181,9 +188,10 @@ class MapEditor(SpriteRenderer):
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # Add the transport not running (so it doesnt move)
-        self.gridLayer1.grid.loadTransport("layer 1", False)
-        self.gridLayer2.grid.loadTransport("layer 2", False)
-        self.gridLayer3.grid.loadTransport("layer 3", False)
+        if self.showTransport:
+            self.gridLayer1.grid.loadTransport("layer 1", False)
+            self.gridLayer2.grid.loadTransport("layer 2", False)
+            self.gridLayer3.grid.loadTransport("layer 3", False)
 
         self.removeDuplicates()
 

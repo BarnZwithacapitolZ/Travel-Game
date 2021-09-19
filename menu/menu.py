@@ -1740,7 +1740,8 @@ class EditorHud(GameHudLayout):
         # Locations of each option
         self.fileLocation = 25
         self.editLocation = self.fileLocation + 75  # 90
-        self.addLocation = self.editLocation + 75  # 90
+        self.viewLocation = self.editLocation + 75
+        self.addLocation = self.viewLocation + 75  # 90
         self.deleteLocation = self.addLocation + 65  # 170
         self.runLocation = self.deleteLocation + 100  # 280
 
@@ -1758,6 +1759,7 @@ class EditorHud(GameHudLayout):
         self.open = True
         self.fileDropdownOpen = False
         self.editDropdownOpen = False
+        self.viewDropdownOpen = False
         self.addDropdownOpen = False
         self.deleteDropdownOpen = False
         self.mapEditor.setAllowEdits(True)
@@ -1772,7 +1774,11 @@ class EditorHud(GameHudLayout):
         # Edit the map type, size, color etc.
         edit = Label(
             self, "Edit", 25, WHITE, (self.editLocation, self.textY), BLACK)
-        self.addLocation = edit.getRightX() + self.padX
+        self.viewLocation = edit.getRightX() + self.padX
+        # Toggle different layers and transport, nodes on and off
+        view = Label(
+            self, "View", 25, WHITE, (self.viewLocation, self.textY), BLACK)
+        self.addLocation = view.getRightX() + self.padX
         # Add stuff to the map
         add = Label(
             self, "Add", 25, WHITE, (self.addLocation, self.textY), BLACK)
@@ -1805,11 +1811,12 @@ class EditorHud(GameHudLayout):
 
         fileSelect.addEvent(hf.toggleFileDropdown, 'onMouseClick')
         edit.addEvent(hf.toggleEditDropdown, 'onMouseClick')
+        view.addEvent(hf.toggleViewDropdown, 'onMouseClick')
         add.addEvent(hf.toggleAddDropdown, 'onMouseClick')
         delete.addEvent(hf.toggleDeleteDropdown, 'onMouseClick')
         run.addEvent(hf.runMap, 'onMouseClick')
 
-        labels = [fileSelect, edit, add, delete, run]
+        labels = [fileSelect, edit, view, add, delete, run]
         for label in labels:
             label.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             label.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -2045,6 +2052,67 @@ class EditorHud(GameHudLayout):
         self.add(downArrow)
         self.add(confirm)
         self.add(cancel)
+
+    def viewDropdown(self):
+        self.open = True
+        self.viewDropdownOpen = True
+
+        currentLayer = self.mapEditor.getCurrentLayer()
+        transportSelected = self.mapEditor.getShowTransport()
+        layer1Selected = True if currentLayer == 1 else False
+        layer2Selected = True if currentLayer == 2 else False
+        layer3Selected = True if currentLayer == 3 else False
+        layer4Selected = True if currentLayer == 4 else False
+
+        textX = self.viewLocation + self.padX
+
+        # Toggle show the transport on or off
+        transport = Label(
+            self, ("- " if transportSelected else "") + "Transport", 25,
+            GREEN if transportSelected else WHITE,
+            (textX, self.topBarHeight + self.topPadY), BLACK)
+        # Show layer 1
+        layer1 = Label(
+            self, ("- " if layer1Selected else "") + "Layer 1", 25,
+            GREEN if layer1Selected else WHITE,
+            (textX, transport.getBottomY() + self.padY), BLACK)
+        # Show layer 2
+        layer2 = Label(
+            self, ("- " if layer2Selected else "") + "Layer 2", 25,
+            GREEN if layer2Selected else WHITE,
+            (textX, layer1.getBottomY() + self.padY), BLACK)
+        # Show layer 3
+        layer3 = Label(
+            self, ("- " if layer3Selected else "") + "Layer 3", 25,
+            GREEN if layer3Selected else WHITE,
+            (textX, layer2.getBottomY() + self.padY), BLACK)
+        # Show layer 4
+        layer4 = Label(
+            self, ("- " if layer4Selected else "") + "Layer 4", 25,
+            GREEN if layer4Selected else WHITE,
+            (textX, layer3.getBottomY() + self.padY), BLACK)
+        box = Rectangle(
+            self, BLACK, (
+                self.boxWidth,
+                layer4.getBottomY() + self.padY - self.topBarHeight),
+            (self.viewLocation, self.topBarHeight), 0, [0, 0, 10, 10])
+
+        transport.addEvent(hf.toggleTransport, 'onMouseClick')
+        layer1.addEvent(hf.changeEditorLayer, 'onMouseClick', current=1)
+        layer2.addEvent(hf.changeEditorLayer, 'onMouseClick', current=2)
+        layer3.addEvent(hf.changeEditorLayer, 'onMouseClick', current=3)
+        layer4.addEvent(hf.changeEditorLayer, 'onMouseClick', current=4)
+
+        self.add(box)
+        labels = [
+            (transport, transportSelected), (layer1, layer1Selected),
+            (layer2, layer2Selected), (layer3, layer3Selected),
+            (layer4, layer4Selected)]
+        for label in labels:
+            if not label[1]:
+                label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+                label[0].addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+            self.add(label[0])
 
     def addDropdown(self):
         self.open = True

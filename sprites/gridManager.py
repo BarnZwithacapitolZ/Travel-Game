@@ -6,7 +6,7 @@ from node import (
     Airport, Office, House, Destination,
     EditorAirport, EditorOffice, EditorHouse, NodeType)
 from connection import Connection
-from transport import Metro, Bus, Tram, Taxi, EditorBus, EditorTram, EditorMetro
+from transport import Metro, Bus, Tram, Taxi
 
 
 class GridManager:
@@ -48,12 +48,6 @@ class GridManager:
             "metro": Metro,
             "bus": Bus,
             "tram": Tram,
-            "taxi": Taxi
-        }
-        self.editorTransportMappings = {
-            "metro": EditorMetro,
-            "bus": EditorBus,
-            "tram": EditorTram,
             "taxi": Taxi
         }
         self.stopMappings = {
@@ -410,11 +404,7 @@ class GridManager:
                 connection = possibleConnections[
                     random.randint(0, len(possibleConnections) - 1)]
 
-                mappings = (
-                    self.transportMappings if running
-                    else self.editorTransportMappings)
-
-                t = mappings[transport["type"]](
+                t = self.transportMappings[transport["type"]](
                     self.spriteRenderer, self.groups, connection, running,
                     self.spriteRenderer.getTransportClickManager(),
                     self.spriteRenderer.getPersonClickManager())

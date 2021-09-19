@@ -91,11 +91,13 @@ def deleteMap(obj, menu, event):
         closeMapEditor(obj, menu, event)
 
 
-def changeEditorLayer(obj, menu, event):
-    current = menu.mapEditor.getCurrentLayer()
-    current += 1 if current < 4 else -3
+def changeEditorLayer(obj, menu, event, current=False):
+    if not current:
+        current = menu.mapEditor.getCurrentLayer()
+        current += 1 if current < 4 else -3
     menu.mapEditor.showLayer(current)
     menu.updateLayerText()
+    gf.clearMenu(obj, menu)
 
 
 def loadEditorMap(obj, menu, event):
@@ -108,6 +110,15 @@ def toggleEditDropdown(obj, menu, event):
     if not menu.editDropdownOpen:
         gf.clearMenu(obj, menu)
         menu.editDropdown()
+
+    else:
+        gf.clearMenu(obj, menu)
+
+
+def toggleViewDropdown(obj, menu, event):
+    if not menu.viewDropdownOpen:
+        gf.clearMenu(obj, menu)
+        menu.viewDropdown()
 
     else:
         gf.clearMenu(obj, menu)
@@ -213,6 +224,14 @@ def toggleTotalToCompleteBox(obj, menu, event):
         menu.game.textHandler.setActive(False)
         gf.clearMenu(obj, menu)
         menu.editDropdown()
+
+
+def toggleTransport(obj, menu, event):
+    menu.mapEditor.setShowTransport(not menu.mapEditor.getShowTransport())
+    level = menu.mapEditor.getLevelData()
+    layer = menu.mapEditor.getCurrentLayer()
+    menu.mapEditor.createLevel(level, layer=layer)
+    gf.clearMenu(obj, menu)
 
 
 def saveMap(obj, menu, event):

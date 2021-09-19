@@ -840,23 +840,6 @@ class Taxi(Transport):
                 * self.spriteRenderer.getFixedScale())
 
 
-class EditorTransport(Transport):
-    def __init__(
-            self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
-        super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManager,
-            personClickManager)
-        self.width = 20
-        self.height = 20
-
-        self.offset = vec(
-            -(self.currentNode.width / 2), -(self.currentNode.height / 2))
-        self.pos = (
-            self.currentConnection.getFrom().pos
-            - self.currentConnection.getFrom().offset) + self.offset
-
-
 class Bus(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
@@ -866,18 +849,6 @@ class Bus(Transport):
             personClickManager)
         self.imageName = "bus"
         self.stopType = (NODE.BusStop, NODE.Destination)
-
-
-class EditorBus(EditorTransport, Bus):
-    def __init__(
-            self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
-        Bus.__init__(
-            self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager)
-        EditorTransport.__init__(
-            self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager)
 
 
 class Tram(Transport):
@@ -891,12 +862,6 @@ class Tram(Transport):
         self.stopType = (NODE.TramStop, NODE.Destination)
 
 
-class EditorTram(EditorTransport, Tram):
-    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
-        Tram.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
-        EditorTransport.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
-
-
 class Metro(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
@@ -904,9 +869,3 @@ class Metro(Transport):
         super().__init__(
             spriteRenderer, groups, currentConnection, running, clickManager,
             personClickManager)
-
-
-class EditorMetro(EditorTransport, Metro):
-    def __init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager):
-        Metro.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
-        EditorTransport.__init__(self, spriteRenderer, groups, currentConnection, running, clickManager, personClickManager)
