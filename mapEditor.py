@@ -98,7 +98,8 @@ class MapEditor(SpriteRenderer):
         self.levelData["connections"][layer] = newConnections
 
     def translateNodes(self, nodeType, layer, oldMapPos, newMapPos):
-        if layer not in self.levelData[nodeType]:
+        if (nodeType not in self.levelData
+                or layer not in self.levelData[nodeType]):
             return
 
         for key, node in list(enumerate(self.levelData[nodeType][layer])):
@@ -159,8 +160,19 @@ class MapEditor(SpriteRenderer):
             backgroundColor = [
                 backgroundColor[0], backgroundColor[1], backgroundColor[2]]
 
-        self.levelData['backgrounds']["layer " + str(layer)] = backgroundColor
-        self.levelData['backgrounds']['darkMode'] = darkMode
+        # Make sure the background data exists and if not add it in
+        if ("backgrounds" in self.levelData
+                and "layer " + str(layer) in self.levelData['backgrounds']):
+            self.levelData['backgrounds'][
+                "layer " + str(layer)] = backgroundColor
+            self.levelData['backgrounds']['darkMode'] = darkMode
+
+        else:
+            self.levelData['backgrounds'] = {
+                "layer " + str(layer): backgroundColor,
+                "darkMode": darkMode
+            }
+
         self.addChange()
 
     # Returns true if dropdowns have been closed, false otherwise
@@ -368,8 +380,15 @@ class MapEditor(SpriteRenderer):
 
             # Add the node to the data, or if the connection type doesn't exist
             # set its default to the empty list (for adding to later)
-            self.levelData[nodeType].setdefault(connectionType, []).append({
-                "location": node.getNumber(), "type": str(key)})
+            if nodeType in self.levelData:
+                self.levelData[nodeType].setdefault(connectionType, []).append({
+                    "location": node.getNumber(), "type": str(key)})
+
+            else:
+                self.levelData[nodeType] = {connectionType: [{
+                    "location": node.getNumber(),
+                    "type": str(key)
+                }]}
 
         if addChange:
             self.addChange()

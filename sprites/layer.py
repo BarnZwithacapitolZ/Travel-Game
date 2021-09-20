@@ -2,7 +2,7 @@ import pygame
 import pygame.gfxdraw
 import random
 import math
-from config import config, CREAM
+from config import config, DEFAULTBACKGROUND
 from gridManager import GridManager
 from person import Person, Manager, Commuter
 
@@ -34,7 +34,7 @@ class Layer():
 
         self.number = 1
 
-        self.loadBackgroundColor(CREAM)
+        self.loadBackgroundColor(DEFAULTBACKGROUND)
 
         self.lineSurface = pygame.Surface((
             int(config["graphics"]["displayWidth"]

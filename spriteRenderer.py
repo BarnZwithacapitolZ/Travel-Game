@@ -1,6 +1,6 @@
 import pygame
 import random
-from config import config, dump, DEFAULTLIVES, CREAM
+from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND
 from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
@@ -79,10 +79,10 @@ class SpriteRenderer():
             "score": 0,
             "completion": {"total": 10, "completed": False, "time": 0},
             "backgrounds": {
-                "layer 1": CREAM,  # Default color: CREAM :)
-                "layer 2": CREAM,
-                "layer 3": CREAM,
-                "layer 4": CREAM
+                "layer 1": DEFAULTBACKGROUND,  # Default color: CREAM :)
+                "layer 2": DEFAULTBACKGROUND,
+                "layer 3": DEFAULTBACKGROUND,
+                "layer 4": DEFAULTBACKGROUND
             },
             "connections": {},
             "transport": {},

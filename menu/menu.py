@@ -1,7 +1,7 @@
 import pygame
 from config import (
     config, BLACK, TRUEBLACK, WHITE, GREY, GREEN, CREAM, YELLOW, dump,
-    BACKGROUNDCOLORS)
+    BACKGROUNDCOLORS, DEFAULTBACKGROUND)
 import generalFunctions as gf
 import menuFunctions as mf
 import hudFunctions as hf
@@ -1964,8 +1964,14 @@ class EditorHud(GameHudLayout):
         textX = boxX + self.padX
 
         currentLayer = self.mapEditor.getCurrentLayer()
-        currentBackground = self.mapEditor.getLevelData()["backgrounds"][
-            "layer " + str(currentLayer)]
+        levelData = self.mapEditor.getLevelData()
+
+        currentBackground = DEFAULTBACKGROUND  # Default
+        # Check the background data actually exists in the map
+        if ("backgrounds" in levelData
+                and "layer " + str(currentLayer) in levelData["backgrounds"]):
+            currentBackground = self.mapEditor.getLevelData()["backgrounds"][
+                "layer " + str(currentLayer)]
 
         y = self.background.y + self.padY
         backgrounds = []
