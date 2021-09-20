@@ -301,10 +301,10 @@ class MapEditor(SpriteRenderer):
 
             # Only add the new connections to the nodes
             layer.addTempConnections(newConnections)
-            layer.createConnections()
+            layer.createTempConnections(newConnections, False)
 
         # Add the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.addLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
     def createConnection(self, connectionType, startNode, endNode):
@@ -328,6 +328,8 @@ class MapEditor(SpriteRenderer):
                 self.levelData["connections"][connectionType].append(
                     connection)
 
+        self.gridLayer4.addLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
         self.addChange()
 
     def addTransport(self, connectionType, connection):
@@ -438,10 +440,10 @@ class MapEditor(SpriteRenderer):
 
         layer.removeTempConnections()
         layer.getGrid().removeTempConnections()
-        layer.createConnections()
+        layer.createTempConnections()
 
         # remove the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.addLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
     def updateConnection(self, layer, group):

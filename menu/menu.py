@@ -114,7 +114,6 @@ class Menu:
                             self.clickButton()
                             self.game.clickManager.setClicked(False)
                             e['function'](component, self, e, **e['kwargs'])
-                            # component.dirty = True
 
                     if e['event'] == 'onMouseLongClick':
                         if (component.rect.collidepoint((mx, my))
@@ -205,6 +204,7 @@ class Menu:
     def updateLoadingScreen(self):
         if self.loadingImage.getImageName() == "loading1":
             self.loadingImage.setImageName("loading2")
+
         else:
             self.loadingImage.setImageName("loading1")
         self.loadingImage.dirty = True
@@ -1748,6 +1748,7 @@ class EditorHud(GameHudLayout):
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
             self.currentLayer.setText(self.mapEditor.getCurrentLayerString())
+            self.currentLayer.dirty = True
 
     def closeDropdowns(self):
         # we always want to disable text inputs when we close the menus
@@ -2056,6 +2057,7 @@ class EditorHud(GameHudLayout):
     def viewDropdown(self):
         self.open = True
         self.viewDropdownOpen = True
+        self.mapEditor.setAllowEdits(False)
 
         currentLayer = self.mapEditor.getCurrentLayer()
         transportSelected = self.mapEditor.getShowTransport()

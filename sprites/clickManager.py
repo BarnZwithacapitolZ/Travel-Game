@@ -519,13 +519,15 @@ class EditorClickManager(ClickManager):
         # Remove any stops and transports from nodes with no connections
         if len(fromNode.getConnections()) <= 0:
             self.deleteTransport(fromNode)
-            self.deleteStop(fromNode)
-            self.deleteDestination(fromNode)
+            self.deleteNode(fromNode, NODE.Stop, "stops")
+            self.deleteNode(fromNode, NODE.Destination, "destinations")
+            self.deleteNode(fromNode, NODE.NoWalkNode, "specials")
 
         if len(toNode.getConnections()) <= 0:
             self.deleteTransport(toNode)
-            self.deleteStop(toNode)
-            self.deleteDestination(toNode)
+            self.deleteNode(toNode, NODE.Stop, "stops")
+            self.deleteNode(toNode, NODE.Destination, "destinations")
+            self.deleteNode(toNode, NODE.NoWalkNode, "specials")
 
     def deleteTransport(self, node):
         # Check that there is a transportation to delete

@@ -28,12 +28,19 @@ class Layer():
 
         self.components = []
         self.lines = []
+        self.tempLines = []
         self.previousPeopleTypes = []
         self.people = []
 
         self.number = 1
 
         self.loadBackgroundColor(CREAM)
+
+        self.lineSurface = pygame.Surface((
+            int(config["graphics"]["displayWidth"]
+                * self.game.renderer.getScale()),
+            int(config["graphics"]["displayHeight"]
+                * self.game.renderer.getScale()))).convert()
 
     # Get the grid of the layer
     def getGrid(self):
@@ -44,6 +51,9 @@ class Layer():
 
     def getLines(self):
         return self.lines
+
+    def getTempLines(self):
+        return self.tempLines
 
     def getLineSurface(self):
         if hasattr(self, 'lineSurface'):
@@ -131,33 +141,51 @@ class Layer():
 
         return p
 
-    # Create the connections by drawing them to the screen
-    def createConnections(self, connections=None):
-        connections = (
-            self.grid.getTempConnections() + self.grid.getConnections()
-            if connections is None else connections)
-        self.lines = []
+    def createConnectionLines(self, connections, lines):
+        if len(connections) <= 0:
+            return
 
         for connection in connections:
             if connection.getDraw():
                 # Center "main" line
                 self.createLines(
-                    connection.getColor(), connection.getFrom(),
+                    lines, connection.getColor(), connection.getFrom(),
                     connection.getTo(), 10, 10)
 
                 # Outer "border" lines
                 if connection.getSideColor() is not None:
                     self.createLines(
-                        connection.getSideColor(), connection.getFrom(),
-                        connection.getTo(), 3, 6)
+                        lines, connection.getSideColor(),
+                        connection.getFrom(), connection.getTo(), 3, 6)
                     self.createLines(
-                        connection.getSideColor(), connection.getFrom(),
-                        connection.getTo(), 3, 14)
+                        lines, connection.getSideColor(),
+                        connection.getFrom(), connection.getTo(), 3, 14)
 
+    # Create the connections by drawing them to the screen
+    def createConnections(self, connections=None, reset=True):
+        connections = (
+            self.grid.getConnections()
+            if connections is None else connections)
+
+        if reset:
+            self.lines = []
+
+        self.createConnectionLines(connections, self.lines)
+        self.render()
+
+    def createTempConnections(self, connections=None, reset=True):
+        connections = (
+            self.grid.getTempConnections()
+            if connections is None else connections)
+
+        if reset:
+            self.tempLines = []
+
+        self.createConnectionLines(connections, self.tempLines)
         self.render()
 
     # Word out the x and y of each connection and append it to the list
-    def createLines(self, color, fromNode, toNode, thickness, offset):
+    def createLines(self, lines, color, fromNode, toNode, thickness, offset):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
@@ -181,7 +209,7 @@ class Layer():
         posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
         posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
 
-        self.lines.append({
+        lines.append({
             "posx": posx,
             "posy": posy,
             "color": color,
@@ -192,6 +220,13 @@ class Layer():
         # resize all the layer components
         for component in self.components:
             component.dirty = True
+
+        # Scale the line surface then draw the scaled lines to that surface
+        self.lineSurface = pygame.Surface((
+            int(config["graphics"]["displayWidth"]
+                * self.game.renderer.getScale()),
+            int(config["graphics"]["displayHeight"]
+                * self.game.renderer.getScale()))).convert()
         self.createConnections()
 
     def loadBackgroundColor(self, default):
@@ -206,21 +241,17 @@ class Layer():
             self.backgroundColor = default
 
     def render(self, nodes=None):
-        self.lineSurface = pygame.Surface((
-            int(config["graphics"]["displayWidth"]
-                * self.game.renderer.getScale()),
-            int(config["graphics"]["displayHeight"]
-                * self.game.renderer.getScale()))).convert()
-
         self.lineSurface.fill(self.backgroundColor)
 
-        for component in self.components:
-            component.draw(self.lineSurface)
+        if len(self.components) > 0:
+            for component in self.components:
+                component.draw(self.lineSurface)
 
-        for line in self.lines:
-            pygame.draw.line(
-                self.lineSurface, line["color"], line["posx"], line["posy"],
-                int(line["thickness"]))
+        if len(self.lines + self.tempLines) > 0:
+            for line in self.lines + self.tempLines:
+                pygame.draw.line(
+                    self.lineSurface, line["color"], line["posx"], line["posy"],
+                    int(line["thickness"]))
 
         if nodes is not None:
             for node in nodes:
@@ -229,7 +260,7 @@ class Layer():
                 self.lineSurface.blit(node.image, (node.rect))
 
     def draw(self):
-        if len(self.lines) > 0:
+        if len(self.lines + self.tempLines) > 0:
             self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
 
         else:
@@ -338,6 +369,13 @@ class EditorLayer4(Layer):
     def addLayerLines(self, layer1, layer2, layer3):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
         self.lines = lines
+        self.render()
+
+    def addLayerTempLines(self, layer1, layer2, layer3):
+        lines = (
+            layer1.getTempLines() + layer2.getTempLines()
+            + layer3.getTempLines())
+        self.tempLines = lines
         self.render()
 
 

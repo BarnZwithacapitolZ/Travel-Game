@@ -631,7 +631,9 @@ class SpriteRenderer():
         if "layer " + str(layer) in self.connectionTypes:
             self.currentLayer = layer
             # Redraw the nodes so that the mouse cant collide with them
-            self.resize()
+            for sprite in self.allSprites:
+                sprite.dirty = True
+
             self.hud.updateLayerText()
             self.resetPeopleClicks()
             self.resetPersonHolderClicks()
