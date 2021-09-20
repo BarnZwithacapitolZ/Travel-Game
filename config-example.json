@@ -319,23 +319,51 @@
                 "volume": 1.0
             },
             "swoopIn": {
-                "file": "game\\swoopIn.wav",
-                "volume": 0.7
+                "file": "ui\\navigation_transition-left.wav",
+                "volume": 1.0
             },
             "swoopOut": {
-                "file": "game\\swoopOut.wav",
-                "volume": 0.7
+                "file": "ui\\navigation_transition-right.wav",
+                "volume": 1.0
             },
             "bell": {
                 "file": "game\\Bell.wav",
                 "volume": 0.7
             },
+            "playerSpawn": {
+                "file": "ui\\alert_high-intensity.wav",
+                "volume": 1.0
+            },
+            "playerSuccess": {
+                "file": "ui\\notification_high-intensity.wav",
+                "volume": 1.0
+            },
+            "playerAlert": {
+                "file": "game\\alert_simple.wav",
+                "volume": 1.0
+            },
+            "uiStartSelect": {
+                "file": "ui\\navigation_backward-selection.wav",
+                "volume": 1.0
+            },
+            "uiFinishSelect": {
+                "file": "ui\\navigation_forward-selection.wav",
+                "volume": 1.0
+            },
             "uiError": {
-                "file": "ui\\UI-error.wav",
+                "file": "ui\\alert_error-02.wav",
                 "volume": 1.0
             },
             "uiSuccess": {
-                "file": "ui\\UI-success.wav",
+                "file": "ui\\notification_simple-01.wav",
+                "volume": 0.7
+            },
+            "uiCancel": {
+                "file": "ui\\navigation-cancel.wav",
+                "volume": 1.0
+            },
+            "uiUnavailable": {
+                "file": "ui\\navigation_unavailable-selection.wav",
                 "volume": 1.0
             },
             "success1": {

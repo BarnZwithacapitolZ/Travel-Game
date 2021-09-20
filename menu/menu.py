@@ -1579,8 +1579,9 @@ class GameHud(GameHudLayout):
         self.pause.setImageName(pauseImageSelected if selected else pauseImage)
         self.pause.clearEvents()
         self.pause.addEvent(
-            gf.hoverImage, 'onMouseOver', image=pauseImageSelected)
-        self.pause.addEvent(gf.hoverImage, 'onMouseOut', image=pauseImage)
+            hf.hoverOverHudButton, 'onMouseOver', image=pauseImageSelected)
+        self.pause.addEvent(
+            hf.hoverOutHudButton, 'onMouseOut', image=pauseImage)
         self.pause.addEvent(hf.pauseGame, 'onMouseClick')
         self.pause.dirty = True
 
@@ -1637,8 +1638,9 @@ class GameHud(GameHudLayout):
         self.fastForward.addEvent(hf.fastForwardGame, 'onMouseLongClick')
 
         self.restart.addEvent(
-            gf.hoverImage, 'onMouseOver', image=restartSelectedImage)
-        self.restart.addEvent(gf.hoverImage, 'onMouseOut', image=restartImage)
+            hf.hoverOverHudButton, 'onMouseOver', image=restartSelectedImage)
+        self.restart.addEvent(
+            hf.hoverOutHudButton, 'onMouseOut', image=restartImage)
         self.restart.addEvent(
             mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
                 self.spriteRenderer.getLevel()))
@@ -2018,8 +2020,14 @@ class EditorHud(GameHudLayout):
         inputBox = Rectangle(self, WHITE, (120, 50), (
             box.getRightX() - padCenterX - 120,
             box.getBottomY() - (height / 2) - 30))
+
+        levelData = self.mapEditor.getLevelData()
+        total = 8
+        if "total" in levelData:
+            total = levelData['total']
+
         self.total = Label(
-            self, self.mapEditor.getLevelData()['total'], 30, BLACK,
+            self, total, 30, BLACK,
             (inputBox.x + self.padX, inputBox.y + self.padY))
 
         upArrowBox = Rectangle(
@@ -2600,6 +2608,7 @@ class EditorHud(GameHudLayout):
     def confirmExitBox(self):
         self.open = True
         self.confirmExitBoxOpen = True
+        self.game.audioLoader.playSound("uiUnavailable", 1)
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240

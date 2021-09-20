@@ -124,7 +124,6 @@ class ClickManager:
                 # Add the child to the open list
                 openList.append(child)
 
-        self.game.audioLoader.playSound("uiError", 0)
         return []  # Return the empty path if route is impossible
 
 
@@ -284,6 +283,12 @@ class PersonClickManager(ClickManager):
                 # Create the path
                 path = self.pathFinding()
 
+                if len(path) > 0:
+                    self.game.audioLoader.playSound("uiFinishSelect", 2)
+
+                else:
+                    self.game.audioLoader.playSound("uiError", 0)
+
                 # Clear the players current path before assigning a new one
                 self.person.clearPath(path)
 
@@ -336,6 +341,12 @@ class TransportClickManager(ClickManager):
         if self.node is not None and self.transport is not None:
             # only set the path if the bus is moving
             path = self.pathFinding()
+
+            if len(path) > 0:
+                self.game.audioLoader.playSound("uiFinishSelect", 2)
+
+            else:
+                self.game.audioLoader.playSound("uiError", 0)
 
             self.transport.setFirstPathNode(path)
             self.transport.clearPath(path)
@@ -487,12 +498,21 @@ class EditorClickManager(ClickManager):
     def addTransport(self, node):
         # No connections to the node, we cant add any transport
         if len(node.getConnections()) > 0 and len(node.getTransports()) < 1:
+            self.game.audioLoader.playSound("uiSuccess", 1)
             self.game.mapEditor.addTransport(
                 node.getConnectionType(), node.getConnections()[0])
 
+        else:
+            self.game.audioLoader.playSound("uiError", 1)
+
     def addNode(self, node, nodeType):
-        if len(node.getConnections()) <= 0:
+        # TODO: add subtype values to nodes so we can compare subtype
+        if len(node.getConnections()) <= 0: # or node.getType().value == nodeType:
+            self.game.audioLoader.playSound("uiError", 1)
             return
+
+        self.game.audioLoader.playSound("uiSuccess", 1)
+
         # Its not a regular node, we want to swap the nodes instead of adding
         if not NODE.Node.checkRegularNode(node):
             self.game.mapEditor.swapNode(
@@ -506,6 +526,7 @@ class EditorClickManager(ClickManager):
     def deleteNode(self, node, instance, nodeType):
         if not isinstance(node, instance):
             return
+        self.game.audioLoader.playSound("uiCancel", 1)
         self.game.mapEditor.deleteNode(
             nodeType, node.getConnectionType(), node)
 
@@ -513,6 +534,7 @@ class EditorClickManager(ClickManager):
         fromNode = connection.getFrom()
         toNode = connection.getTo()
 
+        self.game.audioLoader.playSound("uiCancel", 1)
         self.game.mapEditor.deleteConnection(
             connection.getConnectionType(), connection)
 
@@ -531,8 +553,10 @@ class EditorClickManager(ClickManager):
 
     def deleteTransport(self, node):
         # Check that there is a transportation to delete
-        if len(node.getTransports()) >= 1:
-            self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
+        if len(node.getTransports()) < 1:
+            return
+        self.game.audioLoader.playSound("uiCancel", 1)
+        self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
 
 
 class ControlClickManager(ClickManager):

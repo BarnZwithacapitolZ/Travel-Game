@@ -448,10 +448,13 @@ class Transport(pygame.sprite.Sprite):
         mx -= difference[0]
         my -= difference[1]
 
+        # Click off event
         if (not self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()):
+                and self.game.clickManager.getClicked()
+                and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
             self.clickManager.setTransport(None)
 
+        # Click event
         if (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()):
             for person in self.currentNode.getPeople():
@@ -470,6 +473,8 @@ class Transport(pygame.sprite.Sprite):
             if holder is not None:
                 holder.closeHolder(True)
 
+            # Set the transport to be moved
+            self.game.audioLoader.playSound("uiStartSelect", 2)
             self.clickManager.setTransport(self)
             self.game.clickManager.setClicked(False)
 

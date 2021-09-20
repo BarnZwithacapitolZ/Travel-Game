@@ -381,8 +381,9 @@ class MapEditor(SpriteRenderer):
             # Add the node to the data, or if the connection type doesn't exist
             # set its default to the empty list (for adding to later)
             if nodeType in self.levelData:
-                self.levelData[nodeType].setdefault(connectionType, []).append({
-                    "location": node.getNumber(), "type": str(key)})
+                self.levelData[nodeType].setdefault(
+                    connectionType, []).append({
+                        "location": node.getNumber(), "type": str(key)})
 
             else:
                 self.levelData[nodeType] = {connectionType: [{

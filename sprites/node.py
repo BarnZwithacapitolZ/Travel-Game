@@ -326,9 +326,13 @@ class EditorNode(Node):
                     # If its the preview node we want to make it mouseover
                     # to change the image to the same as the node below it
                     node.mouseOver = True
-                    (self.clickManager.setStartNode(node)
-                        if self.clickManager.getStartNode() is None
-                        else self.clickManager.setEndNode(node))
+                    if self.clickManager.getStartNode() is None:
+                        self.clickManager.setStartNode(node)
+                        self.game.audioLoader.playSound("uiStartSelect", 2)
+
+                    else:
+                        self.clickManager.setEndNode(node)
+                        self.game.audioLoader.playSound("uiFinishSelect", 2)
 
                 # Add a transport
                 elif (self.clickManager.getClickType()

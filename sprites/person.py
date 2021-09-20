@@ -65,6 +65,7 @@ class Person(pygame.sprite.Sprite):
         self.travellingOn = None
 
         self.mouseOver = False
+        self.clicked = False
         self.canClick = True
         self.status = Person.Status.UNASSIGNED
 
@@ -75,7 +76,7 @@ class Person(pygame.sprite.Sprite):
         self.statusIndicator = StatusIndicator(self.game, self.groups, self)
 
         self.timer = random.randint(70, 100)
-        # self.timer = 5
+        self.timerReached = False
         self.rad = 5
         self.step = 15
 
@@ -149,7 +150,7 @@ class Person(pygame.sprite.Sprite):
             self.spriteRenderer.allSprites,
             self.spriteRenderer.entities), self)
 
-        self.game.audioLoader.playSound("bell", 1)
+        self.game.audioLoader.playSound("playerSpawn", 1)
 
     # Return the current status (Status) of the person
     def getStatus(self):
@@ -194,6 +195,9 @@ class Person(pygame.sprite.Sprite):
 
     def setCanClick(self, canClick):
         self.canClick = canClick
+
+    def setClicked(self, clicked):
+        self.clicked = clicked
 
     # Set the persons status
     def setStatus(self, status):
@@ -295,6 +299,7 @@ class Person(pygame.sprite.Sprite):
         self.path = []
 
     def complete(self):
+        self.game.audioLoader.playSound("playerSuccess", 1)
         self.spriteRenderer.addToCompleted()
         self.remove()
 
@@ -514,6 +519,9 @@ class Person(pygame.sprite.Sprite):
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
         if self.timer <= 20:
+            if not self.timerReached:
+                self.game.audioLoader.playSound("playerAlert", 1)
+            self.timerReached = True
             self.game.renderer.addSurface(None, None, self.drawTimer)
 
     def events(self):
@@ -550,9 +558,13 @@ class Person(pygame.sprite.Sprite):
             if (holder is not None and self not in holder.getPeople()):
                 holder.closeHolder(True)
 
+            # Set the person to be moved
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
+            self.game.audioLoader.playSound("uiStartSelect", 2)
 
+            # Don't let the user manipulate the players state
+            # if the game is paused
             if self.spriteRenderer.getPaused():
                 return
 
