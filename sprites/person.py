@@ -561,7 +561,6 @@ class Person(pygame.sprite.Sprite):
             # Set the person to be moved
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
-            self.game.audioLoader.playSound("uiStartSelect", 2)
 
             # Don't let the user manipulate the players state
             # if the game is paused
@@ -569,6 +568,7 @@ class Person(pygame.sprite.Sprite):
                 return
 
             if self.status == Person.Status.UNASSIGNED:
+                self.game.audioLoader.playSound("uiStartSelect", 2)
                 if (isinstance(self.currentNode, NODE.Stop)
                         or isinstance(self.currentNode, NODE.Destination)):
                     self.status = Person.Status.WAITING
@@ -583,21 +583,27 @@ class Person(pygame.sprite.Sprite):
                         or (isinstance(self.currentNode, NODE.Destination)
                             and self.currentNode.getConnectionType()
                             == "layer 2")):
+                    self.game.audioLoader.playSound("uiIncreaseSelect", 2)
                     self.status = Person.Status.FLAG
 
                 else:
+                    self.game.audioLoader.playSound("uiCancel", 2)
                     self.status = Person.Status.UNASSIGNED
 
             elif self.status == Person.Status.FLAG:
+                self.game.audioLoader.playSound("uiCancel", 2)
                 self.status = Person.Status.UNASSIGNED
 
             elif self.status == Person.Status.BOARDING:
+                self.game.audioLoader.playSound("uiCancel", 2)
                 self.status = Person.Status.UNASSIGNED
 
             elif self.status == Person.Status.MOVING:
+                self.game.audioLoader.playSound("uiStartSelect", 2)
                 self.status = Person.Status.DEPARTING
 
             elif self.status == Person.Status.DEPARTING:
+                self.game.audioLoader.playSound("uiStartSelect", 2)
                 self.status = Person.Status.MOVING
 
         # Hover over event
@@ -646,6 +652,7 @@ class Person(pygame.sprite.Sprite):
         self.timer -= self.game.dt * self.spriteRenderer.getDt()
 
         if self.timer <= 0:
+            self.game.audioLoader.playSound("playerFailure", 1)
             self.spriteRenderer.removeLife()
             self.remove()
 

@@ -101,6 +101,7 @@ def changeEditorLayer(obj, menu, event, current=False):
 
 
 def loadEditorMap(obj, menu, event):
+    menu.game.audioLoader.playSound("playerSuccess", 2)
     path = menu.game.mapLoader.getMap(obj.getText())
     menu.mapEditor.createLevel(path, clearChanges=True)
     gf.clearMenu(obj, menu)

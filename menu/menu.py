@@ -849,6 +849,8 @@ class OptionMenu(Menu):
                     y=-config["graphics"]["displayHeight"], callback=callback,
                     dirty=dirty)
 
+        self.game.audioLoader.playSound("swoopOut")
+
     def main(self, pausedSurface=True, transition=False):
         self.open = True
         # If we access through main we know its not from the main menu
@@ -912,6 +914,8 @@ class OptionMenu(Menu):
                 component.addAnimation(
                     tf.transitionY, 'onLoad', speed=40,
                     transitionDirection='down', y=y, callback=callback)
+
+            self.game.audioLoader.playSound("swoopIn")
 
     def options(self):
         self.open = True
@@ -1376,14 +1380,20 @@ class GameMenu(Menu):
         self.add(keyTextBackground)
         self.add(self.keyText)
         self.add(self.keyTextDifference)
-        self.add(levelSelect)
-        self.add(retry)
+
+        if transition and self.keyDifference <= 0:
+            self.add(levelSelect)
+            self.add(retry)
 
         if transition:
             def callback(obj, menu, y):
                 obj.y = y
+                menu.game.audioLoader.playSound("levelComplete", 1)
+
                 if menu.keyDifference > 0:
-                    menu.keyText.addAnimation(tf.increaseKeys, 'onLoad')
+                    menu.keyText.addAnimation(
+                        tf.increaseKeys, 'onLoad',
+                        levelSelectButton=levelSelect, retryButton=retry)
                     menu.keyTextDifference.addAnimation(
                         tf.decreaseKeys, 'onLoad')
 

@@ -141,7 +141,10 @@ def increaseTimer(
 
 
 # TODO: Put these into one function
-def increaseKeys(obj, menu, animation, x=1):
+def increaseKeys(obj, menu, animation, levelSelectButton, retryButton, x=1):
+    if menu.game.audioLoader.getChannelBusy():
+        return
+
     obj.timer += menu.game.dt
 
     if obj.timer > 0.2:
@@ -155,13 +158,21 @@ def increaseKeys(obj, menu, animation, x=1):
 
         if total >= config["player"]["keys"]:
             obj.removeAnimation(animation)
+            # Add the navigation buttons when the animation is complete
+            menu.add(levelSelectButton)
+            menu.add(retryButton)
 
         else:
             obj.removeAnimation(animation)
-            obj.addAnimation(increaseKeys, 'onLoad', x=x + 1)
+            obj.addAnimation(
+                increaseKeys, 'onLoad', levelSelectButton=levelSelectButton,
+                retryButton=retryButton, x=x + 1)
 
 
 def decreaseKeys(obj, menu, animation):
+    if menu.game.audioLoader.getChannelBusy():
+        return
+
     obj.timer += menu.game.dt
 
     if obj.timer > 0.2:
@@ -175,6 +186,9 @@ def decreaseKeys(obj, menu, animation):
 
 
 def increaseMeter(obj, menu, animation, fromAmount, toAmount):
+    if menu.game.audioLoader.getChannelBusy():
+        return
+
     obj.timer += menu.game.dt
 
     if obj.timer > 0.2:

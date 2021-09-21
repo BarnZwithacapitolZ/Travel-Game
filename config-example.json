@@ -308,7 +308,7 @@
             },
             "click2": {
                 "file": "ui\\Menu-Selection-Change-H.wav",
-                "volume": 1.0
+                "volume": 0.7
             },
             "slowIn": {
                 "file": "game\\slow-motion-in.wav",
@@ -326,10 +326,6 @@
                 "file": "ui\\navigation_transition-right.wav",
                 "volume": 1.0
             },
-            "bell": {
-                "file": "game\\Bell.wav",
-                "volume": 0.7
-            },
             "playerSpawn": {
                 "file": "ui\\alert_high-intensity.wav",
                 "volume": 1.0
@@ -338,12 +334,24 @@
                 "file": "ui\\notification_high-intensity.wav",
                 "volume": 1.0
             },
+            "playerFailure": {
+                "file": "game\\alert_error-01.wav",
+                "volume": 1.0
+            },
             "playerAlert": {
                 "file": "game\\alert_simple.wav",
                 "volume": 1.0
             },
+            "levelComplete": {
+                "file": "game\\notification_decorative-01.wav",
+                "volume": 1.0
+            },
             "uiStartSelect": {
                 "file": "ui\\navigation_backward-selection.wav",
+                "volume": 1.0
+            },
+            "uiIncreaseSelect": {
+                "file": "ui\\navigation_upwards-selection.wav",
                 "volume": 1.0
             },
             "uiFinishSelect": {
@@ -367,15 +375,15 @@
                 "volume": 1.0
             },
             "success1": {
-                "file": "game\\Success-1.wav",
+                "file": "ui\\notification_simple-01.wav",
                 "volume": 0.7
             },
             "success2": {
-                "file": "game\\Success-2.wav",
+                "file": "ui\\notification_simple-02.wav",
                 "volume": 0.7
             },
             "success3": {
-                "file": "game\\Success-3.wav",
+                "file": "ui\\notification_simple-03.wav",
                 "volume": 0.7
             },
             "expand": {

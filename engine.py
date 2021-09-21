@@ -255,6 +255,9 @@ class AudioLoader:
     def getSound(self, key):
         return self.sounds[key]
 
+    def getChannelBusy(self, chan=0):
+        return self.channels[chan].get_busy()
+
     def playSound(self, key, chan=0, loops=0):
         self.channels[chan].play(self.sounds[key], loops=loops)
 
