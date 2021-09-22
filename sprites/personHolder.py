@@ -73,6 +73,7 @@ class PersonHolder(pygame.sprite.Sprite):
         self.people.append(person)
 
         if len(self.people) > 1:
+            # Show the holder
             self.add(self.groups)
 
             # If the holder is already open we don't want to remove people

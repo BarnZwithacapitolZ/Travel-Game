@@ -542,7 +542,11 @@ class Person(pygame.sprite.Sprite):
 
         # Click event
         if (self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()):
+                and self.game.clickManager.getClicked()
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.currentNode.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)):
             if self.currentNode.getMouseOver():
                 return
 
@@ -567,7 +571,7 @@ class Person(pygame.sprite.Sprite):
             if self.spriteRenderer.getPaused():
                 return
 
-            if self.status == Person.Status.UNASSIGNED:
+            elif self.status == Person.Status.UNASSIGNED:
                 self.game.audioLoader.playSound("uiStartSelect", 2)
                 if (isinstance(self.currentNode, NODE.Stop)
                         or isinstance(self.currentNode, NODE.Destination)):
@@ -594,7 +598,8 @@ class Person(pygame.sprite.Sprite):
                 self.game.audioLoader.playSound("uiCancel", 2)
                 self.status = Person.Status.UNASSIGNED
 
-            elif self.status == Person.Status.BOARDING:
+            elif (self.status == Person.Status.BOARDING
+                    or self.status == Person.Status.BOARDINGTAXI):
                 self.game.audioLoader.playSound("uiCancel", 2)
                 self.status = Person.Status.UNASSIGNED
 
@@ -603,7 +608,7 @@ class Person(pygame.sprite.Sprite):
                 self.status = Person.Status.DEPARTING
 
             elif self.status == Person.Status.DEPARTING:
-                self.game.audioLoader.playSound("uiStartSelect", 2)
+                self.game.audioLoader.playSound("uiCancel", 2)
                 self.status = Person.Status.MOVING
 
         # Hover over event
@@ -772,23 +777,31 @@ class StatusIndicator(pygame.sprite.Sprite):
     def __render(self):
         self.dirty = False
 
-        self.image = self.game.imageLoader.getImage(
-            self.images[self.currentState], (
-                self.width * self.spriteRenderer.getFixedScale(),
-                self.height * self.spriteRenderer.getFixedScale()))
+        if self.images[self.currentState] is not None:
+            self.image = self.game.imageLoader.getImage(
+                self.images[self.currentState], (
+                    self.width * self.spriteRenderer.getFixedScale(),
+                    self.height * self.spriteRenderer.getFixedScale()))
+            self.rect = self.image.get_rect()
 
-        self.rect = self.image.get_rect()
+        # If the image is none, we want to create a Rect so we can still move
+        # the status indicator, but set the image to the None attribute
+        else:
+            self.image = self.images[self.currentState]
+            self.rect = pygame.Rect(
+                0, 0,
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale())
 
         self.rect.topleft = (
             self.pos * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
     def makeSurface(self):
-        if self.images[self.currentState] is None:
-            return False
-
-        if self.dirty or self.image is None:
+        if self.dirty:
             self.__render()
+        if self.image is None:
+            return False
         return True
 
     def drawPaused(self, surface):

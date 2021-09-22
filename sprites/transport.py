@@ -456,7 +456,11 @@ class Transport(pygame.sprite.Sprite):
 
         # Click event
         if (self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()):
+                and self.game.clickManager.getClicked()
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.currentNode.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)):
             for person in self.currentNode.getPeople():
                 if person.getMouseOver():
                     return
