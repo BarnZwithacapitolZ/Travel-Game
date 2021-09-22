@@ -1541,18 +1541,18 @@ class GameHud(GameHudLayout):
             tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
             x=self.hudX, callback=callbackX)
 
-        self.completed.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY, callback=callbackY)
-        self.completedAmount.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY + 13, callback=callbackY)
         self.lives.addAnimation(
             tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY - 4, callback=callbackY)
+            y=self.hudY, callback=callbackY)
+        self.completed.addAnimation(
+            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
+            y=self.hudY + 4, callback=callbackY)
+        self.completedAmount.addAnimation(
+            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
+            y=self.hudY + 17, callback=callbackY)
         self.slowDownMeter.addAnimation(
             tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY + 10, callback=callbackY)
+            y=self.hudY + 14, callback=callbackY)
 
     def slideRestartIn(self):
         self.restart.dirty = True  # Make sure its resized
@@ -1622,23 +1622,29 @@ class GameHud(GameHudLayout):
         self.fastForward = Image(
             self, fastForwardImage, (50, 50), (self.hudX - 100, 380))
 
-        self.slowDownMeter = Meter(
-            self, WHITE, self.textColor, GREEN, (meterWidth, 20),
-            (meterWidth, 20), (
-                config["graphics"]["displayWidth"] - (100 + meterWidth),
-                self.hudY + 10 - 100), 2)
-
-        self.completed = Timer(
-            self, self.textColor, YELLOW, 0,
-            self.spriteRenderer.getTotalToComplete(), (40, 40),
-            (config["graphics"]["displayWidth"] - 85, self.hudY - 100), 5)
+        # Show the total amount of lives the user has left
         self.lives = Timer(
             self, self.textColor, GREEN, 100,
-            self.spriteRenderer.getLives(), (48, 48),
-            (config["graphics"]["displayWidth"] - 89, self.hudY - 4 - 100), 5)
+            self.spriteRenderer.getLives(), (48, 48), (
+                config["graphics"]["displayWidth"] - (48 + self.hudX),
+                self.hudY - 104), 5)
+        # Show how many people have currently completed the map
+        self.completed = Timer(
+            self, self.textColor, YELLOW, 0,
+            self.spriteRenderer.getTotalToComplete(), (40, 40), (
+                config["graphics"]["displayWidth"] - (40 + self.hudX + 4),
+                self.hudY - 100), 5)
+        # Show the figure (Int) for how many people have completed the map
         self.completedAmount = Label(
             self, str(self.spriteRenderer.getCompleted()), 20,
             self.textColor, (self.completed.x + 14.5, self.completed.y + 13))
+
+        # TODO: do I want the slow down meter????
+        self.slowDownMeter = Meter(
+            self, WHITE, self.textColor, GREEN, (meterWidth, 20),
+            (meterWidth, 20), (config["graphics"]["displayWidth"] - (
+                meterWidth + self.lives.width + (self.hudX * 2)),
+                self.hudY + 10 - 100), 2)
 
         self.fastForward.addEvent(
             hf.hoverOverHudButton, 'onMouseOver',
@@ -2408,14 +2414,11 @@ class EditorHud(GameHudLayout):
         connectionSelected = (
             True if clickType == EditorClickManager.ClickType.DCONNECTION
             else False)
-        stopSelected = (
-            True if clickType == EditorClickManager.ClickType.DSTOP
-            else False)
         transportSelected = (
             True if clickType == EditorClickManager.ClickType.DTRANSPORT
             else False)
-        destinationSelected = (
-            True if clickType == EditorClickManager.ClickType.DDESTINATION
+        nodeSelected = (
+            True if clickType == EditorClickManager.ClickType.DNODE
             else False)
 
         textX = self.deleteLocation + self.padX
@@ -2425,36 +2428,31 @@ class EditorHud(GameHudLayout):
             self, ("- " if connectionSelected else "") + "Connection", 25,
             GREEN if connectionSelected else WHITE,
             (textX, self.topBarHeight + self.topPadY), BLACK)
-        # Delete a type of stop from the map
-        stop = Label(
-            self, ("- " if stopSelected else "") + "Stop", 25,
-            GREEN if stopSelected else WHITE,
-            (textX, connection.getBottomY() + self.padY), BLACK)
         # Delete a type of transport from the map
         transport = Label(
             self, ("- " if transportSelected else "") + "Transport", 25,
             GREEN if transportSelected else WHITE,
-            (textX, stop.getBottomY() + self.padY), BLACK)
-        # Delete a type of destination from the map
-        destination = Label(
-            self, ("- " if destinationSelected else "") + "Destination", 25,
-            GREEN if destinationSelected else WHITE,
+            (textX, connection.getBottomY() + self.padY), BLACK)
+        # Delete a type of node from the map
+        # stops, destination, specials etc.)
+        node = Label(
+            self, ("- " if nodeSelected else "") + "Node", 25,
+            GREEN if nodeSelected else WHITE,
             (textX, transport.getBottomY() + self.padY), BLACK)
         box = Rectangle(
             self, BLACK, (
                 self.boxWidth,
-                destination.getBottomY() + self.padY - self.topBarHeight),
+                node.getBottomY() + self.padY - self.topBarHeight),
             (self.deleteLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
         connection.addEvent(hf.deleteConnection, 'onMouseClick')
-        stop.addEvent(hf.deleteStop, 'onMouseClick')
         transport.addEvent(hf.deleteTransport, 'onMouseClick')
-        destination.addEvent(hf.deleteDestination, 'onMouseClick')
+        node.addEvent(hf.deleteNode, 'onMouseClick')
 
         self.add(box)
         labels = [
-            (connection, connectionSelected), (stop, stopSelected),
-            (transport, transportSelected), (destination, destinationSelected)]
+            (connection, connectionSelected), (transport, transportSelected),
+            (node, nodeSelected)]
         for label in labels:
             if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
@@ -2568,6 +2566,7 @@ class EditorHud(GameHudLayout):
     def saveBox(self):
         self.open = True
         self.saveBoxOpen = True
+        self.game.audioLoader.playSound("uiUnavailable", 1)
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240
@@ -2596,6 +2595,7 @@ class EditorHud(GameHudLayout):
     def confirmBox(self):
         self.open = True
         self.confirmBoxOpen = True
+        self.game.audioLoader.playSound("uiUnavailable", 1)
 
         width = config["graphics"]["displayWidth"] / 2
         height = 240

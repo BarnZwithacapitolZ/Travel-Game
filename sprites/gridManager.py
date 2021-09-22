@@ -7,6 +7,7 @@ from node import (
     EditorAirport, EditorOffice, EditorHouse, NodeType)
 from connection import Connection
 from transport import Metro, Bus, Tram, Taxi
+from config import DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT
 
 
 class GridManager:
@@ -24,13 +25,14 @@ class GridManager:
         self.transports = []
         self.destinations = []
 
-        self.width = 18
-        self.height = 10
+        self.width = DEFAULTBOARDWIDTH
+        self.height = DEFAULTBOARDHEIGHT
 
+        # Set the new width, height from the map data
         if self.level is not None:
             self.loadMap()
 
-        scale = min(18 / self.width, 10 / self.height)
+        scale = min(DEFAULTBOARDWIDTH / self.width, DEFAULTBOARDHEIGHT / self.height)
 
         # apply the starting fixed scale when first rendering
         scale += self.spriteRenderer.getStartingFixedScale()
@@ -38,10 +40,6 @@ class GridManager:
 
         self.nodePositions = self.setNodePositions(
             spacing[0], spacing[1], self.width, self.height)
-
-        # Entry nodes
-        self.entryTopPositions = self.setNodePositions(1.5, -0.5, 18, 1)
-        self.entryBottomPositions = self.setNodePositions(1.5, 11.5, 18, 1)
 
         # Mappings between name and the element being added to the map
         self.transportMappings = {
@@ -130,15 +128,20 @@ class GridManager:
 
     # Generate an 18 * 10 board of possible node positions
     # (x and y locations) for nodes to be added to
-    def setNodePositions(self, offx=1.5, offy=1.5, width=18, height=10):
+    def setNodePositions(
+            self, offx=1.5, offy=1.5, width=DEFAULTBOARDWIDTH,
+            height=DEFAULTBOARDHEIGHT):
         # Offset on the x coordinate
         # Offset on the y coordinate
         spacing = 50  # Spacing between each node
         positions = []
 
         scale = (
-            min(self.width / 18, self.height / 10)
-            if min(self.width / 18, self.height / 10) > 1 else 1)
+            min(self.width / DEFAULTBOARDHEIGHT,
+                self.height / DEFAULTBOARDHEIGHT)
+            if min(
+                self.width / DEFAULTBOARDWIDTH,
+                self.height / DEFAULTBOARDHEIGHT) > 1 else 1)
 
         for i in range(width):
             for x in range(height):

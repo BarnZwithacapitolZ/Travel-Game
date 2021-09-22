@@ -36,6 +36,9 @@ class Layer():
 
         self.loadBackgroundColor(DEFAULTBACKGROUND)
 
+        self.createLineSurface()
+
+    def createLineSurface(self):
         self.lineSurface = pygame.Surface((
             int(config["graphics"]["displayWidth"]
                 * self.game.renderer.getScale()),
@@ -222,11 +225,7 @@ class Layer():
             component.dirty = True
 
         # Scale the line surface then draw the scaled lines to that surface
-        self.lineSurface = pygame.Surface((
-            int(config["graphics"]["displayWidth"]
-                * self.game.renderer.getScale()),
-            int(config["graphics"]["displayHeight"]
-                * self.game.renderer.getScale()))).convert()
+        self.createLineSurface()
         self.createConnections()
 
     def loadBackgroundColor(self, default):

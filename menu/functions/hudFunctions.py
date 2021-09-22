@@ -511,15 +511,9 @@ def deleteConnection(obj, menu, event):
     gf.clearMenu(obj, menu)
 
 
-def deleteStop(obj, menu, event):
+def deleteNode(obj, menu, event):
     menu.mapEditor.getClickManager().setClickType(
-        EditorClickManager.ClickType.DSTOP)
-    gf.clearMenu(obj, menu)
-
-
-def deleteDestination(obj, menu, event):
-    menu.mapEditor.getClickManager().setClickType(
-        EditorClickManager.ClickType.DDESTINATION)
+        EditorClickManager.ClickType.DNODE)
     gf.clearMenu(obj, menu)
 
 

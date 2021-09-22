@@ -102,6 +102,7 @@ def loadLevel(obj, menu, event, level):
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
+            menu.game.paused = True
             menu.game.spriteRenderer.createLevel(levelName)
             menu.game.spriteRenderer.setRendering(True, True)  # Load the hud
             menu.levelSelectOpen = False

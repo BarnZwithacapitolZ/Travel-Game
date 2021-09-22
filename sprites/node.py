@@ -326,13 +326,9 @@ class EditorNode(Node):
                     # If its the preview node we want to make it mouseover
                     # to change the image to the same as the node below it
                     node.mouseOver = True
-                    if self.clickManager.getStartNode() is None:
-                        self.clickManager.setStartNode(node)
-                        self.game.audioLoader.playSound("uiStartSelect", 2)
-
-                    else:
-                        self.clickManager.setEndNode(node)
-                        self.game.audioLoader.playSound("uiFinishSelect", 2)
+                    (self.clickManager.setStartNode(node)
+                        if self.clickManager.getStartNode() is None
+                        else self.clickManager.setEndNode(node))
 
                 # Add a transport
                 elif (self.clickManager.getClickType()
@@ -363,26 +359,10 @@ class EditorNode(Node):
                         CLICKMANAGER.EditorClickManager.ClickType.DTRANSPORT):
                     self.clickManager.deleteTransport(node)
 
-                # Delete a stop
+                # Delete a Node type (stops, destinations, special etc.)
                 elif (self.clickManager.getClickType()
-                        == CLICKMANAGER.EditorClickManager.ClickType.DSTOP):
-                    self.clickManager.deleteNode(
-                        node, Stop, NodeType.STOP.value)
-
-                # Delete a destination
-                elif (self.clickManager.getClickType()
-                        ==
-                        (CLICKMANAGER.EditorClickManager.ClickType
-                            .DDESTINATION)):
-                    self.clickManager.deleteNode(
-                        node, Destination, NodeType.DESTINATION.value)
-
-                # Delete a special node type
-                elif (self.clickManager.getClickType()
-                        ==
-                        CLICKMANAGER.EditorClickManager.ClickType.DSPECIAL):
-                    self.clickManager.deleteNode(
-                        node, NoWalkNode, NodeType.SPECIAL.value)
+                        == CLICKMANAGER.EditorClickManager.ClickType.DNODE):
+                    self.clickManager.deleteNode(node)
 
             else:
                 self.spriteRenderer.messageSystem.addMessage(
@@ -425,16 +405,26 @@ class EditorNode(Node):
 
 
 class NoWalkNode(Node):
-    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager):
-        super().__init__(spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager):
+        super().__init__(
+            spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
         self.images = ["nodeNoWalking"]
         self.type = NodeType.SPECIAL
 
 
 class EditorNoWalkNode(EditorNode, NoWalkNode):
-    def __init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, clickManager, personClickManager, transportClickManager)
-        NoWalkNode.__init__(self, spriteRenderer, groups, number, connectionType, x, y, personClickManager, transportClickManager)
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager):
+        EditorNode.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager)
+        NoWalkNode.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
 
         self.images = ["nodeNoWalking", "nodeStart", "nodeEnd"]
 

@@ -368,10 +368,8 @@ class EditorClickManager(ClickManager):
 
         # D at front signifies deletion options
         DCONNECTION = auto()
-        DSTOP = auto()
         DTRANSPORT = auto()
-        DDESTINATION = auto()
-        DSPECIAL = auto()
+        DNODE = auto()
 
     def __init__(self, game):
         super().__init__(game)
@@ -436,6 +434,7 @@ class EditorClickManager(ClickManager):
     def setStartNode(self, node):
         self.startNode = node
         if self.startNode is not None:
+            self.game.audioLoader.playSound("uiStartSelect", 2)
             self.startNode.setCurrentImage(1)
             self.createConnection()
 
@@ -443,10 +442,12 @@ class EditorClickManager(ClickManager):
         # If the end node is on a different layer to the start node,
         # make it be the start node
         if node.getConnectionType() != self.startNode.getConnectionType():
+            self.game.audioLoader.playSound("uiStartSelect", 2)
             self.startNode = node
             node.setCurrentImage(1)
             return
 
+        self.game.audioLoader.playSound("uiFinishSelect", 2)
         self.endNode = node
         self.endNode.setCurrentImage(2)
         self.createConnection()
@@ -522,13 +523,15 @@ class EditorClickManager(ClickManager):
             self.game.mapEditor.addNode(
                 nodeType, node.getConnectionType(), node)
 
-    # TODO: make this delete whichever node is selected, instead of just the type from the menu
-    def deleteNode(self, node, instance, nodeType):
-        if not isinstance(node, instance):
+    # Delete any node from the map (stops, locations, specials etc.)
+    def deleteNode(self, node):
+        if node.getType() == NODE.NodeType.REGULAR:
+            self.game.audioLoader.playSound("uiError", 1)
             return
+
         self.game.audioLoader.playSound("uiCancel", 1)
         self.game.mapEditor.deleteNode(
-            nodeType, node.getConnectionType(), node)
+            node.getType().value, node.getConnectionType(), node)
 
     def deleteConnection(self, connection):
         fromNode = connection.getFrom()

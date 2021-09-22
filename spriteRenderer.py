@@ -422,34 +422,35 @@ class SpriteRenderer():
     # currently in the game, so these don't have to be drawn every frame
     # (as they are not moving)
     def createPausedSurface(self):
-        if self.rendering and self.game.paused:
-            self.pausedSurface = pygame.Surface((
-                int(config["graphics"]["displayWidth"]
-                    * self.game.renderer.getScale()),
+        if not self.rendering or not self.game.paused:
+            return
 
-                int(config["graphics"]["displayHeight"]
-                    * self.game.renderer.getScale()))).convert()
+        self.pausedSurface = pygame.Surface((
+            int(config["graphics"]["displayWidth"]
+                * self.game.renderer.getScale()),
+            int(config["graphics"]["displayHeight"]
+                * self.game.renderer.getScale()))).convert()
 
-            lineSurface = (
-                self.getGridLayer(self.getCurrentLayerString())
-                .getLineSurface())
-            self.pausedSurface.blit(lineSurface, (0, 0))
+        lineSurface = (
+            self.getGridLayer(self.getCurrentLayerString())
+            .getLineSurface())
+        self.pausedSurface.blit(lineSurface, (0, 0))
 
-            for entity in self.entities:
-                entity.drawPaused(self.pausedSurface)
+        for entity in self.entities:
+            entity.drawPaused(self.pausedSurface)
 
-            self.renderPausedLayer(1, self.layer1)
-            self.renderPausedLayer(2, self.layer2)
-            self.renderPausedLayer(3, self.layer3)
-            self.renderPausedLayer(4, self.layer4)
+        self.renderPausedLayer(1, self.layer1)
+        self.renderPausedLayer(2, self.layer2)
+        self.renderPausedLayer(3, self.layer3)
+        self.renderPausedLayer(4, self.layer4)
 
-            # for component in (
-            #     self.hud.getComponents()
-            #         + self.messageSystem.getComponents()):
-            #     # draw hud and message system
-            #     component.drawPaused(self.pausedSurface)
+        # for component in (
+        #     self.hud.getComponents()
+        #         + self.messageSystem.getComponents()):
+        #     # draw hud and message system
+        #     component.drawPaused(self.pausedSurface)
 
-            return self.pausedSurface
+        return self.pausedSurface
 
     def getSpriteLayer(self, connectionType):
         if connectionType == "layer 1":
@@ -638,29 +639,31 @@ class SpriteRenderer():
             self.resetPeopleClicks()
             self.resetPersonHolderClicks()
 
+    # TODO: If a layer has any images, they must be resized here
     def resize(self):
-        # If a layer has any images, they must be resized here
-        if self.rendering:
-            self.gridLayer1.resize()
-            self.gridLayer2.resize()
-            self.gridLayer3.resize()
-            # Only need to do this if it has components
-            self.gridLayer4.resize()
+        if not self.rendering:
+            return
 
-            # We want to reset the layer 4 lines with the
-            # new ones (resized) from the other layers
-            self.gridLayer4.addLayerLines(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.gridLayer1.resize()
+        self.gridLayer2.resize()
+        self.gridLayer3.resize()
+        # Only need to do this if it has components
+        self.gridLayer4.resize()
 
-            # resize huds and menus
-            self.hud.resize()
-            self.menu.resize()
-            self.messageSystem.resize()
+        # We want to reset the layer 4 lines with the
+        # new ones (resized) from the other layers
+        self.gridLayer4.addLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
-            for sprite in self.allSprites:
-                sprite.dirty = True
+        # resize huds and menus
+        self.hud.resize()
+        self.menu.resize()
+        self.messageSystem.resize()
 
-            self.createPausedSurface()
+        for sprite in self.allSprites:
+            sprite.dirty = True
+
+        self.createPausedSurface()
 
     # Draw all the sprites in a layer, based on what layer the player
     # is currently on
@@ -678,22 +681,24 @@ class SpriteRenderer():
                 sprite.drawPaused(self.pausedSurface)
 
     def render(self):
-        if self.rendering:
-            if not self.game.paused:
-                # Entities drawn below the other sprites
-                for entity in self.entities:
-                    entity.draw()
+        if not self.rendering:
+            return
 
-                self.renderLayer(1, self.gridLayer1, self.layer1)
-                self.renderLayer(2, self.gridLayer2, self.layer2)
-                self.renderLayer(3, self.gridLayer3, self.layer3)
-                self.renderLayer(4, self.gridLayer4, self.layer4)
+        if not self.game.paused:
+            # Entities drawn below the other sprites
+            for entity in self.entities:
+                entity.draw()
 
-            else:
-                if hasattr(self, 'pausedSurface'):
-                    self.game.renderer.addSurface(
-                        self.pausedSurface, (self.pausedSurface.get_rect()))
+            self.renderLayer(1, self.gridLayer1, self.layer1)
+            self.renderLayer(2, self.gridLayer2, self.layer2)
+            self.renderLayer(3, self.gridLayer3, self.layer3)
+            self.renderLayer(4, self.gridLayer4, self.layer4)
 
-            self.hud.display()
-            self.messageSystem.display()
-            self.menu.display()
+        else:
+            if hasattr(self, 'pausedSurface'):
+                self.game.renderer.addSurface(
+                    self.pausedSurface, (self.pausedSurface.get_rect()))
+
+        self.hud.display()
+        self.messageSystem.display()
+        self.menu.display()
