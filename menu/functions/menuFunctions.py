@@ -66,8 +66,9 @@ def openMapEditor(obj, menu, event):
             menu.game.mapEditor.setRendering(True, True)
 
             # Default option to add connection
-            # TODO: do I need this?
-            # hf.addConnection(obj, menu, event)
+            hf.addConnection(obj, menu, event)
+            # Reset to default add type (nothing)
+            menu.game.mapEditor.getClickManager().setAddType("")
 
             menu.levelSelectOpen = False
             menu.customLevelSelectOpen = False

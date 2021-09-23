@@ -34,6 +34,9 @@ class MeterController(pygame.sprite.Sprite):
     def getSlowDownAmount(self):
         return self.slowDownAmount
 
+    def getSpeedUpAmount(self):
+        return self.speedUpAmount
+
     def addToAmountToAdd(self, amountToAdd):
         # only add the extra if the meter isn't already full
         if self.amount < self.totalAmount:

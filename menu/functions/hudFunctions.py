@@ -428,7 +428,7 @@ def redoChange(obj, menu, next):
 
 
 def addConnection(obj, menu, event):
-    menu.mapEditor.getClickManager().setClickType(
+    menu.game.mapEditor.getClickManager().setClickType(
         EditorClickManager.ClickType.CONNECTION)
     gf.clearMenu(obj, menu)
 
@@ -457,21 +457,25 @@ def addSpecials(obj, menu, event):
 
 def addMetro(obj, menu, event):
     menu.mapEditor.getClickManager().setAddType("metro")
+    menu.mapEditor.showLayer(1)
     gf.clearMenu(obj, menu)
 
 
 def addBus(obj, menu, event):
     menu.mapEditor.getClickManager().setAddType("bus")
-    gf.clearMenu(obj, menu)
-
-
-def addTram(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("tram")
+    menu.mapEditor.showLayer(2)
     gf.clearMenu(obj, menu)
 
 
 def addTaxi(obj, menu, event):
     menu.mapEditor.getClickManager().setAddType("taxi")
+    menu.mapEditor.showLayer(2)
+    gf.clearMenu(obj, menu)
+
+
+def addTram(obj, menu, event):
+    menu.mapEditor.getClickManager().setAddType("tram")
+    menu.mapEditor.showLayer(3)
     gf.clearMenu(obj, menu)
 
 
@@ -496,6 +500,7 @@ def addHouse(obj, menu, event):
 
 def addNoWalkNode(obj, menu, event):
     menu.mapEditor.getClickManager().setAddType("noWalkNode")
+    menu.mapEditor.showLayer(2)
     gf.clearMenu(obj, menu)
 
 

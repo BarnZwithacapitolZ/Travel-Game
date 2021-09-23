@@ -32,7 +32,8 @@ class GridManager:
         if self.level is not None:
             self.loadMap()
 
-        scale = min(DEFAULTBOARDWIDTH / self.width, DEFAULTBOARDHEIGHT / self.height)
+        scale = min(
+            DEFAULTBOARDWIDTH / self.width, DEFAULTBOARDHEIGHT / self.height)
 
         # apply the starting fixed scale when first rendering
         scale += self.spriteRenderer.getStartingFixedScale()
@@ -80,6 +81,17 @@ class GridManager:
             NodeType.SPECIAL.value: self.editorSpecialsMappings
         }
 
+        self.layerNodeMappings = {
+            1: ["metro", "airport", "house", "office"],
+            2: ["bus", "noWalkNode", "airport", "house", "office"],
+            3: ["tram", "airport", "house", "office"]
+        }
+        self.layerTransportMappings = {
+            1: ["metro"],
+            2: ["bus", "taxi"],
+            3: ["tram"]
+        }
+
     def getNodePositions(self):
         return self.nodePositions
 
@@ -99,6 +111,16 @@ class GridManager:
         if nodeType not in self.editorTypeMappings:
             return
         return self.editorTypeMappings[nodeType]
+
+    def getNodeMappingsByLayer(self):
+        if self.layer.getNumber() not in self.layerNodeMappings:
+            return []
+        return self.layerNodeMappings[self.layer.getNumber()]
+
+    def getTransportMappingsByLayer(self):
+        if self.layer.getNumber() not in self.layerTransportMappings:
+            return []
+        return self.layerTransportMappings[self.layer.getNumber()]
 
     def getLevelName(self):
         return self.levelName

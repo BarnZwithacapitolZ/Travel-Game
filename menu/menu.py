@@ -1595,6 +1595,18 @@ class GameHud(GameHudLayout):
         self.pause.addEvent(hf.pauseGame, 'onMouseClick')
         self.pause.dirty = True
 
+    def toggleFastForward(self, selected=False):
+        if not hasattr(self, 'fastForward'):
+            return
+
+        fastForwardImage = (
+            "fastForwardWhite" if self.spriteRenderer.getDarkMode()
+            else "fastForward")
+
+        self.fastForward.setImageName(
+            "fastForwardSelected" if selected else fastForwardImage)
+        self.fastForward.dirty = True
+
     def main(self, transition=False):
         self.open = True
 
@@ -1704,6 +1716,7 @@ class GameHud(GameHudLayout):
 
     def setLifeAmount(self):
         if hasattr(self, 'lives'):
+            # Only if the animation is finished, show the game over screen
             def callback(obj, menu):
                 if menu.game.spriteRenderer.getLives() <= 0:
                     # Run end screen game over :(
@@ -1717,6 +1730,7 @@ class GameHud(GameHudLayout):
 
     def setCompletedAmount(self):
         if hasattr(self, 'completed'):
+            # Only if the animation has finished, show the game complete screen
             def callback(obj, menu):
                 if (menu.game.spriteRenderer.getCompleted()
                         >= menu.game.spriteRenderer.getTotalToComplete()):
@@ -1765,7 +1779,8 @@ class EditorHud(GameHudLayout):
 
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
-            self.currentLayer.setText(self.mapEditor.getCurrentLayerString())
+            self.currentLayer.setText(
+                self.mapEditor.getLayerName())
             self.currentLayer.dirty = True
 
     def closeDropdowns(self):
@@ -1812,8 +1827,7 @@ class EditorHud(GameHudLayout):
             self, "Run", 25, WHITE, (self.runLocation, self.textY), BLACK)
 
         self.currentLayer = Label(
-            self, self.mapEditor.getCurrentLayerString(), 25, WHITE, (0, 0),
-            BLACK)
+            self, self.mapEditor.getLayerName(), 25, WHITE, (0, 0), BLACK)
         self.currentLayer.setPos((
             config["graphics"]["displayWidth"] - self.fileLocation
             - self.currentLayer.getFontSize()[0], self.textY))
@@ -1858,14 +1872,14 @@ class EditorHud(GameHudLayout):
         self.mapEditor.setAllowEdits(False)
 
         textX = self.editLocation + self.padX
-        currentLayer = self.mapEditor.getCurrentLayer()
+        currentLayerName = self.mapEditor.getLayerName()
 
         # Change map Size
         size = Label(self, "Map Size", 25, WHITE, (
             textX, self.topBarHeight + self.topPadY), BLACK)
         # Change map background colour
         self.background = Label(
-            self, f"Background \n colour \n (layer {str(currentLayer)})", 25,
+            self, f"Background \n colour \n ({currentLayerName})", 25,
             WHITE, (textX, size.getBottomY() + self.padY), BLACK)
         # Change total number of people needed to complete map
         total = Label(
@@ -2104,24 +2118,25 @@ class EditorHud(GameHudLayout):
             GREEN if transportSelected else WHITE,
             (textX, self.topBarHeight + self.topPadY), BLACK)
         # Show layer 1
-        layer1 = Label(
-            self, ("- " if layer1Selected else "") + "Layer 1", 25,
+        layer1 = Label(self, (
+            ("- " if layer1Selected else "")
+            + self.mapEditor.getLayerName(1)), 25,
             GREEN if layer1Selected else WHITE,
             (textX, transport.getBottomY() + self.padY), BLACK)
         # Show layer 2
-        layer2 = Label(
-            self, ("- " if layer2Selected else "") + "Layer 2", 25,
-            GREEN if layer2Selected else WHITE,
+        layer2 = Label(self, (
+            ("- " if layer2Selected else "") + self.mapEditor.getLayerName(2)),
+            25, GREEN if layer2Selected else WHITE,
             (textX, layer1.getBottomY() + self.padY), BLACK)
         # Show layer 3
-        layer3 = Label(
-            self, ("- " if layer3Selected else "") + "Layer 3", 25,
-            GREEN if layer3Selected else WHITE,
+        layer3 = Label(self, (
+            ("- " if layer3Selected else "") + self.mapEditor.getLayerName(3)),
+            25, GREEN if layer3Selected else WHITE,
             (textX, layer2.getBottomY() + self.padY), BLACK)
         # Show layer 4
-        layer4 = Label(
-            self, ("- " if layer4Selected else "") + "Layer 4", 25,
-            GREEN if layer4Selected else WHITE,
+        layer4 = Label(self, (
+            ("- " if layer4Selected else "") + self.mapEditor.getLayerName(4)),
+            25, GREEN if layer4Selected else WHITE,
             (textX, layer3.getBottomY() + self.padY), BLACK)
         box = Rectangle(
             self, BLACK, (

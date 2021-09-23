@@ -19,6 +19,7 @@ class MapEditor(SpriteRenderer):
         # Hud for when the game is running
         self.hud = EditorHud(self)
         self.clickManager = EditorClickManager(self.game)
+
         # Array to hold all the changes made to the map. TODO:
         #   should this have a limit on the size
         #   (otherwise it could get huge and be slow??)
@@ -27,6 +28,8 @@ class MapEditor(SpriteRenderer):
         self.allowEdits = True
         self.showTransport = True
 
+        # Map editor always has all connection types available
+        # (to edit  each layer)
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
         self.previousLayer = None
@@ -344,8 +347,26 @@ class MapEditor(SpriteRenderer):
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
         self.addChange()
 
+    def checkCanAddItem(self, node, item="node"):
+        layer = self.getGridLayer(node.getConnectionType())
+        key = self.clickManager.getAddType()
+
+        if item == "node":
+            mappings = layer.getGrid().getNodeMappingsByLayer()
+        elif item == "transport":
+            mappings = layer.getGrid().getTransportMappingsByLayer()
+        else:
+            mappings = []
+
+        # Throw the error message
+        if key not in mappings:
+            self.messageSystem.addMessage(f"You cannot add a {key} to \
+                {self.getLayerName(node.getConnectionType()).lower()} :(")
+            return False
+        return True
+
     def addTransport(self, connectionType, connection):
-        layer = self.getGridLayer(connectionType)
+        layer = self.getGridLayer()
 
         key = self.clickManager.getAddType()
         mappings = layer.getGrid().getTransportMappings()

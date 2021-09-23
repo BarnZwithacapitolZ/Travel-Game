@@ -380,7 +380,7 @@ class EditorClickManager(ClickManager):
         self.tempEndNode = None  # used for visualizing path
 
         self.clickType = EditorClickManager.ClickType.CONNECTION
-        self.addType = "metro"
+        self.addType = ""
 
     def clearNodes(self):
         self.startNode = None
@@ -498,17 +498,21 @@ class EditorClickManager(ClickManager):
 
     def addTransport(self, node):
         # No connections to the node, we cant add any transport
-        if len(node.getConnections()) > 0 and len(node.getTransports()) < 1:
-            self.game.audioLoader.playSound("uiSuccess", 1)
-            self.game.mapEditor.addTransport(
-                node.getConnectionType(), node.getConnections()[0])
 
-        else:
+        if (len(node.getConnections()) <= 0 or len(node.getTransports()) >= 1
+                or not self.game.mapEditor.checkCanAddItem(node, "transport")):
             self.game.audioLoader.playSound("uiError", 1)
+            return
+
+        self.game.audioLoader.playSound("uiSuccess", 1)
+        self.game.mapEditor.addTransport(
+            node.getConnectionType(), node.getConnections()[0])
 
     def addNode(self, node, nodeType):
         # TODO: add subtype values to nodes so we can compare subtype
-        if len(node.getConnections()) <= 0: # or node.getType().value == nodeType:
+        # or node.getType().value == nodeType:
+        if (len(node.getConnections()) <= 0
+                or not self.game.mapEditor.checkCanAddItem(node, "node")):
             self.game.audioLoader.playSound("uiError", 1)
             return
 

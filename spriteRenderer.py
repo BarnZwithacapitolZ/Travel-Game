@@ -1,6 +1,6 @@
 import pygame
 import random
-from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND
+from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND, LAYERNAMES
 from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
@@ -65,6 +65,14 @@ class SpriteRenderer():
     def setDefaultMap(self):
         self.levelData = {
             "mapName": "",
+            "options": {
+                # If we want to the level to have lives or not:
+                # (if it doesn't we don't need the timer to be shown for
+                # each person since there is no limit as no lives)
+                "lives": True,
+                "limitPeople": False,  # Limit the No. people who can spawn
+                "setSpawn": False  # Set the spawn to a specific node
+            },
             "locked": {"isLocked": False, "unlock": 0},  # Amount to unlock
 
             # Map can / cannot be deleted; maps that can't be
@@ -77,7 +85,7 @@ class SpriteRenderer():
             "difficulty": 1,  # Out of 4
             "total": 8,  # Total to complete the level
             "score": 0,
-            "completion": {"total": 10, "completed": False, "time": 0},
+            "completion": {"completed": False},
             "backgrounds": {
                 "layer 1": DEFAULTBACKGROUND,  # Default color: CREAM :)
                 "layer 2": DEFAULTBACKGROUND,
@@ -386,9 +394,9 @@ class SpriteRenderer():
         # If there is more than one layer we want to be able
         # to see 'all' layers at once (layer 4)
         # otherwise we only need to see the single layer
-
         if len(self.connectionTypes) > 1 or self.debug:
             self.connectionTypes.append("layer 4")
+
         else:
             self.showLayer(
                 self.getGridLayer(self.connectionTypes[0]).getNumber())
@@ -431,10 +439,7 @@ class SpriteRenderer():
             int(config["graphics"]["displayHeight"]
                 * self.game.renderer.getScale()))).convert()
 
-        lineSurface = (
-            self.getGridLayer(self.getCurrentLayerString())
-            .getLineSurface())
-        self.pausedSurface.blit(lineSurface, (0, 0))
+        self.pausedSurface.blit(self.getGridLayer().getLineSurface(), (0, 0))
 
         for entity in self.entities:
             entity.drawPaused(self.pausedSurface)
@@ -452,25 +457,33 @@ class SpriteRenderer():
 
         return self.pausedSurface
 
-    def getSpriteLayer(self, connectionType):
-        if connectionType == "layer 1":
-            return self.layer1
-        elif connectionType == "layer 2":
-            return self.layer2
-        elif connectionType == "layer 3":
-            return self.layer3
-        elif connectionType == "layer 4":
-            return self.layer4
+    def connectionTypeTranslations(self, connectionType=None, layers=[]):
+        if len(layers) < 4 or len(layers) > 4:
+            return
 
-    def getGridLayer(self, connectionType):
-        if connectionType == "layer 1":
-            return self.gridLayer1
-        elif connectionType == "layer 2":
-            return self.gridLayer2
-        elif connectionType == "layer 3":
-            return self.gridLayer3
-        elif connectionType == "layer 4":
-            return self.gridLayer4
+        connectionType = (
+            self.currentLayer if connectionType is None else connectionType)
+
+        if connectionType == "layer 1" or connectionType == 1:
+            return layers[0]
+        elif connectionType == "layer 2" or connectionType == 2:
+            return layers[1]
+        elif connectionType == "layer 3" or connectionType == 3:
+            return layers[2]
+        elif connectionType == "layer 4" or connectionType == 4:
+            return layers[3]
+
+    def getSpriteLayer(self, connectionType=None):
+        return self.connectionTypeTranslations(connectionType, [
+            self.layer1, self.layer2, self.layer3, self.layer4])
+
+    def getGridLayer(self, connectionType=None):
+        return self.connectionTypeTranslations(connectionType, [
+            self.gridLayer1, self.gridLayer2, self.gridLayer3,
+            self.gridLayer4])
+
+    def getLayerName(self, connectionType=None):
+        return self.connectionTypeTranslations(connectionType, LAYERNAMES)
 
     # Get all the nodes from all layers in the spriterenderer
     def getAllNodes(self, sortNodes=False):
@@ -530,7 +543,7 @@ class SpriteRenderer():
     # if there is an equivelant node on a different layer, return it,
     # else return none (no node)
     def getNodeFromDifferentLayer(self, currentNode, differentLayer):
-        layer = self.getGridLayer("layer " + str(differentLayer))
+        layer = self.getGridLayer(differentLayer)
 
         for node in layer.getGrid().getNodes():
             if node.getNumber() == currentNode.getNumber():
@@ -544,15 +557,22 @@ class SpriteRenderer():
             if (
                 self.dt != self.startDt - self.meter.getSlowDownAmount()
                     and not self.meter.getEmpty()):
+                # TODO: we want to slow down the game music here instead
                 self.game.audioLoader.playSound("slowIn", 1)
 
         elif pygame.key.get_pressed()[
                 config["controls"]["fastforward"]["current"]]:
             self.game.clickManager.setSpeedUp(True)
 
+            if self.dt != self.startDt + self.meter.getSpeedUpAmount():
+                self.hud.toggleFastForward(True)
+
         else:
             if self.dt < self.startDt:
+                # TODO: we want to spped up the game music here instead
                 self.game.audioLoader.playSound("slowOut", 1)
+            elif self.dt > self.startDt:
+                self.hud.toggleFastForward()
 
             self.game.clickManager.setSpaceBar(False)
             self.game.clickManager.setSpeedUp(False)
@@ -600,11 +620,9 @@ class SpriteRenderer():
             self.gridLayer2.getPeople() +
             self.gridLayer3.getPeople())
 
-        currentLayerPeople = self.getGridLayer(
-            self.getCurrentLayerString()).getPeople()
-
         for person in totalPeople:
-            if person in currentLayerPeople or self.currentLayer == 4:
+            if (person in self.getGridLayer().getPeople()
+                    or self.currentLayer == 4):
                 # Always went every person to be clickable on the top layer
                 person.setCanClick(True)
 

@@ -340,6 +340,7 @@ class MenuLayer4(Layer):
 class EditorLayer1(Layer):
     def __init__(self, spriteRenderer, groups, level=None):
         super().__init__(spriteRenderer, groups, "layer 1", level)
+        self.number = 1
         self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
@@ -348,6 +349,7 @@ class EditorLayer1(Layer):
 class EditorLayer2(Layer):
     def __init__(self, spriteRenderer, groups, level=None):
         super().__init__(spriteRenderer, groups, "layer 2", level)
+        self.number = 2
         self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
@@ -356,6 +358,7 @@ class EditorLayer2(Layer):
 class EditorLayer3(Layer):
     def __init__(self, spriteRenderer, groups, level=None):
         super().__init__(spriteRenderer, groups, "layer 3", level)
+        self.number = 3
         self.grid.createFullGrid(self.connectionType)
         self.addConnections()
         self.createConnections()
@@ -364,6 +367,7 @@ class EditorLayer3(Layer):
 class EditorLayer4(Layer):
     def __init__(self, spriteRenderer, groups, level=None):
         super().__init__(spriteRenderer, groups, "layer 4", level)
+        self.number = 4
 
     def addLayerLines(self, layer1, layer2, layer3):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
