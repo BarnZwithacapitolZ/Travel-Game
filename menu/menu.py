@@ -2272,9 +2272,10 @@ class EditorHud(GameHudLayout):
                 tramStop.getBottomY() + self.padY - self.stop.y),
             (boxX, self.stop.y), 0, [0, 10, 10, 10])
 
-        metroStation.addEvent(hf.addMetro, 'onMouseClick')
-        busStop.addEvent(hf.addBus, 'onMouseClick')
-        tramStop.addEvent(hf.addTram, 'onMouseClick')
+        metroStation.addEvent(hf.addType, 'onMouseClick',
+                              addType="metro", layer=1)
+        busStop.addEvent(hf.addType, 'onMouseClick', addType="bus", layer=2)
+        tramStop.addEvent(hf.addType, 'onMouseClick', addType="tram", layer=3)
 
         self.add(box)
         labels = [
@@ -2326,10 +2327,10 @@ class EditorHud(GameHudLayout):
                 taxi.getBottomY() + self.padY - self.transport.y),
             (boxX, self.transport.y), 0, [0, 10, 10, 10])
 
-        metro.addEvent(hf.addMetro, 'onMouseClick')
-        bus.addEvent(hf.addBus, 'onMouseClick')
-        tram.addEvent(hf.addTram, 'onMouseClick')
-        taxi.addEvent(hf.addTaxi, 'onMouseClick')
+        metro.addEvent(hf.addType, 'onMouseClick', addType="metro", layer=1)
+        bus.addEvent(hf.addType, 'onMouseClick', addType="bus", layer=2)
+        taxi.addEvent(hf.addType, 'onMouseClick', addType="taxi", layer=2)
+        tram.addEvent(hf.addType, 'onMouseClick', addType="tram", layer=3)
 
         self.add(box)
         labels = [
@@ -2350,6 +2351,8 @@ class EditorHud(GameHudLayout):
         airportSelected = True if addType == 'airport' else False
         officeSelected = True if addType == 'office' else False
         houseSelected = True if addType == 'house' else False
+        schoolSelected = True if addType == 'school' else False
+        shopSelected = True if addType == 'shop' else False
 
         boxX = self.addLocation + self.boxWidth
         textX = boxX + self.padX
@@ -2369,20 +2372,33 @@ class EditorHud(GameHudLayout):
             self, ("- " if houseSelected else "") + "House", 25,
             GREEN if houseSelected else WHITE,
             (textX, office.getBottomY() + self.padY), BLACK)
+        # Add a school location to the map
+        school = Label(
+            self, ("- " if schoolSelected else "") + "School", 25,
+            GREEN if schoolSelected else WHITE,
+            (textX, house.getBottomY() + self.padY), BLACK)
+        # Add a shop location to the map
+        shop = Label(
+            self, ("- " if shopSelected else "") + "Shop", 25,
+            GREEN if shopSelected else WHITE,
+            (textX, school.getBottomY() + self.padY), BLACK)
         box = Rectangle(
             self, BLACK, (
                 self.boxWidth,
-                house.getBottomY() + self.padY - self.destination.y),
+                shop.getBottomY() + self.padY - self.destination.y),
             (boxX, self.destination.y), 0, [0, 10, 10, 10])
 
-        airport.addEvent(hf.addAirport, 'onMouseClick')
-        office.addEvent(hf.addOffice, 'onMouseClick')
-        house.addEvent(hf.addHouse, 'onMouseClick')
+        airport.addEvent(hf.addType, 'onMouseClick', addType='airport')
+        office.addEvent(hf.addType, 'onMouseClick', addType='office')
+        house.addEvent(hf.addType, 'onMouseClick', addType='house')
+        school.addEvent(hf.addType, 'onMouseClick', addType='school')
+        shop.addEvent(hf.addType, 'onMouseClick', addType='shop')
 
         self.add(box)
         labels = [
             (airport, airportSelected), (office, officeSelected),
-            (house, houseSelected)]
+            (house, houseSelected), (school, schoolSelected),
+            (shop, shopSelected)]
         for label in labels:
             if not label[1]:
                 label[0].addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
@@ -2409,7 +2425,8 @@ class EditorHud(GameHudLayout):
                 noWalkNode.getBottomY() + self.padY - self.specials.y),
             (boxX, self.specials.y), 0, [0, 10, 10, 10])
 
-        noWalkNode.addEvent(hf.addNoWalkNode, 'onMouseClick')
+        noWalkNode.addEvent(hf.addType, 'onMouseClick',
+                            addType="noWalkNode", layer=2)
 
         self.add(box)
         labels = [(noWalkNode, noWalkNodeSelected)]

@@ -351,6 +351,7 @@ class MapEditor(SpriteRenderer):
         layer = self.getGridLayer(node.getConnectionType())
         key = self.clickManager.getAddType()
 
+        # Get the respective mappings for nodes and transports
         if item == "node":
             mappings = layer.getGrid().getNodeMappingsByLayer()
         elif item == "transport":
@@ -358,7 +359,8 @@ class MapEditor(SpriteRenderer):
         else:
             mappings = []
 
-        # Throw the error message
+        # Check if we can add the transport / node to the layer,
+        # if not, throw the error message
         if key not in mappings:
             self.messageSystem.addMessage(f"You cannot add a {key} to \
                 {self.getLayerName(node.getConnectionType()).lower()} :(")

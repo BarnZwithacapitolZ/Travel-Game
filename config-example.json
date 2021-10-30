@@ -197,6 +197,14 @@
             "image": "game/node/House.png",
             "alpha": true
         },
+        "school": {
+            "image": "game/node/School.png",
+            "alpha": true
+        },
+        "shop": {
+            "image": "game/node/Shop.png",
+            "alpha": true
+        },
         "loading1": {
             "image": "ui/Loading1.png",
             "alpha": true

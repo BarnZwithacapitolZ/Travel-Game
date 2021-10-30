@@ -453,54 +453,12 @@ def addSpecials(obj, menu, event):
         EditorClickManager.ClickType.SPECIAL)
 
 
-# ----Adding different stop and transport types----
-
-def addMetro(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("metro")
-    menu.mapEditor.showLayer(1)
-    gf.clearMenu(obj, menu)
-
-
-def addBus(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("bus")
-    menu.mapEditor.showLayer(2)
-    gf.clearMenu(obj, menu)
-
-
-def addTaxi(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("taxi")
-    menu.mapEditor.showLayer(2)
-    gf.clearMenu(obj, menu)
-
-
-def addTram(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("tram")
-    menu.mapEditor.showLayer(3)
-    gf.clearMenu(obj, menu)
-
-
 # ----Adding different destination types----
 
-def addAirport(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("airport")
-    gf.clearMenu(obj, menu)
-
-
-def addOffice(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("office")
-    gf.clearMenu(obj, menu)
-
-
-def addHouse(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("house")
-    gf.clearMenu(obj, menu)
-
-
-# ----Adding special node types----
-
-def addNoWalkNode(obj, menu, event):
-    menu.mapEditor.getClickManager().setAddType("noWalkNode")
-    menu.mapEditor.showLayer(2)
+def addType(obj, menu, event, addType="metro", layer=None):
+    menu.mapEditor.getClickManager().setAddType(addType)
+    if layer is not None:
+        menu.mapEditor.showLayer(layer)
     gf.clearMenu(obj, menu)
 
 

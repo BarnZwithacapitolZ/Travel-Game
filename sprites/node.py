@@ -395,7 +395,7 @@ class EditorNode(Node):
                 and (
                     self.game.mapEditor.getCurrentLayer() != 4
                     or self.game.mapEditor.getPreviousLayer() is not None
-                )):  # Hover out event
+        )):  # Hover out event
             self.mouseOver = False
             self.currentImage = 0
             self.dirty = True
@@ -596,3 +596,49 @@ class EditorHouse(EditorNode, House):
             self, spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["house", "nodeStart", "nodeEnd"]
+
+
+class School(Destination):
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager):
+        super().__init__(
+            spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
+        self.images = ["school"]
+
+
+class EditorSchool(EditorNode, School):
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager):
+        EditorNode.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager)
+        School.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
+        self.images = ["school", "nodeStart", "nodeEnd"]
+
+
+class Shop(Destination):
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager):
+        super().__init__(
+            spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
+        self.images = ["shop"]
+
+
+class EditorShop(EditorNode, Shop):
+    def __init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager):
+        EditorNode.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            clickManager, personClickManager, transportClickManager)
+        Shop.__init__(
+            self, spriteRenderer, groups, number, connectionType, x, y,
+            personClickManager, transportClickManager)
+        self.images = ["shop", "nodeStart", "nodeEnd"]

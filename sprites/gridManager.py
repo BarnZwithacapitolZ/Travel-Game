@@ -3,8 +3,9 @@ import json
 from node import (
     Node, NoWalkNode, MetroStation, BusStop, TramStop, EditorNode,
     EditorMetroStation, EditorBusStop, EditorTramStop, EditorNoWalkNode,
-    Airport, Office, House, Destination,
-    EditorAirport, EditorOffice, EditorHouse, NodeType)
+    Airport, Office, House, Destination, School, Shop,
+    EditorAirport, EditorOffice, EditorHouse, EditorSchool, EditorShop,
+    NodeType)
 from connection import Connection
 from transport import Metro, Bus, Tram, Taxi
 from config import DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT
@@ -62,12 +63,16 @@ class GridManager:
         self.destinationMappings = {
             "airport": Airport,
             "office": Office,
-            "house": House
+            "house": House,
+            "shop": Shop,
+            "school": School
         }
         self.editorDestinationMappings = {
             "airport": EditorAirport,
             "office": EditorOffice,
-            "house": EditorHouse
+            "house": EditorHouse,
+            "shop": EditorShop,
+            "school": EditorSchool
         }
         self.specialsMappings = {
             "noWalkNode": NoWalkNode
@@ -81,11 +86,15 @@ class GridManager:
             NodeType.SPECIAL.value: self.editorSpecialsMappings
         }
 
+        # Define which nodes we can add to each of the 3 layers
         self.layerNodeMappings = {
-            1: ["metro", "airport", "house", "office"],
-            2: ["bus", "noWalkNode", "airport", "house", "office"],
-            3: ["tram", "airport", "house", "office"]
+            1: ["metro", "airport", "house", "office", "school", "shop"],
+            2: [
+                "bus", "noWalkNode", "airport", "house", "office", "school",
+                "shop"],
+            3: ["tram", "airport", "house", "office", "school", "shop"]
         }
+        # Define which transports we can add to each of the 3 layers
         self.layerTransportMappings = {
             1: ["metro"],
             2: ["bus", "taxi"],
@@ -267,8 +276,8 @@ class GridManager:
         return currentNodes
 
     def addNodeType(
-                self, nodeType, n, mappings, connectionType, number,
-                clickManagers=[], x=None, y=None):
+            self, nodeType, n, mappings, connectionType, number,
+            clickManagers=[], x=None, y=None):
         if (nodeType not in self.map
                 or connectionType not in self.map[nodeType]):
             return n
