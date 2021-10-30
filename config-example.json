@@ -42,55 +42,55 @@
             "alpha": true
         }, 
         "person": {
-            "image": "game\\person\\Person.png",
+            "image": "game/person/Person.png",
             "alpha": true
         }, 
         "manager": {
-            "image": "game\\person\\Manager.png",
+            "image": "game/person/Manager.png",
             "alpha": true
         }, 
         "node": {
-            "image": "game\\node\\Node.png",
+            "image": "game/node/Node.png",
             "alpha": true
         }, 
         "nodeStart": {
-            "image": "game\\node\\NodeStart.png",
+            "image": "game/node/NodeStart.png",
             "alpha": true
         }, 
         "nodeEnd": {
-            "image": "game\\node\\NodeEnd.png",
+            "image": "game/node/NodeEnd.png",
             "alpha": true
         }, 
         "nodeNoWalking": {
-            "image": "game\\node\\NodeNoWalking.png",
+            "image": "game/node/NodeNoWalking.png",
             "alpha": true
         },
         "train": {
-            "image": "game\\transport\\Train.png",
+            "image": "game/transport/Train.png",
             "alpha": true
         }, 
         "trainStation": {
-            "image": "game\\node\\TrainStation.png",
+            "image": "game/node/TrainStation.png",
             "alpha": true
         }, 
         "bus": {
-            "image": "game\\transport\\Bus.png",
+            "image": "game/transport/Bus.png",
             "alpha": true
         }, 
         "busStation": {
-            "image": "game\\node\\BusStation.png",
+            "image": "game/node/BusStation.png",
             "alpha": true
         }, 
         "tram": {
-            "image": "game\\transport\\Tram.png",
+            "image": "game/transport/Tram.png",
             "alpha": true
         }, 
         "tramStation": {
-            "image": "game\\node\\TramStation.png",
+            "image": "game/node/TramStation.png",
             "alpha": true
         }, 
         "taxi": {
-            "image": "game\\transport\\Taxi.png",
+            "image": "game/transport/Taxi.png",
             "alpha": true
         }, 
         "river": {
@@ -98,191 +98,191 @@
             "alpha": true
         }, 
         "layers": {
-            "image": "ui\\layers.png",
+            "image": "ui/layers.png",
             "alpha": true
         }, 
         "layersSelected": {
-            "image": "ui\\layersSelected.png",
+            "image": "ui/layersSelected.png",
             "alpha": true
         },
         "layersWhite": {
-            "image": "ui\\layersWhite.png",
+            "image": "ui/layersWhite.png",
             "alpha": true
         }, 
         "home": {
-            "image": "ui\\Home.png",
+            "image": "ui/Home.png",
             "alpha": true
         }, 
         "homeSelected": {
-            "image": "ui\\HomeSelected.png",
+            "image": "ui/HomeSelected.png",
             "alpha": true
         }, 
         "homeWhite": {
-            "image": "ui\\HomeWhite.png",
+            "image": "ui/HomeWhite.png",
             "alpha": true
         },
         "pause": {
-            "image": "ui\\Pause.png",
+            "image": "ui/Pause.png",
             "alpha": true
         },
         "pauseSelected": {
-            "image": "ui\\PauseSelected.png",
+            "image": "ui/PauseSelected.png",
             "alpha": true
         },
         "pauseWhite": {
-            "image": "ui\\PauseWhite.png",
+            "image": "ui/PauseWhite.png",
             "alpha": true
         },
         "play": {
-            "image": "ui\\Play.png",
+            "image": "ui/Play.png",
             "alpha": true
         },
         "playSelected": {
-            "image": "ui\\PlaySelected.png",
+            "image": "ui/PlaySelected.png",
             "alpha": true
         },
         "playWhite": {
-            "image": "ui\\PlayWhite.png",
+            "image": "ui/PlayWhite.png",
             "alpha": true
         },
         "departing": {
-            "image": "game\\person\\Departing.png",
+            "image": "game/person/Departing.png",
             "alpha": true
         }, 
         "departingWhite": {
-            "image": "game\\person\\DepartingWhite.png",
+            "image": "game/person/DepartingWhite.png",
             "alpha": true
         },
         "walking": {
-            "image": "game\\person\\Walking.png",
+            "image": "game/person/Walking.png",
             "alpha": true
         },
         "walkingWhite": {
-            "image": "game\\person\\WalkingWhite.png",
+            "image": "game/person/WalkingWhite.png",
             "alpha": true
         }, 
         "boarding": {
-            "image": "game\\person\\Boarding.png",
+            "image": "game/person/Boarding.png",
             "alpha": true
         }, 
         "boardingWhite": {
-            "image": "game\\person\\BoardingWhite.png",
+            "image": "game/person/BoardingWhite.png",
             "alpha": true
         }, 
         "waiting": {
-            "image": "game\\person\\Waiting.png",
+            "image": "game/person/Waiting.png",
             "alpha": true
         }, 
         "waitingWhite": {
-            "image": "game\\person\\WaitingWhite.png",
+            "image": "game/person/WaitingWhite.png",
             "alpha": true
         },
         "flag": {
-            "image": "game\\person\\Flag.png",
+            "image": "game/person/Flag.png",
             "alpha": true
         }, 
         "flagWhite": {
-            "image": "game\\person\\FlagWhite.png",
+            "image": "game/person/FlagWhite.png",
             "alpha": true
         }, 
         "airport": {
-            "image": "game\\node\\Airport.png",
+            "image": "game/node/Airport.png",
             "alpha": true
         }, 
         "office": {
-            "image": "game\\node\\Office.png",
+            "image": "game/node/Office.png",
             "alpha": true
         },
         "house": {
-            "image": "game\\node\\House.png",
+            "image": "game/node/House.png",
             "alpha": true
         },
         "loading1": {
-            "image": "ui\\Loading1.png",
+            "image": "ui/Loading1.png",
             "alpha": true
         },
         "loading2": {
-            "image": "ui\\Loading2.png",
+            "image": "ui/Loading2.png",
             "alpha": true
         },
         "buttonRed": {
-            "image": "ui\\ButtonRed.png",
+            "image": "ui/ButtonRed.png",
             "alpha": true
         },
         "buttonGreen": {
-            "image": "ui\\ButtonGreen.png",
+            "image": "ui/ButtonGreen.png",
             "alpha": true
         },
         "button": {
-            "image": "ui\\Button.png",
+            "image": "ui/Button.png",
             "alpha": true
         },
         "buttonSelected": {
-            "image": "ui\\ButtonSelected.png",
+            "image": "ui/ButtonSelected.png",
             "alpha": true
         },
         "buttonArrow": {
-            "image": "ui\\ButtonArrow.png",
+            "image": "ui/ButtonArrow.png",
             "alpha": true
         },
         "buttonArrowSelected": {
-            "image": "ui\\ButtonArrowSelected.png",
+            "image": "ui/ButtonArrowSelected.png",
             "alpha": true
         },
         "locked": {
-            "image": "ui\\Locked.png",
+            "image": "ui/Locked.png",
             "alpha": true
         },
         "key": {
-            "image": "ui\\Key.png",
+            "image": "ui/Key.png",
             "alpha": true
         },
         "keyCream": {
-            "image": "ui\\KeyCream.png",
+            "image": "ui/KeyCream.png",
             "alpha": true
         },
         "keyWhite": {
-            "image": "ui\\KeyWhite.png",
+            "image": "ui/KeyWhite.png",
             "alpha": true
         },
         "keyGreen": {
-            "image": "ui\\KeyGreen.png",
+            "image": "ui/KeyGreen.png",
             "alpha": true
         },
         "restart": {
-            "image": "ui\\Restart.png",
+            "image": "ui/Restart.png",
             "alpha": true
         },
         "restartWhite": {
-            "image": "ui\\RestartWhite.png",
+            "image": "ui/RestartWhite.png",
             "alpha": true
         },
         "restartSelected": {
-            "image": "ui\\RestartSelected.png",
+            "image": "ui/RestartSelected.png",
             "alpha": true
         },
         "fastForward": {
-            "image": "ui\\FastForward.png",
+            "image": "ui/FastForward.png",
             "alpha": true
         },
         "fastForwardWhite": {
-            "image": "ui\\FastForwardWhite.png",
+            "image": "ui/FastForwardWhite.png",
             "alpha": true
         },
         "fastForwardSelected": {
-            "image": "ui\\FastForwardSelected.png",
+            "image": "ui/FastForwardSelected.png",
             "alpha": true
         },
         "arrow": {
-            "image": "ui\\Arrow.png",
+            "image": "ui/Arrow.png",
             "alpha": true
         },
         "arrowWhite": {
-            "image": "ui\\ArrowWhite.png",
+            "image": "ui/ArrowWhite.png",
             "alpha": true
         },
         "arrowGreen": {
-            "image": "ui\\ArrowGreen.png",
+            "image": "ui/ArrowGreen.png",
             "alpha": true
         }
     }, 
@@ -303,95 +303,95 @@
         },
         "sounds": {
             "click1": {
-                "file": "ui\\Menu-Selection-Change-G.wav",
+                "file": "ui/Menu-Selection-Change-G.wav",
                 "volume": 0.7
             },
             "click2": {
-                "file": "ui\\Menu-Selection-Change-H.wav",
+                "file": "ui/Menu-Selection-Change-H.wav",
                 "volume": 0.7
             },
             "slowIn": {
-                "file": "game\\slow-motion-in.wav",
+                "file": "game/slow-motion-in.wav",
                 "volume": 1.0
             },
             "slowOut": {
-                "file": "game\\slow-motion-out.wav",
+                "file": "game/slow-motion-out.wav",
                 "volume": 1.0
             },
             "swoopIn": {
-                "file": "ui\\navigation_transition-left.wav",
+                "file": "ui/navigation_transition-left.wav",
                 "volume": 1.0
             },
             "swoopOut": {
-                "file": "ui\\navigation_transition-right.wav",
+                "file": "ui/navigation_transition-right.wav",
                 "volume": 1.0
             },
             "playerSpawn": {
-                "file": "ui\\alert_high-intensity.wav",
+                "file": "ui/alert_high-intensity.wav",
                 "volume": 1.0
             },
             "playerSuccess": {
-                "file": "ui\\notification_high-intensity.wav",
+                "file": "ui/notification_high-intensity.wav",
                 "volume": 1.0
             },
             "playerFailure": {
-                "file": "game\\alert_error-01.wav",
+                "file": "game/alert_error-01.wav",
                 "volume": 1.0
             },
             "playerAlert": {
-                "file": "game\\alert_simple.wav",
+                "file": "game/alert_simple.wav",
                 "volume": 1.0
             },
             "levelComplete": {
-                "file": "game\\notification_decorative-01.wav",
+                "file": "game/notification_decorative-01.wav",
                 "volume": 1.0
             },
             "uiStartSelect": {
-                "file": "ui\\navigation_backward-selection.wav",
+                "file": "ui/navigation_backward-selection.wav",
                 "volume": 1.0
             },
             "uiIncreaseSelect": {
-                "file": "ui\\navigation_upwards-selection.wav",
+                "file": "ui/navigation_upwards-selection.wav",
                 "volume": 1.0
             },
             "uiFinishSelect": {
-                "file": "ui\\navigation_forward-selection.wav",
+                "file": "ui/navigation_forward-selection.wav",
                 "volume": 1.0
             },
             "uiError": {
-                "file": "ui\\alert_error-02.wav",
+                "file": "ui/alert_error-02.wav",
                 "volume": 1.0
             },
             "uiSuccess": {
-                "file": "ui\\notification_simple-01.wav",
+                "file": "ui/notification_simple-01.wav",
                 "volume": 0.7
             },
             "uiCancel": {
-                "file": "ui\\navigation-cancel.wav",
+                "file": "ui/navigation-cancel.wav",
                 "volume": 1.0
             },
             "uiUnavailable": {
-                "file": "ui\\navigation_unavailable-selection.wav",
+                "file": "ui/navigation_unavailable-selection.wav",
                 "volume": 1.0
             },
             "success1": {
-                "file": "ui\\notification_simple-01.wav",
+                "file": "ui/notification_simple-01.wav",
                 "volume": 0.7
             },
             "success2": {
-                "file": "ui\\notification_simple-02.wav",
+                "file": "ui/notification_simple-02.wav",
                 "volume": 0.7
             },
             "success3": {
-                "file": "ui\\notification_simple-03.wav",
+                "file": "ui/notification_simple-03.wav",
                 "volume": 0.7
             },
             "expand": {
-                "file": "ui\\Expand.wav",
+                "file": "ui/Expand.wav",
                 "volume": 1.0
             },
             "collapse": {
-                "file": "ui\\Collapse.wav",
+                "file": "ui/Collapse.wav",
                 "volume": 1.0
             }
         },
