@@ -1612,6 +1612,7 @@ class GameHud(GameHudLayout):
 
         meterWidth = self.spriteRenderer.getSlowDownMeterAmount()
         darkMode = self.spriteRenderer.getDarkMode()
+        lives = self.spriteRenderer.getLives()
 
         layersImage = "layersWhite" if darkMode else "layers"
         layersSelectedImage = "layersSelected"
@@ -1637,7 +1638,7 @@ class GameHud(GameHudLayout):
         # Show the total amount of lives the user has left
         self.lives = Timer(
             self, self.textColor, GREEN, 100,
-            self.spriteRenderer.getLives(), (48, 48), (
+            lives if lives is not None else 1, (48, 48), (
                 config["graphics"]["displayWidth"] - (48 + self.hudX),
                 self.hudY - 104), 5)
         # Show how many people have currently completed the map
@@ -1701,7 +1702,11 @@ class GameHud(GameHudLayout):
         self.add(self.fastForward)
         self.add(self.pause)
         self.add(self.slowDownMeter)
-        self.add(self.lives)
+
+        # Only want to add the lives counter if there is a set amount of lives
+        if lives is not None:
+            self.add(self.lives)
+
         self.add(self.completed)
         self.add(self.completedAmount)
 

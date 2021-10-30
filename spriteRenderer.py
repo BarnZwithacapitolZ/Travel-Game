@@ -66,7 +66,7 @@ class SpriteRenderer():
         self.levelData = {
             "mapName": "",
             "options": {
-                # If we want to the level to have lives or not:
+                # If we want the level to have lives or not:
                 # (if it doesn't we don't need the timer to be shown for
                 # each person since there is no limit as no lives)
                 "lives": True,
@@ -151,7 +151,7 @@ class SpriteRenderer():
         if not hasattr(self, 'levelData'):
             return
 
-        self.score = self.lives
+        self.score = self.lives if self.lives is not None else DEFAULTLIVES
         previousScore = 0
 
         if "score" in self.levelData:
@@ -292,6 +292,9 @@ class SpriteRenderer():
         return self.personHolderClickManager
 
     def removeLife(self):
+        if self.lives is None:
+            return
+
         self.lives -= 1
         # remove a heart from the hud here or something
         self.hud.setLifeAmount()
@@ -312,7 +315,6 @@ class SpriteRenderer():
         self.paused = False  # Not to confuse the option menu
         self.startingFixedScale = 0  # reset the scale back to default
         self.timer = 0
-        self.lives = DEFAULTLIVES
         self.totalPeople = 0
         self.totalPeopleNone = False
         self.entities.empty()
@@ -385,7 +387,15 @@ class SpriteRenderer():
 
         else:
             self.totalToComplete = self.levelData["total"]
-        # self.totalToComplete = 1
+
+        # Set the lives
+        if ("options" in self.levelData
+                and "lives" in self.levelData["options"]):
+            self.lives = (
+                DEFAULTLIVES if self.levelData["options"]["lives"] else None)
+
+        else:
+            self.lives = DEFAULTLIVES
 
         self.meter = MeterController(
             self, self.allSprites, self.slowDownMeterAmount)

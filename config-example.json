@@ -1,66 +1,84 @@
 {
     "game": {
-        "gameTitle": "Transport the Public", 
-        "version": 0.26, 
+        "gameTitle": "Transport the Public",
+        "version": 0.26,
         "icon": "icon"
-    }, 
+    },
     "graphics": {
-        "minDisplayWidth": 768, 
-        "minDisplayHeight": 432, 
-        "displayWidth": 1024, 
-        "displayHeight": 576, 
-        "antiAliasing": true, 
+        "minDisplayWidth": 768,
+        "minDisplayHeight": 432,
+        "displayWidth": 1024,
+        "displayHeight": 576,
+        "antiAliasing": true,
         "smoothCorners": true,
-        "smoothscale": true, 
+        "smoothscale": true,
         "scanlines": {
             "enabled": true,
             "opacity": 60
         },
         "vsync": true,
-        "fullscreen": false, 
+        "fullscreen": false,
         "resizeable": true,
         "resolutions": {
-            "1920 x 1080": [1920, 1080],
-            "1600 x 900": [1600, 900],
-            "1366 x 768": [1366, 768],
-            "1280 x 720": [1280, 720]
+            "1920 x 1080": [
+                1920,
+                1080
+            ],
+            "1600 x 900": [
+                1600,
+                900
+            ],
+            "1366 x 768": [
+                1366,
+                768
+            ],
+            "1280 x 720": [
+                1280,
+                720
+            ]
         }
-    }, 
+    },
     "player": {
         "tutorial": false,
         "keys": 0,
-        "currentLevel": [0, 0],
-        "currentCustomLevel": [0, 0]
+        "currentLevel": [
+            0,
+            0
+        ],
+        "currentCustomLevel": [
+            0,
+            0
+        ]
     },
     "fonts": {
         "whiteRabbit": "whitrabt.ttf",
         "bitwise": "Bitwise-m19x.ttf"
-    }, 
+    },
     "images": {
         "icon": {
             "image": "Icon.png",
             "alpha": true
-        }, 
+        },
         "person": {
             "image": "game/person/Person.png",
             "alpha": true
-        }, 
+        },
         "manager": {
             "image": "game/person/Manager.png",
             "alpha": true
-        }, 
+        },
         "node": {
             "image": "game/node/Node.png",
             "alpha": true
-        }, 
+        },
         "nodeStart": {
             "image": "game/node/NodeStart.png",
             "alpha": true
-        }, 
+        },
         "nodeEnd": {
             "image": "game/node/NodeEnd.png",
             "alpha": true
-        }, 
+        },
         "nodeNoWalking": {
             "image": "game/node/NodeNoWalking.png",
             "alpha": true
@@ -68,39 +86,39 @@
         "train": {
             "image": "game/transport/Train.png",
             "alpha": true
-        }, 
+        },
         "trainStation": {
             "image": "game/node/TrainStation.png",
             "alpha": true
-        }, 
+        },
         "bus": {
             "image": "game/transport/Bus.png",
             "alpha": true
-        }, 
+        },
         "busStation": {
             "image": "game/node/BusStation.png",
             "alpha": true
-        }, 
+        },
         "tram": {
             "image": "game/transport/Tram.png",
             "alpha": true
-        }, 
+        },
         "tramStation": {
             "image": "game/node/TramStation.png",
             "alpha": true
-        }, 
+        },
         "taxi": {
             "image": "game/transport/Taxi.png",
             "alpha": true
-        }, 
+        },
         "river": {
             "image": "river.png",
             "alpha": true
-        }, 
+        },
         "layers": {
             "image": "ui/layers.png",
             "alpha": true
-        }, 
+        },
         "layersSelected": {
             "image": "ui/layersSelected.png",
             "alpha": true
@@ -108,15 +126,15 @@
         "layersWhite": {
             "image": "ui/layersWhite.png",
             "alpha": true
-        }, 
+        },
         "home": {
             "image": "ui/Home.png",
             "alpha": true
-        }, 
+        },
         "homeSelected": {
             "image": "ui/HomeSelected.png",
             "alpha": true
-        }, 
+        },
         "homeWhite": {
             "image": "ui/HomeWhite.png",
             "alpha": true
@@ -148,7 +166,7 @@
         "departing": {
             "image": "game/person/Departing.png",
             "alpha": true
-        }, 
+        },
         "departingWhite": {
             "image": "game/person/DepartingWhite.png",
             "alpha": true
@@ -160,19 +178,19 @@
         "walkingWhite": {
             "image": "game/person/WalkingWhite.png",
             "alpha": true
-        }, 
+        },
         "boarding": {
             "image": "game/person/Boarding.png",
             "alpha": true
-        }, 
+        },
         "boardingWhite": {
             "image": "game/person/BoardingWhite.png",
             "alpha": true
-        }, 
+        },
         "waiting": {
             "image": "game/person/Waiting.png",
             "alpha": true
-        }, 
+        },
         "waitingWhite": {
             "image": "game/person/WaitingWhite.png",
             "alpha": true
@@ -180,15 +198,15 @@
         "flag": {
             "image": "game/person/Flag.png",
             "alpha": true
-        }, 
+        },
         "flagWhite": {
             "image": "game/person/FlagWhite.png",
             "alpha": true
-        }, 
+        },
         "airport": {
             "image": "game/node/Airport.png",
             "alpha": true
-        }, 
+        },
         "office": {
             "image": "game/node/Office.png",
             "alpha": true
@@ -293,7 +311,7 @@
             "image": "ui/ArrowGreen.png",
             "alpha": true
         }
-    }, 
+    },
     "audio": {
         "volume": {
             "sounds": {
@@ -409,20 +427,20 @@
                 "volume": 0.2
             }
         }
-    }, 
+    },
     "controls": {
         "layer1": {
             "default": 49,
             "current": 49
-        }, 
+        },
         "layer2": {
             "default": 50,
             "current": 50
-        }, 
+        },
         "layer3": {
             "default": 51,
             "current": 51
-        }, 
+        },
         "layer4": {
             "default": 52,
             "current": 52
@@ -455,20 +473,21 @@
             "default": 102,
             "current": 102
         }
-    }, 
-    "saves": [], 
+    },
+    "saves": [],
     "maps": {
         "builtIn": {
-            "London": "map1.json", 
+            "London": "map1.json",
             "Test": "map2.json",
-            "Another test": "map_Another_test.json"
+            "Another test": "map_Another_test.json",
+            "move test": "map_move_test.json"
         },
         "custom": {
-            "size1": "map_size1.json", 
-            "size2": "map_size2.json", 
-            "size3": "map_size3.json", 
+            "size1": "map_size1.json",
+            "size2": "map_size2.json",
+            "size3": "map_size3.json",
             "size4": "map_size4.json",
             "A test for Jess": "map_A_test_for_Jess.json"
         }
-    } 
+    }
 }

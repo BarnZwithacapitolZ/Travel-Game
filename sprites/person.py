@@ -373,6 +373,9 @@ class Person(pygame.sprite.Sprite):
             surface, YELLOW, startx, starty, int(thickness * scale))
 
     def drawTimerOutline(self, surface):
+        if self.spriteRenderer.getLives() is None:
+            return
+
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
@@ -388,6 +391,9 @@ class Person(pygame.sprite.Sprite):
             int(thickness * scale))
 
     def drawTimerTime(self, surface=None):
+        if self.spriteRenderer.getLives() is None:
+            return
+
         textColor = (
             WHITE if self.spriteRenderer.getDarkMode() else BLACK)
 
@@ -405,6 +411,9 @@ class Person(pygame.sprite.Sprite):
 
     # Draw how long is left at each stop
     def drawTimer(self, surface):
+        if self.spriteRenderer.getLives() is None:
+            return
+
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
@@ -654,7 +663,10 @@ class Person(pygame.sprite.Sprite):
         if self.spriteRenderer.getPaused():
             return
 
-        self.timer -= self.game.dt * self.spriteRenderer.getDt()
+        # We don't want to decrease the timer if there are no lives,
+        # since then there is no "challenge"
+        if self.spriteRenderer.getLives() is not None:
+            self.timer -= self.game.dt * self.spriteRenderer.getDt()
 
         if self.timer <= 0:
             self.game.audioLoader.playSound("playerFailure", 1)
