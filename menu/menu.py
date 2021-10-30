@@ -1596,7 +1596,7 @@ class GameHud(GameHudLayout):
         self.pause.dirty = True
 
     def toggleFastForward(self, selected=False):
-        if not hasattr(self, 'fastForward'):
+        if not hasattr(self, 'fastForward') or self.hudButtonHoverOver:
             return
 
         fastForwardImage = (

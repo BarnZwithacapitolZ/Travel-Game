@@ -65,18 +65,18 @@ class MapEditor(SpriteRenderer):
         self.showTransport = showTransport
 
     def undoChange(self):
-        if self.rendering:
-            if len(self.levelChanges) > 1:
-                popped = self.levelChanges.pop()
-                self.poppedLevelChanges.append(popped)
-                self.levelData = copy.deepcopy(self.levelChanges[-1])
+        if not self.rendering or len(self.levelChanges) <= 1:
+            return
+        popped = self.levelChanges.pop()
+        self.poppedLevelChanges.append(popped)
+        self.levelData = copy.deepcopy(self.levelChanges[-1])
 
     def redoChange(self):
-        if self.rendering:
-            if len(self.poppedLevelChanges) > 0:
-                popped = self.poppedLevelChanges.pop()
-                self.levelChanges.append(popped)
-                self.levelData = copy.deepcopy(popped)
+        if not self.rendering or len(self.poppedLevelChanges) <= 0:
+            return
+        popped = self.poppedLevelChanges.pop()
+        self.levelChanges.append(popped)
+        self.levelData = copy.deepcopy(popped)
 
     def addChange(self):
         change = copy.deepcopy(self.levelData)
