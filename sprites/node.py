@@ -13,9 +13,23 @@ vec = pygame.math.Vector2
 
 class NodeType(Enum):
     REGULAR = "regular"
+    # Stop types
     STOP = "stops"
+    BUSSTOP = "bus"
+    METROSTATION = "metro"
+    TRAMSTOP = "tram"
+
+    # Destination (location) types
     DESTINATION = "destinations"
+    AIRPORT = "airport"
+    OFFICE = "office"
+    HOUSE = "house"
+    SCHOOL = "school"
+    SHOP = "shop"
+
+    # Special node types
     SPECIAL = "specials"
+    NOWALKNODE = "noWalkNode"
 
 
 class Node(pygame.sprite.Sprite):
@@ -49,7 +63,9 @@ class Node(pygame.sprite.Sprite):
             self.game, self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
+        # Node Type definition
         self.type = NodeType.REGULAR
+        self.subType = NodeType.REGULAR
 
         self.dirty = True
 
@@ -59,9 +75,9 @@ class Node(pygame.sprite.Sprite):
 
     @staticmethod
     def checkRegularNode(node):
-        instances = [Stop, Destination, NoWalkNode]
+        instances = [NodeType.STOP, NodeType.DESTINATION, NodeType.SPECIAL]
         for instance in instances:
-            if isinstance(node, instance):
+            if node.getType() == instance:
                 return False
         return True
 
@@ -93,6 +109,9 @@ class Node(pygame.sprite.Sprite):
 
     def getType(self):
         return self.type
+
+    def getSubType(self):
+        return self.subType
 
     def setCurrentImage(self, image):
         self.currentImage = image
@@ -413,6 +432,7 @@ class NoWalkNode(Node):
             personClickManager, transportClickManager)
         self.images = ["nodeNoWalking"]
         self.type = NodeType.SPECIAL
+        self.subType = NodeType.NOWALKNODE
 
 
 class EditorNoWalkNode(EditorNode, NoWalkNode):
@@ -443,6 +463,7 @@ class Stop(Node):
         self.pos = self.pos + self.offset
 
         self.type = NodeType.STOP
+        self.subtype = NodeType.STOP
 
 
 class BusStop(Stop):
@@ -453,6 +474,7 @@ class BusStop(Stop):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["busStation"]
+        self.subType = NodeType.BUSSTOP
 
 
 class EditorBusStop(EditorNode, BusStop):
@@ -476,6 +498,7 @@ class MetroStation(Stop):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["trainStation"]
+        self.subType = NodeType.METROSTATION
 
 
 class EditorMetroStation(EditorNode, MetroStation):
@@ -499,6 +522,7 @@ class TramStop(Stop):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["tramStation"]
+        self.subtype = NodeType.TRAMSTOP
 
 
 class EditorTramStop(EditorNode, TramStop):
@@ -527,6 +551,7 @@ class Destination(Node):
         self.pos = self.pos + self.offset
 
         self.type = NodeType.DESTINATION
+        self.subtype = NodeType.DESTINATION
 
 
 class Airport(Destination):
@@ -537,6 +562,7 @@ class Airport(Destination):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["airport"]
+        self.subType = NodeType.AIRPORT
 
 
 class EditorAirport(EditorNode, Airport):
@@ -560,6 +586,7 @@ class Office(Destination):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["office"]
+        self.subType = NodeType.OFFICE
 
 
 class EditorOffice(EditorNode, Office):
@@ -583,6 +610,7 @@ class House(Destination):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["house"]
+        self.subType = NodeType.HOUSE
 
 
 class EditorHouse(EditorNode, House):
@@ -606,6 +634,7 @@ class School(Destination):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["school"]
+        self.subType = NodeType.SCHOOL
 
 
 class EditorSchool(EditorNode, School):
@@ -629,6 +658,7 @@ class Shop(Destination):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["shop"]
+        self.subType = NodeType.SHOP
 
 
 class EditorShop(EditorNode, Shop):

@@ -4,7 +4,7 @@ from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND, LAYERNAMES
 from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
-from node import Stop, Destination, NoWalkNode
+from node import NodeType
 from meterController import MeterController
 from menu import GameHud, GameMenu, MessageHud, PreviewHud
 
@@ -505,11 +505,12 @@ class SpriteRenderer():
         # Sort the node so that the stops are at the top
         if sortNodes:
             allNodes = sorted(
-                allNodes, key=lambda x: isinstance(x, Stop))
+                allNodes, key=lambda x: x.getType() == NodeType.STOP,
+                reverse=True)
             allNodes = sorted(
-                allNodes, key=lambda x: isinstance(x, Destination))
+                allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
+                reverse=True)
             # Reverse the list so they're at the front
-            allNodes = allNodes[::-1]
 
         return allNodes
 
@@ -524,10 +525,15 @@ class SpriteRenderer():
 
         # Make any node that is not a regular node is at the front of the list,
         # so they are not removed and the regular node is
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, NoWalkNode))
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, Stop))
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, Destination))
-        allNodes = allNodes[::-1]  # Reverse the list so they're at the front
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.SPECIAL,
+            reverse=True)
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.STOP,
+            reverse=True)
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
+            reverse=True)
 
         for node in allNodes:
             if node.getNumber() not in seen:

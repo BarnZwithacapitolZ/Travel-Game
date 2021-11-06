@@ -566,8 +566,8 @@ class InputBox(Label):
     def moveIndicator(self):
         if hasattr(self.indicator, 'rect'):
             self.indicator.x = (self.x + self.getFontSizeScaled(
-                    self.menu.game.textHandler.getString(True))[0]
-                    / self.menu.renderer.getScale())
+                self.menu.game.textHandler.getString(True))[0]
+                / self.menu.renderer.getScale())
             self.indicator.rect.x = (
                 self.indicator.x * self.menu.renderer.getScale())
 
@@ -676,8 +676,10 @@ class NumberIncrementer(Label):
 
         print(self.getFontSize())
 
-        upArrowBox = Rectangle(self.menu, BLACK, (5, self.getFontSize()[1] / 2), (0, 0))
-        downArrowBox = Rectangle(self.menu, RED, (5, self.getFontSize()[1] / 2), (0, 11))
+        upArrowBox = Rectangle(
+            self.menu, BLACK, (5, self.getFontSize()[1] / 2), (0, 0))
+        downArrowBox = Rectangle(
+            self.menu, RED, (5, self.getFontSize()[1] / 2), (0, 11))
 
         upArrowBox.drawPaused(self.image)
         downArrowBox.drawPaused(self.image)
@@ -813,8 +815,8 @@ class Rectangle(Shape):
 # not drawing a rect
 class FillRectangle(Rectangle):
     def __init__(
-                self, menu, color, size=tuple(), pos=tuple(), shapeOutline=0,
-                fill=None):
+            self, menu, color, size=tuple(), pos=tuple(), shapeOutline=0,
+            fill=None):
         super().__init__(menu, color, size, pos, shapeOutline, fill=fill)
 
     def __render(self):
@@ -994,9 +996,11 @@ class Slider(Rectangle):
         self.dirty = False
 
         pos, size = self.setRect()
-        posBar = vec(self.x, self.y + (self.height / 2)) * self.menu.renderer.getScale()
+        posBar = vec(self.x, self.y + (self.height / 2)) * \
+            self.menu.renderer.getScale()
         posHandle = vec(self.handleX, self.y) * self.menu.renderer.getScale()
-        sizeHandle = vec(self.handleWidth, self.height * 2) * self.menu.renderer.getScale()
+        sizeHandle = vec(self.handleWidth, self.height * 2) * \
+            self.menu.renderer.getScale()
         self.rectBar = pygame.Rect(posBar, size)
         self.rectHandle = pygame.Rect(posHandle, sizeHandle)
 
@@ -1008,7 +1012,8 @@ class Slider(Rectangle):
         if self.alpha is not None:
             self.image.set_alpha(self.alpha, pygame.RLEACCEL)
         if self.fill is not None:
-            self.drawShape(self.image, self.fill, pygame.Rect(0, (self.height / 2) * self.menu.renderer.getScale(), *size), pygame.Rect(0, 0, *sizeHandle), 0)
+            self.drawShape(self.image, self.fill, pygame.Rect(
+                0, (self.height / 2) * self.menu.renderer.getScale(), *size), pygame.Rect(0, 0, *sizeHandle), 0)
         self.drawShape(
             self.image, self.color, pygame.Rect(0, (self.height / 2) * self.menu.renderer.getScale(), *size), pygame.Rect(0, 0, *sizeHandle), self.outline)
 

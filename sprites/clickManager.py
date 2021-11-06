@@ -528,14 +528,26 @@ class EditorClickManager(ClickManager):
                 nodeType, node.getConnectionType(), node)
 
     # Delete any node from the map (stops, locations, specials etc.)
-    def deleteNode(self, node):
+    def deleteNode(self, node, audio=True):
         if node.getType() == NODE.NodeType.REGULAR:
-            self.game.audioLoader.playSound("uiError", 1)
+            if audio:
+                self.game.audioLoader.playSound("uiError", 1)
             return
 
-        self.game.audioLoader.playSound("uiCancel", 1)
+        if audio:
+            self.game.audioLoader.playSound("uiCancel", 1)
         self.game.mapEditor.deleteNode(
             node.getType().value, node.getConnectionType(), node)
+
+    def deleteTransport(self, node, audio=True):
+        if len(node.getTransports()) < 1:
+            if audio:
+                self.game.audioLoader.playSound("uiError", 1)
+            return
+
+        if audio:
+            self.game.audioLoader.playSound("uiCancel", 1)
+        self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
 
     def deleteConnection(self, connection):
         fromNode = connection.getFrom()
@@ -547,24 +559,14 @@ class EditorClickManager(ClickManager):
 
         # Remove any stops and transports from nodes with no connections
         if len(fromNode.getConnections()) <= 0:
-            self.deleteTransport(fromNode)
-            self.deleteNode(fromNode, NODE.Stop, "stops")
-            self.deleteNode(fromNode, NODE.Destination, "destinations")
-            self.deleteNode(fromNode, NODE.NoWalkNode, "specials")
+            print(fromNode)
+            self.deleteTransport(fromNode, audio=False)
+            self.deleteNode(fromNode, audio=False)
 
         if len(toNode.getConnections()) <= 0:
-            self.deleteTransport(toNode)
-            self.deleteNode(toNode, NODE.Stop, "stops")
-            self.deleteNode(toNode, NODE.Destination, "destinations")
-            self.deleteNode(toNode, NODE.NoWalkNode, "specials")
-
-    def deleteTransport(self, node):
-        # Check that there is a transportation to delete
-        if len(node.getTransports()) < 1:
-            return
-        self.game.audioLoader.playSound("uiCancel", 1)
-        self.game.mapEditor.deleteTransport(node.getConnectionType(), node)
-
+            print(toNode)
+            self.deleteTransport(toNode, audio=False)
+            self.deleteNode(toNode, audio=False)
 
 class ControlClickManager(ClickManager):
     def __init__(self, game):
