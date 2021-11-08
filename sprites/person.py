@@ -866,6 +866,7 @@ class Particle(pygame.sprite.Sprite):
             * self.spriteRenderer.getFixedScale())
 
         self.image = pygame.Surface((self.size)).convert()
+        self.image.set_colorkey((0, 0, 0))  # Remove black border
 
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
