@@ -63,7 +63,7 @@ class Transport(pygame.sprite.Sprite):
             self.spriteRenderer.getPersonHolderClickManager())
 
         self.imageName = "train"
-        self.stopType = (NODE.MetroStation, NODE.Destination)
+        self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
         self.boardingType = PERSON.Person.Status.BOARDING
 
         self.path = []
@@ -92,6 +92,13 @@ class Transport(pygame.sprite.Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+    # Check if a given node is one the transport can stop at
+    def checkIsStopType(self, node):
+        if (node.getType() in self.stopType
+                or node.getSubType() in self.stopType):
+            return True
+        return False
 
     # Switch to the next connection in the path,
     # so the player keeps following it
@@ -166,7 +173,7 @@ class Transport(pygame.sprite.Sprite):
             self.setConnection(nextNode)
 
         # and len(self.currentNode.getPeople()) > 0
-        if isinstance(self.currentNode, self.stopType):
+        if self.checkIsStopType(self.currentNode):
             # Remove anyone departing before we add new people
             self.removePeople()
 
@@ -539,7 +546,7 @@ class Transport(pygame.sprite.Sprite):
                 # Speed up when leaving a stop, only if it is the first node
                 # in the players path
                 if (dis >= currentDis - 15 and dis <= connectionLength - 0.5
-                        and isinstance(self.currentNode, self.stopType)
+                        and self.checkIsStopType(self.currentNode)
                         and self.currentNode == self.firstPathNode):
                     self.vel = ((
                         -(self.currentConnection.getLength() + dxy)
@@ -549,8 +556,8 @@ class Transport(pygame.sprite.Sprite):
                 # Slow down when reaching a stop, only if it is the last node
                 # in the players path
                 elif (dis <= 15
-                        and isinstance(
-                            self.currentConnection.getTo(), self.stopType)
+                        and self.checkIsStopType(
+                            self.currentConnection.getTo())
                         and len(self.path) <= 1):
                     self.vel = ((
                         dxy * (self.speed / 10)) * self.game.dt
@@ -584,7 +591,7 @@ class Transport(pygame.sprite.Sprite):
             if dis >= 0.5 and self.moving:  # Move towards the node
                 # Speed up when leaving a stop
                 if (dis >= currentDis - 15 and dis <= connectionLength - 0.5
-                        and isinstance(self.currentNode, self.stopType)):
+                        and self.checkIsStopType(self.currentNode)):
                     self.vel = ((
                         -(self.currentConnection.getLength() + dxy)
                         * (self.speed / 12)) * self.game.dt
@@ -592,8 +599,8 @@ class Transport(pygame.sprite.Sprite):
 
                 # Slow down when reaching a stop
                 elif (dis <= 15
-                        and isinstance(
-                            self.currentConnection.getTo(), self.stopType)):
+                        and self.checkIsStopType(
+                            self.currentConnection.getTo())):
                     self.vel = ((
                         dxy * (self.speed / 10)) * self.game.dt
                         * self.spriteRenderer.getDt())
@@ -626,7 +633,7 @@ class Taxi(Transport):
             spriteRenderer, groups, currentConnection, running, clickManager,
             personClickManager)
         self.imageName = "taxi"
-        self.stopType = NODE.Node
+        self.stopType = NODE.NodeType.aslist()
         self.boardingType = PERSON.Person.Status.BOARDINGTAXI
 
         # self.timerLength = 200 # To Do: choose a value length
@@ -669,18 +676,18 @@ class Taxi(Transport):
             self.setConnection(nextNode)
             self.hasStopped = False
 
-        if (isinstance(self.currentNode, self.stopType)
+        if (self.checkIsStopType(self.currentNode)
                 and self.checkTaxiStop(self.currentNode) or self.hasStopped):
             self.checkPeopleBoarding()
 
-        if (isinstance(self.currentNode, self.stopType)
+        if (self.checkIsStopType(self.currentNode)
                 and self.checkPersonStop(self.currentNode)):
             # Remove anyone departing before we add new people
             self.removePeople()
 
             # Check again if there is anyone waiting for a taxi after we have
             # dropped off the previous user
-            if (isinstance(self.currentNode, self.stopType)
+            if (self.checkIsStopType(self.currentNode)
                     and self.checkTaxiStop(self.currentNode)):
                 self.checkPeopleBoarding()
 
@@ -702,7 +709,8 @@ class Taxi(Transport):
     # Check if the person travelling on the taxi wants to leave the taxi
     def checkPersonStop(self, node):
         # People can't get off at no walk nodes
-        if len(self.people) <= 0 or isinstance(node, NODE.NoWalkNode):
+        if (len(self.people) <= 0
+                or node.getSubType() == NODE.NodeType.NOWALKNODE):
             return False
 
         for person in self.people:
@@ -737,7 +745,7 @@ class Taxi(Transport):
             if dis >= 0.5 and self.moving:
                 # speed up when leaving a stop
                 if (dis >= currentDis - 15 and dis <= connectionLength - 0.5
-                        and isinstance(self.currentNode, self.stopType)
+                        and self.checkIsStopType(self.currentNode)
                         and self.currentNode == self.firstPathNode):
 
                     if (self.checkTaxiStop(self.currentNode)
@@ -755,8 +763,8 @@ class Taxi(Transport):
 
                 # slow down when reaching a node
                 elif (dis <= 15
-                        and isinstance(
-                            self.currentConnection.getTo(), self.stopType)
+                        and self.checkIsStopType(
+                            self.currentConnection.getTo())
                         and len(self.path) <= 1):
 
                     if (self.checkTaxiStop(self.currentConnection.getTo())
@@ -797,7 +805,7 @@ class Taxi(Transport):
             if dis >= 0.5 and self.moving:  # Move towards the node
                 # speed up when leaving
                 if (dis >= currentDis - 15 and dis <= connectionLength - 0.5
-                        and isinstance(self.currentNode, self.stopType)):
+                        and self.checkIsStopType(self.currentNode)):
 
                     if (self.checkTaxiStop(self.currentNode)
                             or self.checkPersonStop(self.currentNode)
@@ -814,9 +822,8 @@ class Taxi(Transport):
 
                 # slow down when stopping
                 elif (dis <= 15
-                        and isinstance(
-                            self.currentConnection.getTo(), self.stopType)):
-
+                        and self.checkIsStopType(
+                            self.currentConnection.getTo())):
                     if (self.checkTaxiStop(self.currentConnection.getTo())
                             or self.checkPersonStop(
                                 self.currentConnection.getTo())):
@@ -857,7 +864,7 @@ class Bus(Transport):
             spriteRenderer, groups, currentConnection, running, clickManager,
             personClickManager)
         self.imageName = "bus"
-        self.stopType = (NODE.BusStop, NODE.Destination)
+        self.stopType = [NODE.NodeType.BUSSTOP, NODE.NodeType.DESTINATION]
 
 
 class Tram(Transport):
@@ -868,7 +875,7 @@ class Tram(Transport):
             spriteRenderer, groups, currentConnection, running, clickManager,
             personClickManager)
         self.imageName = "tram"
-        self.stopType = (NODE.TramStop, NODE.Destination)
+        self.stopType = [NODE.NodeType.TRAMSTOP, NODE.NodeType.DESTINATION]
 
 
 class Metro(Transport):

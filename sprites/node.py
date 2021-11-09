@@ -13,6 +13,7 @@ vec = pygame.math.Vector2
 
 class NodeType(Enum):
     REGULAR = "regular"
+
     # Stop types
     STOP = "stops"
     BUSSTOP = "bus"
@@ -30,6 +31,11 @@ class NodeType(Enum):
     # Special node types
     SPECIAL = "specials"
     NOWALKNODE = "noWalkNode"
+
+    # Return a list of all the type nodes
+    @classmethod
+    def aslist(cls):
+        return [cls.REGULAR, cls.STOP, cls.DESTINATION, cls.SPECIAL]
 
 
 class Node(pygame.sprite.Sprite):

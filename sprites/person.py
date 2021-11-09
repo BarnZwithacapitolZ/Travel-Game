@@ -2,7 +2,6 @@ import pygame
 import random
 import math
 import numpy
-# import node as NODE
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY
