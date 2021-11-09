@@ -463,7 +463,7 @@ class Stop(Node):
         self.pos = self.pos + self.offset
 
         self.type = NodeType.STOP
-        self.subtype = NodeType.STOP
+        self.subType = NodeType.STOP
 
 
 class BusStop(Stop):
@@ -522,7 +522,8 @@ class TramStop(Stop):
             spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager)
         self.images = ["tramStation"]
-        self.subtype = NodeType.TRAMSTOP
+        self.subType = NodeType.TRAMSTOP
+
 
 
 class EditorTramStop(EditorNode, TramStop):
@@ -551,7 +552,7 @@ class Destination(Node):
         self.pos = self.pos + self.offset
 
         self.type = NodeType.DESTINATION
-        self.subtype = NodeType.DESTINATION
+        self.subType = NodeType.DESTINATION
 
 
 class Airport(Destination):

@@ -23,6 +23,12 @@ class Person(pygame.sprite.Sprite):
         DEPARTING = auto()
         FLAG = auto()
 
+        @classmethod
+        def aslist(cls):
+            return [
+                cls.UNASSIGNED, cls.WAITING, cls.BOARDING, cls.WALKING,
+                cls.FLAG]
+
     def __init__(
             self, spriteRenderer, groups, clickManager, transportClickManager,
             spawnDestinations, possibleSpawns, possibleDestinations):

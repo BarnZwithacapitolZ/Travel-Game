@@ -1,5 +1,5 @@
-import person as PERSON
-import node as NODE
+from person import Person
+from node import NodeType, Node
 from enum import Enum, auto
 
 
@@ -188,7 +188,7 @@ class PersonClickManager(ClickManager):
 
         for connection in n["node"].getConnections():
             # We don't want to include no walk nodes
-            if not isinstance(connection.getTo(), NODE.NoWalkNode):
+            if connection.getTo().getSubType() != NodeType.NOWALKNODE:
                 node = {"node": connection.getTo(), "parent": n}
                 adjNodes.append(node)
         return adjNodes
@@ -229,8 +229,8 @@ class PersonClickManager(ClickManager):
                     if node.getNumber() == B.getNumber():
                         # If its a stop on a different layer,
                         # switch to that layer at the end of the path
-                        if (isinstance(B, NODE.MetroStation)
-                                or isinstance(B, NODE.TramStop)):
+                        if (B.getSubType() == NodeType.METROSTATION
+                                or B.getSubType() == NodeType.TRAMSTOP):
                             finalNode = B
                         B = node
                         startingConnectionBFound = True
@@ -275,11 +275,7 @@ class PersonClickManager(ClickManager):
         if self.node is not None and self.person is not None:
             # Only move the person if they're a curtain state
 
-            if (self.person.getStatus() == PERSON.Person.Status.UNASSIGNED
-                    or self.person.getStatus() == PERSON.Person.Status.WAITING
-                    or self.person.getStatus() == PERSON.Person.Status.BOARDING
-                    or self.person.getStatus() == PERSON.Person.Status.WALKING
-                    or self.person.getStatus() == PERSON.Person.Status.FLAG):
+            if (self.person.getStatus() in Person.Status.aslist()):
                 # Create the path
                 path = self.pathFinding()
 
@@ -519,7 +515,7 @@ class EditorClickManager(ClickManager):
         self.game.audioLoader.playSound("uiSuccess", 1)
 
         # Its not a regular node, we want to swap the nodes instead of adding
-        if not NODE.Node.checkRegularNode(node):
+        if not Node.checkRegularNode(node):
             self.game.mapEditor.swapNode(
                 node.getType().value, nodeType, node.getConnectionType(), node)
 
@@ -529,7 +525,7 @@ class EditorClickManager(ClickManager):
 
     # Delete any node from the map (stops, locations, specials etc.)
     def deleteNode(self, node, audio=True):
-        if node.getType() == NODE.NodeType.REGULAR:
+        if node.getType() == NodeType.REGULAR:
             if audio:
                 self.game.audioLoader.playSound("uiError", 1)
             return
@@ -567,6 +563,7 @@ class EditorClickManager(ClickManager):
             print(toNode)
             self.deleteTransport(toNode, audio=False)
             self.deleteNode(toNode, audio=False)
+
 
 class ControlClickManager(ClickManager):
     def __init__(self, game):
