@@ -3,7 +3,7 @@ import json
 from node import (
     Node, NoWalkNode, MetroStation, BusStop, TramStop, EditorNode,
     EditorMetroStation, EditorBusStop, EditorTramStop, EditorNoWalkNode,
-    Airport, Office, House, Destination, School, Shop,
+    Airport, Office, House, School, Shop,
     EditorAirport, EditorOffice, EditorHouse, EditorSchool, EditorShop,
     NodeType)
 from connection import Connection
@@ -267,7 +267,7 @@ class GridManager:
                     self.spriteRenderer.getPersonClickManager(),
                     self.spriteRenderer.getTransportClickManager())
 
-            elif isinstance(n, Destination):
+            elif n.getType() == NodeType.DESTINATION:
                 self.destinations.append(n)
 
             self.nodes.append(n)
@@ -401,7 +401,7 @@ class GridManager:
                         connectionType, position[0], position[1],
                         clickManagers[0], clickManagers[1], clickManagers[2])
 
-                elif isinstance(n, Destination):
+                elif n.getType() == NodeType.DESTINATION:
                     self.destinations.append(n)
 
                 self.nodes.append(n)

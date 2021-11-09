@@ -23,6 +23,7 @@ class Person(pygame.sprite.Sprite):
         DEPARTING = auto()
         FLAG = auto()
 
+        # Return a list of types which allow the person to move
         @classmethod
         def aslist(cls):
             return [

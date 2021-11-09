@@ -525,7 +525,6 @@ class TramStop(Stop):
         self.subType = NodeType.TRAMSTOP
 
 
-
 class EditorTramStop(EditorNode, TramStop):
     def __init__(
             self, spriteRenderer, groups, number, connectionType, x, y,
