@@ -8,7 +8,9 @@ from node import (
     NodeType)
 from connection import Connection
 from transport import Metro, Bus, Tram, Taxi
-from config import DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT
+from config import (
+    DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT, LAYERNODEMAPPINGS,
+    LAYERTRANSPORTMAPPINGS)
 
 
 class GridManager:
@@ -87,19 +89,10 @@ class GridManager:
         }
 
         # Define which nodes we can add to each of the 3 layers
-        self.layerNodeMappings = {
-            1: ["metro", "airport", "house", "office", "school", "shop"],
-            2: [
-                "bus", "noWalkNode", "airport", "house", "office", "school",
-                "shop"],
-            3: ["tram", "airport", "house", "office", "school", "shop"]
-        }
+        self.layerNodeMappings = LAYERNODEMAPPINGS
+
         # Define which transports we can add to each of the 3 layers
-        self.layerTransportMappings = {
-            1: ["metro"],
-            2: ["bus", "taxi"],
-            3: ["tram"]
-        }
+        self.layerTransportMappings = LAYERTRANSPORTMAPPINGS
 
     def getNodePositions(self):
         return self.nodePositions
@@ -204,6 +197,8 @@ class GridManager:
     def removeTempConnections(self):
         self.tempConnections = []
 
+    # Check for an opposing connection in the opposite direction as the
+    # current connection
     def getOppositeConnection(self, currentConnection):
         for connection in self.connections:
             if (connection.getFrom() == currentConnection.getTo()

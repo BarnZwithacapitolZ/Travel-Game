@@ -365,7 +365,7 @@ class SpriteRenderer():
         self.gridLayer2 = Layer2(
             self, (self.allSprites, self.layer2, self.layer4), level, spacing)
 
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.setLayerLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         self.gridLayer1.grid.loadTransport("layer 1")
@@ -432,7 +432,7 @@ class SpriteRenderer():
         gridLayer3 = Layer3(self, (), level, spacing)
         gridLayer1 = Layer1(self, (), level, spacing)
         gridLayer2 = Layer2(self, (), level, spacing)
-        gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
+        gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3)
 
         return gridLayer4.getLineSurface()
 
@@ -686,7 +686,7 @@ class SpriteRenderer():
 
         # We want to reset the layer 4 lines with the
         # new ones (resized) from the other layers
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.setLayerLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # resize huds and menus

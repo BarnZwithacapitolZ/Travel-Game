@@ -199,7 +199,7 @@ class MapEditor(SpriteRenderer):
         self.gridLayer2 = EditorLayer2(
             self, (self.allSprites, self.layer2, self.layer4), level)
 
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.setLayerLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # Add the transport not running (so it doesnt move)
@@ -319,7 +319,7 @@ class MapEditor(SpriteRenderer):
             layer.createTempConnections(newConnections, False)
 
         # Add the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerTempLines(
+        self.gridLayer4.setLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
     def createConnection(self, connectionType, startNode, endNode):
@@ -327,23 +327,27 @@ class MapEditor(SpriteRenderer):
         connections = self.getIntersetingConnections(layer, startNode, endNode)
 
         for x in range(len(connections) - 1):
+            connection = [
+                connections[x].getNumber(), connections[x + 1].getNumber()]
+
+            # We don't want to add the connection to the map if an equivelant
+            # connection already exists
+            if connection in self.levelData["connections"].setdefault(
+                    connectionType, []):
+                return
+
             newConnections = layer.getGrid().addConnections(
                 connectionType, connections[x], connections[x + 1])
 
             # Only add the new connections to the nodes
             layer.addConnections(newConnections)
-            layer.createConnections()
+            layer.createConnections(newConnections, False)
 
             # Add the new connection to the level data
-            connection = [
-                connections[x].getNumber(), connections[x + 1].getNumber()]
+            self.levelData["connections"][connectionType].append(
+                connection)
 
-            if connection not in self.levelData["connections"].setdefault(
-                    connectionType, []):
-                self.levelData["connections"][connectionType].append(
-                    connection)
-
-        self.gridLayer4.addLayerLines(
+        self.gridLayer4.setLayerLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
         self.addChange()
 
@@ -363,7 +367,8 @@ class MapEditor(SpriteRenderer):
         # if not, throw the error message
         if key not in mappings:
             self.messageSystem.addMessage(f"You cannot add a {key} to \
-                {self.getLayerName(node.getConnectionType()).lower()} :(")
+                {self.getLayerName(node.getConnectionType()).lower()} \
+                layer :(")
             return False
         return True
 
@@ -463,8 +468,12 @@ class MapEditor(SpriteRenderer):
         connections = layer.getGrid().getOppositeConnection(connection)
 
         if connections:
-            layer.getGrid().removeConnections(connections)
+            # Remove the connections from the layer and its associalted grid.
             layer.removeConnections(connections)
+
+            # 'Reset' the lines by creating all the connections again,
+            # excluding the ones we just deleted.
+            layer.createConnections()
 
             self.levelData["connections"][connectionType].remove(
                 [
@@ -473,6 +482,11 @@ class MapEditor(SpriteRenderer):
 
             if len(self.levelData["connections"][connectionType]) <= 0:
                 del self.levelData["connections"][connectionType]
+
+            # Set the layer 4 lines equal to the sum of all the other
+            # layers lines.
+            self.gridLayer4.setLayerLines(
+                self.gridLayer1, self.gridLayer2, self.gridLayer3)
             self.addChange()
 
         else:
@@ -481,12 +495,15 @@ class MapEditor(SpriteRenderer):
     def removeAllTempConnections(self, connectionType):
         layer = self.getGridLayer(connectionType)
 
-        layer.removeTempConnections()
-        layer.getGrid().removeTempConnections()
+        # Remove all temp connecionts from layer and its grid.
+        layer.removeAllTempConnections()
+
+        # 'Reset' the lines by creating all the connections again,
+        # excluding the lines we just deleted.
         layer.createTempConnections()
 
-        # remove the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerTempLines(
+        # Remove the new temp connections to layer 4 for previewing.
+        self.gridLayer4.setLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
     def updateConnection(self, layer, group):

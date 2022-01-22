@@ -71,6 +71,11 @@ class Layer():
     def setLines(self, lines):
         self.lines = lines
 
+    def setLayerLines(self, layer1, layer2, layer3):
+        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        self.lines = lines
+        self.render()
+
     def addPerson(self, person):
         if person in self.people:
             return
@@ -102,14 +107,16 @@ class Layer():
 
         for connection in connections:
             connection.getFrom().removeConnection(connection)
+        self.grid.removeConnections(connections)
 
     def addTempConnections(self, connections):
         for connection in connections:
             connection.getFrom().addConnection(connection)
 
-    def removeTempConnections(self):
+    def removeAllTempConnections(self):
         for connection in self.grid.getTempConnections():
             connection.getFrom().removeConnection(connection)
+        self.grid.removeTempConnections()
 
     # Add a person to the layer
     def createPerson(self, destinations=None):
@@ -249,8 +256,8 @@ class Layer():
         if len(self.lines + self.tempLines) > 0:
             for line in self.lines + self.tempLines:
                 pygame.draw.line(
-                    self.lineSurface, line["color"], line["posx"], line["posy"],
-                    int(line["thickness"]))
+                    self.lineSurface, line["color"], line["posx"],
+                    line["posy"], int(line["thickness"]))
 
         if nodes is not None:
             for node in nodes:
@@ -307,11 +314,6 @@ class Layer4(Layer):
         # config["graphics"]["displayHeight"] - 250))
         # self.addComponent(background)
 
-    def addLayerLines(self, layer1, layer2, layer3):
-        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
-        self.lines = lines
-        self.render()
-
 
 class MenuLayer4(Layer):
     def __init__(self, spriteRenderer, groups, level):
@@ -321,7 +323,8 @@ class MenuLayer4(Layer):
         # config["graphics"]["displayHeight"] - 250))
         # self.addComponent(background)
 
-    def addLayerLines(self, layer1, layer2, layer3):
+    # Override
+    def setLayerLines(self, layer1, layer2, layer3):
         lines = (
             layer1.getLines()
             + layer2.getLines()
@@ -369,12 +372,7 @@ class EditorLayer4(Layer):
         super().__init__(spriteRenderer, groups, "layer 4", level)
         self.number = 4
 
-    def addLayerLines(self, layer1, layer2, layer3):
-        lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
-        self.lines = lines
-        self.render()
-
-    def addLayerTempLines(self, layer1, layer2, layer3):
+    def setLayerTempLines(self, layer1, layer2, layer3):
         lines = (
             layer1.getTempLines() + layer2.getTempLines()
             + layer3.getTempLines())

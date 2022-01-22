@@ -555,12 +555,10 @@ class EditorClickManager(ClickManager):
 
         # Remove any stops and transports from nodes with no connections
         if len(fromNode.getConnections()) <= 0:
-            print(fromNode)
             self.deleteTransport(fromNode, audio=False)
             self.deleteNode(fromNode, audio=False)
 
         if len(toNode.getConnections()) <= 0:
-            print(toNode)
             self.deleteTransport(toNode, audio=False)
             self.deleteNode(toNode, audio=False)
 
