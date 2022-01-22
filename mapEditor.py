@@ -199,8 +199,7 @@ class MapEditor(SpriteRenderer):
         self.gridLayer2 = EditorLayer2(
             self, (self.allSprites, self.layer2, self.layer4), level)
 
-        self.gridLayer4.setLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
 
         # Add the transport not running (so it doesnt move)
         if self.showTransport:
@@ -334,7 +333,7 @@ class MapEditor(SpriteRenderer):
             # connection already exists
             if connection in self.levelData["connections"].setdefault(
                     connectionType, []):
-                return
+                continue
 
             newConnections = layer.getGrid().addConnections(
                 connectionType, connections[x], connections[x + 1])
@@ -347,8 +346,7 @@ class MapEditor(SpriteRenderer):
             self.levelData["connections"][connectionType].append(
                 connection)
 
-        self.gridLayer4.setLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
         self.addChange()
 
     def checkCanAddItem(self, node, item="node"):
@@ -485,8 +483,7 @@ class MapEditor(SpriteRenderer):
 
             # Set the layer 4 lines equal to the sum of all the other
             # layers lines.
-            self.gridLayer4.setLayerLines(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3)
+            self.setGridLayer4Lines()
             self.addChange()
 
         else:
@@ -506,9 +503,11 @@ class MapEditor(SpriteRenderer):
         self.gridLayer4.setLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
-    def updateConnection(self, layer, group):
-        if self.currentLayer == layer:
-            for connection in group.getGrid().getConnections():
+    def updateConnection(self, layer, connections):
+        if (self.currentLayer == layer
+                and (
+                    self.currentLayer != 4 or self.previousLayer is not None)):
+            for connection in connections:
                 connection.update()
 
     def events(self):
@@ -538,11 +537,17 @@ class MapEditor(SpriteRenderer):
             self.clickManager.setStartNode(None)
             self.game.clickManager.setClicked(False)
 
+        grid1Connections = self.gridLayer1.getGrid().getConnections()
+        grid2Connections = self.gridLayer2.getGrid().getConnections()
+        grid3Connections = self.gridLayer3.getGrid().getConnections()
+
         if (self.clickManager.getClickType()
                 == EditorClickManager.ClickType.DCONNECTION):
-            self.updateConnection(1, self.gridLayer1)
-            self.updateConnection(2, self.gridLayer2)
-            self.updateConnection(3, self.gridLayer3)
+            self.updateConnection(1, grid1Connections)
+            self.updateConnection(2, grid2Connections)
+            self.updateConnection(3, grid3Connections)
+            self.updateConnection(
+                4, grid1Connections + grid2Connections + grid3Connections)
 
     def update(self):
         if not self.rendering:

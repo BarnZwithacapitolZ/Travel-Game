@@ -291,6 +291,10 @@ class SpriteRenderer():
     def getPersonHolderClickManager(self):
         return self.personHolderClickManager
 
+    def setGridLayer4Lines(self):
+        return self.gridLayer4.setLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
     def removeLife(self):
         if self.lives is None:
             return
@@ -365,8 +369,7 @@ class SpriteRenderer():
         self.gridLayer2 = Layer2(
             self, (self.allSprites, self.layer2, self.layer4), level, spacing)
 
-        self.gridLayer4.setLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
@@ -686,8 +689,7 @@ class SpriteRenderer():
 
         # We want to reset the layer 4 lines with the
         # new ones (resized) from the other layers
-        self.gridLayer4.setLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
 
         # resize huds and menus
         self.hud.resize()
