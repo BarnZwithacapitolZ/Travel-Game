@@ -4,12 +4,12 @@ import os
 import json
 from pygame.locals import Color
 from gridManager import GridManager
-from node import EditorNode, NodeType
+from node import NodeType
 from menu import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
 from config import config, dump, MAPSFOLDER
-from layer import EditorLayer1, EditorLayer2, EditorLayer3, EditorLayer4
+from layer import Layer
 
 
 class MapEditor(SpriteRenderer):
@@ -190,15 +190,18 @@ class MapEditor(SpriteRenderer):
         self.clearLevel()
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
-        self.gridLayer4 = EditorLayer4(
-            self, (self.allSprites, self.layer4), level)
-        self.gridLayer3 = EditorLayer3(
-            self, (self.allSprites, self.layer3, self.layer4), level)
-        self.gridLayer1 = EditorLayer1(
-            self, (self.allSprites, self.layer1, self.layer4), level)
-        self.gridLayer2 = EditorLayer2(
-            self, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4 = Layer(self, (self.allSprites, self.layer4), 4, level)
+        self.gridLayer3 = Layer(self, (
+            self.allSprites, self.layer3, self.layer4), 3, level)
+        self.gridLayer2 = Layer(self, (
+            self.allSprites, self.layer2, self.layer4), 2, level)
+        self.gridLayer1 = Layer(self, (
+            self.allSprites, self.layer1, self.layer4), 1, level)
 
+        # Ordering of the layers.
+        self.gridLayer3.createGrid(True)
+        self.gridLayer1.createGrid(True)
+        self.gridLayer2.createGrid(True)
         self.setGridLayer4Lines()
 
         # Add the transport not running (so it doesnt move)

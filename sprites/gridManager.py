@@ -57,6 +57,9 @@ class GridManager:
     def getNodePositions(self):
         return self.nodePositions
 
+    def getTransportMappings(self):
+        return self.transportMappings
+
     def getNodeMappingsByLayer(self):
         if self.layer.getNumber() not in self.layerNodeMappings:
             return []

@@ -11,7 +11,7 @@ vec = pygame.math.Vector2
 
 class Layer():
     def __init__(
-            self, spriteRenderer, groups, connectionType, level=None,
+            self, spriteRenderer, groups, number, level=None,
             spacing=(1.5, 1.5)):
         self.groups = groups
 
@@ -20,7 +20,8 @@ class Layer():
 
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
-        self.connectionType = connectionType
+        self.number = number
+        self.connectionType = "layer " + str(number)
         self.level = level
 
         # each layer has its own grid manager
@@ -32,8 +33,6 @@ class Layer():
         self.previousPeopleTypes = []
         self.people = []
 
-        self.number = 1
-
         self.loadBackgroundColor(DEFAULTBACKGROUND)
 
         self.createLineSurface()
@@ -44,6 +43,12 @@ class Layer():
                 * self.game.renderer.getScale()),
             int(config["graphics"]["displayHeight"]
                 * self.game.renderer.getScale()))).convert()
+
+    def createGrid(self, full=False):
+        (self.grid.createFullGrid(self.connectionType) if full
+            else self.grid.createGrid(self.connectionType))
+        self.addConnections()
+        self.createConnections()
 
     # Get the grid of the layer
     def getGrid(self):
@@ -71,9 +76,26 @@ class Layer():
     def setLines(self, lines):
         self.lines = lines
 
-    def setLayerLines(self, layer1, layer2, layer3):
+    def setLayerLines(self, layer1, layer2, layer3, removeDuplicates=False):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
+        nodes = None
+
+        if removeDuplicates:
+            nodes = (
+                layer1.getGrid().getNodes()
+                + layer2.getGrid().getNodes()
+                + layer3.getGrid().getNodes())
+
+            self.spriteRenderer.removeDuplicates(nodes, nodes)
+
         self.lines = lines
+        self.render(nodes)
+
+    def setLayerTempLines(self, layer1, layer2, layer3):
+        lines = (
+            layer1.getTempLines() + layer2.getTempLines()
+            + layer3.getTempLines())
+        self.tempLines = lines
         self.render()
 
     def addPerson(self, person):
@@ -276,108 +298,6 @@ class Layer():
                     * self.game.renderer.getScale(),
                     config["graphics"]["displayHeight"]
                     * self.game.renderer.getScale()))
-
-
-class Layer1(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing=(1.5, 1)):
-        super().__init__(spriteRenderer, groups, "layer 1", level, spacing)
-        self.number = 1
-        self.grid.createGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class Layer2(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing=(1.5, 1)):
-        super().__init__(spriteRenderer, groups, "layer 2", level, spacing)
-        self.number = 2
-        self.grid.createGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class Layer3(Layer):
-    def __init__(self, spriteRenderer, groups, level, spacing=(1.5, 1)):
-        super().__init__(spriteRenderer, groups, "layer 3", level, spacing)
-        self.number = 3
-        self.grid.createGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class Layer4(Layer):
-    def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, "layer 4", level)
-        self.number = 4
-        # background = Background(self.game, "river", (600, 250),
-        # (config["graphics"]["displayWidth"] - 600,
-        # config["graphics"]["displayHeight"] - 250))
-        # self.addComponent(background)
-
-
-class MenuLayer4(Layer):
-    def __init__(self, spriteRenderer, groups, level):
-        super().__init__(spriteRenderer, groups, "layer 4", level)
-        # background = Background(self.game, "river", (600, 250),
-        # (config["graphics"]["displayWidth"] - 600,
-        # config["graphics"]["displayHeight"] - 250))
-        # self.addComponent(background)
-
-    # Override
-    def setLayerLines(self, layer1, layer2, layer3):
-        lines = (
-            layer1.getLines()
-            + layer2.getLines()
-            + layer3.getLines())
-        nodes = (
-            layer1.getGrid().getNodes()
-            + layer2.getGrid().getNodes()
-            + layer3.getGrid().getNodes())
-
-        self.spriteRenderer.removeDuplicates(nodes, nodes)
-
-        self.lines = lines
-        self.render(nodes)
-
-
-class EditorLayer1(Layer):
-    def __init__(self, spriteRenderer, groups, level=None):
-        super().__init__(spriteRenderer, groups, "layer 1", level)
-        self.number = 1
-        self.grid.createFullGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class EditorLayer2(Layer):
-    def __init__(self, spriteRenderer, groups, level=None):
-        super().__init__(spriteRenderer, groups, "layer 2", level)
-        self.number = 2
-        self.grid.createFullGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class EditorLayer3(Layer):
-    def __init__(self, spriteRenderer, groups, level=None):
-        super().__init__(spriteRenderer, groups, "layer 3", level)
-        self.number = 3
-        self.grid.createFullGrid(self.connectionType)
-        self.addConnections()
-        self.createConnections()
-
-
-class EditorLayer4(Layer):
-    def __init__(self, spriteRenderer, groups, level=None):
-        super().__init__(spriteRenderer, groups, "layer 4", level)
-        self.number = 4
-
-    def setLayerTempLines(self, layer1, layer2, layer3):
-        lines = (
-            layer1.getTempLines() + layer2.getTempLines()
-            + layer3.getTempLines())
-        self.tempLines = lines
-        self.render()
 
 
 class Background():
