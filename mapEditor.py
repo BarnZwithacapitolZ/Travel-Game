@@ -4,12 +4,12 @@ import os
 import json
 from pygame.locals import Color
 from gridManager import GridManager
-from node import EditorNode, NodeType
+from node import NodeType
 from menu import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
 from config import config, dump, MAPSFOLDER
-from layer import EditorLayer1, EditorLayer2, EditorLayer3, EditorLayer4
+from layer import Layer
 
 
 class MapEditor(SpriteRenderer):
@@ -190,17 +190,19 @@ class MapEditor(SpriteRenderer):
         self.clearLevel()
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
 
-        self.gridLayer4 = EditorLayer4(
-            self, (self.allSprites, self.layer4), level)
-        self.gridLayer3 = EditorLayer3(
-            self, (self.allSprites, self.layer3, self.layer4), level)
-        self.gridLayer1 = EditorLayer1(
-            self, (self.allSprites, self.layer1, self.layer4), level)
-        self.gridLayer2 = EditorLayer2(
-            self, (self.allSprites, self.layer2, self.layer4), level)
+        self.gridLayer4 = Layer(self, (self.allSprites, self.layer4), 4, level)
+        self.gridLayer3 = Layer(self, (
+            self.allSprites, self.layer3, self.layer4), 3, level)
+        self.gridLayer2 = Layer(self, (
+            self.allSprites, self.layer2, self.layer4), 2, level)
+        self.gridLayer1 = Layer(self, (
+            self.allSprites, self.layer1, self.layer4), 1, level)
 
-        self.gridLayer4.addLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        # Ordering of the layers.
+        self.gridLayer3.createGrid(True)
+        self.gridLayer1.createGrid(True)
+        self.gridLayer2.createGrid(True)
+        self.setGridLayer4Lines()
 
         # Add the transport not running (so it doesnt move)
         if self.showTransport:
@@ -319,7 +321,7 @@ class MapEditor(SpriteRenderer):
             layer.createTempConnections(newConnections, False)
 
         # Add the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerTempLines(
+        self.gridLayer4.setLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
     def createConnection(self, connectionType, startNode, endNode):
@@ -327,24 +329,27 @@ class MapEditor(SpriteRenderer):
         connections = self.getIntersetingConnections(layer, startNode, endNode)
 
         for x in range(len(connections) - 1):
+            connection = [
+                connections[x].getNumber(), connections[x + 1].getNumber()]
+
+            # We don't want to add the connection to the map if an equivelant
+            # connection already exists
+            if connection in self.levelData["connections"].setdefault(
+                    connectionType, []):
+                continue
+
             newConnections = layer.getGrid().addConnections(
                 connectionType, connections[x], connections[x + 1])
 
             # Only add the new connections to the nodes
             layer.addConnections(newConnections)
-            layer.createConnections()
+            layer.createConnections(newConnections, False)
 
             # Add the new connection to the level data
-            connection = [
-                connections[x].getNumber(), connections[x + 1].getNumber()]
+            self.levelData["connections"][connectionType].append(
+                connection)
 
-            if connection not in self.levelData["connections"].setdefault(
-                    connectionType, []):
-                self.levelData["connections"][connectionType].append(
-                    connection)
-
-        self.gridLayer4.addLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
         self.addChange()
 
     def checkCanAddItem(self, node, item="node"):
@@ -363,7 +368,8 @@ class MapEditor(SpriteRenderer):
         # if not, throw the error message
         if key not in mappings:
             self.messageSystem.addMessage(f"You cannot add a {key} to \
-                {self.getLayerName(node.getConnectionType()).lower()} :(")
+                {self.getLayerName(node.getConnectionType()).lower()} \
+                layer :(")
             return False
         return True
 
@@ -384,57 +390,49 @@ class MapEditor(SpriteRenderer):
         self.addChange()
 
     def swapNode(self, oldNodeType, newNodeType, connectionType, node):
-        self.deleteNode(oldNodeType, connectionType, node, False, False)
+        self.deleteNode(connectionType, node, False, False)
         self.addNode(newNodeType, connectionType, node)
 
     def addNode(
             self, nodeType, connectionType, node, replaceNode=True,
             addChange=True):
         layer = self.getGridLayer(connectionType)
-
         key = self.clickManager.getAddType()
-        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
 
-        if key in mappings:
-            if replaceNode:
-                # Replace the current node with the one we want to place down
-                layer.getGrid().replaceNode(
-                    connectionType, node, mappings[key])
+        if replaceNode:
+            # Replace the current node with the one we want to place down
+            layer.getGrid().replaceNode(
+                node, connectionType, nodeType, key)
 
-            # Add the node to the data, or if the connection type doesn't exist
-            # set its default to the empty list (for adding to later)
-            if nodeType in self.levelData:
-                self.levelData[nodeType].setdefault(
-                    connectionType, []).append({
-                        "location": node.getNumber(), "type": str(key)})
+        # Add the node to the data, or if the connection type doesn't exist
+        # set its default to the empty list (for adding to later)
+        if nodeType in self.levelData:
+            self.levelData[nodeType].setdefault(
+                connectionType, []).append({
+                    "location": node.getNumber(), "type": str(key)})
 
-            else:
-                self.levelData[nodeType] = {connectionType: [{
-                    "location": node.getNumber(),
-                    "type": str(key)
-                }]}
+        else:
+            self.levelData[nodeType] = {connectionType: [{
+                "location": node.getNumber(),
+                "type": str(key)
+            }]}
 
         if addChange:
             self.addChange()
 
     def deleteNode(
-            self, nodeType, connectionType, node, replaceNode=True,
+            self, connectionType, node, replaceNode=True,
             addChange=True):
         layer = self.getGridLayer(connectionType)
 
-        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
-        key = layer.getGrid().reverseMappingsSearch(mappings, node)
+        if replaceNode:
+            # Replace with default editor node
+            layer.getGrid().replaceNode(node, connectionType)
 
-        if key:
-            if replaceNode:
-                # Replace with default editor node
-                layer.getGrid().replaceNode(
-                    connectionType, node, EditorNode)
-
-            # Remove the node from the data
-            self.levelData[nodeType][connectionType].remove({
-                "location": node.getNumber(),
-                "type": str(key)})
+        # Remove the node from the data
+        self.levelData[node.getType().value][connectionType].remove({
+            "location": node.getNumber(),
+            "type": str(node.getSubType().value)})
 
         if addChange:
             self.addChange()
@@ -463,8 +461,12 @@ class MapEditor(SpriteRenderer):
         connections = layer.getGrid().getOppositeConnection(connection)
 
         if connections:
-            layer.getGrid().removeConnections(connections)
+            # Remove the connections from the layer and its associalted grid.
             layer.removeConnections(connections)
+
+            # 'Reset' the lines by creating all the connections again,
+            # excluding the ones we just deleted.
+            layer.createConnections()
 
             self.levelData["connections"][connectionType].remove(
                 [
@@ -473,6 +475,10 @@ class MapEditor(SpriteRenderer):
 
             if len(self.levelData["connections"][connectionType]) <= 0:
                 del self.levelData["connections"][connectionType]
+
+            # Set the layer 4 lines equal to the sum of all the other
+            # layers lines.
+            self.setGridLayer4Lines()
             self.addChange()
 
         else:
@@ -481,17 +487,22 @@ class MapEditor(SpriteRenderer):
     def removeAllTempConnections(self, connectionType):
         layer = self.getGridLayer(connectionType)
 
-        layer.removeTempConnections()
-        layer.getGrid().removeTempConnections()
+        # Remove all temp connecionts from layer and its grid.
+        layer.removeAllTempConnections()
+
+        # 'Reset' the lines by creating all the connections again,
+        # excluding the lines we just deleted.
         layer.createTempConnections()
 
-        # remove the new temp connections to layer 4 for previewing
-        self.gridLayer4.addLayerTempLines(
+        # Remove the new temp connections to layer 4 for previewing.
+        self.gridLayer4.setLayerTempLines(
             self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
-    def updateConnection(self, layer, group):
-        if self.currentLayer == layer:
-            for connection in group.getGrid().getConnections():
+    def updateConnection(self, layer, connections):
+        if (self.currentLayer == layer
+                and (
+                    self.currentLayer != 4 or self.previousLayer is not None)):
+            for connection in connections:
                 connection.update()
 
     def events(self):
@@ -521,11 +532,17 @@ class MapEditor(SpriteRenderer):
             self.clickManager.setStartNode(None)
             self.game.clickManager.setClicked(False)
 
+        grid1Connections = self.gridLayer1.getGrid().getConnections()
+        grid2Connections = self.gridLayer2.getGrid().getConnections()
+        grid3Connections = self.gridLayer3.getGrid().getConnections()
+
         if (self.clickManager.getClickType()
                 == EditorClickManager.ClickType.DCONNECTION):
-            self.updateConnection(1, self.gridLayer1)
-            self.updateConnection(2, self.gridLayer2)
-            self.updateConnection(3, self.gridLayer3)
+            self.updateConnection(1, grid1Connections)
+            self.updateConnection(2, grid2Connections)
+            self.updateConnection(3, grid3Connections)
+            self.updateConnection(
+                4, grid1Connections + grid2Connections + grid3Connections)
 
     def update(self):
         if not self.rendering:

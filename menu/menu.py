@@ -1492,6 +1492,10 @@ class GameHudLayout(Menu):
     def setLifeAmount(self):
         return
 
+    @abc.abstractmethod
+    def toggleFastForward(self, selected=False):
+        return
+
 
 class GameHud(GameHudLayout):
     def __init__(self, spriteRenderer, spacing=(1.5, 1.5)):

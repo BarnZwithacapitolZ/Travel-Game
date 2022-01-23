@@ -1,14 +1,11 @@
 import random
 import json
-from node import (
-    Node, NoWalkNode, MetroStation, BusStop, TramStop, EditorNode,
-    EditorMetroStation, EditorBusStop, EditorTramStop, EditorNoWalkNode,
-    Airport, Office, House, Destination, School, Shop,
-    EditorAirport, EditorOffice, EditorHouse, EditorSchool, EditorShop,
-    NodeType)
+from node import Node, EditorNode, NodeType
 from connection import Connection
 from transport import Metro, Bus, Tram, Taxi
-from config import DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT
+from config import (
+    DEFAULTBOARDWIDTH, DEFAULTBOARDHEIGHT, LAYERNODEMAPPINGS,
+    LAYERTRANSPORTMAPPINGS)
 
 
 class GridManager:
@@ -50,76 +47,18 @@ class GridManager:
             "tram": Tram,
             "taxi": Taxi
         }
-        self.stopMappings = {
-            "metro": MetroStation,
-            "bus": BusStop,
-            "tram": TramStop
-        }
-        self.editorStopMappings = {
-            "metro": EditorMetroStation,
-            "bus": EditorBusStop,
-            "tram": EditorTramStop
-        }
-        self.destinationMappings = {
-            "airport": Airport,
-            "office": Office,
-            "house": House,
-            "shop": Shop,
-            "school": School
-        }
-        self.editorDestinationMappings = {
-            "airport": EditorAirport,
-            "office": EditorOffice,
-            "house": EditorHouse,
-            "shop": EditorShop,
-            "school": EditorSchool
-        }
-        self.specialsMappings = {
-            "noWalkNode": NoWalkNode
-        }
-        self.editorSpecialsMappings = {
-            "noWalkNode": EditorNoWalkNode
-        }
-        self.editorTypeMappings = {
-            NodeType.STOP.value: self.editorStopMappings,
-            NodeType.DESTINATION.value: self.editorDestinationMappings,
-            NodeType.SPECIAL.value: self.editorSpecialsMappings
-        }
 
         # Define which nodes we can add to each of the 3 layers
-        self.layerNodeMappings = {
-            1: ["metro", "airport", "house", "office", "school", "shop"],
-            2: [
-                "bus", "noWalkNode", "airport", "house", "office", "school",
-                "shop"],
-            3: ["tram", "airport", "house", "office", "school", "shop"]
-        }
+        self.layerNodeMappings = LAYERNODEMAPPINGS
+
         # Define which transports we can add to each of the 3 layers
-        self.layerTransportMappings = {
-            1: ["metro"],
-            2: ["bus", "taxi"],
-            3: ["tram"]
-        }
+        self.layerTransportMappings = LAYERTRANSPORTMAPPINGS
 
     def getNodePositions(self):
         return self.nodePositions
 
     def getTransportMappings(self):
         return self.transportMappings
-
-    def getEditorStopMappings(self):
-        return self.editorStopMappings
-
-    def getEditorDestinationMappings(self):
-        return self.editorDestinationMappings
-
-    def getEditorSpecialsMappings(self):
-        return self.editorSpecialsMappings
-
-    def getEditorMappingsByType(self, nodeType):
-        if nodeType not in self.editorTypeMappings:
-            return
-        return self.editorTypeMappings[nodeType]
 
     def getNodeMappingsByLayer(self):
         if self.layer.getNumber() not in self.layerNodeMappings:
@@ -204,6 +143,8 @@ class GridManager:
     def removeTempConnections(self):
         self.tempConnections = []
 
+    # Check for an opposing connection in the opposite direction as the
+    # current connection
     def getOppositeConnection(self, currentConnection):
         for connection in self.connections:
             if (connection.getFrom() == currentConnection.getTo()
@@ -236,75 +177,116 @@ class GridManager:
     # Add a node to the grid if the node is not already on the grid
     def addNode(self, connection, connectionType, currentNodes, direction):
         if connection[direction] not in currentNodes:
-            clickManagers = [
-                self.spriteRenderer.getPersonClickManager(),
-                self.spriteRenderer.getTransportClickManager()]
-
-            n = None
+            n = self.addRegularNode(
+                connectionType, connection[direction], [
+                    self.spriteRenderer.getPersonClickManager(),
+                    self.spriteRenderer.getTransportClickManager()])
 
             # Check and add all special nodes
-            n = self.addNodeType(
-                NodeType.SPECIAL.value, n, self.specialsMappings,
-                connectionType, connection[direction], clickManagers)
+            self.setNodeTypeFromMap(
+                n, NodeType.SPECIAL.value, connectionType,
+                connection[direction])
 
             # Check and add all stop nodes
-            n = self.addNodeType(
-                NodeType.STOP.value, n, self.stopMappings, connectionType,
-                connection[direction], clickManagers)
+            self.setNodeTypeFromMap(
+                n, NodeType.STOP.value, connectionType, connection[direction])
 
             # Check and add all destination nodes
-            n = self.addNodeType(
-                NodeType.DESTINATION.value, n, self.destinationMappings,
-                connectionType, connection[direction], clickManagers)
+            self.setNodeTypeFromMap(
+                n, NodeType.DESTINATION.value, connectionType,
+                connection[direction])
 
-            # Add regular nodes
-            if n is None:
-                n = Node(
-                    self.spriteRenderer, self.groups, connection[direction],
-                    connectionType,
-                    self.nodePositions[connection[direction]][0],
-                    self.nodePositions[connection[direction]][1],
-                    self.spriteRenderer.getPersonClickManager(),
-                    self.spriteRenderer.getTransportClickManager())
-
-            elif isinstance(n, Destination):
-                self.destinations.append(n)
-
-            self.nodes.append(n)
             currentNodes.append(connection[direction])
 
         return currentNodes
 
-    def addNodeType(
-            self, nodeType, n, mappings, connectionType, number,
-            clickManagers=[], x=None, y=None):
-        if (nodeType not in self.map
-                or connectionType not in self.map[nodeType]):
-            return n
-
+    def addRegularNode(
+            self, connectionType, number, clickManagers=[], x=None, y=None):
+        # If the x, y coordinates aren't provided then we'll use the positions
+        # loaded in from the map.
         if x is None:
             x = self.nodePositions[number][0]
 
         if y is None:
             y = self.nodePositions[number][1]
 
-        for node in self.map[nodeType][connectionType]:
-            if node["location"] == number:
-                if len(clickManagers) <= 2:
-                    n = mappings[node["type"]](
-                        self.spriteRenderer, self.groups, number,
-                        connectionType, x, y, clickManagers[0],
-                        clickManagers[1])
+        # If there are more than 2 click managers we know its an editor node.
+        if len(clickManagers) <= 2:
+            n = Node(
+                self.spriteRenderer, self.groups, number, connectionType,
+                x, y, clickManagers[0], clickManagers[1])
 
-                else:
-                    n = mappings[node["type"]](
-                        self.spriteRenderer, self.groups, number,
-                        connectionType, x, y, clickManagers[0],
-                        clickManagers[1], clickManagers[2])
-                break
+        else:
+            n = EditorNode(
+                self.spriteRenderer, self.groups, number, connectionType,
+                x, y, clickManagers[0], clickManagers[1], clickManagers[2])
+
+        # Append to the list of total nodes
+        self.nodes.append(n)
         return n
 
-    def replaceNode(self, connectionType, node, nodeType):
+    def setNodeTypeFromMap(self, n, nodeType, connectionType, number):
+        if (nodeType not in self.map
+                or connectionType not in self.map[nodeType]):
+            return
+
+        for node in self.map[nodeType][connectionType]:
+            if node['location'] != number:
+                continue
+
+            self.setNodeType(n, nodeType, node['type'])
+
+    def setNodeType(self, n, nodeType, nodeSubType):
+        if nodeType == "stops":
+            n.setDimensions(25, 25)
+            n.setType(NodeType.STOP)
+
+            if nodeSubType == "bus":
+                n.setSubType(NodeType.BUSSTOP)
+                n.setFirstImage("busStation")
+
+            elif nodeSubType == 'metro':
+                n.setSubType(NodeType.METROSTATION)
+                n.setFirstImage("trainStation")
+
+            elif nodeSubType == 'tram':
+                n.setSubType(NodeType.TRAMSTOP)
+                n.setFirstImage("tramStation")
+
+        elif nodeType == "destinations":
+            self.destinations.append(n)
+            n.setDimensions(30, 30)
+            n.setType(NodeType.DESTINATION)
+
+            if nodeSubType == 'airport':
+                n.setSubType(NodeType.AIRPORT)
+                n.setFirstImage("airport")
+
+            elif nodeSubType == 'office':
+                n.setSubType(NodeType.OFFICE)
+                n.setFirstImage("office")
+
+            elif nodeSubType == 'house':
+                n.setSubType(NodeType.HOUSE)
+                n.setFirstImage("house")
+
+            elif nodeSubType == 'school':
+                n.setSubType(NodeType.SCHOOL)
+                n.setFirstImage("school")
+
+            elif nodeSubType == 'shop':
+                n.setSubType(NodeType.SHOP)
+                n.setFirstImage("shop")
+
+        elif nodeType == "specials":
+            n.setType(NodeType.SPECIAL)
+
+            if nodeSubType == 'noWalkNode':
+                n.setSubType(NodeType.NOWALKNODE)
+                n.setFirstImage('nodeNoWalking')
+
+    def replaceNode(
+            self, node, connectionType, nodeType=None, nodeSubType=None):
         number = node.getNumber()
         # need to transfer the connections from the old node to the new node
         connections = node.getConnections()
@@ -312,12 +294,15 @@ class GridManager:
         self.nodes.remove(node)
         node.remove()
 
-        n = nodeType(
-            self.spriteRenderer, self.groups, number, connectionType,
-            self.nodePositions[number][0], self.nodePositions[number][1],
-            self.spriteRenderer.getClickManager(),
-            self.spriteRenderer.getPersonClickManager(),
-            self.spriteRenderer.getTransportClickManager())
+        n = self.addRegularNode(
+            connectionType, number, [
+                self.spriteRenderer.getClickManager(),
+                self.spriteRenderer.getPersonClickManager(),
+                self.spriteRenderer.getTransportClickManager()
+            ], self.nodePositions[number][0], self.nodePositions[number][1])
+
+        if nodeType is not None and nodeSubType is not None:
+            self.setNodeType(n, nodeType, nodeSubType)
 
         # Need to replace the connection with the new node,
         # otherwise it cant be deleted
@@ -330,7 +315,6 @@ class GridManager:
 
         n.setConnections(connections)
         n.setTransports(transports)
-        self.nodes.append(n)
         return n
 
     # Create the grid by adding all the nodes and connections to the grid
@@ -374,37 +358,21 @@ class GridManager:
         else:
             # Loop through all the node positions
             for number, position in enumerate(self.nodePositions):
-                n = None
+                n = self.addRegularNode(
+                    connectionType, number, clickManagers, position[0],
+                    position[1])
 
                 # Check and add all special editor nodes
-                n = self.addNodeType(
-                    NodeType.SPECIAL.value, n, self.editorSpecialsMappings,
-                    connectionType, number, clickManagers, position[0],
-                    position[1])
+                self.setNodeTypeFromMap(
+                    n, NodeType.SPECIAL.value, connectionType, number)
 
                 # Check and add all stop editor nodes
-                n = self.addNodeType(
-                    NodeType.STOP.value, n, self.editorStopMappings,
-                    connectionType, number, clickManagers, position[0],
-                    position[1])
+                self.setNodeTypeFromMap(
+                    n, NodeType.STOP.value, connectionType, number)
 
                 # Check and add all destination editor nodes
-                n = self.addNodeType(
-                    NodeType.DESTINATION.value, n,
-                    self.editorDestinationMappings, connectionType, number,
-                    clickManagers, position[0], position[1])
-
-                # Add regular nodes
-                if n is None:
-                    n = EditorNode(
-                        self.spriteRenderer, self.groups, number,
-                        connectionType, position[0], position[1],
-                        clickManagers[0], clickManagers[1], clickManagers[2])
-
-                elif isinstance(n, Destination):
-                    self.destinations.append(n)
-
-                self.nodes.append(n)
+                self.setNodeTypeFromMap(
+                    n, NodeType.DESTINATION.value, connectionType, number)
 
             if connectionType in self.map["connections"]:
                 for connection in self.map["connections"][connectionType]:

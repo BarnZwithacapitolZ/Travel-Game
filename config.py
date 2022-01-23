@@ -75,6 +75,13 @@ SCANLINESGREEN = (38, 127, 0, 20)
 SCANLINESBLUE = (0, 102, 255, 20)
 SCANLINES = SCANLINESGREEN
 
+
+DEFAULTLIVES = 3
+
+DEFAULTBOARDWIDTH = 18
+DEFAULTBOARDHEIGHT = 10
+
+# Grid settings
 LAYERNAMES = [
     'Metro',
     'Roads',
@@ -82,7 +89,20 @@ LAYERNAMES = [
     'Overview'
 ]
 
-DEFAULTLIVES = 3
+# Layer, node pairs that defines which node types can be added to each of the
+# individual layers.
+LAYERNODEMAPPINGS = {
+    1: ["metro", "airport", "house", "office", "school", "shop"],
+    2: [
+        "bus", "noWalkNode", "airport", "house", "office", "school",
+        "shop"],
+    3: ["tram", "airport", "house", "office", "school", "shop"]
+}
 
-DEFAULTBOARDWIDTH = 18
-DEFAULTBOARDHEIGHT = 10
+# Layer, node pairs that defines which transport types can be added to each of the
+# individual layers.
+LAYERTRANSPORTMAPPINGS = {
+    1: ["metro"],
+    2: ["bus", "taxi"],
+    3: ["tram"]
+}

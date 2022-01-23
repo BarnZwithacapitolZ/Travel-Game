@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import numpy
-import node as NODE
+from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY
 from enum import Enum, auto
@@ -21,6 +21,13 @@ class Person(pygame.sprite.Sprite):
         MOVING = auto()
         DEPARTING = auto()
         FLAG = auto()
+
+        # Return a list of types which allow the person to move
+        @classmethod
+        def aslist(cls):
+            return [
+                cls.UNASSIGNED, cls.WAITING, cls.BOARDING, cls.WALKING,
+                cls.FLAG]
 
     def __init__(
             self, spriteRenderer, groups, clickManager, transportClickManager,
@@ -103,11 +110,11 @@ class Person(pygame.sprite.Sprite):
         for person in peopleTypes:
             possiblePlayerTypes[person] = {}
             for node in spawnDestinations:
-                if isinstance(node, person.getPossibleSpawns()):
+                if node.getSubType() in person.getPossibleSpawns():
                     possiblePlayerTypes[person].setdefault(
                         'spawns', []).append(node)
 
-                elif isinstance(node, person.getPossibleDestinations()):
+                elif node.getSubType() in person.getPossibleDestinations():
                     possiblePlayerTypes[person].setdefault(
                         'destinations', []).append(node)
 
@@ -217,16 +224,18 @@ class Person(pygame.sprite.Sprite):
     def setDestination(self, destinations=[]):
         possibleDestinations = []
         betterDestinations = []
+
+        # If the destination is one of the persons possible destinations
+        # and not the node the player is currently on
         for destination in destinations:
-            # If the destination is one of the persons possible destinations
-            # and not the node the player is currently on
-            if (isinstance(destination, self.possibleDestinations)
+            if (destination.getSubType() in self.possibleDestinations
                     and destination.getNumber() != self.spawn.getNumber()):
                 possibleDestinations.append(destination)
 
-        for desintation in possibleDestinations:
-            if not isinstance(desintation, type(self.spawn)):
-                betterDestinations.append(desintation)
+        # Its a better destination if its a different type from the spawn
+        for destination in possibleDestinations:
+            if destination.getSubType() != self.spawn.getSubType():
+                betterDestinations.append(destination)
 
         if len(betterDestinations) > 0:
             possibleDestinations = betterDestinations
@@ -237,7 +246,7 @@ class Person(pygame.sprite.Sprite):
     def setSpawn(self, spawns=[]):
         possibleSpawns = []
         for spawn in spawns:
-            if isinstance(spawn, self.possibleSpawns):
+            if spawn.getSubType() in self.possibleSpawns:
                 possibleSpawns.append(spawn)
 
         spawn = random.randint(0, len(possibleSpawns) - 1)
@@ -582,18 +591,21 @@ class Person(pygame.sprite.Sprite):
 
             elif self.status == Person.Status.UNASSIGNED:
                 self.game.audioLoader.playSound("uiStartSelect", 2)
-                if (isinstance(self.currentNode, NODE.Stop)
-                        or isinstance(self.currentNode, NODE.Destination)):
+                # People can wait at stops and destinations only
+                if (self.currentNode.getType() == NodeType.STOP
+                        or self.currentNode.getType()
+                        == NodeType.DESTINATION):
                     self.status = Person.Status.WAITING
 
-                elif isinstance(self.currentNode, NODE.Node):
+                elif self.currentNode.getType() == NodeType.REGULAR:
                     self.status = Person.Status.FLAG
 
             elif self.status == Person.Status.WAITING:
                 # toggle between waiting for a bus and flagging a taxi
                 # or if its a desintation on layer 2
-                if (isinstance(self.currentNode, NODE.BusStop)
-                        or (isinstance(self.currentNode, NODE.Destination)
+                if (self.currentNode.getSubType() == NodeType.BUSSTOP
+                        or (self.currentNode.getType()
+                            == NodeType.DESTINATION
                             and self.currentNode.getConnectionType()
                             == "layer 2")):
                     self.game.audioLoader.playSound("uiIncreaseSelect", 2)
@@ -726,11 +738,11 @@ class Manager(Person):
 
     @staticmethod
     def getPossibleSpawns():
-        return (NODE.House, NODE.Office)
+        return (NodeType.HOUSE, NodeType.OFFICE)
 
     @staticmethod
     def getPossibleDestinations():
-        return (NODE.Office, NODE.House)
+        return (NodeType.OFFICE, NodeType.HOUSE)
 
     # Office, airport
     # has a very high budget so can afford taxis etc.
@@ -749,11 +761,11 @@ class Commuter(Person):
 
     @staticmethod
     def getPossibleSpawns():
-        return (NODE.House, NODE.Airport)
+        return (NodeType.HOUSE, NodeType.AIRPORT)
 
     @staticmethod
     def getPossibleDestinations():
-        return (NODE.Airport, NODE.House)
+        return (NodeType.AIRPORT, NodeType.HOUSE)
 
     # Office, home?
     # has a small budget so cant rly afford many taxis etc.
@@ -860,6 +872,7 @@ class Particle(pygame.sprite.Sprite):
             * self.spriteRenderer.getFixedScale())
 
         self.image = pygame.Surface((self.size)).convert()
+        self.image.set_colorkey((0, 0, 0))  # Remove black border
 
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos

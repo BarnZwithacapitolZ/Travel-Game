@@ -1,10 +1,10 @@
 import pygame
 import random
 from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND, LAYERNAMES
-from layer import Layer1, Layer2, Layer3, Layer4, MenuLayer4
+from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
-from node import Stop, Destination, NoWalkNode
+from node import NodeType
 from meterController import MeterController
 from menu import GameHud, GameMenu, MessageHud, PreviewHud
 
@@ -291,6 +291,10 @@ class SpriteRenderer():
     def getPersonHolderClickManager(self):
         return self.personHolderClickManager
 
+    def setGridLayer4Lines(self):
+        return self.gridLayer4.setLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
     def removeLife(self):
         if self.lives is None:
             return
@@ -335,7 +339,13 @@ class SpriteRenderer():
         self.setCompleted(0)
         self.debug = debug
 
-        self.gridLayer4 = Layer4(self, (self.allSprites, self.layer4), level)
+        self.gridLayer4 = Layer(self, (self.allSprites, self.layer4), 4, level)
+        self.gridLayer3 = Layer(self, (
+            self.allSprites, self.layer3, self.layer4), 3, level)
+        self.gridLayer2 = Layer(self, (
+            self.allSprites, self.layer2, self.layer4), 2, level)
+        self.gridLayer1 = Layer(self, (
+            self.allSprites, self.layer1, self.layer4), 1, level)
 
         # Set the name of the level
         self.level = self.gridLayer4.getGrid().getLevelName()
@@ -356,17 +366,11 @@ class SpriteRenderer():
         for connectionType in self.levelData['connections']:
             self.connectionTypes.append(connectionType)
 
-        self.gridLayer3 = Layer3(
-            self, (self.allSprites, self.layer3, self.layer4), level, spacing)
-        self.gridLayer1 = Layer1(
-            self, (self.allSprites, self.layer1, self.layer4), level, spacing)
-
-        # Walking layer at the bottom so nodes are drawn above metro stations
-        self.gridLayer2 = Layer2(
-            self, (self.allSprites, self.layer2, self.layer4), level, spacing)
-
-        self.gridLayer4.addLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        # Ordering of the layers.
+        self.gridLayer3.createGrid()
+        self.gridLayer1.createGrid()
+        self.gridLayer2.createGrid()
+        self.setGridLayer4Lines()
 
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
@@ -423,16 +427,23 @@ class SpriteRenderer():
             (20, 11): (4.5, 2.8),
             (22, 12): (5, 3)}
 
-        gridLayer4 = MenuLayer4(self, (), level)
+        gridLayer4 = Layer(self, (), 4, level)
 
+        # Work out the spacing of the map for use in the other layers
         levelData = gridLayer4.getGrid().getMap()
         size = (levelData["width"], levelData["height"])
         spacing = spacings[size]
 
-        gridLayer3 = Layer3(self, (), level, spacing)
-        gridLayer1 = Layer1(self, (), level, spacing)
-        gridLayer2 = Layer2(self, (), level, spacing)
-        gridLayer4.addLayerLines(gridLayer1, gridLayer2, gridLayer3)
+        gridLayer3 = Layer(self, (), 3, level, spacing)
+        gridLayer2 = Layer(self, (), 2, level, spacing)
+        gridLayer1 = Layer(self, (), 1, level, spacing)
+
+        # Grid ordering
+        gridLayer3.createGrid()
+        gridLayer2.createGrid()
+        gridLayer1.createGrid()
+
+        gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
 
         return gridLayer4.getLineSurface()
 
@@ -505,11 +516,12 @@ class SpriteRenderer():
         # Sort the node so that the stops are at the top
         if sortNodes:
             allNodes = sorted(
-                allNodes, key=lambda x: isinstance(x, Stop))
+                allNodes, key=lambda x: x.getType() == NodeType.STOP,
+                reverse=True)
             allNodes = sorted(
-                allNodes, key=lambda x: isinstance(x, Destination))
+                allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
+                reverse=True)
             # Reverse the list so they're at the front
-            allNodes = allNodes[::-1]
 
         return allNodes
 
@@ -524,10 +536,15 @@ class SpriteRenderer():
 
         # Make any node that is not a regular node is at the front of the list,
         # so they are not removed and the regular node is
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, NoWalkNode))
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, Stop))
-        allNodes = sorted(allNodes, key=lambda x: isinstance(x, Destination))
-        allNodes = allNodes[::-1]  # Reverse the list so they're at the front
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.SPECIAL,
+            reverse=True)
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.STOP,
+            reverse=True)
+        allNodes = sorted(
+            allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
+            reverse=True)
 
         for node in allNodes:
             if node.getNumber() not in seen:
@@ -680,8 +697,7 @@ class SpriteRenderer():
 
         # We want to reset the layer 4 lines with the
         # new ones (resized) from the other layers
-        self.gridLayer4.addLayerLines(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        self.setGridLayer4Lines()
 
         # resize huds and menus
         self.hud.resize()
