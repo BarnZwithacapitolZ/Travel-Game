@@ -387,57 +387,49 @@ class MapEditor(SpriteRenderer):
         self.addChange()
 
     def swapNode(self, oldNodeType, newNodeType, connectionType, node):
-        self.deleteNode(oldNodeType, connectionType, node, False, False)
+        self.deleteNode(connectionType, node, False, False)
         self.addNode(newNodeType, connectionType, node)
 
     def addNode(
             self, nodeType, connectionType, node, replaceNode=True,
             addChange=True):
         layer = self.getGridLayer(connectionType)
-
         key = self.clickManager.getAddType()
-        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
 
-        if key in mappings:
-            if replaceNode:
-                # Replace the current node with the one we want to place down
-                layer.getGrid().replaceNode(
-                    connectionType, node, mappings[key])
+        if replaceNode:
+            # Replace the current node with the one we want to place down
+            layer.getGrid().replaceNode(
+                node, connectionType, nodeType, key)
 
-            # Add the node to the data, or if the connection type doesn't exist
-            # set its default to the empty list (for adding to later)
-            if nodeType in self.levelData:
-                self.levelData[nodeType].setdefault(
-                    connectionType, []).append({
-                        "location": node.getNumber(), "type": str(key)})
+        # Add the node to the data, or if the connection type doesn't exist
+        # set its default to the empty list (for adding to later)
+        if nodeType in self.levelData:
+            self.levelData[nodeType].setdefault(
+                connectionType, []).append({
+                    "location": node.getNumber(), "type": str(key)})
 
-            else:
-                self.levelData[nodeType] = {connectionType: [{
-                    "location": node.getNumber(),
-                    "type": str(key)
-                }]}
+        else:
+            self.levelData[nodeType] = {connectionType: [{
+                "location": node.getNumber(),
+                "type": str(key)
+            }]}
 
         if addChange:
             self.addChange()
 
     def deleteNode(
-            self, nodeType, connectionType, node, replaceNode=True,
+            self, connectionType, node, replaceNode=True,
             addChange=True):
         layer = self.getGridLayer(connectionType)
 
-        mappings = layer.getGrid().getEditorMappingsByType(nodeType)
-        key = layer.getGrid().reverseMappingsSearch(mappings, node)
+        if replaceNode:
+            # Replace with default editor node
+            layer.getGrid().replaceNode(node, connectionType)
 
-        if key:
-            if replaceNode:
-                # Replace with default editor node
-                layer.getGrid().replaceNode(
-                    connectionType, node, EditorNode)
-
-            # Remove the node from the data
-            self.levelData[nodeType][connectionType].remove({
-                "location": node.getNumber(),
-                "type": str(key)})
+        # Remove the node from the data
+        self.levelData[node.getType().value][connectionType].remove({
+            "location": node.getNumber(),
+            "type": str(node.getSubType().value)})
 
         if addChange:
             self.addChange()

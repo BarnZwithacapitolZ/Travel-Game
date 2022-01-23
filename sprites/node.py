@@ -119,6 +119,23 @@ class Node(pygame.sprite.Sprite):
     def getSubType(self):
         return self.subType
 
+    def setType(self, nodeType):
+        self.type = nodeType
+
+    def setSubType(self, subType):
+        self.subType = subType
+
+    def setDimensions(self, width, height):
+        self.offset = vec((self.width - width) / 2, (self.height - height) / 2)
+        self.width = width
+        self.height = height
+
+        # Recalculate position with offset in mind.
+        self.pos = self.pos + self.offset
+
+    def setFirstImage(self, image):
+        self.images[0] = image
+
     def setCurrentImage(self, image):
         self.currentImage = image
         self.dirty = True
@@ -427,254 +444,3 @@ class EditorNode(Node):
 
             if self.clickManager.getTempEndNode() is not None:
                 self.clickManager.removeTempEndNode()
-
-
-class NoWalkNode(Node):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["nodeNoWalking"]
-        self.type = NodeType.SPECIAL
-        self.subType = NodeType.NOWALKNODE
-
-
-class EditorNoWalkNode(EditorNode, NoWalkNode):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        NoWalkNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-
-        self.images = ["nodeNoWalking", "nodeStart", "nodeEnd"]
-
-
-# To Do: Parent class for all stops
-class Stop(Node):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.width = 25
-        self.height = 25
-        self.offset = vec(-2.5, -2.5)
-        self.pos = self.pos + self.offset
-
-        self.type = NodeType.STOP
-        self.subType = NodeType.STOP
-
-
-class BusStop(Stop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["busStation"]
-        self.subType = NodeType.BUSSTOP
-
-
-class EditorBusStop(EditorNode, BusStop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        BusStop.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["busStation", "nodeStart", "nodeEnd"]
-
-
-class MetroStation(Stop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["trainStation"]
-        self.subType = NodeType.METROSTATION
-
-
-class EditorMetroStation(EditorNode, MetroStation):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        MetroStation.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["trainStation", "nodeStart", "nodeEnd"]
-
-
-class TramStop(Stop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["tramStation"]
-        self.subType = NodeType.TRAMSTOP
-
-
-class EditorTramStop(EditorNode, TramStop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        TramStop.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, transportClickManager)
-        self.images = ["tramStation", "nodeStart", "nodeEnd"]
-
-
-class Destination(Node):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.width = 30
-        self.height = 30
-        self.offset = vec(-5, -5)
-        self.pos = self.pos + self.offset
-
-        self.type = NodeType.DESTINATION
-        self.subType = NodeType.DESTINATION
-
-
-class Airport(Destination):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["airport"]
-        self.subType = NodeType.AIRPORT
-
-
-class EditorAirport(EditorNode, Airport):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        Airport.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["airport", "nodeStart", "nodeEnd"]
-
-
-class Office(Destination):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["office"]
-        self.subType = NodeType.OFFICE
-
-
-class EditorOffice(EditorNode, Office):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        Office.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["office", "nodeStart", "nodeEnd"]
-
-
-class House(Destination):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["house"]
-        self.subType = NodeType.HOUSE
-
-
-class EditorHouse(EditorNode, House):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        House.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["house", "nodeStart", "nodeEnd"]
-
-
-class School(Destination):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["school"]
-        self.subType = NodeType.SCHOOL
-
-
-class EditorSchool(EditorNode, School):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        School.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["school", "nodeStart", "nodeEnd"]
-
-
-class Shop(Destination):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        super().__init__(
-            spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["shop"]
-        self.subType = NodeType.SHOP
-
-
-class EditorShop(EditorNode, Shop):
-    def __init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
-        EditorNode.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager)
-        Shop.__init__(
-            self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.images = ["shop", "nodeStart", "nodeEnd"]

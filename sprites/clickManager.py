@@ -532,8 +532,7 @@ class EditorClickManager(ClickManager):
 
         if audio:
             self.game.audioLoader.playSound("uiCancel", 1)
-        self.game.mapEditor.deleteNode(
-            node.getType().value, node.getConnectionType(), node)
+        self.game.mapEditor.deleteNode(node.getConnectionType(), node)
 
     def deleteTransport(self, node, audio=True):
         if len(node.getTransports()) < 1:
