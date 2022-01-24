@@ -8,7 +8,8 @@ import hudFunctions as hf
 import transitionFunctions as tf
 from menuComponents import (
     Image, Label, InputBox, NumberIncrementer, Rectangle, Meter,
-    DifficultyMeter, Timer, MessageBox, Map, Slider, ControlLabel)
+    DifficultyMeter, Timer, MessageBox, Map, Slider, ControlLabel,
+    ControlKey)
 from clickManager import EditorClickManager, ControlClickManager
 from enum import Enum, auto
 import abc
@@ -215,8 +216,8 @@ class Menu:
             self, width, height, title, ok="Ok", cancel="Cancel", padX=15,
             padY=15):
         # Set x, y to be center of display
-        x = (config["graphics"]["displayWidth"] / 2) - (width / 2)
-        y = (config["graphics"]["displayHeight"] / 2) - (height / 2)
+        x = (config["graphics"]["displayWidth"] - width) / 2
+        y = (config["graphics"]["displayHeight"] - height) / 2
 
         box = Rectangle(self, GREEN, (width, height), (x, y))
         title = Label(
@@ -235,25 +236,30 @@ class Menu:
             confirmBox.y + padY + box.y))
 
         # Set cancel box with label centered
-        cancel = Label(self, cancel, 25, WHITE, (0, 0), BLACK)
-        cw = cancel.getFontSize()[0] + (padX * 2)
-        ch = cancel.getFontSize()[1] + (padY * 2)
+        cancelLabel = Label(self, cancel, 25, WHITE, (0, 0), BLACK)
+        cw = cancelLabel.getFontSize()[0] + (padX * 2)
+        ch = cancelLabel.getFontSize()[1] + (padY * 2)
         cancelBox = Rectangle(self, BLACK, (cw, ch), (
             confirmBox.x - padX - cw, confirmBox.y))
-        cancel.setPos((
+        cancelLabel.setPos((
             cancelBox.x + padX + box.x,
             cancelBox.y + padY + box.y))
 
         confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
         confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
-        cancel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        cancel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+        cancelLabel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        cancelLabel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
 
         # Add static components to the box
         box.add(title)
-        box.add(confirmBox)
-        box.add(cancelBox)
-        return box, confirm, cancel
+
+        if ok.strip() != "":
+            box.add(confirmBox)
+
+        if cancel.strip() != "":
+            box.add(cancelBox)
+
+        return box, confirm, cancelLabel
 
 
 class MainMenu(Menu):
@@ -1785,6 +1791,10 @@ class EditorHud(GameHudLayout):
         self.addLocation = self.viewLocation + 75  # 90
         self.deleteLocation = self.addLocation + 65  # 170
         self.runLocation = self.deleteLocation + 100  # 280
+        self.infoLocation = self.runLocation + 40
+
+        # Selected map to edit
+        self.selectedMap = None
 
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
@@ -1805,6 +1815,7 @@ class EditorHud(GameHudLayout):
         self.viewDropdownOpen = False
         self.addDropdownOpen = False
         self.deleteDropdownOpen = False
+        self.infoBoxOpen = False
         self.mapEditor.setAllowEdits(True)
 
         topbar = Rectangle(
@@ -1834,6 +1845,9 @@ class EditorHud(GameHudLayout):
         # Run the map in no-fail mode
         run = Label(
             self, "Run", 25, WHITE, (self.runLocation, self.textY), BLACK)
+        # Help button to tell players how to use the editor
+        info = ControlKey(
+            self, "?", 22, WHITE, (self.infoLocation, self.textY))
 
         self.currentLayer = Label(
             self, self.mapEditor.getLayerName(), 25, WHITE, (0, 0), BLACK)
@@ -1857,8 +1871,9 @@ class EditorHud(GameHudLayout):
         add.addEvent(hf.toggleAddDropdown, 'onMouseClick')
         delete.addEvent(hf.toggleDeleteDropdown, 'onMouseClick')
         run.addEvent(hf.runMap, 'onMouseClick')
+        info.addEvent(hf.toggleInfoBox, 'onMouseClick')
 
-        labels = [fileSelect, edit, view, add, delete, run]
+        labels = [fileSelect, edit, view, add, delete, run, info]
         for label in labels:
             label.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             label.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -1896,12 +1911,12 @@ class EditorHud(GameHudLayout):
             (textX, self.background.getBottomY() + self.padY), BLACK)
         # Undo changes to map
         undo = Label(
-            self, "Undo", 25,
+            self, "Undo (Ctrl+Z)", 25,
             WHITE if len(self.mapEditor.getLevelChanges()) > 1 else GREY,
             (textX, total.getBottomY() + self.padY), BLACK)
         # Redo changes to map
         redo = Label(
-            self, "Redo", 25,
+            self, "Redo (Ctrl+Y)", 25,
             (WHITE if len(
                 self.mapEditor.getPoppedLevelChanges()) >= 1 else GREY),
             (textX, undo.getBottomY() + self.padY), BLACK)
@@ -2545,7 +2560,7 @@ class EditorHud(GameHudLayout):
                 close.getBottomY() + self.padY - self.topBarHeight),
             (self.fileLocation, self.topBarHeight), 0, [0, 0, 10, 10])
 
-        new.addEvent(hf.newMap, 'onMouseClick')
+        new.addEvent(hf.toggleConfirmNewMap, 'onMouseClick')
         self.load.addEvent(hf.toggleLoadDropdown, 'onMouseClick')
         close.addEvent(hf.toggleConfirmExitBox, 'onMouseClick')
 
@@ -2589,7 +2604,7 @@ class EditorHud(GameHudLayout):
             m = Label(self, mapName, 25, WHITE, (textX, y), BLACK)
             m.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             m.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
-            m.addEvent(hf.loadEditorMap, 'onMouseClick')
+            m.addEvent(hf.toggleConfirmLoadEditorMap, 'onMouseClick')
 
             if m.getFontSize()[0] + (self.padX * 2) > maxWidth:
                 maxWidth = m.getFontSize()[0] + (self.padX * 2)
@@ -2656,7 +2671,7 @@ class EditorHud(GameHudLayout):
         self.add(confirm)
         self.add(cancel)
 
-    def confirmExitBox(self):
+    def confirmExitBox(self, confirmCallBack):
         self.open = True
         self.confirmExitBoxOpen = True
         self.game.audioLoader.playSound("uiUnavailable", 1)
@@ -2669,17 +2684,89 @@ class EditorHud(GameHudLayout):
             padX=self.padX, padY=self.padY)
 
         confirmText = Label(
-            self, "Are you sure you want exit \n without saving? \n \
+            self, "Are you sure you want to \n exit without saving? \n \
                 (Any unsaved changes will \n be lost)", 30, WHITE, (40, 70),
             GREEN)
 
-        confirm.addEvent(hf.closeMapEditor, 'onMouseClick')
+        confirm.addEvent(confirmCallBack, 'onMouseClick')
         cancel.addEvent(hf.toggleConfirmExitBox, 'onMouseClick')
 
         box.add(confirmText)
         self.add(box)
         self.add(confirm)
         self.add(cancel)
+
+    def infoBox(self):
+        self.open = True
+        self.infoBoxOpen = True
+        self.mapEditor.setAllowEdits(False)
+        self.game.audioLoader.playSound("uiUnavailable", 1)
+
+        width = config["graphics"]["displayWidth"] - (
+            config["graphics"]["displayWidth"] / 3)
+        height = config["graphics"]["displayHeight"] / 1.3
+
+        box, confirm, cancel = self.createConfirmBox(
+            width, height, "Help", cancel="", padX=self.padX, padY=self.padY)
+
+        # Tell players how to change layers.
+        layer = Label(
+            self, "Press    to change layer", 30, WHITE, (40, 70), GREEN)
+        layers = Image(self, "layersWhite", (30, 30), (140, 60))
+
+        # Tell players how to create a connection.
+        addConnection = Label(
+            self, "Press    on the start and end node \n\
+            to create a connection", 30, WHITE,
+            (40, layer.getBottomY() + (self.padY * 2)), GREEN)
+        leftClick = Image(
+            self, "leftClickWhite", (45, 45),
+            (130, layer.getBottomY() + (self.padY * 2) - 25))
+
+        # Tell players how to preview all layers.
+        preview = Label(self, "Press    to preview all layers", 30, WHITE, (
+            40, addConnection.getBottomY() + (self.padY * 2), GREEN))
+        rightClick = Image(self,  "rightClickWhite", (45, 45), (
+            130, addConnection.getBottomY() + (self.padY * 2) - 25))
+
+        # Tell users how to view the checklist.
+        checklist = Label(
+            self, "Press    to view the level checklist", 30, WHITE,
+            (40, preview.getBottomY() + (self.padY * 2)), GREEN)
+        checklistButton = ControlKey(self, "c", 30, WHITE, (
+            140, preview.getBottomY() + (self.padY * 2)))
+
+        # Tell users how to test the map
+        test = Label(
+            self, "Press 'Run' to test the level in \nno-death mode",
+            30, WHITE, (40, checklist.getBottomY() + (self.padY * 2)), GREEN)
+
+        confirm = Label(self, "Ok", 25, WHITE, (0, 0), BLACK)
+        cw = confirm.getFontSize()[0] + (self.padX * 2)
+        ch = confirm.getFontSize()[1] + (self.padY * 2)
+        confirmBox = Rectangle(self, BLACK, (cw, ch), (
+            box.getRightX() - self.padX - cw - box.x,
+            box.getBottomY() - self.padY - ch - box.y))
+        confirm.setPos((
+            confirmBox.x + self.padX + box.x,
+            confirmBox.y + self.padY + box.y))
+
+        confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+        confirm.addEvent(hf.toggleInfoBox, 'onMouseClick')
+
+        box.add(addConnection)
+        box.add(leftClick)
+        box.add(layer)
+        box.add(layers)
+        box.add(preview)
+        box.add(rightClick)
+        box.add(checklist)
+        box.add(checklistButton)
+        box.add(test)
+        box.add(confirmBox)
+        self.add(box)
+        self.add(confirm)
 
 
 class PreviewHud(GameHudLayout):

@@ -66,6 +66,20 @@ def toggleFileDropdown(obj, menu, event):
         gf.clearMenu(obj, menu)
 
 
+def toggleConfirmNewMap(obj, menu, event):
+    # If we are already confirming the user option, we do nothing.
+    if menu.confirmExitBoxOpen:
+        return
+
+    if len(menu.mapEditor.getLevelChanges()) > 1:
+        gf.clearMenu(obj, menu)
+        menu.fileDropdown()
+        menu.confirmExitBox(newMap)
+
+    else:
+        newMap(obj, menu, event)
+
+
 def newMap(obj, menu, event):
     # no level creates an empty, clear map
     menu.mapEditor.createLevel(clearChanges=True)
@@ -100,9 +114,28 @@ def changeEditorLayer(obj, menu, event, current=False):
     gf.clearMenu(obj, menu)
 
 
+def toggleConfirmLoadEditorMap(obj, menu, event):
+    # If we are already confirming the user option, we do nothing.
+    if menu.confirmExitBoxOpen:
+        return
+
+    menu.selectedMap = obj.getText()
+    if len(menu.mapEditor.getLevelChanges()) > 1:
+        gf.clearMenu(obj, menu)
+        menu.fileDropdown()
+        menu.loadDropdown()
+        menu.confirmExitBox(loadEditorMap)
+
+    else:
+        loadEditorMap(obj, menu, event)
+
+
 def loadEditorMap(obj, menu, event):
+    if menu.selectedMap is None:
+        return
+
     menu.game.audioLoader.playSound("playerSuccess", 2)
-    path = menu.game.mapLoader.getMap(obj.getText())
+    path = menu.game.mapLoader.getMap(menu.selectedMap)
     menu.mapEditor.createLevel(path, clearChanges=True)
     gf.clearMenu(obj, menu)
 
@@ -152,6 +185,15 @@ def toggleLoadDropdown(obj, menu, event):
     else:
         gf.clearMenu(obj, menu)
         menu.fileDropdown()
+
+
+def toggleInfoBox(obj, menu, event):
+    if not menu.infoBoxOpen:
+        gf.clearMenu(obj, menu)
+        menu.infoBox()
+
+    else:
+        gf.clearMenu(obj, menu)
 
 
 def toggleSaveBox(obj, menu, event):
@@ -204,7 +246,7 @@ def toggleConfirmExitBox(obj, menu, event):
         if len(menu.mapEditor.getLevelChanges()) > 1:
             gf.clearMenu(obj, menu)
             menu.fileDropdown()
-            menu.confirmExitBox()
+            menu.confirmExitBox(closeMapEditor)
 
         else:
             closeMapEditor(obj, menu, event)

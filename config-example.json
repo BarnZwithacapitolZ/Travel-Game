@@ -310,6 +310,22 @@
         "arrowGreen": {
             "image": "ui/ArrowGreen.png",
             "alpha": true
+        },
+        "rightClick": {
+            "image": "ui/RightClick.png",
+            "alpha": true
+        },
+        "leftClick": {
+            "image": "ui/LeftClick.png",
+            "alpha": true
+        },
+        "rightClickWhite": {
+            "image": "ui/RightClickWhite.png",
+            "alpha": true
+        },
+        "leftClickWhite": {
+            "image": "ui/LeftClickWhite.png",
+            "alpha": true
         }
     },
     "audio": {

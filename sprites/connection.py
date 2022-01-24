@@ -10,6 +10,7 @@ class Connection:
     def __init__(
             self, spriteRenderer, connectionType, fromNode, toNode, temp,
             draw=False):
+        # SpriteRenderer = mapEditor when on the map editor.
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.connectionType = connectionType
@@ -94,11 +95,49 @@ class Connection:
 
     def updateConnections(self):
         if self.draw:
-            layer = self.game.mapEditor.getGridLayer(self.connectionType)
+            layer = self.spriteRenderer.getGridLayer(self.connectionType)
             layer.createConnections()
 
-            if self.game.mapEditor.getCurrentLayer() == 4:
-                self.game.mapEditor.setGridLayer4Lines()
+            # Redraw the lines on layer 4 to reflect the deleted connection.
+            if self.spriteRenderer.getCurrentLayer() == 4:
+                self.spriteRenderer.setGridLayer4Lines()
+
+    def events(self, collide):
+        currentLayer = self.spriteRenderer.getCurrentLayer()
+        previousLayer = self.spriteRenderer.getPreviousLayer()
+
+        # Click event, delete the selected connection.
+        if collide and self.game.clickManager.getClicked():
+            if (currentLayer == 4
+                    and self.connectionType != "layer " + str(previousLayer)):
+                # Tell user they suck!
+                self.game.audioLoader.playSound("uiError", 0)
+                self.spriteRenderer.messageSystem.addMessage(
+                    f"Can't delete connection from \
+                    {self.spriteRenderer.getLayerName(self.connectionType)} \
+                    layer when viewing \
+                    {self.spriteRenderer.getLayerName(previousLayer)} layer")
+                return
+
+            self.spriteRenderer.getClickManager().deleteConnection(self)
+            self.game.clickManager.setClicked(False)
+            self.updateConnections()
+
+        # Hover over event, highlight the selected connection.
+        elif (collide and not self.mouseOver and (
+                currentLayer != 4
+                or self.connectionType == "layer " + str(previousLayer))):
+            self.color = YELLOW
+            self.mouseOver = True
+            self.updateConnections()
+
+        # Hover out event, un-highlight the selected connection.
+        elif (not collide and self.mouseOver and (
+                currentLayer != 4
+                or self.connectionType == "layer " + str(previousLayer))):
+            self.mouseOver = False
+            self.setColor()
+            self.updateConnections()
 
     def update(self):
         mx, my = pygame.mouse.get_pos()
@@ -119,42 +158,10 @@ class Connection:
             vec(mx, my) - vec(10, 10) * scale)
             - (self.toNode.pos - self.toNode.offset) * scale).length()
 
-        # Click event, delete the selected connection
+        collide = False
+        # We check if the cursor is over a line
         if (d1 + d2 >= self.distance * scale - buffer
-                and d1 + d2 <= self.distance * scale + buffer
-                and self.game.clickManager.getClicked()
-                and (
-                    self.game.mapEditor.getCurrentLayer() != 4
-                    or self.connectionType == "layer " + str(
-                        self.game.mapEditor.getPreviousLayer())
-                )):
-            self.game.mapEditor.getClickManager().deleteConnection(self)
-            self.game.clickManager.setClicked(False)
-            self.updateConnections()
+                and d1 + d2 <= self.distance * scale + buffer):
+            collide = True
 
-        # Hover over event, highlight the selected connection
-        elif (d1 + d2 >= self.distance * scale - buffer
-                and d1 + d2 <= self.distance * scale + buffer
-                and not self.mouseOver
-                and (
-                    self.game.mapEditor.getCurrentLayer() != 4
-                    or self.connectionType == "layer " + str(
-                        self.game.mapEditor.getPreviousLayer())
-                )):
-            self.color = YELLOW
-            self.mouseOver = True
-            self.updateConnections()
-
-        # Hover out event, un-highlight the selected connection
-        elif (not (
-            d1 + d2 >= self.distance * scale - buffer
-                and d1 + d2 <= self.distance * scale + buffer)
-                and self.mouseOver
-                and (
-                    self.game.mapEditor.getCurrentLayer() != 4
-                    or self.connectionType == "layer " + str(
-                        self.game.mapEditor.getPreviousLayer())
-                )):
-            self.mouseOver = False
-            self.setColor()
-            self.updateConnections()
+        self.events(collide)
