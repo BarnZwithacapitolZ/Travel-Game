@@ -779,9 +779,7 @@ class StatusIndicator(pygame.sprite.Sprite):
         self.currentPerson = currentPerson
         self.spriteRenderer = self.currentPerson.spriteRenderer
 
-        self.width = 10
-        self.height = 10
-
+        self.width, self.height = 10, 10
         self.offset = vec(-2.5, -10)
         self.pos = self.currentPerson.pos + self.offset
 
@@ -905,4 +903,5 @@ class Particle(pygame.sprite.Sprite):
             else:
                 self.currentPerson.setEntities([])
 
+        # Since the particle is short-lived, this is ok.
         self.dirty = True

@@ -16,10 +16,7 @@ class PersonHolder(pygame.sprite.Sprite):
         self.spriteRenderer = self.target.spriteRenderer
         self.clickManager = clickManager
 
-        # TODO: Change the width and height to scale with the number
-        # of people in the holder
-        self.width = 20
-        self.height = 20
+        self.width, self.height = 20, 20
         self.drawerWidth, self.drawerHeight = 0, 0
 
         # Need these to be attributes so they can be used when

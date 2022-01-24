@@ -366,19 +366,22 @@ class SpriteRenderer():
         for connectionType in self.levelData['connections']:
             self.connectionTypes.append(connectionType)
 
-        # Ordering of the layers.
+        # Ordering of the layers (first = lowest).
         self.gridLayer3.createGrid()
         self.gridLayer1.createGrid()
         self.gridLayer2.createGrid()
         self.setGridLayer4Lines()
 
+        # Remove node duplicates before we add the transport so that below
+        # indicators are rendered below the transport.
+        self.removeDuplicates()
+
+        # Add the different transports to the different layers.
         self.gridLayer1.grid.loadTransport("layer 1")
         self.gridLayer2.grid.loadTransport("layer 2")
         self.gridLayer3.grid.loadTransport("layer 3")
 
-        self.removeDuplicates()
-
-        # Set all the destinations to be the destinations from all layers
+        # Set all the destinations to be the destinations from all layers.
         layer1Destinations = self.gridLayer1.getGrid().getDestinations()
         layer2Destinations = self.gridLayer2.getGrid().getDestinations()
         layer3Destinations = self.gridLayer3.getGrid().getDestinations()
@@ -440,9 +443,9 @@ class SpriteRenderer():
 
         # Grid ordering
         gridLayer3.createGrid()
-        gridLayer2.createGrid()
         gridLayer1.createGrid()
-
+        gridLayer2.createGrid()
+        # Set the lines from all layers
         gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
 
         return gridLayer4.getLineSurface()
@@ -528,13 +531,12 @@ class SpriteRenderer():
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(self, allNodes=None, removeLayer=None):
         seen = {}
-        dupes = []
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
         if allNodes is None:
             allNodes = self.getAllNodes()
 
-        # Make any node that is not a regular node is at the front of the list,
+        # Put any node that is not a regular node at the front of the list,
         # so they are not removed and the regular node is
         allNodes = sorted(
             allNodes, key=lambda x: x.getType() == NodeType.SPECIAL,
@@ -548,13 +550,11 @@ class SpriteRenderer():
 
         for node in allNodes:
             if node.getNumber() not in seen:
-                seen[node.getNumber()] = 1
+                seen[node.getNumber()] = node
             else:
-                if seen[node.getNumber()] == 1:
-                    dupes.append(node)
-
-        for node in dupes:
-            removeLayer.remove(node)
+                node.addBelowNode(seen[node.getNumber()])
+                seen[node.getNumber()].addAboveNode(node)
+                removeLayer.remove(node)
 
     # if there is a node above the given node,
     # return the highest node, else return node

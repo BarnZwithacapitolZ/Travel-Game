@@ -51,11 +51,16 @@ class Node(pygame.sprite.Sprite):
         self.connectionType = connectionType
         self.personClickManager = personClickManager
         self.transportClickManager = transportClickManager
-        self.width = 20
-        self.height = 20
 
+        self.width, self.height = 20, 20
         self.offset = vec(0, 0)
         self.pos = vec(x, y) + self.offset
+
+        # If the node is below another nodes on layer 4
+        self.below = []
+
+        # If the node is above another nodes on layer 4
+        self.above = []
 
         # All connections to / from this node
         self.connections = []
@@ -119,6 +124,12 @@ class Node(pygame.sprite.Sprite):
     def getSubType(self):
         return self.subType
 
+    def getImages(self):
+        return self.images
+
+    def getAbove(self):
+        return self.above
+
     def setType(self, nodeType):
         self.type = nodeType
 
@@ -139,6 +150,25 @@ class Node(pygame.sprite.Sprite):
     def setCurrentImage(self, image):
         self.currentImage = image
         self.dirty = True
+
+    def addBelowNode(self, below):
+        # We only care about non regular nodes that are below or below.
+        if (self.type == NodeType.REGULAR
+                or below.getType() == NodeType.REGULAR):
+            return
+
+        self.below.append(below)
+
+    def addAboveNode(self, above):
+        # We only care about non regular nodes that are above or below.
+        if (self.type == NodeType.REGULAR
+                or above.getType() == NodeType.REGULAR):
+            return
+
+        indicator = BelowIndicator(self.game, (
+            self.spriteRenderer.allSprites, self.spriteRenderer.layer4),
+            self, above)
+        self.above.append(indicator)
 
     # Add a connection to the node
     def addConnection(self, connection):
@@ -318,6 +348,9 @@ class Node(pygame.sprite.Sprite):
         if not self.dirty and not self.spriteRenderer.getPaused():
             self.events()
 
+    def __repr__(self):
+        return (f"Node(type={self.type}, subType={self.subType}, number={self.number})")
+
 
 class EditorNode(Node):
     def __init__(
@@ -444,3 +477,75 @@ class EditorNode(Node):
 
             if self.clickManager.getTempEndNode() is not None:
                 self.clickManager.removeTempEndNode()
+
+
+class BelowIndicator(pygame.sprite.Sprite):
+    def __init__(self, game, groups, currentNode, indicatorFor):
+        self.groups = groups
+        # We only want it to show on layer4,
+        # therefore groups should only be allsprites and layer4.
+        super().__init__(self.groups)
+        self.game = game
+        self.currentNode = currentNode
+        self.indicatorFor = indicatorFor
+        self.spriteRenderer = self.currentNode.spriteRenderer
+
+        self.width, self.height = 11.5, 11.5
+        self.offset = vec(20, 15 + (
+            len(self.currentNode.getAbove()) * self.width))
+        self.pos = self.currentNode.pos + self.offset
+
+        self.mouseOver = False
+        self.dirty = True
+
+    def __render(self):
+        self.dirty = False
+
+        self.image = self.game.imageLoader.getImage(
+            self.indicatorFor.getImages()[0], (
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale()))
+        self.rect = self.image.get_rect()
+
+        self.rect.topleft = (
+            self.pos * self.game.renderer.getScale()
+            * self.spriteRenderer.getFixedScale())
+
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+    def draw(self):
+        self.makeSurface()
+        self.game.renderer.addSurface(self.image, (self.rect))
+
+    def events(self):
+        mx, my = pygame.mouse.get_pos()
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
+
+        # Click event; take the player to the layer below that is being indicated.
+        if (self.rect.collidepoint((mx, my))
+                and self.game.clickManager.getClicked()):
+            self.game.clickManager.setClicked(False)
+            self.spriteRenderer.showLayer(
+                int(self.indicatorFor.getConnectionType()[-1]))
+
+        # Hover over event.
+        elif self.rect.collidepoint((mx, my)) and not self.mouseOver:
+            self.mouseOver = True
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+
+        # Hover out event.
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
+            self.mouseOver = False
+            self.dirty = True
+
+    def update(self):
+        if not self.dirty and not self.spriteRenderer.getPaused():
+            self.events()

@@ -31,8 +31,7 @@ class Transport(pygame.sprite.Sprite):
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
         self.currentNode.addTransport(self)
-        self.width = 30
-        self.height = 30
+        self.width, self.height = 30, 30
 
         self.offset = vec(-5, -5)  # -5 is half the offset of the connector
         self.vel = vec(0, 0)
