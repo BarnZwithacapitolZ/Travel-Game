@@ -210,7 +210,7 @@ class MapEditor(SpriteRenderer):
             self.gridLayer2.grid.loadTransport("layer 2", False)
             self.gridLayer3.grid.loadTransport("layer 3", False)
 
-        self.removeDuplicates()
+        self.removeDuplicates(addIndicator=False)
 
         # Set the level data equal to the maps config file
         if level is not None:

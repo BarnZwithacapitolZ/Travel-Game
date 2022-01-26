@@ -212,6 +212,10 @@ class SpriteRenderer():
         self.paused = not self.paused
         # self.createPausedSurface()
 
+        if self.paused:
+            # We don't want to show hover over for nodes when paused.
+            self.game.clickManager.resetMouseOver()
+
     def getStartDt(self):
         return self.startDt
 
@@ -448,6 +452,11 @@ class SpriteRenderer():
         # Set the lines from all layers
         gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
 
+        # TODO add transports to line surface
+        # gridLayer1.grid.loadTransport("layer 1", False)
+        # gridLayer2.grid.loadTransport("layer 2", False)
+        # gridLayer3.grid.loadTransport("layer 3", False)
+
         return gridLayer4.getLineSurface()
 
     # Create a new surface when the game is paused with all the sprites
@@ -529,7 +538,8 @@ class SpriteRenderer():
         return allNodes
 
     # Remove duplicate nodes on layer 4 for layering
-    def removeDuplicates(self, allNodes=None, removeLayer=None):
+    def removeDuplicates(
+            self, allNodes=None, removeLayer=None, addIndicator=True):
         seen = {}
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
@@ -552,8 +562,9 @@ class SpriteRenderer():
             if node.getNumber() not in seen:
                 seen[node.getNumber()] = node
             else:
-                node.addBelowNode(seen[node.getNumber()])
-                seen[node.getNumber()].addAboveNode(node)
+                if addIndicator:
+                    node.addBelowNode(seen[node.getNumber()])
+                    seen[node.getNumber()].addAboveNode(node)
                 removeLayer.remove(node)
 
     # if there is a node above the given node,
@@ -670,19 +681,20 @@ class SpriteRenderer():
                 node.getPersonHolder().setCanClick(False)
 
     def showLayer(self, layer):
-        if not self.rendering:
+        if (not self.rendering
+                or "layer " + str(layer) not in self.connectionTypes):
             return
 
-        # Only switch to a layer that is in the map
-        if "layer " + str(layer) in self.connectionTypes:
-            self.currentLayer = layer
-            # Redraw the nodes so that the mouse cant collide with them
-            for sprite in self.allSprites:
-                sprite.dirty = True
+        self.currentLayer = layer
+        self.game.clickManager.resetMouseOver()
 
-            self.hud.updateLayerText()
-            self.resetPeopleClicks()
-            self.resetPersonHolderClicks()
+        # Redraw the nodes so that the mouse cant collide with them
+        for node in self.getAllNodes():
+            node.dirty = True
+
+        self.hud.updateLayerText()
+        self.resetPeopleClicks()
+        self.resetPersonHolderClicks()
 
     # TODO: If a layer has any images, they must be resized here
     def resize(self):

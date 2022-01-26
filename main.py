@@ -197,6 +197,7 @@ class Game:
 
     def __update(self):
         # print(self.paused)
+        # print(self.clickManager.getMouseOver())
         if not self.paused and not self.mainMenu.getOpen():
             self.spriteRenderer.update()
             self.mapEditor.update()

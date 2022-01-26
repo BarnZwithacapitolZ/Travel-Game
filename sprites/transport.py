@@ -24,6 +24,7 @@ class Transport(pygame.sprite.Sprite):
             self, spriteRenderer, groups, currentConnection, running,
             clickManager, personClickManager):
         self.groups = groups
+        self.priority = len(self.groups[0].sprites())
         super().__init__(self.groups)
 
         self.spriteRenderer = spriteRenderer
@@ -40,7 +41,6 @@ class Transport(pygame.sprite.Sprite):
             - self.currentConnection.getFrom().offset) + self.offset
 
         self.speed = float(decimal.Decimal(random.randrange(50, 60)))
-        # self.speed = float(decimal.Decimal(random.randrange(55, 65)))
 
         self.type = TransportType.METRO
 
@@ -81,6 +81,12 @@ class Transport(pygame.sprite.Sprite):
 
     def getMouseOver(self):
         return self.mouseOver
+
+    def getConnectionType(self):
+        if self.currentNode is None:
+            return
+
+        return self.currentNode.getConnectionType()
 
     def setSpeed(self, speed):
         self.speed = speed
@@ -205,7 +211,10 @@ class Transport(pygame.sprite.Sprite):
         self.path.append(node)
 
     def clearPath(self, newPath):
-        if len(newPath) == 1:
+        # We want the transport to keep moving in the direction of the
+        # selected same node, only if the transport is moving in the
+        # first place.
+        if len(newPath) == 1 and self.moving:
             connections = self.currentConnection.getTo().getConnections()
             for connection in connections:
                 if (connection.getFrom().getNumber()
@@ -266,9 +275,6 @@ class Transport(pygame.sprite.Sprite):
 
                 person.setStatus(PERSON.Person.Status.MOVING)
                 person.setTravellingOn(self)
-
-                # Make the person unclicked?
-                # self.game.clickManager.setPerson(None)
 
     # Remove multiple people who are departing from the transportation
     def removePeople(self):
@@ -461,16 +467,13 @@ class Transport(pygame.sprite.Sprite):
             self.clickManager.setTransport(None)
 
         # Click event
-        if (self.rect.collidepoint((mx, my))
+        elif (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and (
                     self.spriteRenderer.getCurrentLayerString()
                     == self.currentNode.getConnectionType()
-                    or self.spriteRenderer.getCurrentLayer() == 4)):
-            for person in self.currentNode.getPeople():
-                if person.getMouseOver():
-                    return
-
+                    or self.spriteRenderer.getCurrentLayer() == 4)
+                and self.game.clickManager.getMouseOver() == self):
             # Click off the person (if selected)
             if self.personClickManager.getPerson() is not None:
                 self.personClickManager.setPerson(None)
@@ -489,31 +492,27 @@ class Transport(pygame.sprite.Sprite):
             self.game.clickManager.setClicked(False)
 
         # Hover over event
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
-            # hover over a node when transport is hovered over,
-            # unset the hover on the node
-            if self.currentNode.getMouseOver():
-                self.currentNode.setMouseOver(False)
-
-            # If any person on the current node (stop) or any people
-            # within the transport are hovered over, don't hover over the
-            # transport
-            for person in self.currentNode.getPeople() + self.people:
-                if person.getMouseOver():
-                    return
-
+        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.currentNode.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)
+                and self.game.clickManager.isTop(self)):
             # If the person holder is hovered over, or the current nodes
             # person holder is hovered over, don't hover over the transport
             if (self.currentNode.getPersonHolder().getMouseOver()
                     or self.personHolder.getMouseOver()):
                 return
 
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
             self.mouseOver = True
+            self.game.clickManager.setMouseOver(self)
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.dirty = False
 
         # Hover out event
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
     def update(self):

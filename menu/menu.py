@@ -1502,6 +1502,10 @@ class GameHudLayout(Menu):
     def toggleFastForward(self, selected=False):
         return
 
+    @abc.abstractmethod
+    def togglePauseGame(self, selected=False):
+        return
+
 
 class GameHud(GameHudLayout):
     def __init__(self, spriteRenderer, spacing=(1.5, 1.5)):

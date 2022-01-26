@@ -165,3 +165,6 @@ class Connection:
             collide = True
 
         self.events(collide)
+
+    def __repr__(self):
+        return (f"Connection(fromNode={self.fromNode}, toNode={self.toNode}, connectionType={self.connectionType})")

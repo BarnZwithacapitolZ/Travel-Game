@@ -86,7 +86,7 @@ class Layer():
                 + layer2.getGrid().getNodes()
                 + layer3.getGrid().getNodes())
 
-            self.spriteRenderer.removeDuplicates(nodes, nodes)
+            self.spriteRenderer.removeDuplicates(nodes, nodes, False)
 
         self.lines = lines
         self.render(nodes)

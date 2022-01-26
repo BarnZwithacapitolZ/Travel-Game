@@ -33,6 +33,7 @@ class Person(pygame.sprite.Sprite):
             self, spriteRenderer, groups, clickManager, transportClickManager,
             spawnDestinations, possibleSpawns, possibleDestinations):
         self.groups = groups
+        self.priority = len(self.groups[0].sprites())
         super().__init__(self.groups)
         self.spriteRenderer = spriteRenderer
         self.clickManager = clickManager
@@ -205,6 +206,9 @@ class Person(pygame.sprite.Sprite):
 
     def setClicked(self, clicked):
         self.clicked = clicked
+
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
 
     # Set the persons status
     def setStatus(self, status):
@@ -543,8 +547,6 @@ class Person(pygame.sprite.Sprite):
             self.game.renderer.addSurface(None, None, self.drawTimer)
 
     def events(self):
-        self.vel = vec(0, 0)
-
         mx, my = pygame.mouse.get_pos()
         difference = self.game.renderer.getDifference()
         mx -= difference[0]
@@ -559,15 +561,13 @@ class Person(pygame.sprite.Sprite):
             self.clickManager.setPerson(None)
 
         # Click event
-        if (self.rect.collidepoint((mx, my))
+        elif (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and (
                     self.spriteRenderer.getCurrentLayerString()
                     == self.currentNode.getConnectionType()
-                    or self.spriteRenderer.getCurrentLayer() == 4)):
-            if self.currentNode.getMouseOver():
-                return
-
+                    or self.spriteRenderer.getCurrentLayer() == 4)
+                and self.game.clickManager.getMouseOver() == self):
             # Click off the transport (if selected)
             if self.transportClickManager.getTransport() is not None:
                 self.transportClickManager.setTransport(None)
@@ -576,8 +576,7 @@ class Person(pygame.sprite.Sprite):
             holder = (
                 self.spriteRenderer.getPersonHolderClickManager()
                 .getPersonHolder())
-
-            if (holder is not None and self not in holder.getPeople()):
+            if holder is not None and self not in holder.getPeople():
                 holder.closeHolder(True)
 
             # Set the person to be moved
@@ -633,27 +632,21 @@ class Person(pygame.sprite.Sprite):
                 self.status = Person.Status.MOVING
 
         # Hover over event
-        if self.rect.collidepoint((mx, my)) and not self.mouseOver:
-            # hover over a node when person is hovered over,
-            # unset the hover on the node
-            if self.currentNode.getMouseOver():
-                self.currentNode.setMouseOver(False)
-
-            # hover over a transport when person is hovered over,
-            # unset the hover on the transport
-            for transport in self.currentNode.getTransports():
-                if transport.getMouseOver():
-                    transport.setMouseOver(False)
-
-            if self.travellingOn is not None:
-                self.travellingOn.setMouseOver(False)
-
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.currentNode.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)
+                and self.game.clickManager.isTop(self)):
             self.mouseOver = True
+            self.game.clickManager.setMouseOver(self)
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.dirty = False
 
         # Hover out event
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
     def update(self):
@@ -664,6 +657,7 @@ class Person(pygame.sprite.Sprite):
         if self.canClick:
             self.events()
 
+        self.vel = vec(0, 0)
         self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
 
         # Increase the radius of the selector showing the destination

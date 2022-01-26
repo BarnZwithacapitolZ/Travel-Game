@@ -1,5 +1,6 @@
 from person import Person
-from node import NodeType, Node
+from transport import Transport
+from node import NodeType, Node, BelowIndicator
 from enum import Enum, auto
 
 
@@ -10,6 +11,10 @@ class ClickManager:
         self.rightClicked = False
         self.spaceBar = False
         self.speedUp = False
+
+        # Only one object at a time can be hovered over,
+        # this contains that oject
+        self.mouseOver = None
 
     def getClicked(self):
         return self.clicked
@@ -23,6 +28,19 @@ class ClickManager:
     def getSpeedUp(self):
         return self.speedUp
 
+    def getMouseOver(self):
+        return self.mouseOver
+
+    def isTop(self, instance):
+        if self.mouseOver is None:
+            return True
+
+        elif instance.priority > self.mouseOver.priority:
+            self.resetMouseOver()
+            return True
+
+        return False
+
     def setClicked(self, clicked):
         self.clicked = clicked
 
@@ -34,6 +52,17 @@ class ClickManager:
 
     def setSpeedUp(self, speedUp):
         self.speedUp = speedUp
+
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
+
+    def resetMouseOver(self):
+        if self.mouseOver is None:
+            return
+
+        self.mouseOver.setMouseOver(False)
+        self.mouseOver.dirty = True
+        self.mouseOver = None
 
     # for a given node, return the adjacent nodes
     def getAdjacentNodes(self, n):
@@ -267,35 +296,34 @@ class PersonClickManager(ClickManager):
     # Move the person by setting the persons path when the person and
     # the node are both set
     def movePerson(self):
-        # node is set but person isnt
-        if self.node and self.person is None:
-            self.node = None
+        # We need both the node and a person to create a path.
+        if self.node is None or self.person is None:
+            return
 
-        # Both the node and the person are set, we can create a path
-        if self.node is not None and self.person is not None:
-            # Only move the person if they're a curtain state
+        # Only move the person if they're a curtain state
+        elif self.person.getStatus() not in Person.Status.aslist():
+            return
 
-            if (self.person.getStatus() in Person.Status.aslist()):
-                # Create the path
-                path = self.pathFinding()
+        # Create the path
+        path = self.pathFinding()
 
-                if len(path) > 0:
-                    self.game.audioLoader.playSound("uiFinishSelect", 2)
+        if len(path) > 0:
+            self.game.audioLoader.playSound("uiFinishSelect", 2)
 
-                else:
-                    self.game.audioLoader.playSound("uiError", 0)
+        else:
+            self.game.audioLoader.playSound("uiError", 0)
 
-                # Clear the players current path before assigning a new one
-                self.person.clearPath(path)
+        # Clear the players current path before assigning a new one
+        self.person.clearPath(path)
 
-                for node in path:
-                    self.person.addToPath(node)
+        for node in path:
+            self.person.addToPath(node)
 
-                self.personClicked = False
+        self.personClicked = False
 
-                # after the click is managed, clear the player and the node to
-                # allow for another click management
-                self.node = None
+        # after the click is managed, clear the player and the node to
+        # allow for another click management
+        self.node = None
 
 
 class TransportClickManager(ClickManager):
@@ -323,35 +351,34 @@ class TransportClickManager(ClickManager):
         B = self.node
         path = []
 
-        if A == B and not self.transport.getMoving():
+        # We do nothing if we click on the same node whilst not moving.
+        if A.getNumber() == B.getNumber() and not self.transport.getMoving():
             return path
 
         path = self.aStarPathFinding(A, B)
         return path
 
     def moveTransport(self):
-        # node is set but transport isnt
-        if self.node and self.transport is None:
-            self.node = None
+        if self.node is None or self.transport is None:
+            return
 
-        if self.node is not None and self.transport is not None:
-            # only set the path if the bus is moving
-            path = self.pathFinding()
+        # only set the path if the bus is moving
+        path = self.pathFinding()
 
-            if len(path) > 0:
-                self.game.audioLoader.playSound("uiFinishSelect", 2)
+        if len(path) > 0:
+            self.game.audioLoader.playSound("uiFinishSelect", 2)
 
-            else:
-                self.game.audioLoader.playSound("uiError", 0)
+        else:
+            self.game.audioLoader.playSound("uiError", 0)
 
-            self.transport.setFirstPathNode(path)
-            self.transport.clearPath(path)
+        self.transport.setFirstPathNode(path)
+        self.transport.clearPath(path)
 
-            for node in path:
-                self.transport.addToPath(node)
+        for node in path:
+            self.transport.addToPath(node)
 
-            # self.transport = None
-            self.node = None
+        # self.transport = None
+        self.node = None
 
 
 class EditorClickManager(ClickManager):

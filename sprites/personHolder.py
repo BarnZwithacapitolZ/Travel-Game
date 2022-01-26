@@ -10,6 +10,7 @@ vec = pygame.math.Vector2
 class PersonHolder(pygame.sprite.Sprite):
     def __init__(self, game, groups, target, clickManager):
         self.groups = groups
+        self.priority = 0
         super().__init__([])
         self.game = game
         self.target = target
@@ -68,6 +69,10 @@ class PersonHolder(pygame.sprite.Sprite):
             return
 
         self.people.append(person)
+
+        # We give the holder same priority as the highest priority person
+        if person.priority > self.priority:
+            self.priority = person.priority
 
         if len(self.people) > 1:
             # Show the holder
@@ -200,6 +205,7 @@ class PersonHolder(pygame.sprite.Sprite):
         self.clickManager.setPersonHolder(self)
         self.open = True
         self.canClick = False
+        self.color = GREY
         self.dirty = True
 
     def closeHolder(self, audio=False):
@@ -232,6 +238,7 @@ class PersonHolder(pygame.sprite.Sprite):
         self.clickManager.setPersonHolder(None)
         self.open = False
         self.canClick = True
+        self.color = WHITE
         self.dirty = True
 
         # Reset the person holder clicks to stop pressing a holder on
@@ -315,38 +322,39 @@ class PersonHolder(pygame.sprite.Sprite):
         mx -= difference[0]
         my -= difference[1]
 
-        if (not self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked() and self.open):
-            self.closeHolder(True)
+        if self.open:
+            # Click off event.
+            if (not self.rect.collidepoint((mx, my))
+                    and self.game.clickManager.getClicked()):
+                self.closeHolder(True)
 
+            return
+
+        # Click event.
         if (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
-                and not self.open and self.canClick):
+                and self.canClick):
+            self.game.clickManager.setClicked(False)
             self.game.audioLoader.playSound("expand")
             self.openHolder()
-            self.game.clickManager.setClicked(False)
 
-        if (self.rect.collidepoint((mx, my))
-                and not self.mouseOver and not self.open):
-            # Mainly to stop transport and holder hovering at the
-            # same time
-            if self.target.getMouseOver():
-                return
+            # When we click on the holder it opens and we no longer need to
+            # check for hover events
+            self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
 
-            # Stop the transport at a stop and the holder being
-            # hovered at the same time
-            elif isinstance(self.target, NODE.Node):
-                for transport in self.target.getTransports():
-                    if transport.getMouseOver():
-                        return
-
+        # Hover over event.
+        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and self.game.clickManager.isTop(self)):
             self.mouseOver = True
+            self.game.clickManager.setMouseOver(self)
             self.color = GREY
             self.dirty = True
 
-        elif (not self.rect.collidepoint((mx, my))
-                and self.mouseOver and not self.open):
+        # Hover out event.
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
             self.color = WHITE
             self.dirty = True
 

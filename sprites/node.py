@@ -43,6 +43,13 @@ class Node(pygame.sprite.Sprite):
             self, spriteRenderer, groups, number, connectionType, x, y,
             personClickManager, transportClickManager):
         self.groups = groups
+
+        if len(self.groups) > 0:
+            self.priority = len(self.groups[0].sprites())
+
+        else:
+            self.priority = 0
+
         super().__init__(self.groups)
 
         self.spriteRenderer = spriteRenderer
@@ -268,34 +275,14 @@ class Node(pygame.sprite.Sprite):
         if (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getRightClicked()
                 and self.transportClickManager.getTransport() is not None):
+
             self.transportClickManager.setNode(self)
             self.game.clickManager.setRightClicked(False)
 
         # Click event; setting the node for the person
-        if (self.rect.collidepoint((mx, my))
+        elif (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getRightClicked()
                 and self.personClickManager.getPerson() is not None):
-            # Prevent the node and the player from being
-            # pressed at the same time
-            for person in self.people:
-                if person.getMouseOver():
-                    return
-
-            if len(self.transports) > 0:
-                # check the route returned is []
-                # If the route is impossible press the transport,
-                # otherwise press the node
-                routeLength = (len(self.personClickManager.pathFinding(
-                    self.personClickManager.getPerson().getCurrentNode(),
-                    self)))
-
-                if routeLength <= 0:
-                    # Prioratize pressing the transport instead of a node
-                    # (if the transport is on a node)
-                    for transport in self.transports:
-                        if transport.getMouseOver():
-                            return
-
             # If the player is moving on a transport,
             # dont allow them to select a node
             if (self.personClickManager.getPerson().getStatus()
@@ -307,40 +294,37 @@ class Node(pygame.sprite.Sprite):
                 self.game.clickManager.setRightClicked(False)
 
         # Hover over event; for transport
-        if (self.rect.collidepoint((mx, my))
+        elif (self.rect.collidepoint((mx, my))
                 and not self.mouseOver
-                and self.transportClickManager.getTransport() is not None):
-            # Prevent the node and the player from being hovered over
-            # at the same time
-            for person in self.people:
-                if person.getMouseOver():
-                    return
-
+                and self.transportClickManager.getTransport() is not None
+                and self.game.clickManager.isTop(self)):
             self.mouseOver = True
+            self.game.clickManager.setMouseOver(self)
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.dirty = False
 
         # Hover over event; for person
-        if (self.rect.collidepoint((mx, my))
+        elif (self.rect.collidepoint((mx, my))
                 and not self.mouseOver
-                and self.personClickManager.getPerson() is not None):
-            # Prevent the node and the player from being pressed
-            # at the same time
-            for person in self.people:
-                if person.getMouseOver():
-                    return
-
+                and self.personClickManager.getPerson() is not None
+                and self.game.clickManager.isTop(self)):
             # If the player is moving on a transport,
             # dont show hovering over a node
             if (self.personClickManager.getPerson().getStatus()
-                    != PERSON.Person.Status.MOVING
+                    == PERSON.Person.Status.MOVING
                     and self.personClickManager.getPerson().getStatus()
-                    != PERSON.Person.Status.DEPARTING):
-                self.mouseOver = True
-                self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+                    == PERSON.Person.Status.DEPARTING):
+                return
+
+            self.mouseOver = True
+            self.game.clickManager.setMouseOver(self)
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.dirty = False
 
         # Hover out event
-        if not self.rect.collidepoint((mx, my)) and self.mouseOver:
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
             self.currentImage = 0
             self.dirty = True
 
@@ -461,7 +445,7 @@ class EditorNode(Node):
                         self, self.game.mapEditor.getPreviousLayer())
 
                 if node is not None:
-                    self.clickManager.setTempEndNode(node)
+                    self.clickManager.setTempEndNode(node)            
 
         # hover out event
         elif (not self.rect.collidepoint((mx, my)) and self.mouseOver
@@ -482,8 +466,7 @@ class EditorNode(Node):
 class BelowIndicator(pygame.sprite.Sprite):
     def __init__(self, game, groups, currentNode, indicatorFor):
         self.groups = groups
-        # We only want it to show on layer4,
-        # therefore groups should only be allsprites and layer4.
+        self.priority = len(self.groups[0].sprites())
         super().__init__(self.groups)
         self.game = game
         self.currentNode = currentNode
@@ -497,6 +480,12 @@ class BelowIndicator(pygame.sprite.Sprite):
 
         self.mouseOver = False
         self.dirty = True
+
+    def getMouseOver(self):
+        return self.mouseOver
+
+    def setMouseOver(self, mouseOver):
+        self.mouseOver = mouseOver
 
     def __render(self):
         self.dirty = False
@@ -529,23 +518,29 @@ class BelowIndicator(pygame.sprite.Sprite):
         mx -= difference[0]
         my -= difference[1]
 
-        # Click event; take the player to the layer below that is being indicated.
+        # Click event; take the player to the layer below that is
+        # being indicated.
         if (self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()):
+                and self.game.clickManager.getClicked()
+                and self.game.clickManager.getMouseOver() == self):
             self.game.clickManager.setClicked(False)
             self.spriteRenderer.showLayer(
                 int(self.indicatorFor.getConnectionType()[-1]))
 
         # Hover over event.
-        elif self.rect.collidepoint((mx, my)) and not self.mouseOver:
+        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and self.game.clickManager.isTop(self)):
             self.mouseOver = True
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.game.clickManager.setMouseOver(self)
+            self.dirty = False
 
         # Hover out event.
         elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
             self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
     def update(self):
-        if not self.dirty and not self.spriteRenderer.getPaused():
+        if not self.dirty:
             self.events()
