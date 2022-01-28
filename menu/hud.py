@@ -2,6 +2,7 @@ from menu import Menu
 from config import (
     config, BLACK, WHITE, GREY, GREEN, YELLOW,
     BACKGROUNDCOLORS, DEFAULTBACKGROUND)
+from utils import overrides
 import generalFunctions as gf
 import menuFunctions as mf
 import hudFunctions as hf
@@ -23,10 +24,6 @@ class GameHudLayout(Menu):
 
     @abc.abstractmethod
     def updateLayerText(self):
-        return
-
-    @abc.abstractmethod
-    def setCompletedText(self):
         return
 
     @abc.abstractmethod
@@ -61,12 +58,14 @@ class GameHud(GameHudLayout):
         self.hudX = 15
         self.hudY = 15
 
+    @overrides(GameHudLayout)
     def getHudButtonHoverOver(self):
         return self.hudButtonHoverOver
 
     def setHudButtonHoverOver(self, hudButtonHoverOver):
         self.hudButtonHoverOver = hudButtonHoverOver
 
+    @overrides(GameHudLayout)
     def updateSlowDownMeter(self, amount):
         if hasattr(self, 'slowDownMeter'):
             self.slowDownMeter.setAmount((amount, 20))
@@ -127,6 +126,7 @@ class GameHud(GameHudLayout):
             tf.transitionX, 'onLoad', speed=-5, transitionDirection="right",
             x=self.hudX - 100, callback=callback)
 
+    @overrides(GameHudLayout)
     def togglePauseGame(self, selected=False):
         self.spriteRenderer.togglePaused()
 
@@ -148,6 +148,7 @@ class GameHud(GameHudLayout):
         self.pause.addEvent(hf.pauseGame, 'onMouseClick')
         self.pause.dirty = True
 
+    @overrides(GameHudLayout)
     def toggleFastForward(self, selected=False):
         if not hasattr(self, 'fastForward') or self.hudButtonHoverOver:
             return
@@ -272,6 +273,7 @@ class GameHud(GameHudLayout):
 
             self.slideTransitionY((0, 0), 'second', callback=callback)
 
+    @overrides(GameHudLayout)
     def setLifeAmount(self):
         if hasattr(self, 'lives'):
             # Only if the animation is finished, show the game over screen
@@ -339,6 +341,7 @@ class EditorHud(GameHudLayout):
         # Selected map to edit
         self.selectedMap = None
 
+    @overrides(GameHudLayout)
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
             self.currentLayer.setText(
@@ -1318,6 +1321,7 @@ class PreviewHud(GameHudLayout):
         self.spriteRenderer = spriteRenderer
         self.spacing = spacing
 
+    @overrides(GameHudLayout)
     def updateSlowDownMeter(self, amount):
         if hasattr(self, 'slowDownMeter'):
             self.slowDownMeter.setAmount((amount, 20))

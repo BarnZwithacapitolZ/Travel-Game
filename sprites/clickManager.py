@@ -1,6 +1,7 @@
 from person import Person
 from node import NodeType, Node
 from enum import Enum, auto
+from utils import overrides
 
 
 class ClickManager:
@@ -210,7 +211,7 @@ class PersonClickManager(ClickManager):
         self.person = person
         self.movePerson()
 
-    # Override
+    @overrides(ClickManager)
     def getAdjacentNodes(self, n):
         adjNodes = []
 

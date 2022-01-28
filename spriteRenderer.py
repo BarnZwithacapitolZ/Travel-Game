@@ -128,10 +128,6 @@ class SpriteRenderer():
             else:
                 self.menu.endScreenGameOver(True)  # Run with transition
 
-    def setCompleted(self, completed):
-        self.completed = completed
-        self.hud.setCompletedText()
-
     # When the player completed the level, set it to complete
     # in the level data and save the data
     def setLevelComplete(self):
@@ -341,7 +337,7 @@ class SpriteRenderer():
     def createLevel(self, level, debug=False):
         self.clearLevel()
         # Currently this calls the wrong hud as its done before the hud is set
-        self.setCompleted(0)
+        self.completed = 0
         self.debug = debug
 
         self.gridLayer4 = Layer(self, (self.allSprites, self.layer4), 4, level)

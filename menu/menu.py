@@ -5,8 +5,8 @@ import generalFunctions as gf
 import menuFunctions as mf
 import transitionFunctions as tf
 from menuComponents import (
-    Image, Label, InputBox, Rectangle,
-    DifficultyMeter, Map, Slider, ControlLabel)
+    Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
+    ControlLabel)
 from clickManager import ControlClickManager
 from enum import Enum, auto
 import random
@@ -352,11 +352,6 @@ class MainMenu(Menu):
         # test.add(test2)
         # test.addEvent(gf.hoverImage, 'onMouseOver', image = "buttonSelected")
         # test.addEvent(gf.hoverImage, 'onMouseOut', image = "button")
-        # self.add(test)
-
-        # test = FillRectangle(self, (0, 0, 0, 0), (40, 40), (20, 20))
-        # test2 = Label(self, "hi", 20, WHITE, (0, 0))
-        # test.add(test2)
         # self.add(test)
 
         # test = DifficultyMeter(self, RED, BLACK, 4, 2, 2, (15, 15), (20, 20))

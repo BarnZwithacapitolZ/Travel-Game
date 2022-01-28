@@ -9,6 +9,7 @@ from hud import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
 from config import config, dump, MAPSFOLDER
+from utils import overrides
 from layer import Layer
 
 
@@ -147,6 +148,7 @@ class MapEditor(SpriteRenderer):
 
         self.addChange()
 
+    @overrides(SpriteRenderer)
     def setTotalToComplete(self, total):
         if not hasattr(self, 'levelData'):
             return
@@ -185,7 +187,7 @@ class MapEditor(SpriteRenderer):
             return True
         return False
 
-    # Override creating the level
+    @overrides(SpriteRenderer)
     def createLevel(self, level=None, clearChanges=False, layer=None):
         self.clearLevel()
         self.connectionTypes = ["layer 1", "layer 2", "layer 3", "layer 4"]
@@ -277,10 +279,6 @@ class MapEditor(SpriteRenderer):
 
     # Remove a map, which has already been saved,
     # from the maps folder and references in config
-
-    # TODO: FIX NAMING CONVENTION OF MAPS SO WHEN DELETED IT DOESNT
-    # MESS WITH THE OTHER MAPS WHEN CREATING A NEW MAP
-
     def deleteLevel(self):
         path = self.game.mapLoader.getMap(self.levelData["mapName"])
         if os.path.exists(path):
@@ -505,6 +503,7 @@ class MapEditor(SpriteRenderer):
             for connection in connections:
                 connection.update()
 
+    @overrides(SpriteRenderer)
     def events(self):
         if (pygame.mouse.get_pressed()[2]
                 and self.game.clickManager.getRightClicked()
@@ -544,6 +543,7 @@ class MapEditor(SpriteRenderer):
             self.updateConnection(
                 4, grid1Connections + grid2Connections + grid3Connections)
 
+    @overrides(SpriteRenderer)
     def update(self):
         if not self.rendering:
             return

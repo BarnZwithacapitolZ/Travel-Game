@@ -1,16 +1,14 @@
 import pygame
-from pygame.locals import Color
-from config import (
-    config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW)
-from transitionFunctions import transitionMessageRight
-from engine import ImageLoader
 import string
 import abc
 import math
 import copy
 import os
-
-vec = pygame.math.Vector2
+from config import (
+    config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW, WHITE)
+from utils import vec, overrides
+from transitionFunctions import transitionMessageRight
+from engine import ImageLoader
 
 
 class TextHandler:
@@ -192,18 +190,6 @@ class MenuComponent:
         for component in self.components:
             component.resize()
 
-    @abc.abstractmethod
-    def update(self):
-        return
-
-    @abc.abstractmethod
-    def __render(self):
-        return
-
-    @abc.abstractmethod
-    def makeSurface(self):
-        return
-
     def addComponents(self):
         if self.image is None:
             return
@@ -215,13 +201,21 @@ class MenuComponent:
             # if component.image is not None:
             #     self.image.blit(component.image, (component.rect))
 
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, self.rect)
+    @abc.abstractmethod
+    def makeSurface(self):
+        return
 
     def drawPaused(self, surface):
         self.makeSurface()
         surface.blit(self.image, (self.rect))
+
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(self.image, self.rect)
+
+    @abc.abstractmethod
+    def update(self):
+        return
 
 
 class Label(MenuComponent):
@@ -244,11 +238,11 @@ class Label(MenuComponent):
 
         self.finalMessage = self.splitText()
 
-    # Ovverride
+    @overrides(MenuComponent)
     def getRightX(self):
         return self.x + self.getFontSize()[0]
 
-    # Override
+    @overrides(MenuComponent)
     def getBottomY(self):
         return self.y + self.getFontSize()[1]
 
@@ -385,6 +379,7 @@ class Label(MenuComponent):
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
+    @overrides(MenuComponent)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
@@ -430,14 +425,17 @@ class ControlKey(Label):
                 shapeOutline=3, shapeBorderRadius=[10, 10, 10, 10])
             border.drawPaused(self.finalImage)
 
+    @overrides(Label)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
+    @overrides(Label)
     def draw(self):
         self.makeSurface()
         self.menu.renderer.addSurface(self.finalImage, self.rect)
 
+    @overrides(Label)
     def drawPaused(self, surface):
         self.makeSurface()
         surface.blit(self.finalImage, (self.rect))
@@ -513,14 +511,17 @@ class ControlLabel(Label):
 
         key.drawPaused(self.finalImage)
 
+    @overrides(Label)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
+    @overrides(Label)
     def draw(self):
         self.makeSurface()
         self.menu.renderer.addSurface(self.finalImage, self.rect)
 
+    @overrides(Label)
     def drawPaused(self, surface):
         self.makeSurface()
         surface.blit(self.finalImage, (self.rect))
@@ -541,7 +542,8 @@ class InputBox(Label):
             self.menu, self.color, (
                 3, self.getFontSize("hello world!")[1]), self.pos)
 
-    # TODO: a better way to do this without using the textHandler (just setting the string directly)
+    # TODO: a better way to do this without using the textHandler
+    # (just setting the string directly)
     def setDefaultText(self, defaultText):
         self.menu.game.textHandler.setString(str(defaultText))
         self.menu.game.textHandler.setPointer(len(str(defaultText)))
@@ -588,6 +590,20 @@ class InputBox(Label):
     def resizeIndicator(self):
         self.indicator.dirty = True
 
+    @overrides(Label)
+    def draw(self):
+        super().draw()
+
+        if self.flashing:
+            self.indicator.draw()
+
+    @overrides(Label)
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+        self.indicator.drawPaused(surface)
+
+    @overrides(Label)
     def update(self):
         if not hasattr(self, 'rect'):
             return
@@ -641,17 +657,6 @@ class InputBox(Label):
 
             self.menu.game.textHandler.setPointer(indicatorPos)
 
-    def draw(self):
-        super().draw()
-
-        if self.flashing:
-            self.indicator.draw()
-
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-        self.indicator.drawPaused(surface)
-
 
 # TODO: finish this implementation
 class NumberIncrementer(Label):
@@ -684,12 +689,10 @@ class NumberIncrementer(Label):
         upArrowBox.drawPaused(self.image)
         downArrowBox.drawPaused(self.image)
 
+    @overrides(Label)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
-
-    def update(self):
-        return
 
 
 class Shape(MenuComponent):
@@ -765,10 +768,12 @@ class Shape(MenuComponent):
 
         return color, rect, outline
 
+    @overrides(MenuComponent)
     def makeSurface(self):
         if self.dirty or self.rect is None:
             self.__render()
 
+    @overrides(MenuComponent)
     def drawPaused(self, surface):
         self.makeSurface()
         if (self.alpha is not None or len(self.components) > 0
@@ -778,6 +783,7 @@ class Shape(MenuComponent):
         else:
             self.drawShape(surface)
 
+    @overrides(MenuComponent)
     def draw(self):
         self.makeSurface()
         if (self.alpha is not None or len(self.components) > 0
@@ -796,6 +802,7 @@ class Rectangle(Shape):
             menu, color, size, pos, shapeOutline, shapeBorderRadius, alpha,
             fill)
 
+    @overrides(Shape)
     def drawShape(
             self, surface, color=None, rect=None, outline=None,
             borderRadius=None):
@@ -809,46 +816,6 @@ class Rectangle(Shape):
             border_top_right_radius=int(borderRadius[1]),
             border_bottom_left_radius=int(borderRadius[2]),
             border_bottom_right_radius=int(borderRadius[3]))
-
-
-# Rectangle with on border radius that is made filling a shape,
-# not drawing a rect
-class FillRectangle(Rectangle):
-    def __init__(
-            self, menu, color, size=tuple(), pos=tuple(), shapeOutline=0,
-            fill=None):
-        super().__init__(menu, color, size, pos, shapeOutline, fill=fill)
-
-    def __render(self):
-        self.dirty = False
-
-        pos, size = self.setRect()
-        self.setBorder()
-        self.borderRadius = [0, 0, 0, 0]  # Cant have a radius on a surface
-        fillColor = self.fill if self.outline > 0 else self.color
-
-        self.image = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
-        self.rect = self.image.get_rect()
-        self.rect.topleft = pos
-
-        self.image.fill(fillColor)
-        if self.outline > 0:
-            super().drawShape(
-                self.image, self.color, pygame.Rect(0, 0, *size), self.outline)
-
-        self.addComponents()
-
-    def makeSurface(self):
-        if self.dirty or self.image is None:
-            self.__render()
-
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.image, (self.rect))
 
 
 class Meter(Rectangle):
@@ -886,6 +853,7 @@ class Meter(Rectangle):
 
         self.addComponents()
 
+    @overrides(Rectangle)
     def drawShape(
             self, surface, color=None, rect=None, rectAmount=None,
             outline=None):
@@ -898,6 +866,7 @@ class Meter(Rectangle):
         super().drawShape(surface, self.innerColor, rectAmount, 0)
         super().drawShape(surface, self.outlineColor, rect, outline)
 
+    @overrides(Rectangle)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
@@ -946,6 +915,7 @@ class DifficultyMeter(Rectangle):
         self.drawShape(
             self.image, self.color, pygame.Rect(0, 0, *size), self.outline)
 
+    @overrides(Rectangle)
     def drawShape(self, surface, color=None, rect=None, outline=None):
         rect = self.rect if rect is None else rect
         offx = rect.x
@@ -961,6 +931,7 @@ class DifficultyMeter(Rectangle):
             super().drawShape(surface, self.backgroundColor, newRect, outline)
             offx += rect.width + self.gap
 
+    @overrides(Rectangle)
     def makeSurface(self):
         if self.dirty or self.rect is None:
             self.__render()
@@ -1019,6 +990,7 @@ class Slider(Rectangle):
 
         self.addComponents()
 
+    @overrides(Rectangle)
     def drawShape(
             self, surface, color=None, rect=None, rectHandle=None,
             outline=None):
@@ -1028,6 +1000,12 @@ class Slider(Rectangle):
         super().drawShape(surface, color, rect, outline)
         super().drawShape(surface, BLACK, rectHandle, 0, [20, 20, 20, 20])
 
+    @overrides(Rectangle)
+    def makeSurface(self):
+        if self.dirty or self.rect is None:
+            self.__render()
+
+    @overrides(Rectangle)
     def update(self):
         if not hasattr(self, 'rect'):
             return
@@ -1059,10 +1037,6 @@ class Slider(Rectangle):
 
             self.rectHandle.x = self.handleX * self.menu.renderer.getScale()
 
-    def makeSurface(self):
-        if self.dirty or self.rect is None:
-            self.__render()
-
 
 class Ellipse(Shape):
     def __init__(
@@ -1071,6 +1045,7 @@ class Ellipse(Shape):
         super().__init__(
             menu, color, size, pos, shapeOutline, alpha=alpha, fill=fill)
 
+    @overrides(Shape)
     def drawShape(self, surface, color=None, rect=None, outline=None):
         color, rect, outline = self.getShapeComponents(color, rect, outline)
         pygame.draw.ellipse(surface, color, rect, int(outline))
@@ -1091,6 +1066,7 @@ class Arc(Shape):
     def setStopAngle(self, stopAngle):
         self.stopAngle = stopAngle
 
+    @overrides(Shape)
     def drawShape(self, surface, color=None, rect=None, outline=None):
         color, rect, outline = self.getShapeComponents(color, rect, outline)
         pygame.draw.arc(
@@ -1131,6 +1107,7 @@ class Timer(Arc):
         self.drawShape(
             self.image, self.color, pygame.Rect(0, 0, *size), self.outline)
 
+    @overrides(Arc)
     def drawShape(self, surface, color=None, rect=None, outline=None):
         color, rect, outline = self.getShapeComponents(color, rect, outline)
         offx = 0.01
@@ -1146,6 +1123,7 @@ class Timer(Arc):
                 int(outline))
             offx += 0.01
 
+    @overrides(Arc)
     def makeSurface(self):
         if self.dirty or self.rect is None:
             self.__render()
@@ -1199,7 +1177,7 @@ class MessageBox(Rectangle):
         biggestWidth, totalHeight = 0, 0
         for msg in finalMessage:
             # first we set the x and y to 0 since we don't know the width yet
-            m = Label(self.menu, msg, 25, Color("white"), (0, 0))
+            m = Label(self.menu, msg, 25, WHITE, (0, 0))
             width, height = m.getFontSize()
             m.setOffset(vec(0, totalHeight))
             totalHeight += height
@@ -1232,10 +1210,18 @@ class MessageBox(Rectangle):
 
         del self
 
+    @overrides(Rectangle)
     def drawPaused(self, surface):
         self.makeSurface()
         self.drawShape(surface)
 
+    @overrides(Rectangle)
+    def draw(self):
+        self.makeSurface()
+        self.menu.renderer.addSurface(None, None, self.drawShape)
+        # self.menu.renderer.addSurface(self.image, (self.rect))
+
+    @overrides(Rectangle)
     def update(self):
         self.timer += self.menu.game.dt
 
@@ -1246,11 +1232,6 @@ class MessageBox(Rectangle):
             # self.menu.components.remove(self)
             # for message in self.messages:
             #     self.menu.components.remove(message)
-
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(None, None, self.drawShape)
-        # self.menu.renderer.addSurface(self.image, (self.rect))
 
 
 class Map(MenuComponent):
@@ -1326,7 +1307,7 @@ class Map(MenuComponent):
         size = self.image.get_size()
         rectImage = pygame.Surface(size, pygame.SRCALPHA)
         pygame.draw.rect(
-            rectImage, Color("white"), (0, 0, *size),
+            rectImage, WHITE, (0, 0, *size),
             border_radius=int(50 * self.menu.renderer.getScale()))
         self.image.blit(rectImage, (0, 0), None, pygame.BLEND_RGBA_MIN)
 
@@ -1343,7 +1324,7 @@ class Map(MenuComponent):
         if ("backgrounds" in self.levelData
                 and "darkMode" in self.levelData["backgrounds"]
                 and self.levelData["backgrounds"]["darkMode"]):
-            textColor = Color("white")
+            textColor = WHITE
 
         difficultyText = Label(
             self.menu, "Difficulty", 15, textColor, (30, self.height - 60))
@@ -1365,7 +1346,7 @@ class Map(MenuComponent):
         if ("backgrounds" in self.levelData
                 and "darkMode" in self.levelData["backgrounds"]
                 and self.levelData["backgrounds"]["darkMode"]):
-            textColor = Color("white")
+            textColor = WHITE
 
         scoreText = Label(
             self.menu, "Score", 15, textColor, (140, self.height - 60))
@@ -1406,10 +1387,12 @@ class Map(MenuComponent):
         self.finalImage.fill(self.menu.getBackgroundColor())
         self.finalImage.blit(self.image, (0, 0))
 
+    @overrides(MenuComponent)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
+    @overrides(MenuComponent)
     def draw(self):
         self.makeSurface()
         self.menu.renderer.addSurface(self.finalImage, self.rect)
@@ -1463,6 +1446,7 @@ class Image(MenuComponent):
 
         self.addComponents()
 
+    @overrides(MenuComponent)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
