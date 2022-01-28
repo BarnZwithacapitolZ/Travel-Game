@@ -25,7 +25,7 @@ class Sprite(pygame.sprite.Sprite):
     # Defines the priority of the rendering order, a sprite with a > priority
     # than another sprite will be drawn above that other sprite.
     def getPriority(self):
-        if len(self.groups) > 0 and self.groups is tuple:
+        if len(self.groups) > 0 and type(self.groups) is tuple:
             return len(self.groups[0].sprites())
 
         return 0
