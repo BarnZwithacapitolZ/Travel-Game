@@ -5,8 +5,7 @@ import pygame._sdl2
 from config import (
     config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MAPSFOLDER, RED, BLACK,
     TRUEBLACK, SCANLINES)
-
-vec = pygame.math.Vector2
+from utils import vec
 
 
 class Renderer:

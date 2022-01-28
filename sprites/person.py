@@ -69,7 +69,7 @@ class Person(Sprite):
 
         self.travellingOn = None
 
-        self.canClick = True
+        self.active = True
         self.status = Person.Status.UNASSIGNED
 
         self.imageName = "person"
@@ -188,11 +188,11 @@ class Person(Sprite):
     def getEntities(self):
         return self.entities
 
-    def getCanClick(self):
-        return self.canClick
+    def getActive(self):
+        return self.active
 
-    def setCanClick(self, canClick):
-        self.canClick = canClick
+    def setActive(self, active):
+        self.active = active
 
     # Set the persons status
     def setStatus(self, status):
@@ -310,9 +310,7 @@ class Person(Sprite):
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
 
-        if (self.spriteRenderer.getCurrentLayerString()
-                == self.currentConnectionType):
-            self.spriteRenderer.resetPeopleClicks()
+        print(self.spriteRenderer.getGridLayer(oldLayer), self.spriteRenderer.getGridLayer(newLayer))
 
         if len(self.path) <= 0:
             self.currentNode.getPersonHolder().removePerson(self, True)
@@ -643,7 +641,7 @@ class Person(Sprite):
             return
 
         # mouse over and click events first
-        if self.canClick:
+        if self.active:
             self.events()
 
         self.vel = vec(0, 0)

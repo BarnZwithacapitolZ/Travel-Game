@@ -1,7 +1,4 @@
-import pygame
 from config import config
-
-vec = pygame.math.Vector2
 
 
 def transitionFadeIn(obj, menu, animation):

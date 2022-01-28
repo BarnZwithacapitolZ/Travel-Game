@@ -3,10 +3,9 @@ import pygame.gfxdraw
 import random
 import math
 from config import config, DEFAULTBACKGROUND
+from utils import vec
 from gridManager import GridManager
 from person import Person, Manager, Commuter
-
-vec = pygame.math.Vector2
 
 
 class Layer:

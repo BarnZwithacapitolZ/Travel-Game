@@ -2,8 +2,7 @@ import pygame
 import pygame.gfxdraw
 from config import (
     BLACK, RED, GREY, GREEN, YELLOW, TEMPRED, TEMPGREY, TEMPGREEN)
-
-vec = pygame.math.Vector2
+from utils import vec
 
 
 class Connection:

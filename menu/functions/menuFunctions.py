@@ -1,10 +1,9 @@
 
 import pygame
 from config import config, dump
+from utils import vec
 import hudFunctions as hf
 import menu as MENU
-
-vec = pygame.math.Vector2
 
 
 # load the level and show transition

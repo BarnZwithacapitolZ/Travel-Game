@@ -27,10 +27,6 @@ class PersonHolder(Sprite):
         self.people = []
         self.open = False
 
-        # Used to stop people events for people in the holder
-        # (so player can click on the holder instead)
-        self.canClick = False
-
         self.offset = vec(-10, -15)
         self.pos = self.target.pos + self.offset
 
@@ -45,14 +41,8 @@ class PersonHolder(Sprite):
     def getOpen(self):
         return self.open
 
-    def getCanClick(self):
-        return self.canClick
-
     def setOpen(self, open):
         self.open = open
-
-    def setCanClick(self, canClick):
-        self.canClick = canClick
 
     def addPerson(self, person):
         if person in self.people:
@@ -60,9 +50,10 @@ class PersonHolder(Sprite):
 
         self.people.append(person)
 
-        # We give the holder same priority as the highest priority person
+        # We give the holder same priority + 1 as the highest priority person,
+        # so it will always be selected over the person
         if person.priority > self.priority:
-            self.priority = person.priority
+            self.priority = person.priority + 1
 
         if len(self.people) > 1:
             # Show the holder
@@ -91,18 +82,23 @@ class PersonHolder(Sprite):
 
         person.addToLayer()
         person.addToLayer("layer 4")
-        person.setCanClick(True)
+        person.setActive(True)
 
-        # We don't want to call this when switching layer
-        if len(self.people) > 1 and self.open and not switchLayer:
-            self.closeHolder(True)
+        if len(self.people) > 1:
+
+            # We don't want to call this when switching layer
+            if self.open and not switchLayer:
+                self.closeHolder(True)
+
+            # If the holder is closed then we want to update he amount text.
+            elif not self.open:
+                self.dirty = True
 
         elif len(self.people) == 1:
             if self.open:
                 self.game.audioLoader.playSound("collapse")
 
             self.remove(self.groups)
-            self.canClick = False
             self.open = False
             self.clickManager.setPersonHolder(None)
 
@@ -111,7 +107,9 @@ class PersonHolder(Sprite):
             person = self.people[0]
             person.addToLayer()
             person.addToLayer("layer 4")
-            person.setCanClick(True)
+            person.setActive(True)
+
+            self.game.clickManager.resetMouseOver()
 
             if isinstance(self.target, Transport):
                 person.pos.x = (
@@ -134,7 +132,7 @@ class PersonHolder(Sprite):
             if addToLayers:
                 person.addToLayer()
                 person.addToLayer("layer 4")
-                person.setCanClick(True)
+                person.setActive(True)
 
             person.pos = self.drawerPos + offset
 
@@ -194,7 +192,6 @@ class PersonHolder(Sprite):
 
         self.clickManager.setPersonHolder(self)
         self.open = True
-        self.canClick = False
         self.color = GREY
         self.dirty = True
 
@@ -203,12 +200,17 @@ class PersonHolder(Sprite):
             return
 
         for person in self.people:
+            # Remove the player sprite from the current layer and layer 4 so
+            # it is no longer drawn.
             person.removeFromLayer()
             person.removeFromLayer("layer 4")
-            person.setCanClick(False)
+
+            # When a player is in the holder we don't want it to be possible
+            # to click on them.
+            person.setActive(False)
 
             # Reset the players positions, and make sure any new people
-            # spawning have an image
+            # spawning have an image.
             person.pos = (self.target.pos - self.target.offset) + person.offset
             person.makeSurface()
             person.rect.topleft = (
@@ -227,13 +229,8 @@ class PersonHolder(Sprite):
 
         self.clickManager.setPersonHolder(None)
         self.open = False
-        self.canClick = True
         self.color = WHITE
         self.dirty = True
-
-        # Reset the person holder clicks to stop pressing a holder on
-        # a different layer
-        self.spriteRenderer.resetPersonHolderClicks()
 
     def __render(self):
         self.dirty = False
@@ -303,6 +300,10 @@ class PersonHolder(Sprite):
     def events(self):
         mx, my = self.getMousePos()
 
+        # Need at least 2 people in the holder to handle events
+        if len(self.people) <= 1:
+            return
+
         if self.open:
             # Click off event.
             if (not self.rect.collidepoint((mx, my))
@@ -314,7 +315,11 @@ class PersonHolder(Sprite):
         # Click event.
         if (self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
-                and self.canClick):
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.target.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)
+                and self.game.clickManager.getMouseOver() == self):
             self.game.clickManager.setClicked(False)
             self.game.audioLoader.playSound("expand")
             self.openHolder()
@@ -326,6 +331,10 @@ class PersonHolder(Sprite):
 
         # Hover over event.
         elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and (
+                    self.spriteRenderer.getCurrentLayerString()
+                    == self.target.getConnectionType()
+                    or self.spriteRenderer.getCurrentLayer() == 4)
                 and self.game.clickManager.isTop(self)):
             self.mouseOver = True
             self.game.clickManager.setMouseOver(self)

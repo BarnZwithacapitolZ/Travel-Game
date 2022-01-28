@@ -8,11 +8,10 @@ from menuComponents import (
     Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
     ControlLabel)
 from clickManager import ControlClickManager
+from utils import vec
 from enum import Enum, auto
 import random
 import copy
-
-vec = pygame.math.Vector2
 
 
 class Menu:
