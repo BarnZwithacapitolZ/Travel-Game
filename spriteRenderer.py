@@ -6,7 +6,8 @@ from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
 from node import NodeType
 from meterController import MeterController
-from menu import GameHud, GameMenu, MessageHud, PreviewHud
+from menu import GameMenu
+from hud import GameHud, MessageHud, PreviewHud
 
 
 class SpriteRenderer():

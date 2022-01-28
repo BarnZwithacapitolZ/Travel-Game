@@ -5,7 +5,7 @@ import json
 from pygame.locals import Color
 from gridManager import GridManager
 from node import NodeType
-from menu import EditorHud
+from hud import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
 from config import config, dump, MAPSFOLDER

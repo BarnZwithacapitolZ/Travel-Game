@@ -474,7 +474,7 @@ class BelowIndicator(pygame.sprite.Sprite):
         self.spriteRenderer = self.currentNode.spriteRenderer
 
         self.width, self.height = 11.5, 11.5
-        self.offset = vec(20, 15 + (
+        self.offset = vec(22, 18 + (
             len(self.currentNode.getAbove()) * self.width))
         self.pos = self.currentNode.pos + self.offset
 
