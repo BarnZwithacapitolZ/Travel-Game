@@ -284,7 +284,7 @@ class MapEditor(SpriteRenderer):
     def deleteLevel(self):
         path = self.game.mapLoader.getMap(self.levelData["mapName"])
         if os.path.exists(path):
-            # Delete the level
+            # Delete the map file from the filePath.
             os.remove(path)
             self.game.mapLoader.removeMap(self.levelData["mapName"])
             self.game.mapLoader.removeCustomMap(self.levelData["mapName"])

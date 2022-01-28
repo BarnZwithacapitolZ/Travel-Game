@@ -1,21 +1,20 @@
 import pygame
 import math
-import node as NODE
 from config import BLACK, GREY, WHITE
 from transport import Transport
+from utils import overrides, vec
+from sprite import Sprite
 
-vec = pygame.math.Vector2
 
-
-class PersonHolder(pygame.sprite.Sprite):
-    def __init__(self, game, groups, target, clickManager):
+class PersonHolder(Sprite):
+    def __init__(self, groups, target, clickManager):
+        super().__init__(target.spriteRenderer, [], [clickManager])
+        # Since we passed the sprite group as empty,
+        # we need to reset it to be the actual list.
         self.groups = groups
-        self.priority = 0
-        super().__init__([])
-        self.game = game
+
         self.target = target
-        self.spriteRenderer = self.target.spriteRenderer
-        self.clickManager = clickManager
+        self.clickManager = self.clickManagers[0]
 
         self.width, self.height = 20, 20
         self.drawerWidth, self.drawerHeight = 0, 0
@@ -38,9 +37,6 @@ class PersonHolder(pygame.sprite.Sprite):
         self.drawerOffset = self.offset
         self.drawerPos = self.pos
 
-        self.dirty = True
-        self.mouseOver = False
-
         self.color = WHITE
 
     def getPeople(self):
@@ -52,17 +48,11 @@ class PersonHolder(pygame.sprite.Sprite):
     def getCanClick(self):
         return self.canClick
 
-    def getMouseOver(self):
-        return self.mouseOver
-
     def setOpen(self, open):
         self.open = open
 
     def setCanClick(self, canClick):
         self.canClick = canClick
-
-    def setMouseOver(self, mouseOver):
-        self.mouseOver = mouseOver
 
     def addPerson(self, person):
         if person in self.people:
@@ -304,23 +294,14 @@ class PersonHolder(pygame.sprite.Sprite):
                     10 * self.game.renderer.getScale()
                     * self.spriteRenderer.getFixedScale()))
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
+    @overrides(Sprite)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = self.getMousePos()
 
         if self.open:
             # Click off event.
@@ -358,6 +339,7 @@ class PersonHolder(pygame.sprite.Sprite):
             self.color = WHITE
             self.dirty = True
 
+    @overrides(Sprite)
     def update(self):
         if not hasattr(self, 'rect'):
             return

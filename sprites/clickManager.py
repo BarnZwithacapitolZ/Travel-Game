@@ -1,6 +1,5 @@
 from person import Person
-from transport import Transport
-from node import NodeType, Node, BelowIndicator
+from node import NodeType, Node
 from enum import Enum, auto
 
 

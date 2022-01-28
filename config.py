@@ -9,10 +9,12 @@ def getFilePath():
         return os.path.dirname(sys.executable)
     return os.path.dirname(__file__)
 
+
 # dump config file to json for saving
 def dump(data):
     with open('config.json', 'w') as f:
         json.dump(data, f)
+
 
 # Load the config from json
 with open('config.json') as f:
@@ -99,8 +101,8 @@ LAYERNODEMAPPINGS = {
     3: ["tram", "airport", "house", "office", "school", "shop"]
 }
 
-# Layer, node pairs that defines which transport types can be added to each of the
-# individual layers.
+# Layer, node pairs that defines which transport types can be added to each of
+# the individual layers.
 LAYERTRANSPORTMAPPINGS = {
     1: ["metro"],
     2: ["bus", "taxi"],

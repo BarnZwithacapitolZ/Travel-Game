@@ -1,16 +1,11 @@
-import pygame
+from utils import overrides
+from sprite import Sprite
 
-vec = pygame.math.Vector2
 
-
-class MeterController(pygame.sprite.Sprite):
+# TODO: not sure if this should be a sprite??
+class MeterController(Sprite):
     def __init__(self, spriteRenderer, groups, amount):
-        self.groups = groups
-        super().__init__(self.groups)
-
-        self.spriteRenderer = spriteRenderer
-        self.game = self.spriteRenderer.game
-
+        super().__init__(spriteRenderer, groups, [])
         self.amount = amount
         self.totalAmount = amount
         self.amountToAdd = 0
@@ -50,6 +45,7 @@ class MeterController(pygame.sprite.Sprite):
         if removeFromAdd:
             self.amountToAdd -= self.decreaseSpeed * 100 * self.game.dt
 
+    @overrides(Sprite)
     def events(self):
         # if spacebar is pressed and the flag isn't called
         if self.game.clickManager.getSpaceBar() and not self.empty:
@@ -88,5 +84,6 @@ class MeterController(pygame.sprite.Sprite):
             if self.amount < self.totalAmount:
                 self.updateAmount(self.increaseSpeed)
 
+    @overrides(Sprite)
     def update(self):
         self.events()

@@ -7,9 +7,9 @@ import node as NODE
 import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
+from utils import overrides, vec
 from enum import Enum
-
-vec = pygame.math.Vector2
+from sprite import Sprite
 
 
 class TransportType(Enum):
@@ -19,16 +19,11 @@ class TransportType(Enum):
     TAXI = "taxi"
 
 
-class Transport(pygame.sprite.Sprite):
+class Transport(Sprite):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
-        self.groups = groups
-        self.priority = len(self.groups[0].sprites())
-        super().__init__(self.groups)
-
-        self.spriteRenderer = spriteRenderer
-        self.game = self.spriteRenderer.game
+            clickManagers=[]):
+        super().__init__(spriteRenderer, groups, clickManagers)
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
         self.currentNode.addTransport(self)
@@ -44,21 +39,18 @@ class Transport(pygame.sprite.Sprite):
 
         self.type = TransportType.METRO
 
-        self.mouseOver = False
-        self.dirty = True
-
         self.running = running
         self.moving = self.running
         self.timer = 0
         self.timerLength = 300
 
-        self.clickManager = clickManager
-        self.personClickManager = personClickManager
+        self.clickManager = self.clickManagers[0]
+        self.personClickManager = self.clickManagers[1]
 
         # People travelling in the transport
         self.people = []
         self.personHolder = personHolder.PersonHolder(
-            self.game, self.groups, self,
+            self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
         self.imageName = "train"
@@ -78,9 +70,6 @@ class Transport(pygame.sprite.Sprite):
 
     def getCurrentNode(self):
         return self.currentNode
-
-    def getMouseOver(self):
-        return self.mouseOver
 
     def getConnectionType(self):
         if self.currentNode is None:
@@ -255,9 +244,6 @@ class Transport(pygame.sprite.Sprite):
 
         self.people.remove(person)
 
-    def remove(self):
-        self.kill()
-
     # Add multiple people who are departing on the transportation
     def addPeople(self):
         # If theres no one at the station, dont bother trying to add anyone
@@ -429,10 +415,12 @@ class Transport(pygame.sprite.Sprite):
             self.pos * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
+    @overrides(Sprite)
     def drawPaused(self, surface):
         self.makeSurface()
 
@@ -442,6 +430,7 @@ class Transport(pygame.sprite.Sprite):
 
         surface.blit(self.image, (self.rect))
 
+    @overrides(Sprite)
     def draw(self):
         self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
@@ -454,12 +443,9 @@ class Transport(pygame.sprite.Sprite):
             self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
+    @overrides(Sprite)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
-
+        mx, my = self.getMousePos()
         # Click off event
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
@@ -498,12 +484,6 @@ class Transport(pygame.sprite.Sprite):
                     == self.currentNode.getConnectionType()
                     or self.spriteRenderer.getCurrentLayer() == 4)
                 and self.game.clickManager.isTop(self)):
-            # If the person holder is hovered over, or the current nodes
-            # person holder is hovered over, don't hover over the transport
-            if (self.currentNode.getPersonHolder().getMouseOver()
-                    or self.personHolder.getMouseOver()):
-                return
-
             self.mouseOver = True
             self.game.clickManager.setMouseOver(self)
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
@@ -515,6 +495,7 @@ class Transport(pygame.sprite.Sprite):
             self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
+    @overrides(Sprite)
     def update(self):
         if not hasattr(self, 'rect') or not self.running:
             return
@@ -626,10 +607,9 @@ class Transport(pygame.sprite.Sprite):
 class Taxi(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
+            clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManager,
-            personClickManager)
+            spriteRenderer, groups, currentConnection, running, clickManagers)
         self.imageName = "taxi"
         self.stopType = NODE.NodeType.aslist()
         self.boardingType = PERSON.Person.Status.BOARDINGTAXI
@@ -638,7 +618,7 @@ class Taxi(Transport):
 
         self.hasStopped = False
 
-    # override
+    @overrides(Transport)
     def setPeopleBoarding(self):
         # If theres no one at the station, dont bother trying to add anyone
         if len(self.currentNode.getPeople()) <= 0:
@@ -664,7 +644,7 @@ class Taxi(Transport):
             # Add the people boarding to the transportation
             self.addPeople()
 
-    # override
+    @overrides(Transport)
     def setNextConnection(self):
         nextNode = self.currentConnection.getTo()
 
@@ -717,7 +697,7 @@ class Taxi(Transport):
                 return True
         return False
 
-    # override
+    @overrides(Transport)
     def update(self):
         if not hasattr(self, 'rect') or not self.running:
             return
@@ -857,10 +837,9 @@ class Taxi(Transport):
 class Bus(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
+            clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManager,
-            personClickManager)
+            spriteRenderer, groups, currentConnection, running, clickManagers)
         self.imageName = "bus"
         self.stopType = [NODE.NodeType.BUSSTOP, NODE.NodeType.DESTINATION]
 
@@ -868,10 +847,9 @@ class Bus(Transport):
 class Tram(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
+            clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManager,
-            personClickManager)
+            spriteRenderer, groups, currentConnection, running, clickManagers)
         self.imageName = "tram"
         self.stopType = [NODE.NodeType.TRAMSTOP, NODE.NodeType.DESTINATION]
 
@@ -879,7 +857,6 @@ class Tram(Transport):
 class Metro(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManager, personClickManager):
+            clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManager,
-            personClickManager)
+            spriteRenderer, groups, currentConnection, running, clickManagers)

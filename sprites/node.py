@@ -1,14 +1,11 @@
-import pygame
-import pygame.gfxdraw
-import math
 import personHolder
 import clickManager as CLICKMANAGER
 import person as PERSON
 from pygame.locals import BLEND_MIN
-from config import YELLOW, HOVERGREY
+from config import HOVERGREY
+from utils import overrides, vec
 from enum import Enum
-
-vec = pygame.math.Vector2
+from sprite import Sprite
 
 
 class NodeType(Enum):
@@ -38,26 +35,15 @@ class NodeType(Enum):
         return [cls.REGULAR, cls.STOP, cls.DESTINATION, cls.SPECIAL]
 
 
-class Node(pygame.sprite.Sprite):
+class Node(Sprite):
     def __init__(
             self, spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager):
-        self.groups = groups
-
-        if len(self.groups) > 0:
-            self.priority = len(self.groups[0].sprites())
-
-        else:
-            self.priority = 0
-
-        super().__init__(self.groups)
-
-        self.spriteRenderer = spriteRenderer
-        self.game = self.spriteRenderer.game
+            clickManagers=[]):
+        super().__init__(spriteRenderer, groups, clickManagers)
         self.number = number
         self.connectionType = connectionType
-        self.personClickManager = personClickManager
-        self.transportClickManager = transportClickManager
+        self.personClickManager = self.clickManagers[0]
+        self.transportClickManager = self.clickManagers[1]
 
         self.width, self.height = 20, 20
         self.offset = vec(0, 0)
@@ -78,16 +64,13 @@ class Node(pygame.sprite.Sprite):
         # All people currently at this node
         self.people = []
         self.personHolder = personHolder.PersonHolder(
-            self.game, self.groups, self,
+            self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
         # Node Type definition
         self.type = NodeType.REGULAR
         self.subType = NodeType.REGULAR
 
-        self.dirty = True
-
-        self.mouseOver = False
         self.images = ["node"]
         self.currentImage = 0
 
@@ -118,9 +101,6 @@ class Node(pygame.sprite.Sprite):
     # Return the node number
     def getNumber(self):
         return self.number
-
-    def getMouseOver(self):
-        return self.mouseOver
 
     def getPersonHolder(self):
         return self.personHolder
@@ -172,8 +152,8 @@ class Node(pygame.sprite.Sprite):
                 or above.getType() == NodeType.REGULAR):
             return
 
-        indicator = BelowIndicator(self.game, (
-            self.spriteRenderer.allSprites, self.spriteRenderer.layer4),
+        indicator = BelowIndicator(
+            (self.spriteRenderer.allSprites, self.spriteRenderer.layer4),
             self, above)
         self.above.append(indicator)
 
@@ -187,16 +167,9 @@ class Node(pygame.sprite.Sprite):
     def setTransports(self, transports=[]):
         self.transports = transports
 
-    def setMouseOver(self, mouseOver):
-        self.mouseOver = mouseOver
-        self.dirty = True
-
     # Add a transport to the node
     def addTransport(self, transport):
         self.transports.append(transport)
-
-    def remove(self):
-        self.kill()
 
     # Add a person to the node
     def addPerson(self, person):
@@ -221,21 +194,6 @@ class Node(pygame.sprite.Sprite):
     def removeConnection(self, connection):
         self.connections.remove(connection)
 
-    def drawOutline(self, color=YELLOW):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-
-        offx = 0.01
-        for x in range(1):
-            pygame.draw.arc(
-                self.game.renderer.gameDisplay, color, (
-                    (self.pos.x - 1) * scale, (self.pos.y - 1) * scale,
-                    (self.width + 2) * scale, (self.height + 2) * scale),
-                math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
-
-            offx += 0.02
-
     def __render(self):
         self.dirty = False
 
@@ -250,26 +208,14 @@ class Node(pygame.sprite.Sprite):
             self.pos * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
-        # if self.personClickManager.getNode() == self:
-        #     self.game.renderer.addSurface(None, None, self.drawOutline)
-
+    @overrides(Sprite)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = self.getMousePos()
 
         # click event; setting the node for the transport
         if (self.rect.collidepoint((mx, my))
@@ -328,6 +274,7 @@ class Node(pygame.sprite.Sprite):
             self.currentImage = 0
             self.dirty = True
 
+    @overrides(Sprite)
     def update(self):
         if not self.dirty and not self.spriteRenderer.getPaused():
             self.events()
@@ -339,19 +286,16 @@ class Node(pygame.sprite.Sprite):
 class EditorNode(Node):
     def __init__(
             self, spriteRenderer, groups, number, connectionType, x, y,
-            clickManager, personClickManager, transportClickManager):
+            clickManagers=[]):
         super().__init__(
             spriteRenderer, groups, number, connectionType, x, y,
-            personClickManager, transportClickManager)
-        self.clickManager = clickManager
+            clickManagers)
+        self.clickManager = self.clickManagers[2]
         self.images = ["node", "nodeStart", "nodeEnd"]
 
-    # Override the events function
+    @overrides(Node)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = self.getMousePos()
 
         # Cant click on a node in the top layer
         if (self.rect.collidepoint((mx, my))
@@ -445,7 +389,7 @@ class EditorNode(Node):
                         self, self.game.mapEditor.getPreviousLayer())
 
                 if node is not None:
-                    self.clickManager.setTempEndNode(node)            
+                    self.clickManager.setTempEndNode(node)
 
         # hover out event
         elif (not self.rect.collidepoint((mx, my)) and self.mouseOver
@@ -463,29 +407,16 @@ class EditorNode(Node):
                 self.clickManager.removeTempEndNode()
 
 
-class BelowIndicator(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentNode, indicatorFor):
-        self.groups = groups
-        self.priority = len(self.groups[0].sprites())
-        super().__init__(self.groups)
-        self.game = game
+class BelowIndicator(Sprite):
+    def __init__(self, groups, currentNode, indicatorFor):
+        super().__init__(currentNode.spriteRenderer, groups, [])
         self.currentNode = currentNode
         self.indicatorFor = indicatorFor
-        self.spriteRenderer = self.currentNode.spriteRenderer
 
         self.width, self.height = 11.5, 11.5
         self.offset = vec(22, 18 + (
             len(self.currentNode.getAbove()) * self.width))
         self.pos = self.currentNode.pos + self.offset
-
-        self.mouseOver = False
-        self.dirty = True
-
-    def getMouseOver(self):
-        return self.mouseOver
-
-    def setMouseOver(self, mouseOver):
-        self.mouseOver = mouseOver
 
     def __render(self):
         self.dirty = False
@@ -500,23 +431,14 @@ class BelowIndicator(pygame.sprite.Sprite):
             self.pos * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
+    @overrides(Sprite)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = self.getMousePos()
 
         # Click event; take the player to the layer below that is
         # being indicated.
@@ -541,6 +463,7 @@ class BelowIndicator(pygame.sprite.Sprite):
             self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
+    @overrides(Sprite)
     def update(self):
         if not self.dirty:
             self.events()

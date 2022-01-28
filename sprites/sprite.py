@@ -1,4 +1,6 @@
 import pygame
+import abc
+from utils import overrides
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -9,18 +11,63 @@ class Sprite(pygame.sprite.Sprite):
 
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
+        self.clickManagers = clickManagers
 
         self.mouseOver = False
-        self.dirty = False
+        self.dirty = True
 
     def getMouseOver(self):
         return self.mouseOver
 
     def setMouseOver(self, mouseOver):
-        return self.mouseOver
+        self.mouseOver = mouseOver
 
+    # Defines the priority of the rendering order, a sprite with a > priority
+    # than another sprite will be drawn above that other sprite.
     def getPriority(self):
-        if len(self.groups) > 0:
+        if len(self.groups) > 0 and self.groups is tuple:
             return len(self.groups[0].sprites())
 
         return 0
+
+    # Define the mouse position on the game display.
+    def getMousePos(self):
+        mx, my = pygame.mouse.get_pos()
+        difference = self.game.renderer.getDifference()
+        mx -= difference[0]
+        my -= difference[1]
+
+        return mx, my
+
+    # Remove the sprite from all groups that contain it,
+    # the sprite is no longer drawn.
+    @overrides(pygame.sprite.Sprite)
+    def kill(self):
+        super().kill()
+        del self
+
+    # Make the sprites image for blitting, call the private render method.
+    @abc.abstractmethod
+    def makeSurface(self):
+        return
+
+    # Make the sprites image and blit it to the paused surface (provided).
+    def drawPaused(self, surface):
+        self.makeSurface()
+        surface.blit(self.image, (self.rect))
+
+    # Make the sprites image and add it to the surface array for blitting
+    # to the main game display.
+    def draw(self):
+        self.makeSurface()
+        self.game.renderer.addSurface(self.image, (self.rect))
+
+    # Click and mouse events.
+    @abc.abstractmethod
+    def events(self):
+        return
+
+    # Update the sprite, contains physics calculations.
+    @abc.abstractmethod
+    def update(self):
+        return

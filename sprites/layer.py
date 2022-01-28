@@ -9,7 +9,7 @@ from person import Person, Manager, Commuter
 vec = pygame.math.Vector2
 
 
-class Layer():
+class Layer:
     def __init__(
             self, spriteRenderer, groups, number, level=None,
             spacing=(1.5, 1.5)):
@@ -162,9 +162,9 @@ class Layer():
         picks = [v for v, w in zip(peopleTypes, weights) for x in range(w)]
 
         p = random.choice(picks)(
-            self.spriteRenderer, self.groups,
-            self.spriteRenderer.getPersonClickManager(),
-            self.spriteRenderer.getTransportClickManager(), destinations)
+            self.spriteRenderer, self.groups, destinations, [
+                self.spriteRenderer.getPersonClickManager(),
+                self.spriteRenderer.getTransportClickManager()])
 
         self.previousPeopleTypes.append(type(p))
 
@@ -300,7 +300,7 @@ class Layer():
                     * self.game.renderer.getScale()))
 
 
-class Background():
+class Background:
     def __init__(self, game, imageName, size=tuple(), pos=tuple()):
         self.game = game
         self.imageName = imageName

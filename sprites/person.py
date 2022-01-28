@@ -5,12 +5,13 @@ import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY
+from utils import overrides, vec
 from enum import Enum, auto
+from sprite import Sprite
+from entity import Particle
 
-vec = pygame.math.Vector2
 
-
-class Person(pygame.sprite.Sprite):
+class Person(Sprite):
     # Players different status's
     class Status(Enum):
         UNASSIGNED = auto()
@@ -30,17 +31,13 @@ class Person(pygame.sprite.Sprite):
                 cls.FLAG]
 
     def __init__(
-            self, spriteRenderer, groups, clickManager, transportClickManager,
-            spawnDestinations, possibleSpawns, possibleDestinations):
-        self.groups = groups
-        self.priority = len(self.groups[0].sprites())
-        super().__init__(self.groups)
-        self.spriteRenderer = spriteRenderer
-        self.clickManager = clickManager
-        self.transportClickManager = transportClickManager
-        self.game = self.spriteRenderer.game
-        self.width = 20
-        self.height = 20
+            self, spriteRenderer, groups, spawnDestinations, possibleSpawns,
+            possibleDestinations, clickManagers=[]):
+        super().__init__(spriteRenderer, groups, clickManagers)
+        self.clickManager = self.clickManagers[0]
+        self.transportClickManager = self.clickManagers[1]
+
+        self.width, self.height = 20, 20
 
         # List of possible destinations that the player can have
         # (different player types might have different
@@ -72,16 +69,12 @@ class Person(pygame.sprite.Sprite):
 
         self.travellingOn = None
 
-        self.mouseOver = False
-        self.clicked = False
         self.canClick = True
         self.status = Person.Status.UNASSIGNED
 
-        self.dirty = True
-
         self.imageName = "person"
 
-        self.statusIndicator = StatusIndicator(self.game, self.groups, self)
+        self.statusIndicator = StatusIndicator(self.groups, self)
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -154,9 +147,9 @@ class Person(pygame.sprite.Sprite):
         return finalPlayerTypes, weights
 
     def spawnAnimation(self):
-        Particle(self.game, (
-            self.spriteRenderer.allSprites,
-            self.spriteRenderer.entities), self)
+        Particle(
+            (self.spriteRenderer.allSprites, self.spriteRenderer.entities),
+            self)
 
         self.game.audioLoader.playSound("playerSpawn", 1)
 
@@ -180,9 +173,6 @@ class Person(pygame.sprite.Sprite):
     def getStartingConnectionType(self):
         return self.startingConnectionType
 
-    def getMouseOver(self):
-        return self.mouseOver
-
     def getPossibleDestinations(self):
         return self.possibleDestinations
 
@@ -203,12 +193,6 @@ class Person(pygame.sprite.Sprite):
 
     def setCanClick(self, canClick):
         self.canClick = canClick
-
-    def setClicked(self, clicked):
-        self.clicked = clicked
-
-    def setMouseOver(self, mouseOver):
-        self.mouseOver = mouseOver
 
     # Set the persons status
     def setStatus(self, status):
@@ -259,18 +243,21 @@ class Person(pygame.sprite.Sprite):
     def setEntities(self, entities):
         self.entities = entities
 
-    def remove(self):
+    @overrides(Sprite)
+    def kill(self):
         self.currentNode.removePerson(self)
         self.currentNode.getPersonHolder().removePerson(self)
 
         self.spriteRenderer.getGridLayer(
             self.currentConnectionType).removePerson(self)
 
-        self.kill()
         self.statusIndicator.kill()
 
         self.spriteRenderer.setTotalPeople(
             self.spriteRenderer.getTotalPeople() - 1)
+
+        # Call the sprite kill methods that deleted the sprite from memory
+        super().kill()
 
     def addEntity(self, entity):
         self.entities.append(entity)
@@ -314,7 +301,7 @@ class Person(pygame.sprite.Sprite):
     def complete(self):
         self.game.audioLoader.playSound("playerSuccess", 1)
         self.spriteRenderer.addToCompleted()
-        self.remove()
+        self.kill()
 
     # Switch the person and their status indicator from one
     # layer to a new layer
@@ -513,10 +500,12 @@ class Person(pygame.sprite.Sprite):
             int(15 * self.game.renderer.getScale()
                 * self.spriteRenderer.getFixedScale()))
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
 
+    @overrides(Sprite)
     def drawPaused(self, surface):
         self.makeSurface()
 
@@ -526,6 +515,7 @@ class Person(pygame.sprite.Sprite):
 
         surface.blit(self.image, (self.rect))
 
+    @overrides(Sprite)
     def draw(self):
         self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
@@ -546,11 +536,9 @@ class Person(pygame.sprite.Sprite):
             self.timerReached = True
             self.game.renderer.addSurface(None, None, self.drawTimer)
 
+    @overrides(Sprite)
     def events(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = self.getMousePos()
 
         # If the mouse is clicked, but not on a person,
         # unset the person from the clickmanager (no one clicked)
@@ -649,6 +637,7 @@ class Person(pygame.sprite.Sprite):
             self.game.clickManager.setMouseOver(None)
             self.dirty = True
 
+    @overrides(Sprite)
     def update(self):
         if not hasattr(self, 'rect'):
             return
@@ -677,7 +666,7 @@ class Person(pygame.sprite.Sprite):
         if self.timer <= 0:
             self.game.audioLoader.playSound("playerFailure", 1)
             self.spriteRenderer.removeLife()
-            self.remove()
+            self.kill()
 
         if self.currentNode.getNumber() == self.destination.getNumber():
             self.complete()
@@ -720,13 +709,10 @@ class Person(pygame.sprite.Sprite):
 
 
 class Manager(Person):
-    def __init__(
-            self, renderer, groups, clickManager, transportClickManager,
-            spawnDestinations):
+    def __init__(self, renderer, groups, spawnDestinations, clickManagers=[]):
         super().__init__(
-            renderer, groups, clickManager, transportClickManager,
-            spawnDestinations, Manager.getPossibleSpawns(),
-            Manager.getPossibleDestinations())
+            renderer, groups, spawnDestinations, Manager.getPossibleSpawns(),
+            Manager.getPossibleDestinations(), clickManagers)
         self.budget = 40
         self.imageName = "manager"
 
@@ -744,12 +730,10 @@ class Manager(Person):
 
 class Commuter(Person):
     def __init__(
-            self, renderer, groups, clickManager, transportClickManager,
-            spawnDestinations):
+            self, renderer, groups, spawnDestinations, clickManagers=[]):
         super().__init__(
-            renderer, groups, clickManager, transportClickManager,
-            spawnDestinations, Commuter.getPossibleSpawns(),
-            Commuter.getPossibleDestinations())
+            renderer, groups, spawnDestinations, Commuter.getPossibleSpawns(),
+            Commuter.getPossibleDestinations(), clickManagers)
         self.budget = 12
         self.imageName = "person"
 
@@ -765,19 +749,14 @@ class Commuter(Person):
     # has a small budget so cant rly afford many taxis etc.
 
 
-class StatusIndicator(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentPerson):
-        self.groups = groups
-        super().__init__(self.groups)
-        self.game = game
+class StatusIndicator(Sprite):
+    def __init__(self, groups, currentPerson):
+        super().__init__(currentPerson.spriteRenderer, groups, [])
         self.currentPerson = currentPerson
-        self.spriteRenderer = self.currentPerson.spriteRenderer
 
         self.width, self.height = 10, 10
         self.offset = vec(-2.5, -10)
         self.pos = self.currentPerson.pos + self.offset
-
-        self.dirty = True
 
         if self.spriteRenderer.getDarkMode():
             self.images = [
@@ -813,6 +792,9 @@ class StatusIndicator(pygame.sprite.Sprite):
             self.pos * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
+    # TODO: just add and remove the sprite from groups instead of setting the
+    # image to None.
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty:
             self.__render()
@@ -820,82 +802,18 @@ class StatusIndicator(pygame.sprite.Sprite):
             return False
         return True
 
+    @overrides(Sprite)
     def drawPaused(self, surface):
         if self.makeSurface():
             surface.blit(self.image, (self.rect))
 
+    @overrides(Sprite)
     def draw(self):
         if self.makeSurface():
             self.game.renderer.addSurface(self.image, (self.rect))
 
+    @overrides(Sprite)
     def update(self):
         if (self.currentPerson.getStatusValue() - 1) != self.currentState:
             self.dirty = True
             self.currentState = self.currentPerson.getStatusValue() - 1
-
-
-class Particle(pygame.sprite.Sprite):
-    def __init__(self, game, groups, currentPerson, color=YELLOW):
-        self.groups = groups
-        super().__init__(self.groups)
-        self.game = game
-        self.currentPerson = currentPerson
-        self.spriteRenderer = self.currentPerson.spriteRenderer
-        self.color = color
-        self.start, self.end = 100, 0
-        self.rad = 0
-        self.dirty = True
-        self.alpha = self.start
-
-        self.currentPerson.addEntity(self)
-
-    def __render(self):
-        self.dirty = False
-
-        self.pos = ((
-            self.currentPerson.pos - vec(self.rad, self.rad))
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-
-        self.size = (vec(
-            self.currentPerson.width + (self.rad * 2),
-            self.currentPerson.height + (self.rad * 2))
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-
-        self.image = pygame.Surface((self.size)).convert()
-        self.image.set_colorkey((0, 0, 0))  # Remove black border
-
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
-
-        pygame.draw.ellipse(self.image, self.color, pygame.Rect(
-            0, 0, *self.size))
-
-        self.image.set_alpha(self.alpha, pygame.RLEACCEL)
-
-    def makeSurface(self):
-        if self.dirty or self.image is None:
-            self.__render()
-
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
-    def update(self):
-        self.rad += 60 * self.game.dt * self.spriteRenderer.getDt()
-        self.alpha -= 120 * self.game.dt * self.spriteRenderer.getDt()
-
-        if self.alpha < self.end:
-            self.kill()
-            if len(self.currentPerson.getEntities()) < 3:
-                Particle(self.game, self.groups, self.currentPerson)
-            else:
-                self.currentPerson.setEntities([])
-
-        # Since the particle is short-lived, this is ok.
-        self.dirty = True

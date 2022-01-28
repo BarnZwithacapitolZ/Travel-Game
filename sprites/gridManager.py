@@ -214,12 +214,12 @@ class GridManager:
         if len(clickManagers) <= 2:
             n = Node(
                 self.spriteRenderer, self.groups, number, connectionType,
-                x, y, clickManagers[0], clickManagers[1])
+                x, y, clickManagers)
 
         else:
             n = EditorNode(
                 self.spriteRenderer, self.groups, number, connectionType,
-                x, y, clickManagers[0], clickManagers[1], clickManagers[2])
+                x, y, clickManagers)
 
         # Append to the list of total nodes
         self.nodes.append(n)
@@ -292,13 +292,13 @@ class GridManager:
         connections = node.getConnections()
         transports = node.getTransports()
         self.nodes.remove(node)
-        node.remove()
+        node.kill()
 
         n = self.addRegularNode(
             connectionType, number, [
-                self.spriteRenderer.getClickManager(),
                 self.spriteRenderer.getPersonClickManager(),
-                self.spriteRenderer.getTransportClickManager()
+                self.spriteRenderer.getTransportClickManager(),
+                self.spriteRenderer.getClickManager()
             ], self.nodePositions[number][0], self.nodePositions[number][1])
 
         if nodeType is not None and nodeSubType is not None:
@@ -343,16 +343,15 @@ class GridManager:
     # (for the map editor)
     def createFullGrid(self, connectionType):
         clickManagers = [
-            self.spriteRenderer.getClickManager(),
             self.spriteRenderer.getPersonClickManager(),
-            self.spriteRenderer.getTransportClickManager()]
+            self.spriteRenderer.getTransportClickManager(),
+            self.spriteRenderer.getClickManager()]
 
         if self.level is None:
             for number, position in enumerate(self.nodePositions):
                 n = EditorNode(
                     self.spriteRenderer, self.groups, number, connectionType,
-                    position[0], position[1], clickManagers[0],
-                    clickManagers[1], clickManagers[2])
+                    position[0], position[1], clickManagers)
                 self.nodes.append(n)
 
         else:
@@ -407,24 +406,24 @@ class GridManager:
                     random.randint(0, len(possibleConnections) - 1)]
 
                 t = self.transportMappings[transport["type"]](
-                    self.spriteRenderer, self.groups, connection, running,
-                    self.spriteRenderer.getTransportClickManager(),
-                    self.spriteRenderer.getPersonClickManager())
+                    self.spriteRenderer, self.groups, connection, running, [
+                        self.spriteRenderer.getTransportClickManager(),
+                        self.spriteRenderer.getPersonClickManager()])
                 self.transports.append(t)
 
     # Add a transport to the map within the map editor
     def addTransport(
             self, connectionType, connection, transport, running=True):
         t = transport(
-            self.spriteRenderer, self.groups, connection, running,
-            self.spriteRenderer.getTransportClickManager(),
-            self.spriteRenderer.getPersonClickManager())
+            self.spriteRenderer, self.groups, connection, running, [
+                self.spriteRenderer.getTransportClickManager(),
+                self.spriteRenderer.getPersonClickManager()])
         self.transports.append(t)
 
     # Remove a transport from the map within the map editor
     def removeTransport(self, transport):
         self.transports.remove(transport)
-        transport.remove()
+        transport.kill()
 
     @staticmethod
     def getMapValues(width, height, reverse=False):
