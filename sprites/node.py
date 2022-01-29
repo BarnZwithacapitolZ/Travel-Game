@@ -280,7 +280,9 @@ class Node(Sprite):
             self.events()
 
     def __repr__(self):
-        return (f"Node(type={self.type}, subType={self.subType}, number={self.number})")
+        return (
+            f"Node(type={self.type}, subType={self.subType},"
+            f"number={self.number}, connectionType={self.connectionType})")
 
 
 class EditorNode(Node):
@@ -414,7 +416,7 @@ class BelowIndicator(Sprite):
         self.indicatorFor = indicatorFor
 
         self.width, self.height = 11.5, 11.5
-        self.offset = vec(22, 18 + (
+        self.offset = vec(21, 19 + (
             len(self.currentNode.getAbove()) * self.width))
         self.pos = self.currentNode.pos + self.offset
 

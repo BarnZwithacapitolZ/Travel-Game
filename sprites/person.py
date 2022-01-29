@@ -4,11 +4,11 @@ import math
 import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
-from config import YELLOW, BLACK, WHITE, HOVERGREY
+from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
 from utils import overrides, vec
 from enum import Enum, auto
 from sprite import Sprite
-from entity import Particle
+from entity import Particle, Outline
 
 
 class Person(Sprite):
@@ -72,9 +72,11 @@ class Person(Sprite):
         self.active = True
         self.status = Person.Status.UNASSIGNED
 
-        self.imageName = "person"
+        self.imageName = "personGrey"  # Default Name
 
         self.statusIndicator = StatusIndicator(self.groups, self)
+        self.outline = Outline(
+            self.spriteRenderer.aboveEntities, self, [self.clickManager])
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -147,9 +149,9 @@ class Person(Sprite):
         return finalPlayerTypes, weights
 
     def spawnAnimation(self):
-        Particle(
-            (self.spriteRenderer.allSprites, self.spriteRenderer.entities),
-            self)
+        Particle((
+            self.spriteRenderer.allSprites,
+            self.spriteRenderer.belowEntities), self)
 
         self.game.audioLoader.playSound("playerSpawn", 1)
 
@@ -243,6 +245,14 @@ class Person(Sprite):
     def setEntities(self, entities):
         self.entities = entities
 
+    def setImageName(self):
+        color = LAYERCOLORS[int(self.currentConnectionType[-1])]['name']
+        newName = "person" + color.capitalize()
+
+        if self.imageName != newName:
+            self.imageName = newName
+            self.dirty = True
+
     @overrides(Sprite)
     def kill(self):
         self.currentNode.removePerson(self)
@@ -252,6 +262,7 @@ class Person(Sprite):
             self.currentConnectionType).removePerson(self)
 
         self.statusIndicator.kill()
+        self.outline.kill()
 
         self.spriteRenderer.setTotalPeople(
             self.spriteRenderer.getTotalPeople() - 1)
@@ -310,7 +321,22 @@ class Person(Sprite):
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
 
-        print(self.spriteRenderer.getGridLayer(oldLayer), self.spriteRenderer.getGridLayer(newLayer))
+        self.setImageName()
+
+        # print(self.spriteRenderer.getGridLayer(oldLayer).getPeople(), self.spriteRenderer.getGridLayer(newLayer).getPeople())
+        # nodes = self.spriteRenderer.getNode(self.currentNode)            
+        # i = nodes.index(self.currentNode)
+        # above = nodes[:i]
+        # below = nodes[i:]
+        # below.remove(self.currentNode)
+
+        # for node in below:
+        #     if len(node.getPeople()) > 0:
+        #         person = node.getPeople()[0]
+        #         person.width = 11.5
+        #         person.height = 11.5
+        #         person.pos = person.pos - vec(5, 8)
+        #         person.dirty = True
 
         if len(self.path) <= 0:
             self.currentNode.getPersonHolder().removePerson(self, True)
@@ -464,21 +490,6 @@ class Person(Sprite):
                 rect.bottomright + (vec(0, -10) * scale)],
             int(thickness * scale))
 
-    def drawOutline(self, surface):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-
-        offx = 0.01
-        for x in range(6):
-            pygame.draw.arc(
-                surface, YELLOW, (
-                    (self.pos.x) * scale, (self.pos.y) * scale,
-                    (self.width) * scale, (self.height) * scale),
-                math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
-
-            offx += 0.02
-
     def __render(self):
         self.dirty = False
 
@@ -526,7 +537,6 @@ class Person(Sprite):
         # Visualize the players path
         if self.clickManager.getPerson() == self:
             self.drawPath(self.game.renderer.gameDisplay)
-            self.game.renderer.addSurface(None, None, self.drawOutline)
 
         if self.timer <= 20:
             if not self.timerReached:
@@ -712,7 +722,7 @@ class Manager(Person):
             renderer, groups, spawnDestinations, Manager.getPossibleSpawns(),
             Manager.getPossibleDestinations(), clickManagers)
         self.budget = 40
-        self.imageName = "manager"
+        # self.imageName = "manager"
 
     @staticmethod
     def getPossibleSpawns():
@@ -733,7 +743,7 @@ class Commuter(Person):
             renderer, groups, spawnDestinations, Commuter.getPossibleSpawns(),
             Commuter.getPossibleDestinations(), clickManagers)
         self.budget = 12
-        self.imageName = "person"
+        # self.imageName = "person"
 
     @staticmethod
     def getPossibleSpawns():

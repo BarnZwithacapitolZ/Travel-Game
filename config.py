@@ -73,6 +73,38 @@ BACKGROUNDCOLORS = {
 }
 DEFAULTBACKGROUND = CREAM
 
+# Colors for each of the different layers.
+LAYERCOLORS = {
+    1: {
+        "color": RED,
+        "name": "red"
+    },
+    2: {
+        "color": GREY,
+        "name": "grey"
+    },
+    3: {
+        "color": GREEN,
+        "name": "green"
+    }
+}
+
+# Colors for each temporary connection on each layer.
+TEMPLAYERCOLORS = {
+    1: {
+        "color": TEMPRED,
+        "name": "red"
+    },
+    2: {
+        "color": TEMPGREY,
+        "name": "grey"
+    },
+    3: {
+        "color": TEMPGREEN,
+        "name": "green"
+    }
+}
+
 SCANLINESGREEN = (38, 127, 0, 20)
 SCANLINESBLUE = (0, 102, 255, 20)
 SCANLINES = SCANLINESGREEN
@@ -83,7 +115,7 @@ DEFAULTLIVES = 3
 DEFAULTBOARDWIDTH = 18
 DEFAULTBOARDHEIGHT = 10
 
-# Grid settings
+# Default layer names for the grid
 LAYERNAMES = [
     'Metro',
     'Roads',

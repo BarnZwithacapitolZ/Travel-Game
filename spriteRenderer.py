@@ -14,7 +14,8 @@ class SpriteRenderer():
     # Loads all the sprites into groups and stuff
     def __init__(self, game):
         self.allSprites = pygame.sprite.Group()
-        self.entities = pygame.sprite.Group()
+        self.belowEntities = pygame.sprite.Group()
+        self.aboveEntities = pygame.sprite.Group()
         self.layer1 = pygame.sprite.Group()  # layer 1
         self.layer2 = pygame.sprite.Group()  # layer 2
         self.layer3 = pygame.sprite.Group()  # layer 3
@@ -322,7 +323,8 @@ class SpriteRenderer():
         self.timer = 0
         self.totalPeople = 0
         self.totalPeopleNone = False
-        self.entities.empty()
+        self.belowEntities.empty()
+        self.aboveEntities.empty()
         self.allSprites.empty()
         self.layer1.empty()
         self.layer2.empty()
@@ -333,6 +335,9 @@ class SpriteRenderer():
         self.currentLayer = 4
         self.connectionTypes = []
         self.setDefaultMap()
+
+        # Make sure mouse over is set to None.
+        self.game.clickManager.resetMouseOver()
 
     def createLevel(self, level, debug=False):
         self.clearLevel()
@@ -368,9 +373,9 @@ class SpriteRenderer():
             self.connectionTypes.append(connectionType)
 
         # Ordering of the layers (first = lowest).
-        self.gridLayer3.createGrid()
         self.gridLayer1.createGrid()
         self.gridLayer2.createGrid()
+        self.gridLayer3.createGrid()
         self.setGridLayer4Lines()
 
         # Remove node duplicates before we add the transport so that below
@@ -471,13 +476,16 @@ class SpriteRenderer():
 
         self.pausedSurface.blit(self.getGridLayer().getLineSurface(), (0, 0))
 
-        for entity in self.entities:
+        for entity in self.belowEntities:
             entity.drawPaused(self.pausedSurface)
 
         self.renderPausedLayer(1, self.layer1)
         self.renderPausedLayer(2, self.layer2)
         self.renderPausedLayer(3, self.layer3)
         self.renderPausedLayer(4, self.layer4)
+
+        for entity in self.aboveEntities:
+            entity.drawPaused(self.pausedSurface)
 
         # for component in (
         #     self.hud.getComponents()
@@ -515,22 +523,34 @@ class SpriteRenderer():
     def getLayerName(self, connectionType=None):
         return self.connectionTypeTranslations(connectionType, LAYERNAMES)
 
-    # Get all the nodes from all layers in the spriterenderer
-    def getAllNodes(self, sortNodes=False):
-        layer1Nodes = self.gridLayer1.getGrid().getNodes()
-        layer2Nodes = self.gridLayer2.getGrid().getNodes()
-        layer3Nodes = self.gridLayer3.getGrid().getNodes()
-        allNodes = layer1Nodes + layer2Nodes + layer3Nodes
+    @staticmethod
+    def sortNodes(nodes):
+        nodes = sorted(
+            nodes, key=lambda x: x.getType() == NodeType.SPECIAL,
+            reverse=True)
+        nodes = sorted(
+            nodes, key=lambda x: x.getType() == NodeType.STOP,
+            reverse=True)
+        nodes = sorted(
+            nodes, key=lambda x: x.getType() == NodeType.DESTINATION,
+            reverse=True)
+        return nodes
 
-        # Sort the node so that the stops are at the top
-        if sortNodes:
-            allNodes = sorted(
-                allNodes, key=lambda x: x.getType() == NodeType.STOP,
-                reverse=True)
-            allNodes = sorted(
-                allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
-                reverse=True)
-            # Reverse the list so they're at the front
+    # Get all the nodes from all layers in the spriterenderer
+    def getAllNodes(self, layer1, layer2, layer3):
+        layer1Nodes = layer1.getGrid().getNodes()
+        layer2Nodes = layer2.getGrid().getNodes()
+        layer3Nodes = layer3.getGrid().getNodes()
+        allNodes = layer3Nodes + layer2Nodes + layer1Nodes
+
+        return allNodes
+
+    def getNode(self, node, sortNodes=False):
+        layer1Node = [self.gridLayer1.getGrid().getNode(node)]
+        layer2Node = [self.gridLayer2.getGrid().getNode(node)]
+        layer3Node = [self.gridLayer3.getGrid().getNode(node)]
+        allNodes = layer3Node + layer2Node + layer1Node
+        allNodes = list(filter(lambda x: x is not None, allNodes))
 
         return allNodes
 
@@ -541,19 +561,12 @@ class SpriteRenderer():
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
         if allNodes is None:
-            allNodes = self.getAllNodes()
+            allNodes = self.getAllNodes(
+                self.gridLayer1, self.gridLayer2, self.gridLayer3)
 
         # Put any node that is not a regular node at the front of the list,
         # so they are not removed and the regular node is
-        allNodes = sorted(
-            allNodes, key=lambda x: x.getType() == NodeType.SPECIAL,
-            reverse=True)
-        allNodes = sorted(
-            allNodes, key=lambda x: x.getType() == NodeType.STOP,
-            reverse=True)
-        allNodes = sorted(
-            allNodes, key=lambda x: x.getType() == NodeType.DESTINATION,
-            reverse=True)
+        allNodes = SpriteRenderer.sortNodes(allNodes)
 
         for node in allNodes:
             if node.getNumber() not in seen:
@@ -567,7 +580,9 @@ class SpriteRenderer():
     # if there is a node above the given node,
     # return the highest node, else return node
     def getTopNode(self, bottomNode):
-        allNodes = self.getAllNodes(True)
+        allNodes = self.getAllNodes(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3)
+        allNodes = SpriteRenderer.sortNodes(allNodes)
 
         for node in allNodes:
             if node.getNumber() == bottomNode.getNumber():
@@ -657,7 +672,8 @@ class SpriteRenderer():
         self.game.clickManager.resetMouseOver()
 
         # Redraw the nodes so that the mouse cant collide with them
-        for node in self.getAllNodes():
+        for node in self.getAllNodes(
+                self.gridLayer1, self.gridLayer2, self.gridLayer3):
             node.dirty = True
 
         self.hud.updateLayerText()
@@ -707,14 +723,18 @@ class SpriteRenderer():
             return
 
         if not self.game.paused:
-            # Entities drawn below the other sprites
-            for entity in self.entities:
+            # Entities drawn below the other sprites.
+            for entity in self.belowEntities:
                 entity.draw()
 
             self.renderLayer(1, self.gridLayer1, self.layer1)
             self.renderLayer(2, self.gridLayer2, self.layer2)
             self.renderLayer(3, self.gridLayer3, self.layer3)
             self.renderLayer(4, self.gridLayer4, self.layer4)
+
+            # Entities drawn above all the other sprites.
+            for entity in self.aboveEntities:
+                entity.draw()
 
         else:
             if hasattr(self, 'pausedSurface'):

@@ -77,6 +77,12 @@ class GridManager:
     def getNodes(self):
         return self.nodes
 
+    # Return a specific node from the nodes if it exists, else false.
+    def getNode(self, node):
+        for n in self.nodes:
+            if n.getNumber() == node.getNumber():
+                return n
+
     # Return the connections, in a list for each layer
     def getConnections(self):
         return self.connections

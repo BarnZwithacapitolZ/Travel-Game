@@ -80,11 +80,7 @@ class Layer:
         nodes = None
 
         if removeDuplicates:
-            nodes = (
-                layer1.getGrid().getNodes()
-                + layer2.getGrid().getNodes()
-                + layer3.getGrid().getNodes())
-
+            nodes = self.spriteRenderer.getAllNodes(layer1, layer2, layer3)
             self.spriteRenderer.removeDuplicates(nodes, nodes, False)
 
         self.lines = lines

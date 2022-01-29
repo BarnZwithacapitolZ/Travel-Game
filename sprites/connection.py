@@ -1,7 +1,6 @@
 import pygame
 import pygame.gfxdraw
-from config import (
-    BLACK, RED, GREY, GREEN, YELLOW, TEMPRED, TEMPGREY, TEMPGREEN)
+from config import BLACK, YELLOW, LAYERCOLORS, TEMPLAYERCOLORS
 from utils import vec
 
 
@@ -18,11 +17,6 @@ class Connection:
         self.sideColor = BLACK
         self.temp = temp
         self.draw = draw
-
-        self.colors = [RED, GREY, GREEN]
-
-        if self.temp:
-            self.colors = [TEMPRED, TEMPGREY, TEMPGREEN]
 
         self.setColor()
         self.setLength()
@@ -66,12 +60,8 @@ class Connection:
 
     # Set the colour of the connection depending on the type
     def setColor(self):
-        if self.connectionType == 1 or self.connectionType == "layer 1":
-            self.color = self.colors[0]
-        elif self.connectionType == 2 or self.connectionType == "layer 2":
-            self.color = self.colors[1]
-        elif self.connectionType == 3 or self.connectionType == "layer 3":
-            self.color = self.colors[2]
+        colors = TEMPLAYERCOLORS if self.temp else LAYERCOLORS
+        self.color = colors[int(self.connectionType[-1])]['color']
 
     # Set the length and distance of the connection from
     # point A (from) to B (to)
@@ -166,4 +156,6 @@ class Connection:
         self.events(collide)
 
     def __repr__(self):
-        return (f"Connection(fromNode={self.fromNode}, toNode={self.toNode}, connectionType={self.connectionType})")
+        return (
+            f"Connection(fromNode={self.fromNode}, toNode={self.toNode},"
+            f"connectionType={self.connectionType})")

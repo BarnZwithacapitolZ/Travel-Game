@@ -67,6 +67,18 @@
             "image": "game/person/Manager.png",
             "alpha": true
         },
+        "personRed": {
+            "image": "game/person/PersonRed.png",
+            "alpha": true
+        },
+        "personGreen": {
+            "image": "game/person/PersonGreen.png",
+            "alpha": true
+        },
+        "personGrey": {
+            "image": "game/person/PersonGrey.png",
+            "alpha": true
+        },
         "node": {
             "image": "game/node/Node.png",
             "alpha": true
@@ -502,8 +514,7 @@
             "size1": "map_size1.json",
             "size2": "map_size2.json",
             "size3": "map_size3.json",
-            "size4": "map_size4.json",
-            "A test for Jess": "map_A_test_for_Jess.json"
+            "size4": "map_size4.json"
         }
     }
 }
