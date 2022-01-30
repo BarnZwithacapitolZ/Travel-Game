@@ -273,9 +273,7 @@ class Transport(Sprite):
                     self.currentNode.pos - self.currentNode.offset)
                     + person.offset)
 
-                person.rect.topleft = (
-                    person.pos * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale())
+                person.rect.topleft = self.getTopLeft(person)
 
                 person.moveStatusIndicator()
 
@@ -313,9 +311,7 @@ class Transport(Sprite):
                 person.pos.x = self.pos.x + self.width + person.offset.x
                 person.pos.y = self.pos.y + person.offset.y
 
-                person.rect.topleft = (
-                    person.pos * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale())
+                person.rect.topleft = self.getTopLeft(person)
                 person.moveStatusIndicator()
 
         # Move the people inside the person holder if it is open
@@ -332,22 +328,22 @@ class Transport(Sprite):
             self.personHolder.drawerPos.y = (
                 self.pos.y + self.personHolder.drawerOffset.y)
             self.personHolder.rect.topleft = (
-                self.personHolder.drawerPos * self.game.renderer.getScale()
+                (self.personHolder.drawerPos + self.spriteRenderer.offset)
+                * self.game.renderer.getScale()
                 * self.spriteRenderer.getFixedScale())
 
         else:
             self.personHolder.pos.x = (
                 self.pos.x + self.width + self.personHolder.offset.x)
             self.personHolder.pos.y = self.pos.y + self.personHolder.offset.y
-            self.personHolder.rect.topleft = (
-                self.personHolder.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.personHolder.rect.topleft = self.getTopLeft(self.personHolder)
 
     # Draw how long is left at each stop
     def drawTimer(self, surface):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
 
         # Arc Indicator
         offx = 0.01
@@ -355,7 +351,8 @@ class Transport(Sprite):
         for x in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x - 4) * scale, (self.pos.y - 4) * scale,
+                    (self.pos.x - 4 + offset.x) * scale,
+                    (self.pos.y - 4 + offset.y) * scale,
                     (self.width + 8) * scale, (self.height + 8) * scale),
                 math.pi / 2 + offx, math.pi / 2 + math.pi * step,
                 int(8 * scale))
@@ -372,18 +369,23 @@ class Transport(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
         thickness = 3
 
         for previous, current in zip(self.path, self.path[1:]):
-            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
-            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
+            posx = (
+                ((previous.pos - previous.offset) + vec(10, 10) + offset)
+                * scale)
+            posy = (
+                ((current.pos - current.offset) + vec(10, 10) + offset)
+                * scale)
 
             pygame.draw.line(surface, YELLOW, posx, posy, int(
                 thickness * scale))
 
         # Connection from player to the first node in the path
-        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
-        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
+        startx = ((self.pos - self.offset) + vec(10, 10) + offset) * scale
+        starty = ((start.pos - start.offset) + vec(10, 10) + offset) * scale
         pygame.draw.line(surface, YELLOW, startx, starty, int(
             thickness * scale))
 
@@ -391,12 +393,14 @@ class Transport(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
 
         offx = 0.01
         for x in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x - 2) * scale, (self.pos.y - 2) * scale,
+                    (self.pos.x - 2 + offset.x) * scale,
+                    (self.pos.y - 2 + offset.y) * scale,
                     (self.width + 4) * scale, (self.height + 4) * scale),
                 math.pi / 2 + offx, math.pi / 2, int(4 * scale))
 
@@ -411,9 +415,7 @@ class Transport(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.rect.topleft = (
-            self.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
@@ -445,7 +447,10 @@ class Transport(Sprite):
 
     @overrides(Sprite)
     def events(self):
+        if self.game.mainMenu.getOpen():
+            return
         mx, my = self.getMousePos()
+
         # Click off event
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
@@ -556,9 +561,7 @@ class Transport(Sprite):
                 self.setNextPathConnection(path)
 
             self.pos += self.vel
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
         else:
             dxy = ((
@@ -599,9 +602,7 @@ class Transport(Sprite):
                     - self.currentConnection.getFrom().offset) + self.offset)
 
             self.pos += self.vel
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
 
 class Taxi(Transport):
@@ -769,9 +770,7 @@ class Taxi(Transport):
                 self.setNextPathConnection(path)
 
             self.pos += self.vel
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
         else:
             dxy = ((
@@ -829,9 +828,7 @@ class Taxi(Transport):
                     - self.currentConnection.getFrom().offset) + self.offset)
 
             self.pos += self.vel
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
 
 class Bus(Transport):

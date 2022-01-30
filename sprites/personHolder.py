@@ -75,9 +75,7 @@ class PersonHolder(Sprite):
 
         # Position the player back against the target
         person.pos = (self.target.pos - self.target.offset) + person.offset
-        person.rect.topleft = (
-            person.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        person.rect.topleft = self.getTopLeft(person)
         person.moveStatusIndicator()
 
         person.addToLayer()
@@ -120,9 +118,7 @@ class PersonHolder(Sprite):
                 person.pos = (
                     (self.target.pos - self.target.offset) + person.offset)
 
-            person.rect.topleft = (
-                person.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            person.rect.topleft = self.getTopLeft(person)
             person.moveStatusIndicator()
 
     def movePeople(self, addToLayers=False):
@@ -141,9 +137,7 @@ class PersonHolder(Sprite):
             # we need to make their image
             person.makeSurface()
 
-            person.rect.topleft = (
-                person.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            person.rect.topleft = self.getTopLeft(person)
             person.moveStatusIndicator()
             offset.x += person.width + self.drawerSpacing
 
@@ -213,9 +207,7 @@ class PersonHolder(Sprite):
             # spawning have an image.
             person.pos = (self.target.pos - self.target.offset) + person.offset
             person.makeSurface()
-            person.rect.topleft = (
-                person.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            person.rect.topleft = self.getTopLeft(person)
             person.moveStatusIndicator()
 
         # Reset the position of the holder when transport is
@@ -245,9 +237,7 @@ class PersonHolder(Sprite):
 
             self.rect = self.image.get_rect()
 
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
             # Do I need the fixed scale to change here?
             self.counterFont = pygame.font.Font(
@@ -265,9 +255,9 @@ class PersonHolder(Sprite):
                 pygame.font.get_default_font(), 12).size(
                     "+" + str(len(self.people)))
 
-            rect = (vec(
+            rect = ((vec(
                 self.width / 2 - (size[0] / 2),
-                self.height / 2 - (size[1] / 2))
+                self.height / 2 - (size[1] / 2)))
                 * self.game.renderer.getScale()
                 * self.spriteRenderer.getFixedScale())
 
@@ -283,7 +273,8 @@ class PersonHolder(Sprite):
 
             self.rect = self.image.get_rect()
             self.rect.topleft = (
-                self.drawerPos * self.game.renderer.getScale()
+                (self.drawerPos + self.spriteRenderer.offset)
+                * self.game.renderer.getScale()
                 * self.spriteRenderer.getFixedScale())
 
             pygame.draw.rect(self.image, self.color, (

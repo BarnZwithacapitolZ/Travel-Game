@@ -1,6 +1,7 @@
 import pygame
 import random
 from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND, LAYERNAMES
+from utils import vec
 from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
@@ -49,6 +50,8 @@ class SpriteRenderer():
         self.dt = 1  # Control the speed of whats on screen
         self.startDt = self.dt
         self.fixedScale = 1  # Control the size of whats on the screen
+        self.offset = vec(0, 0)
+
         self.startingFixedScale = 0
         self.paused = False  # Individual pause for the levels
 
@@ -182,6 +185,11 @@ class SpriteRenderer():
         self.dt = dt
 
     def setFixedScale(self, fixedScale):
+        scaleChange = fixedScale - self.fixedScale
+        offX = -((config["graphics"]["displayWidth"] / 2) * scaleChange)
+        offY = -((config["graphics"]["displayHeight"] / 2) * scaleChange)
+
+        self.offset = vec(offX, offY)
         self.fixedScale = fixedScale
 
     def setStartingFixedScale(self, startingFixedScale):
@@ -639,7 +647,9 @@ class SpriteRenderer():
         self.messageSystem.update()
         self.menu.update()
 
-        if self.paused:
+        # If the game is paused or the main main is open (splash screen)
+        # then we don't want to allow interaction.
+        if self.paused or self.game.mainMenu.getOpen():
             return
 
         self.events()
@@ -686,7 +696,6 @@ class SpriteRenderer():
         self.gridLayer1.resize()
         self.gridLayer2.resize()
         self.gridLayer3.resize()
-        # Only need to do this if it has components
         self.gridLayer4.resize()
 
         # We want to reset the layer 4 lines with the
@@ -707,7 +716,12 @@ class SpriteRenderer():
     # is currently on
     def renderLayer(self, layerInt, gridLayer, group):
         if self.currentLayer == layerInt:
+            # First we draw the layer surface including the background
+            # color and lines.
             gridLayer.draw()
+
+            # Draw all sprites on top of the background and lines
+            # (including nodes).
             for sprite in group:
                 sprite.draw()
 
@@ -736,11 +750,15 @@ class SpriteRenderer():
             for entity in self.aboveEntities:
                 entity.draw()
 
+        # When the game is paused, we blit the map as a single surface
+        # for better performance.
         else:
             if hasattr(self, 'pausedSurface'):
                 self.game.renderer.addSurface(
                     self.pausedSurface, (self.pausedSurface.get_rect()))
 
-        self.hud.display()
-        self.messageSystem.display()
-        self.menu.display()
+        # Don't show any hud elements on the splash screen
+        if not self.game.mainMenu.getOpen():
+            self.hud.display()
+            self.messageSystem.display()
+            self.menu.display()

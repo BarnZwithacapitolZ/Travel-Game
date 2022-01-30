@@ -6,25 +6,16 @@ import hudFunctions as hf
 import menu as MENU
 
 
-# load the level and show transition
-def continueGame(obj, menu, event):
-    def callback(obj, menu):
-        menu.game.spriteRenderer.createLevel(
-            menu.game.mapLoader.getMap("Test"))
-        menu.game.spriteRenderer.setRendering(True, True)  # Load the hud
-        menu.close()
-        obj.y = 0
-
-    menu.slideTransitionY(
-        (0, config["graphics"]["displayHeight"]), 'first', callback=callback)
-
-
 def openLevelSelect(obj, menu, event):
     def callback(obj, menu, animation):
         obj.y = 0
 
         if obj.rect.y == 0:
             obj.removeAnimation(animation)
+
+            menu.game.paused = True
+            menu.game.spriteRenderer.setRendering(False)
+
             menu.close()
             menu.levelSelect(True)
 
@@ -61,11 +52,14 @@ def openMapEditor(obj, menu, event):
             obj.removeAnimation(animation)
             menu.game.paused = False
             menu.game.mapEditor.createLevel(clearChanges=True)
-            # Load the hud
+            # Load the hud for the map editor
             menu.game.mapEditor.setRendering(True, True)
 
+            # We never want the spriteRenderer to be rendering on the mapEditor
+            menu.game.spriteRenderer.setRendering(False)
+
             # Default option to add connection
-            hf.addConnection(obj, menu, event)
+            hf.addConnection(obj, menu, event, False)
             # Reset to default add type (nothing)
             menu.game.mapEditor.getClickManager().setAddType("")
 

@@ -510,6 +510,9 @@
             "Another test": "map_Another_test.json",
             "move test": "map_move_test.json"
         },
+        "splashScreen": {
+            "splashScreenMap": "map_splashScreenMap.json"
+        },
         "custom": {
             "size1": "map_size1.json",
             "size2": "map_size2.json",

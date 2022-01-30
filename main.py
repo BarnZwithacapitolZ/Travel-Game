@@ -123,7 +123,9 @@ class Game:
                         and self.mainMenu.getOpen()):
                     self.mainMenu.levelDownward(vec(0, 1))
 
-                elif e.key == config["controls"]["pause"]["current"]:
+                # Don't want to be able to pause in the main menu spash screen.
+                elif (e.key == config["controls"]["pause"]["current"]
+                        and not self.mainMenu.getOpen()):
                     if self.spriteRenderer.getHud().getOpen():
                         self.spriteRenderer.getHud().togglePauseGame()
 
@@ -172,6 +174,7 @@ class Game:
                     self.clickManager.setClicked(True)
                 elif e.button == 3:
                     self.clickManager.setRightClicked(True)
+
             else:
                 self.clickManager.setClicked(False)
                 self.clickManager.setRightClicked(False)
@@ -197,7 +200,7 @@ class Game:
     def __update(self):
         # print(self.paused)
         # print(self.clickManager.getMouseOver())
-        if not self.paused and not self.mainMenu.getOpen():
+        if not self.paused:
             self.spriteRenderer.update()
             self.mapEditor.update()
 
@@ -208,8 +211,10 @@ class Game:
             self.optionMenu.update()
 
     def __draw(self):
-        # Draw the background colors (may be replaced with image)
-        if self.mainMenu.getOpen():
+        # Draw the background colors for static menus.
+        # - level sections open means any level selection screen
+        #   (including custom)
+        if self.mainMenu.getLevelSelectOpen():
             self.renderer.prepareSurface(self.mainMenu.getBackgroundColor())
         elif self.optionMenu.getOptionsOpen():
             self.renderer.prepareSurface(self.optionMenu.getBackgroundColor())

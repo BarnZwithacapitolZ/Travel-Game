@@ -22,6 +22,15 @@ class Sprite(pygame.sprite.Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
 
+    # Calculate the topleft corner of a sprite based on the
+    # spriteRenderers scale and offset.
+    def getTopLeft(self, target):
+        return (
+            (target.pos + self.spriteRenderer.offset)
+            * self.game.renderer.getScale()
+            * self.spriteRenderer.getFixedScale()
+        )
+
     # Defines the priority of the rendering order, a sprite with a > priority
     # than another sprite will be drawn above that other sprite.
     def getPriority(self):

@@ -469,10 +469,11 @@ def redoChange(obj, menu, next):
     menu.editDropdown()
 
 
-def addConnection(obj, menu, event):
+def addConnection(obj, menu, event, clear=True):
     menu.game.mapEditor.getClickManager().setClickType(
         EditorClickManager.ClickType.CONNECTION)
-    gf.clearMenu(obj, menu)
+    if clear:
+        gf.clearMenu(obj, menu)
 
 
 def addStop(obj, menu, event):

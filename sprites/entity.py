@@ -20,10 +20,7 @@ class Particle(Sprite):
     def __render(self):
         self.dirty = False
 
-        self.pos = ((
-            self.target.pos - vec(self.rad, self.rad))
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.pos = self.target.pos - vec(self.rad, self.rad)
 
         self.size = (vec(
             self.target.width + (self.rad * 2),
@@ -35,7 +32,7 @@ class Particle(Sprite):
         self.image.set_colorkey((0, 0, 0))  # Remove black border
 
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
+        self.rect.topleft = self.getTopLeft(self)
 
         pygame.draw.ellipse(self.image, self.color, pygame.Rect(
             0, 0, *self.size))
@@ -75,6 +72,7 @@ class Outline(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
 
         # Set the position of the outline to the position of the target.
         self.pos = self.target.pos
@@ -83,7 +81,8 @@ class Outline(Sprite):
         for x in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x) * scale, (self.pos.y) * scale,
+                    (self.pos.x + offset.x) * scale,
+                    (self.pos.y + offset.y) * scale,
                     (self.width) * scale, (self.height) * scale),
                 math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
 

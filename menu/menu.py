@@ -272,6 +272,7 @@ class MainMenu(Menu):
             config["player"]["currentCustomLevel"][1])
         self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
+        self.splashScreenMaps = list(self.game.mapLoader.getSplashScreenMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
         self.currentMaps = self.builtInMaps
         self.levels = {}
@@ -284,6 +285,10 @@ class MainMenu(Menu):
         self.spacing = 20
 
         self.transitioning = False
+
+        # Default to level selection screens being closed
+        self.levelSelectOpen = False
+        self.customLevelSelectOpen = False
 
     def getLevels(self):
         return self.levels
@@ -337,24 +342,14 @@ class MainMenu(Menu):
         x = 100
 
         title = Label(
-            self, "Transport \n The \n Public", 70, WHITE, (x, 80), GREEN)
+            self, "Transport \n The \n Public", 70, BLACK, (x, 40))
         title.setItalic(True)
 
-        cont = Label(self, "Continue", 50,  BLACK, (x, 290), GREEN)
+        cont = Label(self, "Continue", 50,  BLACK, (x, 280))
         editor = Label(
-            self, "Level editor", 50, BLACK, (x, cont.y + 60), GREEN)
-        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60), GREEN)
-        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60), GREEN)
-
-        # test = Image(self, "button", (50, 50), (10, 10))
-        # test2 = Label(self, "hi", 20, BLACK, (15, 15))
-        # test.add(test2)
-        # test.addEvent(gf.hoverImage, 'onMouseOver', image = "buttonSelected")
-        # test.addEvent(gf.hoverImage, 'onMouseOut', image = "button")
-        # self.add(test)
-
-        # test = DifficultyMeter(self, RED, BLACK, 4, 2, 2, (15, 15), (20, 20))
-        # self.add(test)
+            self, "Level editor", 50, BLACK, (x, cont.y + 60))
+        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60))
+        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
 
         cont.addEvent(mf.openLevelSelect, 'onMouseClick')
         cont.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
@@ -372,14 +367,17 @@ class MainMenu(Menu):
         end.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
         end.addEvent(gf.hoverOut, 'onMouseOut', x=x)
 
-        # self.add(sidebar)
-        # self.add(otherbar)
-
         self.add(title)
         self.add(cont)
         self.add(editor)
         self.add(options)
         self.add(end)
+
+        self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]))
+        self.game.spriteRenderer.setRendering(True)
+        self.game.spriteRenderer.setFixedScale(1.4)
+        self.game.spriteRenderer.resize()
+        self.game.paused = False
 
         if transition:
             # set the up transition
@@ -916,6 +914,9 @@ class OptionMenu(Menu):
     def options(self):
         self.open = True
         self.backgroundColor = GREEN
+
+        # We can access through main menu so we set paused to false in-case
+        self.game.paused = True
 
         background = Rectangle(
             self, GREEN, (

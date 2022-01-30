@@ -216,6 +216,7 @@ class Layer:
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offxy = self.spriteRenderer.offset
 
         # change in direction
         dxy = (fromNode.pos - fromNode.offset) - (toNode.pos - toNode.offset)
@@ -233,8 +234,8 @@ class Layer:
         else:
             angleOffset = vec(offset, offset)
 
-        posx = ((fromNode.pos - fromNode.offset) + angleOffset) * scale
-        posy = ((toNode.pos - toNode.offset) + angleOffset) * scale
+        posx = ((fromNode.pos - fromNode.offset) + angleOffset + offxy) * scale
+        posy = ((toNode.pos - toNode.offset) + angleOffset + offxy) * scale
 
         lines.append({
             "posx": posx,
@@ -286,6 +287,8 @@ class Layer:
         if len(self.lines + self.tempLines) > 0:
             self.game.renderer.gameDisplay.blit(self.lineSurface, (0, 0))
 
+        # Case in mapEditor with 0 lines drawn,we can just draw a rect
+        # instead of blitting an entier surface for better performance.
         else:
             pygame.draw.rect(
                 self.game.renderer.gameDisplay, self.backgroundColor,

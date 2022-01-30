@@ -367,9 +367,8 @@ class Person(Sprite):
             return
 
         self.statusIndicator.pos = self.pos + self.statusIndicator.offset
-        self.statusIndicator.rect.topleft = (
-            self.statusIndicator.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.statusIndicator.rect.topleft = self.getTopLeft(
+            self.statusIndicator)
 
     # Visualize the players path by drawing the connection between each node
     # in the path
@@ -381,18 +380,23 @@ class Person(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
         thickness = 3
 
         for previous, current in zip(self.path, self.path[1:]):
-            posx = ((previous.pos - previous.offset) + vec(10, 10)) * scale
-            posy = ((current.pos - current.offset) + vec(10, 10)) * scale
+            posx = (((
+                previous.pos - previous.offset) + vec(10, 10) + offset)
+                * scale)
+            posy = (
+                ((current.pos - current.offset) + vec(10, 10) + offset)
+                * scale)
 
             pygame.draw.line(
                 surface, YELLOW, posx, posy, int(thickness * scale))
 
         # Connection from player to the first node in the path
-        startx = ((self.pos - self.offset) + vec(10, 10)) * scale
-        starty = ((start.pos - start.offset) + vec(10, 10)) * scale
+        startx = ((self.pos - self.offset) + vec(10, 10) + offset) * scale
+        starty = ((start.pos - start.offset) + vec(10, 10) + offset) * scale
         pygame.draw.line(
             surface, YELLOW, startx, starty, int(thickness * scale))
 
@@ -403,6 +407,7 @@ class Person(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
         thickness = 4
 
         start = (self.pos - self.offset) + vec(7, -10)
@@ -410,8 +415,9 @@ class Person(Sprite):
         end = middle + vec(30, 0)
 
         pygame.draw.lines(
-            surface, YELLOW, False,
-            [start * scale, middle * scale, end * scale],
+            surface, YELLOW, False, [
+                (start + offset) * scale, (middle + offset) * scale,
+                (end + offset) * scale],
             int(thickness * scale))
 
     def drawTimerTime(self, surface=None):
@@ -425,7 +431,8 @@ class Person(Sprite):
             str(round(self.timer, 1)), True, textColor)
 
         rect = ((
-            self.pos + vec(32, -35)) * self.game.renderer.getScale()
+            self.pos + vec(32, -35) + self.spriteRenderer.offset)
+            * self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
 
         if surface is None:
@@ -441,6 +448,7 @@ class Person(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
         length = 20
 
         # Arc Indicator
@@ -449,7 +457,8 @@ class Person(Sprite):
         for x in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x - 4) * scale, (self.pos.y - 4) * scale,
+                    (self.pos.x - 4 + offset.x) * scale,
+                    (self.pos.y - 4 + offset.y) * scale,
                     (self.width + 8) * scale, (self.height + 8) * scale),
                 math.pi / 2 + offx, math.pi / 2 + math.pi * step,
                 int(4 * scale))
@@ -463,9 +472,10 @@ class Person(Sprite):
         scale = (
             self.game.renderer.getScale()
             * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
         thickness = 4
 
-        pos = (self.destination.pos - vec(self.rad, self.rad)) * scale
+        pos = (self.destination.pos - vec(self.rad, self.rad) + offset) * scale
         size = vec(
             self.destination.width + (self.rad * 2),
             self.destination.height + (self.rad * 2)) * scale
@@ -499,9 +509,7 @@ class Person(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.rect.topleft = (
-            self.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.rect.topleft = self.getTopLeft(self)
 
         # do I need the fixed scale to change here?
         self.timerFont = pygame.font.Font(
@@ -546,6 +554,8 @@ class Person(Sprite):
 
     @overrides(Sprite)
     def events(self):
+        if self.game.mainMenu.getOpen():
+            return
         mx, my = self.getMousePos()
 
         # If the mouse is clicked, but not on a person,
@@ -711,9 +721,7 @@ class Person(Sprite):
                         self.currentNode.connectionType)
 
             self.pos += self.vel
-            self.rect.topleft = (
-                self.pos * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+            self.rect.topleft = self.getTopLeft(self)
 
 
 class Manager(Person):
@@ -796,9 +804,7 @@ class StatusIndicator(Sprite):
                 self.width * self.spriteRenderer.getFixedScale(),
                 self.height * self.spriteRenderer.getFixedScale())
 
-        self.rect.topleft = (
-            self.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.rect.topleft = self.getTopLeft(self)
 
     # TODO: just add and remove the sprite from groups instead of setting the
     # image to None.

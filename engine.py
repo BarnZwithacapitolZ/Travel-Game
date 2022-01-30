@@ -45,14 +45,8 @@ class Renderer:
     # this means overriding it with a new color
     def prepareSurface(self, color):
         self.gameDisplay.fill(color)
-        # pygame.draw.rect(self.gameDisplay, color, (
-        # 0, 0, config["graphics"]["displayWidth"] * self.scale,
-        # config["graphics"]["displayHeight"] * self.scale))
-
-        # self.dirtySurfaces.append(self.gameDisplay.get_rect())
 
     def drawScanlines(self, surface):
-        # step = int(2 * self.scale) if int(2 * self.scale) >= 2 else 2
         step = 5
         for i in range(0, int(self.height), step):
             pos1 = (0, i)
@@ -316,6 +310,7 @@ class MapLoader:
     def __init__(self):
         self.maps = {}
         self.builtInMaps = {}
+        self.splashScreenMaps = {}
         self.customMaps = {}
 
         self.loadAllMaps()
@@ -325,6 +320,9 @@ class MapLoader:
 
     def getBuiltInMaps(self):
         return self.builtInMaps
+
+    def getSplashScreenMaps(self):
+        return self.splashScreenMaps
 
     def getCustomMaps(self):
         return self.customMaps
@@ -366,6 +364,9 @@ class MapLoader:
     def loadAllMaps(self):
         # Load built-in levels
         self.loadMaps(config["maps"]["builtIn"], self.builtInMaps)
+
+        # Load splash-screen levels (for main menu)
+        self.loadMaps(config["maps"]["splashScreen"], self.splashScreenMaps)
 
         # Load custom levels
         self.loadMaps(config["maps"]["custom"], self.customMaps)

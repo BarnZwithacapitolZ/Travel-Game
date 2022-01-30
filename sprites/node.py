@@ -204,9 +204,7 @@ class Node(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.rect.topleft = (
-            self.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
@@ -215,6 +213,8 @@ class Node(Sprite):
 
     @overrides(Sprite)
     def events(self):
+        if self.game.mainMenu.getOpen():
+            return
         mx, my = self.getMousePos()
 
         # click event; setting the node for the transport
@@ -297,6 +297,8 @@ class EditorNode(Node):
 
     @overrides(Node)
     def events(self):
+        if self.game.mainMenu.getOpen():
+            return
         mx, my = self.getMousePos()
 
         # Cant click on a node in the top layer
@@ -429,9 +431,7 @@ class BelowIndicator(Sprite):
                 self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
 
-        self.rect.topleft = (
-            self.pos * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
@@ -440,6 +440,8 @@ class BelowIndicator(Sprite):
 
     @overrides(Sprite)
     def events(self):
+        if self.game.mainMenu.getOpen():
+            return
         mx, my = self.getMousePos()
 
         # Click event; take the player to the layer below that is
