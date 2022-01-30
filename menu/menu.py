@@ -373,9 +373,11 @@ class MainMenu(Menu):
         self.add(options)
         self.add(end)
 
-        self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]))
+        # We set debug to True so we use the correct spacing.
+        self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
         self.game.spriteRenderer.setRendering(True)
         self.game.spriteRenderer.setFixedScale(1.4)
+        self.game.spriteRenderer.calculateOffset()
         self.game.spriteRenderer.resize()
         self.game.paused = False
 

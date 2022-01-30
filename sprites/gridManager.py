@@ -30,13 +30,6 @@ class GridManager:
         if self.level is not None:
             self.loadMap()
 
-        scale = min(
-            DEFAULTBOARDWIDTH / self.width, DEFAULTBOARDHEIGHT / self.height)
-
-        # apply the starting fixed scale when first rendering
-        scale += self.spriteRenderer.getStartingFixedScale()
-        self.spriteRenderer.setFixedScale(scale)
-
         self.nodePositions = self.setNodePositions(
             spacing[0], spacing[1], self.width, self.height)
 
@@ -53,6 +46,15 @@ class GridManager:
 
         # Define which transports we can add to each of the 3 layers
         self.layerTransportMappings = LAYERTRANSPORTMAPPINGS
+
+    def setBoardScale(self):
+        scale = min(
+            DEFAULTBOARDWIDTH / self.width, DEFAULTBOARDHEIGHT / self.height)
+
+        # apply the starting fixed scale when first rendering
+        scale += self.spriteRenderer.getStartingFixedScale()
+        self.spriteRenderer.setFixedScale(scale)
+        self.spriteRenderer.setOffset((0, 0))
 
     def getNodePositions(self):
         return self.nodePositions

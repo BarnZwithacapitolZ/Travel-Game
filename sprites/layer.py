@@ -14,9 +14,6 @@ class Layer:
             spacing=(1.5, 1.5)):
         self.groups = groups
 
-        # Layer added to sprite group first
-        # super().__init__(self.groups)
-
         self.spriteRenderer = spriteRenderer
         self.game = self.spriteRenderer.game
         self.number = number

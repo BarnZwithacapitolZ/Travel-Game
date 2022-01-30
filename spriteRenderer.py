@@ -185,15 +185,17 @@ class SpriteRenderer():
         self.dt = dt
 
     def setFixedScale(self, fixedScale):
-        scaleChange = fixedScale - self.fixedScale
+        self.fixedScale = fixedScale
+
+    def setOffset(self, offset=tuple()):
+        self.offset = vec(offset[0], offset[1])
+
+    def calculateOffset(self):
+        scaleChange = self.fixedScale - 1.0
         offX = -((config["graphics"]["displayWidth"] / 2) * scaleChange)
         offY = -((config["graphics"]["displayHeight"] / 2) * scaleChange)
 
         self.offset = vec(offX, offY)
-        self.fixedScale = fixedScale
-
-    def setStartingFixedScale(self, startingFixedScale):
-        self.startingFixedScale = startingFixedScale
 
     def setDebug(self, debug):
         self.debug = debug
@@ -353,28 +355,32 @@ class SpriteRenderer():
         self.completed = 0
         self.debug = debug
 
-        self.gridLayer4 = Layer(self, (self.allSprites, self.layer4), 4, level)
-        self.gridLayer3 = Layer(self, (
-            self.allSprites, self.layer3, self.layer4), 3, level)
-        self.gridLayer2 = Layer(self, (
-            self.allSprites, self.layer2, self.layer4), 2, level)
-        self.gridLayer1 = Layer(self, (
-            self.allSprites, self.layer1, self.layer4), 1, level)
-
-        # Set the name of the level
-        self.level = self.gridLayer4.getGrid().getLevelName()
-
-        # Set the level data
-        self.levelData = self.gridLayer4.getGrid().getMap()
-
         # for running the game in test mode (when testing a level)
         if self.debug:
             # Push the level down since we have hud at the top
             spacing = (1.5, 1.5)
             self.hud = PreviewHud(self, spacing)
         else:
-            spacing = (1.5, 1)
+            spacing = (1.5, 1.2)
             self.hud = GameHud(self, spacing)
+
+        self.gridLayer4 = Layer(self, (
+            self.allSprites, self.layer4), 4, level, spacing)
+        self.gridLayer3 = Layer(self, (
+            self.allSprites, self.layer3, self.layer4), 3, level, spacing)
+        self.gridLayer2 = Layer(self, (
+            self.allSprites, self.layer2, self.layer4), 2, level, spacing)
+        self.gridLayer1 = Layer(self, (
+            self.allSprites, self.layer1, self.layer4), 1, level, spacing)
+
+        # Set the name of the level
+        self.level = self.gridLayer4.getGrid().getLevelName()
+
+        # Set the board scale
+        self.gridLayer4.getGrid().setBoardScale()
+
+        # Set the level data
+        self.levelData = self.gridLayer4.getGrid().getMap()
 
         # we want to get which connectionTypes are available in the map
         for connectionType in self.levelData['connections']:
@@ -445,6 +451,9 @@ class SpriteRenderer():
             (22, 12): (5, 3)}
 
         gridLayer4 = Layer(self, (), 4, level)
+
+        # Set the board scale
+        gridLayer4.getGrid().setBoardScale()
 
         # Work out the spacing of the map for use in the other layers
         levelData = gridLayer4.getGrid().getMap()

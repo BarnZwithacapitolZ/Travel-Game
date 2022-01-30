@@ -200,6 +200,8 @@ class MapEditor(SpriteRenderer):
         self.gridLayer1 = Layer(self, (
             self.allSprites, self.layer1, self.layer4), 1, level)
 
+        self.gridLayer4.getGrid().setBoardScale()
+
         # Ordering of the layers.
         self.gridLayer3.createGrid(True)
         self.gridLayer1.createGrid(True)
