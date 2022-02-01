@@ -233,59 +233,57 @@ class PersonClickManager(ClickManager):
         # End (Where we are going)
         B = self.node if B is None else B
 
+        personLayer = self.person.getStartingConnectionType()  # Layer 2
         finalNode = None
         path = []
 
-        # Selected a node different from the players layer
-        if self.person.getStartingConnectionType() != B.getConnectionType():
-            startingConnectionAFound, startingConnectionBFound = False, False
-
-            # The start and end nodes are on different layers,
-            # diferent to the players layer
+        # B is NOT layer 2
+        if personLayer != B.getConnectionType():
+            # B is NOT layer 2 and A is any layer OTHER than B's layer
+            # OR B and A are on the same layer (not layer 2)
             if (A.getConnectionType() != B.getConnectionType()
                     or A.getConnectionType() == B.getConnectionType()):
-                layer = self.game.spriteRenderer.getGridLayer(
-                    self.person.getStartingConnectionType())
-                nodes = layer.getGrid().getNodes()
+                newNodeA = self.game.spriteRenderer.getNodeFromDifferentLayer(
+                    A, personLayer)
+                newNodeB = self.game.spriteRenderer.getNodeFromDifferentLayer(
+                    B, personLayer)
 
                 # Set the start and end node to be the equivelant
                 # node on the players layer
-                for node in nodes:
-                    if node.getNumber() == A.getNumber():
-                        A = node
-                        startingConnectionAFound = True
+                if newNodeA is not None:
+                    A = newNodeA
 
-                    if node.getNumber() == B.getNumber():
-                        # If its a stop on a different layer,
-                        # switch to that layer at the end of the path
-                        if (B.getSubType() == NodeType.METROSTATION
-                                or B.getSubType() == NodeType.TRAMSTOP):
-                            finalNode = B
-                        B = node
-                        startingConnectionBFound = True
+                if newNodeB is not None:
+                    if (B.getSubType() == NodeType.METROSTATION
+                            or B.getSubType() == NodeType.TRAMSTOP):
+                        finalNode = B
+
+                    B = newNodeB
 
             # A path can only be formed if there is startingConnectionType
             # nodes at the start and end of the player path
             # (even if they are on a different layer), otherwise empty path
-            if not startingConnectionAFound or not startingConnectionBFound:
+            if newNodeA is None or newNodeB is None:
                 return path
 
-        # Within the same layer
-        if self.person.getStartingConnectionType() == B.getConnectionType():
-
-            # Player is on a node in a different layer
+        # B IS layer 2
+        if personLayer == B.getConnectionType():
+            # A is a node that is NOT layer 2, B IS layer 2.
             if A.getConnectionType() != B.getConnectionType():
-                layer = self.game.spriteRenderer.getGridLayer(
-                    B.getConnectionType())
-                nodes = layer.getGrid().getNodes()
+                # Get the equivelant A node that is on layer 2 and set that
+                # as the starting node instead.
+                newNode = self.game.spriteRenderer.getNodeFromDifferentLayer(
+                    A, B.getConnectionType())
 
-                # Get the same node on the players layer and set that as the
-                # starting node instead
-                for node in nodes:
-                    if node.getNumber() == A.getNumber():
-                        A = node
+                if newNode is not None:
+                    A = newNode
 
-            path = self.aStarPathFinding(A, B)
+            # Both the start and end have to be on the same layer for a path
+            # to be created, since the player can only walk on their
+            # layer (layer 2) we check for this.
+            if (A.getConnectionType() == personLayer
+                    and B.getConnectionType() == personLayer):
+                path = self.aStarPathFinding(A, B)
 
             # Append the final node and switch to the different layer
             if finalNode is not None and len(path) > 0:

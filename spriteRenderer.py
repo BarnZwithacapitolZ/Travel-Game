@@ -624,21 +624,22 @@ class SpriteRenderer():
             if (
                 self.dt != self.startDt - self.meter.getSlowDownAmount()
                     and not self.meter.getEmpty()):
-                # TODO: we want to slow down the game music here instead
-                self.game.audioLoader.playSound("slowIn", 1)
+                self.game.audioLoader.slowDownMusic()
 
         elif pygame.key.get_pressed()[
                 config["controls"]["fastforward"]["current"]]:
             self.game.clickManager.setSpeedUp(True)
 
             if self.dt != self.startDt + self.meter.getSpeedUpAmount():
+                self.game.audioLoader.speedUpMusic()
                 self.hud.toggleFastForward(True)
 
         else:
             if self.dt < self.startDt:
-                # TODO: we want to spped up the game music here instead
-                self.game.audioLoader.playSound("slowOut", 1)
+                self.game.audioLoader.restoreMusic(slowDown=True)
+
             elif self.dt > self.startDt:
+                self.game.audioLoader.restoreMusic(speedUp=True)
                 self.hud.toggleFastForward()
 
             self.game.clickManager.setSpaceBar(False)

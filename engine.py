@@ -234,12 +234,24 @@ class AudioLoader:
         self.numChannels = 8
         pygame.mixer.set_num_channels(self.numChannels)
 
+        # Keep track of all the music and sounds available in the game.
         self.sounds = {}
         self.music = {}
+
+        # Keep track of the current music track playing by key.
+        self.currentTrack = None
 
         self.masterBuffer = 1.0
         self.musicBuffer = 1.0
 
+        # Keep track of the current time offset for the current audio playing.
+        self.musicOffset = 0.0
+
+        # Control the music playback speed when fastforward or slowmotion.
+        self.speedUp = 1.1
+        self.slowDown = 0.9
+
+        # Load all the music and sounds and set their volumes.
         self.setChannels()
         self.loadAllSounds()
         self.loadAllMusic()
@@ -248,10 +260,22 @@ class AudioLoader:
     def getSound(self, key):
         return self.sounds[key]
 
+    def getMusic(self, key):
+        return self.music[key]['path']
+
     def getChannelBusy(self, chan=0):
         return self.channels[chan].get_busy()
 
+    def addMusic(self, key, path, volume=1):
+        self.music[key] = {
+            'path': path,
+            'volume': volume
+        }
+
     def playSound(self, key, chan=0, loops=0):
+        if key not in self.sounds:
+            return
+
         self.channels[chan].play(self.sounds[key], loops=loops)
 
     def stopSound(self, chan=0):
@@ -260,11 +284,51 @@ class AudioLoader:
     def fadeOutSound(self, duration, chan=0):
         self.channels[chan].fadeout(duration)
 
-    def playMusic(self, key, loop=0):
+    def playMusic(self, key, loop=-1, start=0.0):
+        if key not in self.music:
+            return
+
+        self.currentTrack = key
         pygame.mixer.music.load(self.music[key]["path"])
         self.musicBuffer = 1.0 / self.music[key]["volume"]
         self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
-        pygame.mixer.music.play(loop)
+        pygame.mixer.music.play(loop, start)
+
+    def setOffsetByPos(self, speedUp=False, slowDown=False):
+        pos = pygame.mixer.music.get_pos()
+
+        if speedUp:
+            pos *= self.speedUp
+        elif slowDown:
+            pos /= self.slowDown
+
+        self.musicOffset += pos / 1000  # Milliseconds to seconds
+
+    def speedUpMusic(self):
+        # Ensure there is a 'fast' version of the track
+        currentTrack = self.currentTrack
+        fastTrack = self.currentTrack + "Fast"
+        if fastTrack not in self.music:
+            return
+
+        self.setOffsetByPos()
+        self.playMusic(fastTrack, start=self.musicOffset / self.speedUp)
+        self.currentTrack = currentTrack  # Reset current track to original
+
+    def slowDownMusic(self):
+        # Ensure there is a 'slow' version of the track
+        currentTrack = self.currentTrack
+        slowTrack = self.currentTrack + "Slow"
+        if slowTrack not in self.music:
+            return
+
+        self.setOffsetByPos()
+        self.playMusic(slowTrack, start=self.musicOffset * self.speedUp)
+        self.currentTrack = currentTrack  # Reset current track to original
+
+    def restoreMusic(self, speedUp=False, slowDown=False):
+        self.setOffsetByPos(speedUp, slowDown)
+        self.playMusic(self.currentTrack, start=self.musicOffset)
 
     def setChannels(self):
         # Channel 0 reserved for hud sounds

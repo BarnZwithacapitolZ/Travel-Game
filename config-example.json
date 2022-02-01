@@ -453,6 +453,14 @@
             "boot": {
                 "file": "boot.wav",
                 "volume": 0.2
+            },
+            "test": {
+                "file": "One_of_a_Hundred_Million_Streets.mp3",
+                "volume": 0.5
+            },
+            "test2": {
+                "file": "Selling Tuesday.mp3",
+                "volume": 0.5
             }
         }
     },

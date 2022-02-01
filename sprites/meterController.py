@@ -56,7 +56,7 @@ class MeterController(Sprite):
 
             # We have reached the end of the meter
             else:
-                self.game.audioLoader.playSound("slowOut", 1)
+                self.game.audioLoader.restoreMusic()
                 self.empty = True
                 self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())
                 if self.amount < self.totalAmount:

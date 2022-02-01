@@ -53,8 +53,10 @@ class Person(Sprite):
 
         self.currentNode = self.spawn
 
-        # always start on the second layer
+        # Defines which layer the person can 'walk' on.
         self.startingConnectionType = "layer 2"
+
+        # Defines which layer the person is currently on.
         self.currentConnectionType = self.currentNode.connectionType
 
         # -10, -20 # Move it back 10 pixels x, 20 pixels y
@@ -257,6 +259,9 @@ class Person(Sprite):
     def kill(self):
         self.currentNode.removePerson(self)
         self.currentNode.getPersonHolder().removePerson(self)
+
+        if self.travellingOn is not None:
+            self.travellingOn.removePerson(self)
 
         self.spriteRenderer.getGridLayer(
             self.currentConnectionType).removePerson(self)
