@@ -30,6 +30,7 @@ def speed_change(sound, speed=1.0):
      # know how to play audio at standard frame rate (like 44.1k)
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
+
 class Game:
     def __init__(self):
         pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -59,7 +60,7 @@ class Game:
         # Loaders
         self.imageLoader = ImageLoader(self)
         self.mapLoader = MapLoader()
-        self.audioLoader = AudioLoader()
+        self.audioLoader = AudioLoader(self)
 
         # Map editor
         self.mapEditor = MapEditor(self)
@@ -102,7 +103,7 @@ class Game:
         self.audioLoader.addMusic("testFast", fastPath, 0.5)
         self.audioLoader.addMusic("testSlow", slowPath, 0.5)
 
-        self.audioLoader.playMusic("test", -1)
+        self.audioLoader.playMusic("test2")
         # self.audioLoader.fadeOutSound(10000, 2)
 
         # print(pygame.font.get_fonts())
@@ -238,6 +239,9 @@ class Game:
         self.running = False
 
     def __update(self):
+        # Loop the music and reset the offset
+        self.audioLoader.loopMusic()
+
         if not self.paused:
             self.spriteRenderer.update()
             self.mapEditor.update()

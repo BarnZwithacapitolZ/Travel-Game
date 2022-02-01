@@ -343,6 +343,57 @@ class EditorHud(GameHudLayout):
         # Selected map to edit
         self.selectedMap = None
 
+    # Create a confirm box and return an empty box
+    # with confirm and cancel actions
+    def createConfirmBox(
+            self, width, height, title, ok="Ok", cancel="Cancel", padX=15,
+            padY=15):
+        # Set x, y to be center of display
+        x = (config["graphics"]["displayWidth"] - width) / 2
+        y = (config["graphics"]["displayHeight"] - height) / 2
+
+        box = Rectangle(self, GREEN, (width, height), (x, y))
+        title = Label(
+            self, title, 30, WHITE, ((x + padX) - box.x, (y + padY) - box.y),
+            GREEN)
+
+        # Set confirm box with label centered
+        confirm = Label(self, ok, 25, WHITE, (0, 0), BLACK)
+        cw = confirm.getFontSize()[0] + (padX * 2)
+        ch = confirm.getFontSize()[1] + (padY * 2)
+        confirmBox = Rectangle(self, BLACK, (cw, ch), (
+            box.getRightX() - padX - cw - box.x,
+            box.getBottomY() - padY - ch - box.y))
+        confirm.setPos((
+            confirmBox.x + padX + box.x,
+            confirmBox.y + padY + box.y))
+
+        # Set cancel box with label centered
+        cancelLabel = Label(self, cancel, 25, WHITE, (0, 0), BLACK)
+        cw = cancelLabel.getFontSize()[0] + (padX * 2)
+        ch = cancelLabel.getFontSize()[1] + (padY * 2)
+        cancelBox = Rectangle(self, BLACK, (cw, ch), (
+            confirmBox.x - padX - cw, confirmBox.y))
+        cancelLabel.setPos((
+            cancelBox.x + padX + box.x,
+            cancelBox.y + padY + box.y))
+
+        confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+        cancelLabel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
+        cancelLabel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Add static components to the box
+        box.add(title)
+
+        if ok.strip() != "":
+            box.add(confirmBox)
+
+        if cancel.strip() != "":
+            box.add(cancelBox)
+
+        return box, confirm, cancelLabel
+
     @overrides(GameHudLayout)
     def updateLayerText(self):
         if hasattr(self, 'currentLayer'):
@@ -428,12 +479,8 @@ class EditorHud(GameHudLayout):
             self.add(label)
 
         if transition:
-            # Show the up transition
-            def callback(obj, menu, animation):
-                obj.removeAnimation(animation)
-                menu.remove(obj)
-
-            self.slideTransitionY((0, 0), 'second', callback=callback)
+            self.slideTransitionY(
+                (0, 0), 'second', callback=gf.defaultSlideCallback)
 
     def editDropdown(self):
         self.open = True

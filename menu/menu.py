@@ -163,16 +163,7 @@ class Menu:
         self.components = []
         self.open = False
 
-    def transition(self):
-        self.open = True
-
-        test = Rectangle(
-            self, BLACK, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), 255)
-        test.addAnimation(tf.transitionFadeOut, 'onLoad')
-        self.add(test)
-
+    # Create a black rectangle at screen size and animate it in the Y axis
     def slideTransitionY(
             self, pos, half, speed=-40, callback=None, direction='up'):
         transition = Rectangle(
@@ -184,6 +175,7 @@ class Menu:
             callback=callback, transitionDirection=direction)
         self.add(transition)
 
+    # Create a black rectangle at screen size and animate it in the X axis
     def slideTransitionX(self, pos, half, speed=-70, callback=None):
         transition = Rectangle(
             self, TRUEBLACK, (
@@ -194,6 +186,7 @@ class Menu:
             callback=callback)
         self.add(transition)
 
+    # Create a loading screen for inbetween the slide transition animations
     def loadingScreen(self):
         self.loadingImage.setImageName("loading1")
         self.loadingImage.dirty = True
@@ -205,6 +198,7 @@ class Menu:
         self.add(self.loadingImage)
         self.add(loadingText)
 
+    # Update the loading screen to show progress
     def updateLoadingScreen(self):
         if self.loadingImage.getImageName() == "loading1":
             self.loadingImage.setImageName("loading2")
@@ -213,56 +207,35 @@ class Menu:
             self.loadingImage.setImageName("loading1")
         self.loadingImage.dirty = True
 
-    # Create a confirm box and return an empty box
-    # with confirm and cancel actions
-    def createConfirmBox(
-            self, width, height, title, ok="Ok", cancel="Cancel", padX=15,
-            padY=15):
-        # Set x, y to be center of display
-        x = (config["graphics"]["displayWidth"] - width) / 2
-        y = (config["graphics"]["displayHeight"] - height) / 2
+    # Slide up all the components on the screen to display height
+    def closeTransition(self, callback=gf.defaultCloseCallback):
+        self.spriteRenderer.getHud().setOpen(True)
+        self.mapEditor.getHud().setOpen(True)
 
-        box = Rectangle(self, GREEN, (width, height), (x, y))
-        title = Label(
-            self, title, 30, WHITE, ((x + padX) - box.x, (y + padY) - box.y),
-            GREEN)
+        for component in self.components:
+            if tf.transitionY not in component.getAnimations():
+                dirty = True if isinstance(component, Slider) else False
 
-        # Set confirm box with label centered
-        confirm = Label(self, ok, 25, WHITE, (0, 0), BLACK)
-        cw = confirm.getFontSize()[0] + (padX * 2)
-        ch = confirm.getFontSize()[1] + (padY * 2)
-        confirmBox = Rectangle(self, BLACK, (cw, ch), (
-            box.getRightX() - padX - cw - box.x,
-            box.getBottomY() - padY - ch - box.y))
-        confirm.setPos((
-            confirmBox.x + padX + box.x,
-            confirmBox.y + padY + box.y))
+                component.addAnimation(
+                    tf.transitionY, 'onLoad', speed=-40,
+                    transitionDirection="up",
+                    y=-config["graphics"]["displayHeight"], callback=callback,
+                    dirty=dirty)
 
-        # Set cancel box with label centered
-        cancelLabel = Label(self, cancel, 25, WHITE, (0, 0), BLACK)
-        cw = cancelLabel.getFontSize()[0] + (padX * 2)
-        ch = cancelLabel.getFontSize()[1] + (padY * 2)
-        cancelBox = Rectangle(self, BLACK, (cw, ch), (
-            confirmBox.x - padX - cw, confirmBox.y))
-        cancelLabel.setPos((
-            cancelBox.x + padX + box.x,
-            cancelBox.y + padY + box.y))
+        self.game.audioLoader.playSound("swoopOut")
 
-        confirm.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
-        cancelLabel.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
-        cancelLabel.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+    # Slide down all the components on the screen from display height
+    def openTransition(self, callback=gf.defaultOpenCallback):
+        for component in self.components:
+            y = component.y
+            component.setPos((
+                component.x,
+                component.y - config["graphics"]["displayHeight"]))
+            component.addAnimation(
+                tf.transitionY, 'onLoad', speed=40,
+                transitionDirection='down', y=y, callback=callback)
 
-        # Add static components to the box
-        box.add(title)
-
-        if ok.strip() != "":
-            box.add(confirmBox)
-
-        if cancel.strip() != "":
-            box.add(cancelBox)
-
-        return box, confirm, cancelLabel
+        self.game.audioLoader.playSound("swoopIn")
 
 
 class MainMenu(Menu):
@@ -395,13 +368,8 @@ class MainMenu(Menu):
         self.game.paused = False
 
         if transition:
-            # set the up transition
-            def callback(obj, menu, animation):
-                obj.removeAnimation(animation)
-                menu.remove(obj)
-
             self.slideTransitionY(
-                (0, 0), 'second', speed=40, callback=callback,
+                (0, 0), 'second', speed=40, callback=gf.defaultSlideCallback,
                 direction='down')
 
     def saveCurrentLevel(self, currentLevel):
@@ -708,12 +676,8 @@ class MainMenu(Menu):
         self.add(levelSelectText)
 
         if transition:
-            # set the up transition
-            def callback(obj, menu, animation):
-                obj.removeAnimation(animation)
-                menu.remove(obj)
-
-            self.slideTransitionY((0, 0), 'second', callback=callback)
+            self.slideTransitionY(
+                (0, 0), 'second', callback=gf.defaultSlideCallback)
 
     def levelSelect(self, transition=False):
         self.open = True
@@ -816,12 +780,8 @@ class MainMenu(Menu):
         self.setLevelsClickable(self.currentLevel)
 
         if transition:
-            # set the up transition
-            def callback(obj, menu, animation):
-                obj.removeAnimation(animation)
-                menu.remove(obj)
-
-            self.slideTransitionY((0, 0), 'second', callback=callback)
+            self.slideTransitionY(
+                (0, 0), 'second', callback=gf.defaultSlideCallback)
 
 
 class OptionMenu(Menu):
@@ -837,21 +797,6 @@ class OptionMenu(Menu):
     def setOptionsOpen(self, optionsOpen):
         self.optionsOpen = optionsOpen
 
-    def closeTransition(self, callback=gf.defaultCallback):
-        self.spriteRenderer.getHud().setOpen(True)
-        self.mapEditor.getHud().setOpen(True)
-
-        for component in self.components:
-            if tf.transitionY not in component.getAnimations():
-                dirty = True if isinstance(component, Slider) else False
-
-                component.addAnimation(
-                    tf.transitionY, 'onLoad', speed=-40,
-                    transitionDirection="up",
-                    y=-config["graphics"]["displayHeight"], callback=callback,
-                    dirty=dirty)
-
-        self.game.audioLoader.playSound("swoopOut")
 
     def main(self, pausedSurface=True, transition=False):
         self.open = True
@@ -905,19 +850,7 @@ class OptionMenu(Menu):
         self.add(close)
 
         if transition:
-            def callback(obj, menu, y):
-                obj.y = y
-
-            for component in self.components:
-                y = component.y
-                component.setPos((
-                    component.x,
-                    component.y - config["graphics"]["displayHeight"]))
-                component.addAnimation(
-                    tf.transitionY, 'onLoad', speed=40,
-                    transitionDirection='down', y=y, callback=callback)
-
-            self.game.audioLoader.playSound("swoopIn")
+            self.openTransition()
 
     def options(self, transition=False):
         self.open = True
@@ -967,19 +900,7 @@ class OptionMenu(Menu):
         self.add(back)
 
         if transition:
-            def callback(obj, menu, y):
-                obj.y = y
-
-            for component in self.components:
-                y = component.y
-                component.setPos((
-                    component.x,
-                    component.y - config["graphics"]["displayHeight"]))
-                component.addAnimation(
-                    tf.transitionY, 'onLoad', speed=40,
-                    transitionDirection='down', y=y, callback=callback)
-
-            self.game.audioLoader.playSound("swoopIn")
+            self.openTransition()
 
     def audio(self):
         self.open = True
@@ -1310,19 +1231,7 @@ class GameMenu(Menu):
         self.add(retry)
 
         if transition:
-            def callback(obj, menu, y):
-                obj.y = y
-
-            for component in self.components:
-                y = component.y
-                component.setPos((
-                    component.x,
-                    component.y - config["graphics"]["displayHeight"]))
-                component.addAnimation(
-                    tf.transitionY, 'onLoad', speed=40,
-                    transitionDirection='down', y=y, callback=callback)
-
-            self.game.audioLoader.playSound("swoopIn")
+            self.openTransition()
 
     def endScreenComplete(self, transition=False):
         self.endScreen()
@@ -1420,16 +1329,7 @@ class GameMenu(Menu):
                         fromAmount=menu.previousScore,
                         toAmount=menu.previousScore + self.keyDifference)
 
-            for component in self.components:
-                y = component.y
-                component.setPos((
-                    component.x,
-                    component.y - config["graphics"]["displayHeight"]))
-                component.addAnimation(
-                    tf.transitionY, 'onLoad', speed=40,
-                    transitionDirection='down', y=y, callback=callback)
-
-            self.game.audioLoader.playSound("swoopIn")
+            self.openTransition(callback)
 
     def startScreen(self):
         self.open = True

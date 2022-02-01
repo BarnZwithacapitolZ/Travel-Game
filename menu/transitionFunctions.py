@@ -1,25 +1,6 @@
 from config import config
 
 
-def transitionFadeIn(obj, menu, animation):
-    obj.setAlpha(obj.getAlpha() + 20)
-    obj.dirty = True
-
-    if obj.getAlpha() >= 255:
-        obj.removeAnimation(animation)
-        menu.close()
-        menu.transition()
-
-
-def transitionFadeOut(obj, menu, animation):
-    obj.setAlpha(obj.getAlpha() - 20)
-    obj.dirty = True
-
-    if obj.getAlpha() <= 0:
-        obj.removeAnimation(animation)
-        menu.close()
-
-
 def transitionX(
         obj, menu, animation, speed, transitionDirection, x, callback,
         dirty=False):

@@ -230,7 +230,8 @@ class ImageLoader:
 
 
 class AudioLoader:
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
         self.numChannels = 8
         pygame.mixer.set_num_channels(self.numChannels)
 
@@ -284,7 +285,20 @@ class AudioLoader:
     def fadeOutSound(self, duration, chan=0):
         self.channels[chan].fadeout(duration)
 
-    def playMusic(self, key, loop=-1, start=0.0):
+    def loopMusic(self):
+        if pygame.mixer.music.get_busy():
+            return
+
+        # Reset the offset and play the track again
+        self.musicOffset = 0.0
+        if self.game.clickManager.getSpaceBar():
+            self.slowDownMusic()
+        elif self.game.clickManager.getSpeedUp():
+            self.speedUpMusic()
+        else:
+            self.playMusic(self.currentTrack)
+
+    def playMusic(self, key, loop=0, start=0.0):
         if key not in self.music:
             return
 

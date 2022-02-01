@@ -35,6 +35,15 @@ def clearMenu(obj, menu):
     menu.main()
 
 
-def defaultCallback(obj, menu, y):
+def defaultSlideCallback(obj, menu, animation):
+    obj.removeAnimation(animation)
+    menu.remove(obj)
+
+
+def defaultCloseCallback(obj, menu, y):
     menu.game.paused = False
     menu.close()
+
+
+def defaultOpenCallback(obj, menu, y):
+    obj.y = y
