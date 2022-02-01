@@ -59,8 +59,6 @@ class MeterController(Sprite):
                 self.game.audioLoader.restoreMusic()
                 self.empty = True
                 self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())
-                if self.amount < self.totalAmount:
-                    self.updateAmount(self.increaseSpeed)
 
         # If the spacebar isn't pressed and the flag is called
         elif not self.game.clickManager.getSpaceBar() and self.empty:
@@ -75,15 +73,18 @@ class MeterController(Sprite):
             else:
                 self.amountToAdd = 0
 
+        # Speed up the game
         elif self.game.clickManager.getSpeedUp():
             self.spriteRenderer.setDt(
                 self.spriteRenderer.getStartDt() + self.speedUpAmount)
 
         else:
             self.spriteRenderer.setDt(self.spriteRenderer.getStartDt())
-            if self.amount < self.totalAmount:
-                self.updateAmount(self.increaseSpeed)
 
     @overrides(Sprite)
     def update(self):
         self.events()
+
+        # Gradually increase the meter if not filled
+        if self.amount < self.totalAmount:
+            self.updateAmount(self.increaseSpeed)

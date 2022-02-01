@@ -617,33 +617,36 @@ class SpriteRenderer():
                 return node
         return None
 
+    def checkKeyPress(self, key, pressed, spaceBar, speedUp):
+        if (pygame.key.get_pressed()[key] == pressed
+                and self.game.clickManager.getSpaceBar() == spaceBar
+                and self.game.clickManager.getSpeedUp() == speedUp):
+            return True
+        return False
+
     def events(self):
-        if pygame.key.get_pressed()[config["controls"]["slowdown"]["current"]]:
+        slowDownKey = config["controls"]["slowdown"]["current"]
+        speedUpKey = config["controls"]["fastforward"]["current"]
+
+        if self.checkKeyPress(slowDownKey, True, False, False):
             self.game.clickManager.setSpaceBar(True)
+            self.game.audioLoader.slowDownMusic()
 
-            if (
-                self.dt != self.startDt - self.meter.getSlowDownAmount()
-                    and not self.meter.getEmpty()):
-                self.game.audioLoader.slowDownMusic()
-
-        elif pygame.key.get_pressed()[
-                config["controls"]["fastforward"]["current"]]:
-            self.game.clickManager.setSpeedUp(True)
-
-            if self.dt != self.startDt + self.meter.getSpeedUpAmount():
-                self.game.audioLoader.speedUpMusic()
-                self.hud.toggleFastForward(True)
-
-        else:
-            if self.dt < self.startDt:
-                self.game.audioLoader.restoreMusic(slowDown=True)
-
-            elif self.dt > self.startDt:
-                self.game.audioLoader.restoreMusic(speedUp=True)
-                self.hud.toggleFastForward()
-
+        elif self.checkKeyPress(slowDownKey, False, True, False):
             self.game.clickManager.setSpaceBar(False)
+            self.game.audioLoader.restoreMusic(slowDown=True)
+
+        elif (self.checkKeyPress(speedUpKey, True, False, False)
+                and not self.hud.fastForward.clicked):
+            self.game.clickManager.setSpeedUp(True)
+            self.game.audioLoader.speedUpMusic()
+            self.hud.toggleFastForward(True)
+
+        elif (self.checkKeyPress(speedUpKey, False, False, True)
+                and not self.hud.fastForward.clicked):
             self.game.clickManager.setSpeedUp(False)
+            self.game.audioLoader.restoreMusic(speedUp=True)
+            self.hud.toggleFastForward()
 
     def update(self):
         # If we're not rendering, do nothing

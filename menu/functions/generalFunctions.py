@@ -33,3 +33,8 @@ def hoverImage(obj, menu, event, image=None):
 def clearMenu(obj, menu):
     menu.close()
     menu.main()
+
+
+def defaultCallback(obj, menu, y):
+    menu.game.paused = False
+    menu.close()

@@ -218,7 +218,9 @@ class GameHud(GameHudLayout):
             image=fastForwardSelectedImage)
         self.fastForward.addEvent(
             hf.hoverOutHudButton, 'onMouseOut', image=fastForwardImage)
-        self.fastForward.addEvent(hf.fastForwardGame, 'onMouseLongClick')
+        self.fastForward.addEvent(hf.setFastForwardGame, 'onMouseLongClick')
+        self.fastForward.addEvent(
+            hf.setFastForwardGame, 'onMouseLongClickOut', fastForward=False)
 
         self.restart.addEvent(
             hf.hoverOverHudButton, 'onMouseOver', image=restartSelectedImage)

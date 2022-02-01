@@ -8,7 +8,7 @@ from menuComponents import (
     Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
     ControlLabel)
 from clickManager import ControlClickManager
-from utils import vec
+from utils import vec, overrides
 from enum import Enum, auto
 import random
 import copy
@@ -101,49 +101,57 @@ class Menu:
         my -= difference[1]
 
         # Check the component has been drawn (if called before next tick)
-        if hasattr(component, 'rect'):
-            if len(component.events) > 0:
-                for e in list(component.events):
-                    if e['event'] == 'onMouseClick':
-                        if (component.rect.collidepoint((mx, my))
-                                and self.game.clickManager.getClicked()):
-                            self.clickButton()
-                            self.game.clickManager.setClicked(False)
-                            e['function'](component, self, e, **e['kwargs'])
+        if not hasattr(component, 'rect') or len(component.events) <= 0:
+            return
 
-                    if e['event'] == 'onMouseLongClick':
-                        if (component.rect.collidepoint((mx, my))
-                                and pygame.mouse.get_pressed()[0]):
-                            if self.game.clickManager.getClicked():
-                                self.clickButton()
-                                self.game.clickManager.setClicked(False)
-                            e['function'](component, self, e, **e['kwargs'])
+        for e in list(component.events):
+            if e['event'] == 'onMouseClick':
+                if (component.rect.collidepoint((mx, my))
+                        and self.game.clickManager.getClicked()):
+                    self.clickButton()
+                    self.game.clickManager.setClicked(False)
+                    e['function'](component, self, e, **e['kwargs'])
 
-                    if e['event'] == 'onMouseOver':
-                        if (component.rect.collidepoint((mx, my))
-                                and not component.mouseOver):
-                            component.mouseOver = True
-                            e['function'](component, self, e, **e['kwargs'])
-                            component.dirty = True
+            elif e['event'] == 'onMouseLongClick':
+                if (component.rect.collidepoint((mx, my))
+                        and pygame.mouse.get_pressed()[0]
+                        and not self.game.clickManager.getLongClicked()):
+                    self.clickButton()
+                    self.game.clickManager.setLongClicked(True)
+                    # Not clicking, but longclicking
+                    self.game.clickManager.setClicked(False)
+                    component.clicked = True
+                    e['function'](component, self, e, **e['kwargs'])
 
-                    if e['event'] == 'onMouseOut':
-                        if (not component.rect.collidepoint((mx, my))
-                                and component.mouseOver):
-                            component.mouseOver = False
-                            e['function'](component, self, e, **e['kwargs'])
-                            component.dirty = True
+            elif e['event'] == 'onMouseLongClickOut':
+                if (component.rect.collidepoint((mx, my))
+                        and not pygame.mouse.get_pressed()[0]
+                        and self.game.clickManager.getLongClicked()):
+                    self.game.clickManager.setLongClicked(False)
+                    component.clicked = False
+                    e['function'](component, self, e, **e['kwargs'])
 
-                    if e['event'] == 'onKeyPress':
-                        if self.game.textHandler.getPressed():
-                            e['function'](component, self, e, **e['kwargs'])
-                            # Reset the key since we only want the function to
-                            # be called once
-                            self.game.textHandler.setCurrentKey(None)
-                            component.dirty = True
+            elif e['event'] == 'onMouseOver':
+                if (component.rect.collidepoint((mx, my))
+                        and not component.mouseOver):
+                    component.mouseOver = True
+                    e['function'](component, self, e, **e['kwargs'])
+                    component.dirty = True
 
-    # define where key events will be called
-    def keyEvents(self):
-        pass
+            elif e['event'] == 'onMouseOut':
+                if (not component.rect.collidepoint((mx, my))
+                        and component.mouseOver):
+                    component.mouseOver = False
+                    e['function'](component, self, e, **e['kwargs'])
+                    component.dirty = True
+
+            elif e['event'] == 'onKeyPress':
+                if self.game.textHandler.getPressed():
+                    e['function'](component, self, e, **e['kwargs'])
+                    # Reset the key since we only want the function to
+                    # be called once
+                    self.game.textHandler.setCurrentKey(None)
+                    component.dirty = True
 
     def setClicked(self, clicked):
         if self.open:
@@ -290,6 +298,12 @@ class MainMenu(Menu):
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
 
+    @overrides(Menu)
+    def getOpen(self):
+        if self.open or self.game.optionMenu.optionsOpen:
+            return True
+        return False
+
     def getLevels(self):
         return self.levels
 
@@ -336,7 +350,6 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
-        self.backgroundColor = GREEN
 
         # x = (config["graphics"]["displayWidth"] / 2) - 180
         x = 100
@@ -821,19 +834,12 @@ class OptionMenu(Menu):
         self.optionsOpen = False
         self.x = 100
 
-    def getOptionsOpen(self):
-        return self.optionsOpen
-
     def setOptionsOpen(self, optionsOpen):
         self.optionsOpen = optionsOpen
 
-    def closeTransition(self):
+    def closeTransition(self, callback=gf.defaultCallback):
         self.spriteRenderer.getHud().setOpen(True)
         self.mapEditor.getHud().setOpen(True)
-
-        def callback(obj, menu, y):
-            menu.game.paused = False
-            menu.close()
 
         for component in self.components:
             if tf.transitionY not in component.getAnimations():
@@ -913,12 +919,8 @@ class OptionMenu(Menu):
 
             self.game.audioLoader.playSound("swoopIn")
 
-    def options(self):
+    def options(self, transition=False):
         self.open = True
-        self.backgroundColor = GREEN
-
-        # We can access through main menu so we set paused to false in-case
-        self.game.paused = True
 
         background = Rectangle(
             self, GREEN, (
@@ -953,16 +955,31 @@ class OptionMenu(Menu):
 
         if not self.optionsOpen:
             back.addEvent(mf.showMain, 'onMouseClick')
-            self.add(background)
 
         else:
             back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
 
+        self.add(background)
         self.add(options)
         self.add(graphics)
         self.add(controls)
         self.add(audio)
         self.add(back)
+
+        if transition:
+            def callback(obj, menu, y):
+                obj.y = y
+
+            for component in self.components:
+                y = component.y
+                component.setPos((
+                    component.x,
+                    component.y - config["graphics"]["displayHeight"]))
+                component.addAnimation(
+                    tf.transitionY, 'onLoad', speed=40,
+                    transitionDirection='down', y=y, callback=callback)
+
+            self.game.audioLoader.playSound("swoopIn")
 
     def audio(self):
         self.open = True

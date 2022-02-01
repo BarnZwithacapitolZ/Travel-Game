@@ -8,6 +8,7 @@ class ClickManager:
     def __init__(self, game):
         self.game = game
         self.clicked = False
+        self.longClicked = False
         self.rightClicked = False
         self.spaceBar = False
         self.speedUp = False
@@ -18,6 +19,9 @@ class ClickManager:
 
     def getClicked(self):
         return self.clicked
+
+    def getLongClicked(self):
+        return self.longClicked
 
     def getRightClicked(self):
         return self.rightClicked
@@ -44,14 +48,23 @@ class ClickManager:
     def setClicked(self, clicked):
         self.clicked = clicked
 
+    def setLongClicked(self, longClicked):
+        self.longClicked = longClicked
+
     def setRightClicked(self, rightClicked):
         self.rightClicked = rightClicked
 
     def setSpaceBar(self, spaceBar):
+        if self.speedUp:
+            return False
         self.spaceBar = spaceBar
+        return True
 
     def setSpeedUp(self, speedUp):
+        if self.spaceBar:
+            return False
         self.speedUp = speedUp
+        return True
 
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver

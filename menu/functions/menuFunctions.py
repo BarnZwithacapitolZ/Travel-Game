@@ -74,13 +74,16 @@ def openMapEditor(obj, menu, event):
 def openOptionsMenu(obj, menu, event):
     menu.close()
     menu.game.optionMenu.setOptionsOpen(True)
-    menu.game.optionMenu.options()
+    menu.game.optionMenu.options(True)
 
 
 def closeOptionsMenu(obj, menu, event):
-    menu.close()
-    menu.setOptionsOpen(False)
-    menu.game.mainMenu.main()
+    def callback(obj, menu, y):
+        menu.close()
+        menu.setOptionsOpen(False)
+        menu.game.mainMenu.main()
+
+    menu.closeTransition(callback)
 
 
 # load a specified map which has been clicked on

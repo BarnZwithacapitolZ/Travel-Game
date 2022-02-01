@@ -46,8 +46,15 @@ def pauseGame(obj, menu, event):
 
 
 # Speed up the game so you don't have to wait for things to move
-def fastForwardGame(obj, menu, event):
-    menu.game.clickManager.setSpeedUp(True)
+def setFastForwardGame(obj, menu, event, fastForward=True):
+    isSet = menu.game.clickManager.setSpeedUp(fastForward)
+
+    # If we can't set speedUp, we can't speed up the music
+    if not isSet:
+        return
+
+    (menu.game.audioLoader.speedUpMusic() if fastForward
+        else menu.game.audioLoader.restoreMusic())
 
 
 # ----Editor Hud Function----

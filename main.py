@@ -141,8 +141,7 @@ class Game:
                 # Only open the option manu if the game isn't paused
                 # and the main menu isn't open
                 if (e.key == pygame.K_ESCAPE and not self.mainMenu.getOpen()
-                        and not self.spriteRenderer.getMenu().getOpen()
-                        and not self.optionMenu.getOptionsOpen()):
+                        and not self.spriteRenderer.getMenu().getOpen()):
                     # Close the dropdowns first
                     if not self.mapEditor.isDropdownsClosed():
                         if not self.optionMenu.getOpen():
@@ -239,14 +238,13 @@ class Game:
         self.running = False
 
     def __update(self):
-        # print(self.paused)
-        # print(self.clickManager.getMouseOver())
         if not self.paused:
             self.spriteRenderer.update()
             self.mapEditor.update()
 
-        elif self.mainMenu.getOpen():
-            self.mainMenu.update()
+            if self.mainMenu.getOpen():
+                self.mainMenu.update()
+                self.optionMenu.update()
 
         elif self.paused:
             self.optionMenu.update()
@@ -257,8 +255,6 @@ class Game:
         #   (including custom)
         if self.mainMenu.getLevelSelectOpen():
             self.renderer.prepareSurface(self.mainMenu.getBackgroundColor())
-        elif self.optionMenu.getOptionsOpen():
-            self.renderer.prepareSurface(self.optionMenu.getBackgroundColor())
 
         # Add sprites
         self.spriteRenderer.render()
@@ -267,6 +263,7 @@ class Game:
         # Add menus when not paused
         if self.mainMenu.getOpen():
             self.mainMenu.display()
+            self.optionMenu.display()
         elif self.paused:
             self.optionMenu.display()
 
