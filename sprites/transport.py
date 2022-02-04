@@ -43,6 +43,7 @@ class Transport(Sprite):
         self.moving = self.running
         self.timer = 0
         self.timerLength = 300
+        self.startTimerLength = self.timerLength
 
         self.clickManager = self.clickManagers[0]
         self.personClickManager = self.clickManagers[1]
@@ -86,6 +87,19 @@ class Transport(Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+    # Check if in slow motion mode, then for any transport at a stop we want
+    # to increase the time they have stopping by increasing the timer length.
+    def checkSlowDown(self):
+        if (self.spriteRenderer.getDt() < self.spriteRenderer.getStartDt()
+                and self.timerLength == self.startTimerLength):
+            self.timerLength *= 1 + self.spriteRenderer.getDt()
+            self.timer *= 1 + self.spriteRenderer.getDt()
+
+        elif (self.spriteRenderer.getDt() >= self.spriteRenderer.getStartDt()
+                and self.timerLength != self.startTimerLength):
+            self.timer *= self.startTimerLength / self.timerLength
+            self.timerLength = self.startTimerLength
 
     # Check if a given node is one the transport can stop at
     def checkIsStopType(self, node):
@@ -166,24 +180,28 @@ class Transport(Sprite):
         if self.moving:
             self.setConnection(nextNode)
 
-        # and len(self.currentNode.getPeople()) > 0
-        if self.checkIsStopType(self.currentNode):
-            # Remove anyone departing before we add new people
-            self.removePeople()
+        if not self.checkIsStopType(self.currentNode):
+            return
 
-            # Set people waiting for the transportation to departing
-            self.setPeopleBoarding()
+        # Remove anyone departing before we add new people
+        self.removePeople()
 
-            self.moving = False
-            self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
+        # Set people waiting for the transportation to departing
+        self.setPeopleBoarding()
 
-            # Leaving the station
-            if self.timer > self.timerLength:
-                self.moving = True
-                self.timer = 0
+        self.moving = False
+        self.timer += 100 * self.game.dt * self.spriteRenderer.getDt()
 
-                # Add the people boarding to the transportation
-                self.addPeople()
+        self.checkSlowDown()
+
+        # Leaving the station
+        if self.timer > self.timerLength:
+            self.moving = True
+            self.timerLength = self.startTimerLength
+            self.timer = 0
+
+            # Add the people boarding to the transportation
+            self.addPeople()
 
     # Set people waiting at the stop to boarding the transportation
     def setPeopleBoarding(self):
@@ -614,9 +632,6 @@ class Taxi(Transport):
         self.imageName = "taxi"
         self.stopType = NODE.NodeType.aslist()
         self.boardingType = PERSON.Person.Status.BOARDINGTAXI
-
-        # self.timerLength = 200 # To Do: choose a value length
-
         self.hasStopped = False
 
     @overrides(Transport)

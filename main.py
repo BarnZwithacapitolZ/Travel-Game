@@ -103,7 +103,7 @@ class Game:
         self.audioLoader.addMusic("testFast", fastPath, 0.5)
         self.audioLoader.addMusic("testSlow", slowPath, 0.5)
 
-        self.audioLoader.playMusic("test2")
+        self.audioLoader.playMusic("test")
         # self.audioLoader.fadeOutSound(10000, 2)
 
         # print(pygame.font.get_fonts())

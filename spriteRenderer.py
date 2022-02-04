@@ -126,11 +126,12 @@ class SpriteRenderer():
             self.menu.startScreen()
 
     def runEndScreen(self, completed=False):
-        if self.rendering and not self.debug:
-            if completed:
-                self.menu.endScreenComplete(True)  # Run with transition
-            else:
-                self.menu.endScreenGameOver(True)  # Run with transition
+        if not self.rendering or self.debug:
+            return
+
+        self.game.audioLoader.restoreMusic()
+        (self.menu.endScreenComplete(True) if completed
+            else self.menu.endScreenGameOver(True))
 
     # When the player completed the level, set it to complete
     # in the level data and save the data

@@ -23,15 +23,6 @@ class MeterController(Sprite):
         # How fast to make the game when fast forwarding
         self.speedUpAmount = self.slowDownAmount
 
-    def getEmpty(self):
-        return self.empty
-
-    def getSlowDownAmount(self):
-        return self.slowDownAmount
-
-    def getSpeedUpAmount(self):
-        return self.speedUpAmount
-
     def addToAmountToAdd(self, amountToAdd):
         # only add the extra if the meter isn't already full
         if self.amount < self.totalAmount:
