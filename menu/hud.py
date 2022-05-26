@@ -1394,6 +1394,10 @@ class PreviewHud(GameHudLayout):
             self, str(self.spriteRenderer.getCompleted()), 25, WHITE,
             (config["graphics"]["displayWidth"] - 40, 14), BLACK)
 
+        # We create a temporary fast forward image to pass the check in sprite renderer
+        self.fastForward = Image(
+            self, None, (50, 50), (0, 0))
+
         stop.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
         stop.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         stop.addEvent(hf.stopMap, 'onMouseClick')
