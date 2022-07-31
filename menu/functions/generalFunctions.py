@@ -45,5 +45,9 @@ def defaultCloseCallback(obj, menu, y):
     menu.close()
 
 
-def defaultOpenCallback(obj, menu, y):
+def defaultSlideYCallback(obj, _, y):
     obj.y = y
+
+
+def defaultSlideXCallback(obj, _, x):
+    obj.x = x

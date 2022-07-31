@@ -1,6 +1,6 @@
 import pygame
 import random
-from config import config, dump, DEFAULTLIVES, DEFAULTBACKGROUND, LAYERNAMES
+from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
 from utils import vec
 from layer import Layer
 from clickManager import (
@@ -68,41 +68,7 @@ class SpriteRenderer():
         self.connectionTypes = ["layer 4"]
 
     def setDefaultMap(self):
-        self.levelData = {
-            "mapName": "",
-            "options": {
-                # If we want the level to have lives or not:
-                # (if it doesn't we don't need the timer to be shown for
-                # each person since there is no limit as no lives)
-                "lives": True,
-                "limitPeople": False,  # Limit the No. people who can spawn
-                "setSpawn": False  # Set the spawn to a specific node
-            },
-            "locked": {"isLocked": False, "unlock": 0},  # Amount to unlock
-
-            # Map can / cannot be deleted; maps that can't be
-            # deleted can't be opened in the editor
-            "deletable": True,
-
-            "saved": False,  # Has the map been saved before
-            "width": 18,
-            "height": 10,
-            "difficulty": 1,  # Out of 4
-            "total": 8,  # Total to complete the level
-            "score": 0,
-            "completion": {"completed": False},
-            "backgrounds": {
-                "layer 1": DEFAULTBACKGROUND,  # Default color: CREAM :)
-                "layer 2": DEFAULTBACKGROUND,
-                "layer 3": DEFAULTBACKGROUND,
-                "layer 4": DEFAULTBACKGROUND
-            },
-            "connections": {},
-            "transport": {},
-            "stops": {},
-            "destinations": {},
-            "specials": {}  # For special ndes, such as no walk nodes etc.
-        }  # Level data to be stored, for export to JSON
+        self.levelData = DEFAULTLEVELCONFIG
 
     # Save function, for when the level has already
     # been created before (and is being edited)

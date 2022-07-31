@@ -225,7 +225,7 @@ class Menu:
         self.game.audioLoader.playSound("swoopOut")
 
     # Slide down all the components on the screen from display height
-    def openTransition(self, callback=gf.defaultOpenCallback):
+    def openTransition(self, callback=gf.defaultSlideYCallback):
         for component in self.components:
             y = component.y
             component.setPos((
@@ -253,7 +253,8 @@ class MainMenu(Menu):
             config["player"]["currentCustomLevel"][1])
         self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
-        self.splashScreenMaps = list(self.game.mapLoader.getSplashScreenMaps().keys())
+        self.splashScreenMaps = list(
+            self.game.mapLoader.getSplashScreenMaps().keys())
         self.customMaps = list(self.game.mapLoader.getCustomMaps().keys())
         self.currentMaps = self.builtInMaps
         self.levels = {}
@@ -328,36 +329,31 @@ class MainMenu(Menu):
         x = 100
 
         title = Label(
-            self, "Transport \n The \n Public", 70, BLACK, (x, 40))
+            self, "Transport \n The \n Public", 70, BLACK, (x - 500, 40))
         title.setItalic(True)
 
-        cont = Label(self, "Continue", 50,  BLACK, (x, 280))
+        cont = Label(self, "Continue", 50,  BLACK, (x - 500, 280))
         editor = Label(
-            self, "Level editor", 50, BLACK, (x, cont.y + 60))
-        options = Label(self, "Options", 50, BLACK, (x, editor.y + 60))
-        end = Label(self, "Quit", 50, BLACK, (x, options.y + 60))
+            self, "Level editor", 50, BLACK, (x - 540, cont.y + 60))
+        options = Label(self, "Options", 50, BLACK, (x - 580, editor.y + 60))
+        end = Label(self, "Quit", 50, BLACK, (x - 620, options.y + 60))
 
         cont.addEvent(mf.openLevelSelect, 'onMouseClick')
-        cont.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
-        cont.addEvent(gf.hoverOut, 'onMouseOut', x=x)
-
         editor.addEvent(mf.openMapEditor, 'onMouseClick')
-        editor.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
-        editor.addEvent(gf.hoverOut, 'onMouseOut', x=x)
-
         options.addEvent(mf.openOptionsMenu, 'onMouseClick')
-        options.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
-        options.addEvent(gf.hoverOut, 'onMouseOut', x=x)
-
         end.addEvent(mf.closeGame, 'onMouseClick')
-        end.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
-        end.addEvent(gf.hoverOut, 'onMouseOut', x=x)
 
-        self.add(title)
-        self.add(cont)
-        self.add(editor)
-        self.add(options)
-        self.add(end)
+        labels = [title, cont, editor, options, end]
+        for i, label in enumerate(labels):
+            # Stop the title from having a hover event
+            if i > 0:
+                label.addEvent(gf.hoverOver, 'onMouseOver', x=x + 10)
+                label.addEvent(gf.hoverOut, 'onMouseOut', x=x)
+
+            label.addAnimation(
+                tf.transitionX, 'onLoad', speed=12, transitionDirection="left",
+                x=x, callback=gf.defaultSlideXCallback)
+            self.add(label)
 
         # We set debug to True so we use the correct spacing.
         self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
@@ -612,7 +608,7 @@ class MainMenu(Menu):
         count = 0
 
         for y, row in enumerate(mapsBefore):
-            for x, level in enumerate(row):
+            for x, _ in enumerate(row):
                 count = self.createLevel(x, y, count, mapsBefore, offset)
 
         offset = vec(0, 0)  # Reset offset
@@ -623,7 +619,7 @@ class MainMenu(Menu):
                     (self.levelWidth + self.spacing)
                     * (cols - len(mapsAfter[0])))
 
-            for x, level in enumerate(row):
+            for x, _ in enumerate(row):
                 count = self.createLevel(x, y, count, mapsAfter, offset)
 
     def customLevelSelect(self, transition=False):
@@ -796,7 +792,6 @@ class OptionMenu(Menu):
 
     def setOptionsOpen(self, optionsOpen):
         self.optionsOpen = optionsOpen
-
 
     def main(self, pausedSurface=True, transition=False):
         self.open = True
@@ -1358,19 +1353,16 @@ class GameMenu(Menu):
                 ((config["graphics"]["displayWidth"] / 2) - 40) - 400,
                 (config["graphics"]["displayHeight"] / 2) + 20))
 
-        def callback(obj, menu, x):
-            obj.x = x
-
         background.addAnimation(
             tf.transitionX, 'onLoad', speed=40, transitionDirection="left",
-            x=x, callback=callback)
+            x=x, callback=gf.defaultSlideXCallback)
         total.addAnimation(
             tf.transitionX, 'onLoad', speed=40, transitionDirection="left",
-            x=((x + width) / 2 - 110), callback=callback)
+            x=((x + width) / 2 - 110), callback=gf.defaultSlideXCallback)
         play.addAnimation(
             tf.transitionX, 'onLoad', speed=40, transitionDirection="left",
             x=((config["graphics"]["displayWidth"] / 2) - 40),
-            callback=callback)
+            callback=gf.defaultSlideXCallback)
 
         play.addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
         play.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)

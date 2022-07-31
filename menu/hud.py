@@ -72,50 +72,31 @@ class GameHud(GameHudLayout):
             self.slowDownMeter.dirty = True
 
     def slideHudIn(self):
-        def callbackX(obj, menu, x):
-            obj.x = x
-
-        def callbackY(obj, menu, y):
-            obj.y = y
-
+        # Speed to slide the hud in at
         speed = 5
+        labelX = [self.fastForward, self.pause, self.layers, self.home]
 
-        self.fastForward.addAnimation(
-            tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
-            x=self.hudX, callback=callbackX)
-        self.pause.addAnimation(
-            tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
-            x=self.hudX, callback=callbackX)
-        self.layers.addAnimation(
-            tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
-            x=self.hudX, callback=callbackX)
-        self.home.addAnimation(
-            tf.transitionX, 'onLoad', speed=speed, transitionDirection="left",
-            x=self.hudX, callback=callbackX)
+        # Offset for Y labels as they are at different heights
+        labelY = [
+            (self.lives, 0), (self.completed, 4), (self.completedAmount, 17),
+            (self.slowDownMeter, 14)]
 
-        self.lives.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY, callback=callbackY)
-        self.completed.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY + 4, callback=callbackY)
-        self.completedAmount.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY + 17, callback=callbackY)
-        self.slowDownMeter.addAnimation(
-            tf.transitionY, 'onLoad', speed=speed, transitionDirection="down",
-            y=self.hudY + 14, callback=callbackY)
+        for lx, ly in zip(labelX, labelY):
+            lx.addAnimation(
+                tf.transitionX, 'onLoad', speed=speed,
+                transitionDirection="left", x=self.hudX,
+                callback=gf.defaultSlideXCallback)
+            ly[0].addAnimation(
+                tf.transitionY, 'onLoad', speed=speed,
+                transitionDirection="down", y=self.hudY + ly[1],
+                callback=gf.defaultSlideYCallback)
 
     def slideRestartIn(self):
         self.restart.dirty = True  # Make sure its resized
         self.add(self.restart)
-
-        def callback(obj, menu, x):
-            obj.x = x
-
         self.restart.addAnimation(
             tf.transitionX, 'onLoad', speed=5, transitionDirection="left",
-            x=self.hudX, callback=callback)
+            x=self.hudX, callback=gf.defaultSlideXCallback)
 
     def slideRestartOut(self):
         def callback(obj, menu, x):
