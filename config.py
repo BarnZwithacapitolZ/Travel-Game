@@ -163,7 +163,11 @@ DEFAULTLEVELCONFIG = {
     "width": 18,
     "height": 10,
     "difficulty": 1,  # Out of 4
-    "total": 8,  # Total to complete the level
+
+    # Total to complete the level
+    # - if this is not set then it is set to a random amount.
+    "total": 8,
+
     "score": 0,
     "completion": {"completed": False},
     "backgrounds": {

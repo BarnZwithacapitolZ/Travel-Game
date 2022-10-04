@@ -375,9 +375,15 @@ class SpriteRenderer():
         self.allDestinations = (
             layer1Destinations + layer2Destinations + layer3Destinations)
 
-        # Set number of people to complete level
+        # Set number of people to complete level.
         if "total" not in self.levelData:
-            self.totalToComplete = random.randint(8, 12)
+            # The minimum amount required for any given level.
+            minAmount = 3
+
+            # Scale with the difficulty.
+            self.totalToComplete = random.randint(
+                minAmount * self.levelData["difficulty"],
+                5 * self.levelData["difficulty"])
 
         else:
             self.totalToComplete = self.levelData["total"]

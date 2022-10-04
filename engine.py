@@ -285,6 +285,8 @@ class AudioLoader:
     def fadeOutSound(self, duration, chan=0):
         self.channels[chan].fadeout(duration)
 
+    # Implement a custom loop music method to ensure we maintain sped up or
+    # slowed down music after loop.
     def loopMusic(self):
         if pygame.mixer.music.get_busy():
             return
