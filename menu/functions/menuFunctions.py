@@ -81,7 +81,7 @@ def closeOptionsMenu(obj, menu, event):
     def callback(obj, menu, y):
         menu.close()
         menu.setOptionsOpen(False)
-        menu.game.mainMenu.main()
+        menu.game.mainMenu.main(reload=False)
 
     menu.closeTransition(callback)
 
@@ -284,6 +284,7 @@ def setMusicVolume(slider, amount):
 
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
+    print("this is called right?")
     menu.close()
     menu.main(False)
 

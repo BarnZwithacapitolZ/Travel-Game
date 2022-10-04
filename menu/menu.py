@@ -320,12 +320,10 @@ class MainMenu(Menu):
             cx = (currentIndex % 4)
             self.currentCustomLevel = vec(cx, cy)
 
-    def main(self, transition=False):
+    def main(self, transition=False, reload=True):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
-
-        # x = (config["graphics"]["displayWidth"] / 2) - 180
         x = 100
 
         title = Label(
@@ -355,13 +353,16 @@ class MainMenu(Menu):
                 x=x, callback=gf.defaultSlideXCallback)
             self.add(label)
 
-        # We set debug to True so we use the correct spacing.
-        self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
-        self.game.spriteRenderer.setRendering(True)
-        self.game.spriteRenderer.setFixedScale(1.4)
-        self.game.spriteRenderer.calculateOffset()
-        self.game.spriteRenderer.resize()
-        self.game.paused = False
+        # We don't always want to reload the map,
+        # such as when we are accessing the option menu through the main menu.
+        if reload:
+            self.game.spriteRenderer.createLevel(
+                self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
+            self.game.spriteRenderer.setRendering(True)
+            self.game.spriteRenderer.setFixedScale(1.4)
+            self.game.spriteRenderer.calculateOffset()
+            self.game.spriteRenderer.resize()
+            self.game.paused = False
 
         if transition:
             self.slideTransitionY(
@@ -787,7 +788,7 @@ class OptionMenu(Menu):
         self.mapEditor = mapEditor
 
         # If the option menu is accessed through the main menu
-        self.optionsOpen = False
+        self.optionsOpen = False  # True = accessed through the main menu
         self.x = 100
 
     def setOptionsOpen(self, optionsOpen):
@@ -884,6 +885,7 @@ class OptionMenu(Menu):
         if not self.optionsOpen:
             back.addEvent(mf.showMain, 'onMouseClick')
 
+        # Accessed through main menu
         else:
             back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
 
