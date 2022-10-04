@@ -325,23 +325,7 @@ class Person(Sprite):
         self.removeFromLayer(oldLayer)
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
-
         self.setImageName()
-
-        # print(self.spriteRenderer.getGridLayer(oldLayer).getPeople(), self.spriteRenderer.getGridLayer(newLayer).getPeople())
-        # nodes = self.spriteRenderer.getNode(self.currentNode)            
-        # i = nodes.index(self.currentNode)
-        # above = nodes[:i]
-        # below = nodes[i:]
-        # below.remove(self.currentNode)
-
-        # for node in below:
-        #     if len(node.getPeople()) > 0:
-        #         person = node.getPeople()[0]
-        #         person.width = 11.5
-        #         person.height = 11.5
-        #         person.pos = person.pos - vec(5, 8)
-        #         person.dirty = True
 
         if len(self.path) <= 0:
             self.currentNode.getPersonHolder().removePerson(self, True)

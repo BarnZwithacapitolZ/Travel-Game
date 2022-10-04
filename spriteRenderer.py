@@ -405,7 +405,7 @@ class SpriteRenderer():
             self.showLayer(
                 self.getGridLayer(self.connectionTypes[0]).getNumber())
 
-    # Draw the level to a surface and return this surface for blitting
+    # Draw the level to a surface and return this surface for blitting (image)
     # (i.e for maps on the level selection screen)
     def createLevelSurface(self, level):
         self.clearLevel()
@@ -435,13 +435,13 @@ class SpriteRenderer():
         gridLayer3.createGrid()
         gridLayer1.createGrid()
         gridLayer2.createGrid()
+
+        gridLayer1.grid.loadTransport("layer 1", False)
+        gridLayer2.grid.loadTransport("layer 2", False)
+        gridLayer3.grid.loadTransport("layer 3", False)
+
         # Set the lines from all layers
         gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
-
-        # TODO add transports to line surface
-        # gridLayer1.grid.loadTransport("layer 1", False)
-        # gridLayer2.grid.loadTransport("layer 2", False)
-        # gridLayer3.grid.loadTransport("layer 3", False)
 
         return gridLayer4.getLineSurface()
 
@@ -520,7 +520,7 @@ class SpriteRenderer():
             reverse=True)
         return nodes
 
-    # Get all the nodes from all layers in the spriterenderer
+    # Return all the nodes from all layers in the spriterenderer
     def getAllNodes(self, layer1, layer2, layer3):
         layer1Nodes = layer1.getGrid().getNodes()
         layer2Nodes = layer2.getGrid().getNodes()
@@ -529,14 +529,14 @@ class SpriteRenderer():
 
         return allNodes
 
-    def getNode(self, node, sortNodes=False):
-        layer1Node = [self.gridLayer1.getGrid().getNode(node)]
-        layer2Node = [self.gridLayer2.getGrid().getNode(node)]
-        layer3Node = [self.gridLayer3.getGrid().getNode(node)]
-        allNodes = layer3Node + layer2Node + layer1Node
-        allNodes = list(filter(lambda x: x is not None, allNodes))
+    # Return all the transports from all layers in the spriterenderer
+    def getAllTransports(self, layer1, layer2, layer3):
+        layer1Transports = layer1.getGrid().getTransports()
+        layer2Transports = layer2.getGrid().getTransports()
+        layer3Transports = layer3.getGrid().getTransports()
+        allTransports = layer1Transports + layer2Transports + layer3Transports
 
-        return allNodes
+        return allTransports
 
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(
