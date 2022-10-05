@@ -27,6 +27,7 @@ ASSETSFOLDER = os.path.join(GAMEFOLDER, 'assets')
 MAPSFOLDER = os.path.join(GAMEFOLDER, 'maps')
 AUDIOFOLDER = os.path.join(GAMEFOLDER, 'audio')
 MUSICFOLDER = os.path.join(AUDIOFOLDER, 'music')
+MODIFIEDMUSICFOLDER = os.path.join(MUSICFOLDER, 'modified')
 
 # colours
 TRUEBLACK = (0, 0, 0)

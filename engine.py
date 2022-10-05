@@ -1,11 +1,14 @@
 import pygame
 import os
 import json
+import threading
+import time
 import pygame._sdl2
 from config import (
-    config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MAPSFOLDER, RED, BLACK,
-    TRUEBLACK, SCANLINES)
+    config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MODIFIEDMUSICFOLDER,
+    MAPSFOLDER, RED, BLACK, TRUEBLACK, SCANLINES)
 from utils import vec
+from pydub import AudioSegment
 
 
 class Renderer:
@@ -258,6 +261,9 @@ class AudioLoader:
         self.loadAllMusic()
         self.setMasterVolume(config["audio"]["volume"]["master"]["current"])
 
+        x = threading.Thread(target=self.createFastSlowAudio, args=('test',))
+        x.start()
+
     def getSound(self, key):
         return self.sounds[key]
 
@@ -347,17 +353,19 @@ class AudioLoader:
         self.playMusic(self.currentTrack, start=self.musicOffset)
 
     def setChannels(self):
-        # Channel 0 reserved for hud sounds
-        # Channel 1 reserved for game sounds
-        # Channel 2 reserved for extra game sounds
+        # Channel 0 reserved for hud sounds.
+        # Channel 1 reserved for game sounds.
+        # Channel 2 reserved for extra game sounds.
         self.channels = [
             pygame.mixer.Channel(i) for i in range(self.numChannels)]
 
+    # Set the master volume for both music and sounds
     def setMasterVolume(self, volume=1):
         self.masterBuffer = 1.0 / volume if volume > 0 else None
         self.setSoundVolume(config["audio"]["volume"]["sounds"]["current"])
         self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
 
+    # Set the sound volume relative to the master volume.
     def setSoundVolume(self, volume=1):
         for channel in self.channels:
             amount = (
@@ -365,18 +373,21 @@ class AudioLoader:
                 else 0.0)
             channel.set_volume(amount)
 
+    # Set the music volume relative to the master volume.
     def setMusicVolume(self, volume=1):
         amount = (
             (volume / self.musicBuffer) / self.masterBuffer
             if self.masterBuffer is not None else 0.0)
         pygame.mixer.music.set_volume(amount)
 
+    # Get all the sounds from the config file.
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():
             a = pygame.mixer.Sound(os.path.join(AUDIOFOLDER, audio["file"]))
             a.set_volume(audio["volume"])
             self.sounds[key] = a
 
+    # Get all the music from the config file.
     def loadAllMusic(self):
         for key, audio in config["audio"]["music"].items():
             path = os.path.join(MUSICFOLDER, audio["file"])
@@ -384,6 +395,39 @@ class AudioLoader:
                 "path": path,
                 "volume": audio["volume"]
             }
+
+    def createFastSlowAudio(self, audioName):
+        start = time.time()
+        audio = AudioSegment.from_file(self.getMusic(audioName), 'mp3')
+        fastAudio = AudioLoader.changeAudioSpeed(audio, self.speedUp)
+        slowAudio = AudioLoader.changeAudioSpeed(audio, self.slowDown)
+
+        if not os.path.exists(MODIFIEDMUSICFOLDER):
+            os.makedirs(MODIFIEDMUSICFOLDER)
+
+        fastAudioPath = os.path.join(
+            MODIFIEDMUSICFOLDER, audioName + "Fast.mp3")
+        slowAudioPath = os.path.join(
+            MODIFIEDMUSICFOLDER, audioName + "Slow.mp3")
+
+        fastAudio.export(fastAudioPath, format='mp3')
+        slowAudio.export(slowAudioPath, format='mp3')
+
+        self.addMusic(audioName + "Fast", fastAudioPath, 0.5)
+        self.addMusic(audioName + "Slow", slowAudioPath, 0.5)
+
+        print("finished!")
+        print(f"{time.time() - start} seconds")
+
+    # Change the playback speed of a given sound and return a new sound.
+    @staticmethod
+    def changeAudioSpeed(audio, speed=1.0):
+        # How many samples to play per second.
+        alteredSound = audio._spawn(audio.raw_data, overrides={
+            "frame_rate": int(audio.frame_rate * speed)
+        })
+        # Convert back from altered frame rate to standard frame rate.
+        return alteredSound.set_frame_rate(audio.frame_rate)
 
 
 class MapLoader:

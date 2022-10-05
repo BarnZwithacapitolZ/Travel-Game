@@ -1,15 +1,12 @@
 import pygame
 import sys
-import wave
-import os
-from pydub import AudioSegment
 
 # Insert directory paths
 sys.path.insert(0, 'menu')
 sys.path.insert(0, 'menu/functions')
 sys.path.insert(0, 'sprites')
 
-from config import config, MUSICFOLDER
+from config import config
 from utils import vec
 from clickManager import ClickManager
 from engine import Renderer, ImageLoader, MapLoader, AudioLoader
@@ -17,18 +14,6 @@ from spriteRenderer import SpriteRenderer
 from menu import MainMenu, OptionMenu
 from menuComponents import TextHandler
 from mapEditor import MapEditor
-
-
-def speed_change(sound, speed=1.0):
-    # Manually override the frame_rate. This tells the computer how many
-    # samples to play per second
-    sound_with_altered_frame_rate = sound._spawn(sound.raw_data, overrides={
-         "frame_rate": int(sound.frame_rate * speed)
-      })
-     # convert the sound with altered frame rate to a standard frame rate
-     # so that regular playback programs will work right. They often only
-     # know how to play audio at standard frame rate (like 44.1k)
-    return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 
 class Game:
@@ -76,37 +61,8 @@ class Game:
         self.setIcon()
         self.setCursor()
 
-        # audio = self.audioLoader.getMusic('test')
-
-        # # currentSound = wave.open(audio, 'rb')
-        # # sampleRate = currentSound.getframerate()
-        # # channels = currentSound.getnchannels()
-        # # signal = currentSound.readframes(-1)
-
-        # # newSound = wave.open(path, "wb")
-        # # newSound.setnchannels(channels)
-        # # newSound.setsampwidth(2)
-        # # newSound.setframerate(sampleRate * 1.2)
-        # # newSound.writeframes(signal)
-        # # newSound.close()
-
-        # sound = AudioSegment.from_file(self.audioLoader.getMusic('test'), 'mp3')
-        # fastSound = speed_change(sound, self.audioLoader.speedUp)
-        # slowSound = speed_change(sound, self.audioLoader.slowDown)
-
-        fastPath = os.path.join(MUSICFOLDER, "testFast.mp3")
-        slowPath = os.path.join(MUSICFOLDER, "testSlow.mp3")
-
-        # fastSound.export(fastPath, format="mp3")
-        # slowSound.export(slowPath, format="mp3")
-
-        self.audioLoader.addMusic("testFast", fastPath, 0.5)
-        self.audioLoader.addMusic("testSlow", slowPath, 0.5)
-
+        # Default track to play
         self.audioLoader.playMusic("test")
-        # self.audioLoader.fadeOutSound(10000, 2)
-
-        # print(pygame.font.get_fonts())
 
     # Set the games caption (name)
     def setCaption(self):
