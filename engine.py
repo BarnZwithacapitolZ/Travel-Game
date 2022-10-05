@@ -468,6 +468,9 @@ class AudioLoader:
         self.addMusic(key + "Fast", fastAudioPath, self.music[key]['volume'])
         self.addMusic(key + "Slow", slowAudioPath, self.music[key]['volume'])
 
+        # Reset thread count
+        self.threads = []
+
     # Change the playback speed of a given sound and return a new sound.
     @staticmethod
     def changeAudioSpeed(audio, speed=1.0):
