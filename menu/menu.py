@@ -484,10 +484,13 @@ class MainMenu(Menu):
                 level.removeEvent(
                     mf.levelDownward, 'onMouseClick', change=vec(0, 1))
 
+                # If the level is not locked we can load and play it!
                 if not level.getLevelData()["locked"]["isLocked"]:
                     level.addEvent(
-                        mf.loadLevel, 'onMouseClick', level=level.getLevel())
+                        mf.loadLevel, 'onMouseClick',
+                        path=level.getLevelPath(), data=level.getLevelData())
 
+                # Otherwise we need to check if the level can be unlocked
                 else:
                     level.addEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
@@ -560,7 +563,8 @@ class MainMenu(Menu):
             else:
                 # Remove click event
                 level.removeEvent(
-                    mf.loadLevel, 'onMouseClick', level=level.getLevel())
+                    mf.loadLevel, 'onMouseClick',
+                    path=level.getLevelPath(), data=level.getLevelData())
                 level.removeEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
     def getArrangedMaps(self, maps, cols, arrangedMaps=None):
@@ -1212,9 +1216,13 @@ class GameMenu(Menu):
 
         retry.addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Get the name of the current level so we can restart it.
+        levelName = self.spriteRenderer.getLevel()
         retry.addEvent(
-            mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.spriteRenderer.getLevel()))
+            mf.loadLevel, 'onMouseClick',
+            path=self.game.mapLoader.getMap(levelName),
+            data=self.game.mapLoader.getMapData(levelName))
 
         self.add(background)
         self.add(failed)
@@ -1290,9 +1298,13 @@ class GameMenu(Menu):
 
         retry.addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Get the name of the current level so we can restart it.
+        levelName = self.spriteRenderer.getLevel()
         retry.addEvent(
-            mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.spriteRenderer.getLevel()))
+            mf.loadLevel, 'onMouseClick',
+            path=self.game.mapLoader.getMap(levelName),
+            data=self.game.mapLoader.getMapData(levelName))
 
         self.add(background)
         self.add(success)

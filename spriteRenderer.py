@@ -77,6 +77,9 @@ class SpriteRenderer():
 
     def setRendering(self, rendering, transition=False):
         self.rendering = rendering
+
+        # We load the game hud if we are rending the level,
+        # otherwise we close the hud
         self.hud.main(transition) if self.rendering else self.hud.close()
 
         if self.rendering:

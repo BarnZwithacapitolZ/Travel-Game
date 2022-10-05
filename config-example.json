@@ -450,17 +450,25 @@
             }
         },
         "music": {
-            "boot": {
-                "file": "boot.wav",
-                "volume": 0.2
-            },
-            "test": {
-                "file": "One_of_a_Hundred_Million_Streets.mp3",
+            "track1": {
+                "file": "track1.mp3",
                 "volume": 0.5
             },
-            "test2": {
-                "file": "Within a Deep Forest 2 - Stad.mp3",
+            "track2": {
+                "file": "track2.mp3",
                 "volume": 0.5
+            },
+            "track3": {
+                "file": "track3.mp3",
+                "volume": 0.3
+            },
+            "track4": {
+                "file": "track4.mp3",
+                "volume": 0.3
+            },
+            "track5": {
+                "file": "track5.mp3",
+                "volume": 0.3
             }
         }
     },

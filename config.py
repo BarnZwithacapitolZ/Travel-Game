@@ -156,8 +156,7 @@ DEFAULTLEVELCONFIG = {
     },
     "locked": {"isLocked": False, "unlock": 0},  # Amount to unlock
 
-    # Map can / cannot be deleted; maps that can't be
-    # deleted can't be opened in the editor
+    # Map can/cannot be deleted.
     "deletable": True,
 
     "saved": False,  # Has the map been saved before
@@ -165,12 +164,18 @@ DEFAULTLEVELCONFIG = {
     "height": 10,
     "difficulty": 1,  # Out of 4
 
-    # Total to complete the level
-    # - if this is not set then it is set to a random amount.
+    # Total to complete the level.
+    # - if this is not set then it is set to a random amount
+    # relative to difficulty.
     "total": 8,
 
+    # Current level score out of 3
     "score": 0,
     "completion": {"completed": False},
+
+    # The default level audio
+    "audio": "track1",
+
     "backgrounds": {
         "layer 1": DEFAULTBACKGROUND,  # Default color: CREAM :)
         "layer 2": DEFAULTBACKGROUND,

@@ -679,7 +679,7 @@ class NumberIncrementer(Label):
     def __render(self):
         super().makeSurface()
 
-        print(self.getFontSize())
+        # print(self.getFontSize())
 
         upArrowBox = Rectangle(
             self.menu, BLACK, (5, self.getFontSize()[1] / 2), (0, 0))
@@ -1246,7 +1246,7 @@ class Map(MenuComponent):
         # Level JSON data
         self.levelData = menu.game.mapLoader.getMapData(self.levelName)
 
-    def getLevel(self):
+    def getLevelPath(self):
         return self.level
 
     def getLevelInt(self):

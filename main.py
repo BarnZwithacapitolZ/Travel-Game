@@ -62,7 +62,7 @@ class Game:
         self.setCursor()
 
         # Default track to play
-        self.audioLoader.playMusic("test")
+        self.audioLoader.playMusic()
 
     # Set the games caption (name)
     def setCaption(self):
