@@ -21,8 +21,6 @@ def openLevelSelect(obj, menu, event):
         menu.close()
         menu.levelSelect(True)
 
-    # menu.slideTransitionY(
-    #   (0, config["graphics"]["displayHeight"]), 'first', callback = callback)
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
         callback=callback, direction='down')
@@ -96,6 +94,7 @@ def loadLevel(obj, menu, event, path, data):
     if hasattr(menu, 'transitioning') and menu.getTransitioning():
         return
 
+    # We need to global these so they they can be accessed in the callback
     global levelPath, levelData
     levelPath = path
     levelData = data
@@ -103,17 +102,18 @@ def loadLevel(obj, menu, event, path, data):
     def callback(obj, menu, animation):
         obj.y = 0
 
+        # First close the level selectors to show the scanlines (if enabled).
+        menu.levelSelectOpen = False
+        menu.customLevelSelectOpen = False
+
         if obj.rect.y != 0:
             return
-
-        # We need to create the level to get the level data
-        # TODO: a better option would be to pass this as a parameter because
-        # this is slowww!!!
 
         audio = None
         if "audio" in levelData:
             audio = levelData["audio"]
 
+        # Animate the loading screen whilst waiting for the modified audio.
         if not menu.game.audioLoader.checkModifiedAudio(audio):
             obj.timer += 100 * menu.game.dt
 
@@ -122,12 +122,11 @@ def loadLevel(obj, menu, event, path, data):
                 menu.updateLoadingScreen()
             return
 
+        # -- The loading has finished --
+
         obj.removeAnimation(animation)
         menu.game.paused = True
 
-        # Close the level selectors
-        menu.levelSelectOpen = False
-        menu.customLevelSelectOpen = False
         menu.game.spriteRenderer.createLevel(levelPath)
 
         # Load the hud and the start animation.
