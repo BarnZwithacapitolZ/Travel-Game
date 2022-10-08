@@ -26,10 +26,15 @@ class Menu:
 
         self.clicked = False
 
+        # TODO: Do we want these to be associative attributes???!?
         self.loadingImage = Image(
             self, "loading1", (100, 72), (
                 (config["graphics"]["displayWidth"] / 2) - 50,
                 (config["graphics"]["displayHeight"] / 2) - 36))
+        self.loadingText = Label(
+            self, "Loading", 30, WHITE, (
+                config["graphics"]["displayWidth"] / 2 - 58,
+                config["graphics"]["displayHeight"] / 2 + 45))
 
     def getOpen(self):
         return self.open
@@ -188,15 +193,16 @@ class Menu:
 
     # Create a loading screen for inbetween the slide transition animations
     def loadingScreen(self):
+        # Reset the loading image and text back to the defaults
         self.loadingImage.setImageName("loading1")
+        self.loadingText.setText("Loading")
+
+        # Update the components
         self.loadingImage.dirty = True
-        loadingText = Label(
-            self, "Loading", 30, WHITE, (
-                config["graphics"]["displayWidth"] / 2 - 58,
-                config["graphics"]["displayHeight"] / 2 + 45))
+        self.loadingText.dirty = True
 
         self.add(self.loadingImage)
-        self.add(loadingText)
+        self.add(self.loadingText)
 
     # Update the loading screen to show progress
     def updateLoadingScreen(self):
@@ -205,7 +211,15 @@ class Menu:
 
         else:
             self.loadingImage.setImageName("loading1")
+
+        if len(self.loadingText.getText()) >= 10:
+            self.loadingText.setText("Loading")
+        else:
+            self.loadingText.setText(self.loadingText.getText() + ".")
+
+        # Update the components.
         self.loadingImage.dirty = True
+        self.loadingText.dirty = True
 
     # Slide up all the components on the screen to display height
     def closeTransition(self, callback=gf.defaultCloseCallback):
