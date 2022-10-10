@@ -6,7 +6,7 @@ import hudFunctions as hf
 import menu as MENU
 
 
-def openLevelSelect(obj, menu, event, region):
+def openLevelSelect(obj, menu, event, region=None):
     def callback(obj, menu, animation):
         obj.y = 0
 
@@ -19,7 +19,12 @@ def openLevelSelect(obj, menu, event, region):
         menu.game.spriteRenderer.setRendering(False)
 
         menu.close()
-        menu.levelSelect(region, True)
+
+        if region is None:
+            menu.regionSelect(True)
+
+        else:
+            menu.levelSelect(region, True)
 
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
@@ -259,9 +264,11 @@ def showLevelSelect(obj, menu, event):
         # Always close any open inputs
         menu.game.textHandler.setActive(False)
 
-        levelSelectType = menu.game.mainMenu.getPreviousLevelSelect()
+        levelSelectType = menu.game.mainMenu.getCurrentLevelSelect()
         if levelSelectType == MENU.MainMenu.LevelSelect.LEVELSELECT:
-            menu.game.mainMenu.levelSelect(True)
+            # Need to get the current region here
+            menu.game.mainMenu.levelSelect(
+                menu.game.regionLoader.getCurrentRegion(), True)
         elif (levelSelectType
                 == MENU.MainMenu.LevelSelect.CUSTOMLEVELSELECT):
             menu.game.mainMenu.customLevelSelect(True)

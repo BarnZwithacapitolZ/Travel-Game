@@ -1432,13 +1432,17 @@ class Region(LevelSelect):
             self.width * self.menu.renderer.getScale(),
             self.height * self.menu.renderer.getScale())).convert()
 
-        self.image = Image(self.menu, 'trainStation', (self.width, self.height), (0, 0))
+        self.image = Image(self.menu, 'test', (self.width, self.height), (0, 0))
         self.image.makeSurface()
         self.image = self.image.image
 
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
+
+        # add labels
+        self.mapTitle = Label(self.menu, self.name, 30, GREEN, (30, 25))
+        self.mapTitle.drawPaused(self.image)
 
         self.drawLocked()
         self.drawScanlines()

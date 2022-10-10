@@ -562,6 +562,7 @@ class MapLoader:
 class RegionLoader:
     def __init__(self):
         self.regions = {}
+        self.currentRegion = None
 
         self.loadAllRegions()
 
@@ -573,6 +574,14 @@ class RegionLoader:
 
     def getRegionMaps(self, key):
         return self.regions[key]["maps"]
+
+    def getCurrentRegion(self):
+        return self.currentRegion
+
+    def setCurrentRegion(self, region):
+        if region not in self.regions:
+            return
+        self.currentRegion = region
 
     def loadAllRegions(self):
         for key, region in config["regions"].items():

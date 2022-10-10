@@ -339,6 +339,10 @@
         "leftClickWhite": {
             "image": "ui/LeftClickWhite.png",
             "alpha": true
+        },
+        "test": {
+            "image": "testthing.jpg",
+            "alpha": true          
         }
     },
     "audio": {

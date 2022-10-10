@@ -269,7 +269,7 @@ class MainMenu(Menu):
         self.currentCustomLevel = vec(
             config["player"]["currentCustomLevel"][0],
             config["player"]["currentCustomLevel"][1])
-        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
+        self.currentLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.regions = list(self.game.regionLoader.getRegions().keys())
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.splashScreenMaps = list(
@@ -309,8 +309,8 @@ class MainMenu(Menu):
             return self.currentCustomLevel
         return vec(0, 0)  # Default
 
-    def getPreviousLevelSelect(self):
-        return self.previousLevelSelect
+    def getCurrentLevelSelect(self):
+        return self.currentLevelSelect
 
     def getTransitioning(self):
         return self.transitioning
@@ -557,7 +557,7 @@ class MainMenu(Menu):
                         mf.levelUpward, 'onMouseClick', change=vec(0, -1))
 
                 # Only default level selection page needs completion checking.
-                if (self.previousLevelSelect
+                if (self.currentLevelSelect
                         != MainMenu.LevelSelect.LEVELSELECT):
                     continue
 
@@ -656,9 +656,10 @@ class MainMenu(Menu):
 
     def customLevelSelect(self, transition=False):
         self.open = True
-        self.levelSelectOpen = False
         self.customLevelSelectOpen = True
-        self.previousLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
+        self.levelSelectOpen = False
+        self.regionSelectOpen = False
+        self.currentLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
         self.backgroundColor = CREAM  # Change this?
         self.setLevelSize(self.customLevelSize)
         cols = 4
@@ -695,8 +696,11 @@ class MainMenu(Menu):
 
         mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
         mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
-        levelSelect.addEvent(mf.openLevelSelect, 'onMouseClick')
-        levelSelectText.addEvent(mf.openLevelSelect, 'onMouseClick')
+
+        region = self.game.regionLoader.getCurrentRegion()
+        levelSelect.addEvent(mf.openLevelSelect, 'onMouseClick', region=region)
+        levelSelectText.addEvent(
+            mf.openLevelSelect, 'onMouseClick', region=region)
 
         self.add(background)
         self.add(mainMenu)
@@ -712,9 +716,16 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = True
         self.customLevelSelectOpen = False
-        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
+        self.regionSelectOpen = False
+        self.currentLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.backgroundColor = BLACK
         self.setLevelSize(self.builtInLevelSize)
+
+        # Reset back to the start of the level select for the specific region.
+        self.currentLevel = vec(0, 0)
+
+        # Set current region so we can return to this specific level select.
+        self.game.regionLoader.setCurrentRegion(region)
 
         maps = self.game.regionLoader.getRegionMaps(region)
 
@@ -819,8 +830,11 @@ class MainMenu(Menu):
         self.regionSelectOpen = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
-        self.previousLevelSelect = MainMenu.LevelSelect.REGIONSELECT
+        self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
         self.backgroundColor = BLACK
+
+        # TODO: Need to set the level size here or smthn
+
         cols = len(self.regions)
         self.currentMaps = self.getArrangedMaps(self.regions, cols)
 
