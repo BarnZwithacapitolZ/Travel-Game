@@ -27,16 +27,39 @@ def openLevelSelect(obj, menu, event):
     menu.loadingScreen()
 
 
+def openRegionSelect(obj, menu, event):
+    def callback(obj, menu, animation):
+        obj.y = 0
+
+        if obj.rect.y != 0:
+            return
+
+        obj.removeAnimation(animation)
+
+        menu.game.paused = True
+        menu.game.spriteRenderer.setRendering(False)
+
+        menu.close()
+        menu.regionSelect(True)
+
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
+    menu.loadingScreen()
+
+
 # Navigate back to the main page of the main menu
 # (from within the main menu itself)
 def openMainMenu(obj, menu, event):
     def callback(obj, menu, animation):
         obj.y = 0
 
-        if obj.rect.y == 0:
-            obj.removeAnimation(animation)
-            menu.close()
-            menu.main(True)
+        if obj.rect.y != 0:
+            return
+
+        obj.removeAnimation(animation)
+        menu.close()
+        menu.main(True)
 
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
@@ -326,7 +349,6 @@ def setMusicVolume(slider, amount):
 
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
-    print("this is called right?")
     menu.close()
     menu.main(False)
 

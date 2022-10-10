@@ -152,7 +152,9 @@ class Renderer:
             else:
                 self.gameDisplay.blit(surface[0], surface[1])
 
-        self.gameDisplay.blit(self.fontImage, (950, 10))
+        # Only show FPS in debug mode.
+        if config["game"]["debug"]:
+            self.gameDisplay.blit(self.fontImage, (950, 10))
 
         if not self.game.mainMenu.getLevelSelectOpen():
             if config["graphics"]["scanlines"]["enabled"]:
@@ -555,3 +557,20 @@ class MapLoader:
     def saveMap(self, mapName, mapData):
         with open(self.getMap(mapName), "w") as f:
             json.dump(mapData, f)
+
+
+class RegionLoader:
+    def __init__(self):
+        self.regions = {}
+
+        self.loadAllRegions()
+
+    def getRegions(self):
+        return self.regions
+
+    def getRegion(self, key):
+        return self.regions[key]
+
+    def loadAllRegions(self):
+        for key, region in config["regions"].items():
+            self.regions[key] = region

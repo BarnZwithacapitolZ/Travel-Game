@@ -9,7 +9,7 @@ sys.path.insert(0, 'sprites')
 from config import config
 from utils import vec
 from clickManager import ClickManager
-from engine import Renderer, ImageLoader, MapLoader, AudioLoader
+from engine import RegionLoader, Renderer, ImageLoader, MapLoader, AudioLoader
 from spriteRenderer import SpriteRenderer
 from menu import MainMenu, OptionMenu
 from menuComponents import TextHandler
@@ -45,6 +45,7 @@ class Game:
         # Loaders
         self.imageLoader = ImageLoader(self)
         self.mapLoader = MapLoader()
+        self.regionLoader = RegionLoader()
         self.audioLoader = AudioLoader(self)
 
         # Map editor

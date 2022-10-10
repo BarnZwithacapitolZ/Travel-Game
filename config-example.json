@@ -2,7 +2,8 @@
     "game": {
         "gameTitle": "Transport the Public",
         "version": 0.26,
-        "icon": "icon"
+        "icon": "icon",
+        "debug": true
     },
     "graphics": {
         "minDisplayWidth": 768,
@@ -41,7 +42,7 @@
     "player": {
         "tutorial": false,
         "keys": 0,
-        "currentLevel": [
+        "currentRegion": [
             0,
             0
         ],
@@ -534,6 +535,28 @@
             "size2": "map_size2.json",
             "size3": "map_size3.json",
             "size4": "map_size4.json"
+        }
+    },
+    "regions": {
+        "United Kingdon": {
+            "image": "",
+            "locked": {
+                "isLocked": false,
+                "unlock": 0
+            },
+            "maps": [
+                "London", "Test"
+            ]
+        },
+        "France": {
+            "image": "",
+            "locked": {
+                "isLocked": true,
+                "unlock": 10
+            },
+            "maps": [
+                "Another test", "move test"
+            ]
         }
     }
 }
