@@ -6,7 +6,7 @@ import hudFunctions as hf
 import menu as MENU
 
 
-def openLevelSelect(obj, menu, event):
+def openLevelSelect(obj, menu, event, region):
     def callback(obj, menu, animation):
         obj.y = 0
 
@@ -19,7 +19,7 @@ def openLevelSelect(obj, menu, event):
         menu.game.spriteRenderer.setRendering(False)
 
         menu.close()
-        menu.levelSelect(True)
+        menu.levelSelect(region, True)
 
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
@@ -113,7 +113,7 @@ def closeOptionsMenu(obj, menu, event):
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, path, data):
-    # Wait until the animation has finished before loading the level
+    # Wait until the animation has finished before loading the level.
     if hasattr(menu, 'transitioning') and menu.getTransitioning():
         return
 

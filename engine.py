@@ -571,6 +571,9 @@ class RegionLoader:
     def getRegion(self, key):
         return self.regions[key]
 
+    def getRegionMaps(self, key):
+        return self.regions[key]["maps"]
+
     def loadAllRegions(self):
         for key, region in config["regions"].items():
             self.regions[key] = region

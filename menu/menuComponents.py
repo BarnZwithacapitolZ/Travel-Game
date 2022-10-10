@@ -1244,6 +1244,9 @@ class LevelSelect(MenuComponent, metaclass=abc.ABCMeta):
         self.levelData = {}  # Default level data
         self.scanlinesLockedOpacity = 65
 
+    def getName(self):
+        return self.name
+
     def getLevelData(self):
         return self.levelData
 

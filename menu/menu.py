@@ -528,7 +528,9 @@ class MainMenu(Menu):
 
                     elif isinstance(level, Region):
                         # We have an instance of a region!
-                        pass
+                        level.addEvent(
+                            mf.openLevelSelect, 'onMouseClick',
+                            region=level.getName())
 
                 # Otherwise we need to check if the level can be unlocked
                 else:
@@ -581,7 +583,9 @@ class MainMenu(Menu):
 
                 else:
                     # Remove region stuff here!
-                    pass
+                    level.removeEvent(
+                        mf.openLevelSelect, 'onMouseClick',
+                        region=level.getName())
 
                 level.removeEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
@@ -704,15 +708,18 @@ class MainMenu(Menu):
             self.slideTransitionY(
                 (0, 0), 'second', callback=gf.defaultSlideCallback)
 
-    def levelSelect(self, transition=False):
+    def levelSelect(self, region, transition=False):
         self.open = True
         self.levelSelectOpen = True
         self.customLevelSelectOpen = False
         self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.backgroundColor = BLACK
         self.setLevelSize(self.builtInLevelSize)
-        cols = len(self.builtInMaps)
-        self.currentMaps = self.getArrangedMaps(self.builtInMaps, cols)
+
+        maps = self.game.regionLoader.getRegionMaps(region)
+
+        cols = len(maps)
+        self.currentMaps = self.getArrangedMaps(maps, cols)
 
         mainMenu = Image(
             self, "button", (25, 25), (
@@ -800,7 +807,7 @@ class MainMenu(Menu):
         self.add(levelBack)
 
         # Add the maps after eveything else in the menu has been loaded
-        self.setLevelSelectMaps(self.builtInMaps, cols, self.currentLevel)
+        self.setLevelSelectMaps(maps, cols, self.currentLevel)
         self.setLevelsClickable(self.currentLevel)
 
         if transition:

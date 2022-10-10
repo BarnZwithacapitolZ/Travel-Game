@@ -551,7 +551,7 @@
         "France": {
             "image": "",
             "locked": {
-                "isLocked": true,
+                "isLocked": false,
                 "unlock": 10
             },
             "maps": [
