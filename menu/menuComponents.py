@@ -255,8 +255,11 @@ class Label(MenuComponent):
     # get the total font size of all msg components in the finalMessage
     def getTotalFontSize(self, font, finalMessage):
         size = vec(0, 0)
+        maxWidth = 0
         for msg in finalMessage:
-            size.x += font.size(msg)[0]
+            if font.size(msg)[0] > maxWidth:
+                size.x = font.size(msg)[0]
+                maxWidth = size.x
             size.y += font.size(msg)[1]
         return size
 
@@ -1130,12 +1133,13 @@ class Timer(Arc):
 
 
 class MessageBox(Rectangle):
-    def __init__(self, menu, message, margin=tuple()):
+    def __init__(self, menu, message, charLimit, margin=tuple()):
         super().__init__(menu, GREEN, (0, 0), (0, 0), 0, [10, 10, 10, 10])
-        self.messages = []
+        self.charLimit = charLimit
         self.marginX = margin[0]
         self.marginY = margin[1]
-        self.message = message
+        self.defaultMessage = message
+        self.message = ""
         self.offset = vec(10, 10)
 
         self.addLabels(message)
@@ -1143,71 +1147,46 @@ class MessageBox(Rectangle):
     def setPos(self, pos=tuple()):
         self.x = pos[0]
         self.y = pos[1]
-        for message in self.messages:
-            width = message.getFontSize()[0]
-            message.setPos((
-                (pos[0] + self.width) - (width + self.offset.x),
-                (pos[1] + self.offset.y) + message.offset.y))
+        width = self.message.getFontSize()[0]
+        self.message.setPos((
+            (pos[0] + self.width) - (width + self.offset.x),
+            (pos[1] + self.offset.y) + self.message.offset.y))
 
     def setRectPos(self):
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
-        for message in self.messages:
-            if hasattr(message, 'rect'):
-                message.rect.x = message.x * self.menu.renderer.getScale()
-                message.rect.y = message.y * self.menu.renderer.getScale()
+        if hasattr(self.message, 'rect'):
+            self.message.rect.x = self.message.x * self.menu.renderer.getScale()
+            self.message.rect.y = self.message.y * self.menu.renderer.getScale()
 
     def addMessages(self):
-        for message in self.messages:
-            self.menu.add(message)
+        self.menu.add(self.message)
 
     def addLabels(self, message):
-        maxCharLimit = 25
-        curWord = 0
-        finalMessage = ['']
+        lineLength = 0
+        finalMessage = ""
+
         for word in message.split():
-            if len(finalMessage[curWord]) + len(word) < maxCharLimit:
-                finalMessage[curWord] += word + ' '
-            else:
-                finalMessage.append(word + ' ')
-                curWord += 1
+            if lineLength + (len(word) + 1) >= self.charLimit:
+                lineLength = 0
+                finalMessage += ("\n" + word + ' ')
+                continue
+            lineLength += len(word) + 1
+            finalMessage += word + ' '
 
-        del maxCharLimit, curWord
+        self.message = Label(self.menu, finalMessage, 25, WHITE, (0, 0))
+        width, height = self.message.getFontSize()
 
-        biggestWidth, totalHeight = 0, 0
-        for msg in finalMessage:
-            # first we set the x and y to 0 since we don't know the width yet
-            m = Label(self.menu, msg, 25, WHITE, (0, 0))
-            width, height = m.getFontSize()
-            m.setOffset(vec(0, totalHeight))
-            totalHeight += height
-
-            if width > biggestWidth:
-                biggestWidth = width
-
-            self.messages.append(m)
-
-        self.setSize((
-            biggestWidth + (self.offset.x * 2),
-            totalHeight + (self.offset.y * 2)))
-
-        # pos:
-        #   x = displaywidth - (width of the biggest message + width of
-        #   the margin + width of the offset * 2 (for both sides)
-        #   y = 0 - the total height of the message box + height of
-        #    the offset * 2 (for both sides)
-
+        self.setSize((width + (self.offset.x * 2), height + (self.offset.y * 2)))
         self.setPos((
             config["graphics"]["displayWidth"] - (
-                biggestWidth + self.marginX + (self.offset.x * 2)),
-            0 - (totalHeight + (self.offset.y * 2))))
+                width + self.marginX + (self.offset.x * 2)),
+            0 - (height + (self.offset.y * 2))))
 
     def remove(self):
+        self.menu.components.remove(self.message)
         self.menu.components.remove(self)
-        self.menu.removeMessage(self.message)
-        for message in self.messages:
-            self.menu.components.remove(message)
-
+        self.menu.removeMessage(self.defaultMessage)
         del self
 
     @overrides(Rectangle)
@@ -1229,9 +1208,8 @@ class MessageBox(Rectangle):
             self.addAnimation(
                 transitionMessageRight, 'onLoad', speed=18,
                 x=config["graphics"]["displayWidth"])
+            # self.menu.components.remove(self.message)
             # self.menu.components.remove(self)
-            # for message in self.messages:
-            #     self.menu.components.remove(message)
 
 
 class Map(MenuComponent):

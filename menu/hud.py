@@ -1408,7 +1408,7 @@ class MessageHud(Menu):
         if message in self.messages:
             return
 
-        messageBox = MessageBox(self, message, (25, 25))
+        messageBox = MessageBox(self, message, 25, (25, 25))
         messageBox.addAnimation(
             tf.transitionMessageDown, 'onLoad', speed=4,
             transitionDirection="down", y=messageBox.marginY)
