@@ -207,9 +207,13 @@ class GameHud(GameHudLayout):
             hf.hoverOverHudButton, 'onMouseOver', image=restartSelectedImage)
         self.restart.addEvent(
             hf.hoverOutHudButton, 'onMouseOut', image=restartImage)
+
+        # Get the name of the current level so we can restart it.
+        levelName = self.spriteRenderer.getLevel()
         self.restart.addEvent(
-            mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.spriteRenderer.getLevel()))
+            mf.loadLevel, 'onMouseClick',
+            path=self.game.mapLoader.getMap(levelName),
+            data=self.game.mapLoader.getMapData(levelName))
 
         self.pause.addEvent(
             hf.hoverOverHudButton, 'onMouseOver', image=pauseSelectedImage)

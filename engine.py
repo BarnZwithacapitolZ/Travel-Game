@@ -1,11 +1,13 @@
 import pygame
 import os
 import json
+import threading
 import pygame._sdl2
 from config import (
-    config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MAPSFOLDER, RED, BLACK,
-    TRUEBLACK, SCANLINES)
+    config, ASSETSFOLDER, AUDIOFOLDER, MUSICFOLDER, MODIFIEDMUSICFOLDER,
+    MAPSFOLDER, RED, BLACK, TRUEBLACK, SCANLINES)
 from utils import vec
+from pydub import AudioSegment
 
 
 class Renderer:
@@ -252,6 +254,16 @@ class AudioLoader:
         self.speedUp = 1.1
         self.slowDown = 0.9
 
+        # The length to fade in/out an audio track
+        self.fadeLength = 300
+
+        # Keep track of which threads are alive
+        # TODO: threading class would be better here!!!!!!
+        self.threads = []
+
+        # Default audio
+        self.defaultTrack = "track1"
+
         # Load all the music and sounds and set their volumes.
         self.setChannels()
         self.loadAllSounds()
@@ -266,6 +278,11 @@ class AudioLoader:
 
     def getChannelBusy(self, chan=0):
         return self.channels[chan].get_busy()
+
+    def getKey(self, key):
+        if key is None:
+            return self.defaultTrack
+        return key
 
     def addMusic(self, key, path, volume=1):
         self.music[key] = {
@@ -285,6 +302,8 @@ class AudioLoader:
     def fadeOutSound(self, duration, chan=0):
         self.channels[chan].fadeout(duration)
 
+    # Implement a custom loop music method to ensure we maintain sped up or
+    # slowed down music after loop.
     def loopMusic(self):
         if pygame.mixer.music.get_busy():
             return
@@ -298,15 +317,27 @@ class AudioLoader:
         else:
             self.playMusic(self.currentTrack)
 
-    def playMusic(self, key, loop=0, start=0.0):
-        if key not in self.music:
+    # Disable fade option allows us to disable fading between tracks
+    def playMusic(self, key=None, loop=0, start=0.0, disableFade=False):
+        key = self.getKey(key)
+
+        if (key not in self.music
+                or (key == self.currentTrack and not disableFade)):
             return
+
+        # If the music channel is already busy we want to fade out the
+        # existing track and play the new one
+        fadeIn = False
+        if pygame.mixer.music.get_busy() and not disableFade:
+            pygame.mixer.music.fadeout(self.fadeLength)
+            fadeIn = True
 
         self.currentTrack = key
         pygame.mixer.music.load(self.music[key]["path"])
         self.musicBuffer = 1.0 / self.music[key]["volume"]
         self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
-        pygame.mixer.music.play(loop, start)
+        pygame.mixer.music.play(
+            loop, start, self.fadeLength * 2 if fadeIn else 0)
 
     def setOffsetByPos(self, speedUp=False, slowDown=False):
         pos = pygame.mixer.music.get_pos()
@@ -326,7 +357,9 @@ class AudioLoader:
             return
 
         self.setOffsetByPos()
-        self.playMusic(fastTrack, start=self.musicOffset / self.speedUp)
+        self.playMusic(
+            fastTrack, start=self.musicOffset / self.speedUp,
+            disableFade=True)
         self.currentTrack = currentTrack  # Reset current track to original
 
     def slowDownMusic(self):
@@ -337,25 +370,31 @@ class AudioLoader:
             return
 
         self.setOffsetByPos()
-        self.playMusic(slowTrack, start=self.musicOffset * self.speedUp)
+        self.playMusic(
+            slowTrack, start=self.musicOffset * self.speedUp,
+            disableFade=True)
         self.currentTrack = currentTrack  # Reset current track to original
 
     def restoreMusic(self, speedUp=False, slowDown=False):
         self.setOffsetByPos(speedUp, slowDown)
-        self.playMusic(self.currentTrack, start=self.musicOffset)
+        self.playMusic(
+            self.currentTrack, start=self.musicOffset,
+            disableFade=True)
 
     def setChannels(self):
-        # Channel 0 reserved for hud sounds
-        # Channel 1 reserved for game sounds
-        # Channel 2 reserved for extra game sounds
+        # Channel 0 reserved for hud sounds.
+        # Channel 1 reserved for game sounds.
+        # Channel 2 reserved for extra game sounds.
         self.channels = [
             pygame.mixer.Channel(i) for i in range(self.numChannels)]
 
+    # Set the master volume for both music and sounds
     def setMasterVolume(self, volume=1):
         self.masterBuffer = 1.0 / volume if volume > 0 else None
         self.setSoundVolume(config["audio"]["volume"]["sounds"]["current"])
         self.setMusicVolume(config["audio"]["volume"]["music"]["current"])
 
+    # Set the sound volume relative to the master volume.
     def setSoundVolume(self, volume=1):
         for channel in self.channels:
             amount = (
@@ -363,25 +402,84 @@ class AudioLoader:
                 else 0.0)
             channel.set_volume(amount)
 
+    # Set the music volume relative to the master volume.
     def setMusicVolume(self, volume=1):
         amount = (
             (volume / self.musicBuffer) / self.masterBuffer
             if self.masterBuffer is not None else 0.0)
         pygame.mixer.music.set_volume(amount)
 
+    # Get all the sounds from the config file.
     def loadAllSounds(self):
         for key, audio in config["audio"]["sounds"].items():
             a = pygame.mixer.Sound(os.path.join(AUDIOFOLDER, audio["file"]))
             a.set_volume(audio["volume"])
             self.sounds[key] = a
 
+    # Get all the music from the config file.
     def loadAllMusic(self):
         for key, audio in config["audio"]["music"].items():
             path = os.path.join(MUSICFOLDER, audio["file"])
-            self.music[key] = {
-                "path": path,
-                "volume": audio["volume"]
-            }
+            self.addMusic(key, path, audio["volume"])
+
+            # When we load a audio file we want to check that a
+            # modified version of that file already exists.
+            if not os.path.exists(MODIFIEDMUSICFOLDER):
+                continue
+
+            fastAudioPath = os.path.join(MODIFIEDMUSICFOLDER, key + "Fast.mp3")
+            slowAudioPath = os.path.join(MODIFIEDMUSICFOLDER, key + "Slow.mp3")
+
+            if os.path.exists(fastAudioPath) and os.path.exists(slowAudioPath):
+                self.addMusic(key + "Fast", fastAudioPath, audio["volume"])
+                self.addMusic(key + "Slow", slowAudioPath, audio["volume"])
+
+    # Check if modified versions of the sound exist
+    def checkModifiedAudio(self, key=None):
+        key = self.getKey(key)
+
+        if key + "Fast" not in self.music or key + "Slow" not in self.music:
+            if len(self.threads) <= 0:
+                # Thread must be a daemon so that it dies when the
+                # program is closed.
+                thread = threading.Thread(
+                    target=self.createModifiedAudio,
+                    args=(key,), daemon=True)
+                thread.start()
+                self.threads.append(thread)
+            return False
+        return True
+
+    def createModifiedAudio(self, key):
+        audio = AudioSegment.from_file(self.getMusic(key), 'mp3')
+        fastAudio = AudioLoader.changeAudioSpeed(audio, self.speedUp)
+        slowAudio = AudioLoader.changeAudioSpeed(audio, self.slowDown)
+
+        if not os.path.exists(MODIFIEDMUSICFOLDER):
+            os.makedirs(MODIFIEDMUSICFOLDER)
+
+        fastAudioPath = os.path.join(MODIFIEDMUSICFOLDER, key + "Fast.mp3")
+        slowAudioPath = os.path.join(MODIFIEDMUSICFOLDER, key + "Slow.mp3")
+
+        fastAudio.export(fastAudioPath, format='mp3')
+        slowAudio.export(slowAudioPath, format='mp3')
+
+        # Add the modified tracks to the same volume as the original.
+        self.addMusic(key + "Fast", fastAudioPath, self.music[key]['volume'])
+        self.addMusic(key + "Slow", slowAudioPath, self.music[key]['volume'])
+
+        # Reset thread count
+        self.threads = []
+
+    # Change the playback speed of a given sound and return a new sound.
+    @staticmethod
+    def changeAudioSpeed(audio, speed=1.0):
+        # How many samples to play per second.
+        alteredSound = audio._spawn(audio.raw_data, overrides={
+            "frame_rate": int(audio.frame_rate * speed)
+        })
+        # Convert back from altered frame rate to standard frame rate.
+        return alteredSound.set_frame_rate(audio.frame_rate)
 
 
 class MapLoader:

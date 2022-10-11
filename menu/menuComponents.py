@@ -682,7 +682,7 @@ class NumberIncrementer(Label):
     def __render(self):
         super().makeSurface()
 
-        print(self.getFontSize())
+        # print(self.getFontSize())
 
         upArrowBox = Rectangle(
             self.menu, BLACK, (5, self.getFontSize()[1] / 2), (0, 0))
@@ -1216,11 +1216,15 @@ class Map(MenuComponent):
     def __init__(self, menu, level, levelInt, size=tuple(), pos=tuple()):
         super().__init__(menu, TRUEBLACK, size, pos)
         self.levelName = level
-        self.level = menu.game.mapLoader.getMap(self.levelName)
         self.levelInt = levelInt
+
+        # Path to level
+        self.level = menu.game.mapLoader.getMap(self.levelName)
+
+        # Level JSON data
         self.levelData = menu.game.mapLoader.getMapData(self.levelName)
 
-    def getLevel(self):
+    def getLevelPath(self):
         return self.level
 
     def getLevelInt(self):
@@ -1342,11 +1346,16 @@ class Map(MenuComponent):
         self.finalImage = pygame.Surface((
             self.width * self.menu.renderer.getScale(),
             self.height * self.menu.renderer.getScale())).convert()
+
+        # We get the level image of the map
         self.image = self.menu.game.spriteRenderer.createLevelSurface(
             self.level).convert_alpha()
+
+        # We scale the level to the size of the map object
         self.image = pygame.transform.smoothscale(self.image, (int(
             self.width * self.menu.renderer.getScale()),
-            int(self.height * self.menu.renderer.getScale()))).convert_alpha()
+            int(self.height * self.menu.renderer.getScale()))).convert_alpha()\
+
         self.rect = self.image.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()

@@ -26,10 +26,15 @@ class Menu:
 
         self.clicked = False
 
+        # TODO: Do we want these to be associative attributes???!?
         self.loadingImage = Image(
             self, "loading1", (100, 72), (
                 (config["graphics"]["displayWidth"] / 2) - 50,
                 (config["graphics"]["displayHeight"] / 2) - 36))
+        self.loadingText = Label(
+            self, "Loading", 30, WHITE, (
+                config["graphics"]["displayWidth"] / 2 - 58,
+                config["graphics"]["displayHeight"] / 2 + 45))
 
     def getOpen(self):
         return self.open
@@ -188,15 +193,16 @@ class Menu:
 
     # Create a loading screen for inbetween the slide transition animations
     def loadingScreen(self):
+        # Reset the loading image and text back to the defaults
         self.loadingImage.setImageName("loading1")
+        self.loadingText.setText("Loading")
+
+        # Update the components
         self.loadingImage.dirty = True
-        loadingText = Label(
-            self, "Loading", 30, WHITE, (
-                config["graphics"]["displayWidth"] / 2 - 58,
-                config["graphics"]["displayHeight"] / 2 + 45))
+        self.loadingText.dirty = True
 
         self.add(self.loadingImage)
-        self.add(loadingText)
+        self.add(self.loadingText)
 
     # Update the loading screen to show progress
     def updateLoadingScreen(self):
@@ -205,7 +211,15 @@ class Menu:
 
         else:
             self.loadingImage.setImageName("loading1")
+
+        if len(self.loadingText.getText()) >= 10:
+            self.loadingText.setText("Loading")
+        else:
+            self.loadingText.setText(self.loadingText.getText() + ".")
+
+        # Update the components.
         self.loadingImage.dirty = True
+        self.loadingText.dirty = True
 
     # Slide up all the components on the screen to display height
     def closeTransition(self, callback=gf.defaultCloseCallback):
@@ -320,12 +334,10 @@ class MainMenu(Menu):
             cx = (currentIndex % 4)
             self.currentCustomLevel = vec(cx, cy)
 
-    def main(self, transition=False):
+    def main(self, transition=False, reload=True):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
-
-        # x = (config["graphics"]["displayWidth"] / 2) - 180
         x = 100
 
         title = Label(
@@ -355,13 +367,16 @@ class MainMenu(Menu):
                 x=x, callback=gf.defaultSlideXCallback)
             self.add(label)
 
-        # We set debug to True so we use the correct spacing.
-        self.game.spriteRenderer.createLevel(self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
-        self.game.spriteRenderer.setRendering(True)
-        self.game.spriteRenderer.setFixedScale(1.4)
-        self.game.spriteRenderer.calculateOffset()
-        self.game.spriteRenderer.resize()
-        self.game.paused = False
+        # We don't always want to reload the map,
+        # such as when we are accessing the option menu through the main menu.
+        if reload:
+            self.game.spriteRenderer.createLevel(
+                self.game.mapLoader.getMap(self.splashScreenMaps[-1]), True)
+            self.game.spriteRenderer.setRendering(True)
+            self.game.spriteRenderer.setFixedScale(1.4)
+            self.game.spriteRenderer.calculateOffset()
+            self.game.spriteRenderer.resize()
+            self.game.paused = False
 
         if transition:
             self.slideTransitionY(
@@ -483,10 +498,13 @@ class MainMenu(Menu):
                 level.removeEvent(
                     mf.levelDownward, 'onMouseClick', change=vec(0, 1))
 
+                # If the level is not locked we can load and play it!
                 if not level.getLevelData()["locked"]["isLocked"]:
                     level.addEvent(
-                        mf.loadLevel, 'onMouseClick', level=level.getLevel())
+                        mf.loadLevel, 'onMouseClick',
+                        path=level.getLevelPath(), data=level.getLevelData())
 
+                # Otherwise we need to check if the level can be unlocked
                 else:
                     level.addEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
@@ -559,7 +577,8 @@ class MainMenu(Menu):
             else:
                 # Remove click event
                 level.removeEvent(
-                    mf.loadLevel, 'onMouseClick', level=level.getLevel())
+                    mf.loadLevel, 'onMouseClick',
+                    path=level.getLevelPath(), data=level.getLevelData())
                 level.removeEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
     def getArrangedMaps(self, maps, cols, arrangedMaps=None):
@@ -787,7 +806,7 @@ class OptionMenu(Menu):
         self.mapEditor = mapEditor
 
         # If the option menu is accessed through the main menu
-        self.optionsOpen = False
+        self.optionsOpen = False  # True = accessed through the main menu
         self.x = 100
 
     def setOptionsOpen(self, optionsOpen):
@@ -884,6 +903,7 @@ class OptionMenu(Menu):
         if not self.optionsOpen:
             back.addEvent(mf.showMain, 'onMouseClick')
 
+        # Accessed through main menu
         else:
             back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
 
@@ -1210,9 +1230,13 @@ class GameMenu(Menu):
 
         retry.addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Get the name of the current level so we can restart it.
+        levelName = self.spriteRenderer.getLevel()
         retry.addEvent(
-            mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.spriteRenderer.getLevel()))
+            mf.loadLevel, 'onMouseClick',
+            path=self.game.mapLoader.getMap(levelName),
+            data=self.game.mapLoader.getMapData(levelName))
 
         self.add(background)
         self.add(failed)
@@ -1288,9 +1312,13 @@ class GameMenu(Menu):
 
         retry.addEvent(gf.hoverColor, 'onMouseOver', color=BLACK)
         retry.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
+
+        # Get the name of the current level so we can restart it.
+        levelName = self.spriteRenderer.getLevel()
         retry.addEvent(
-            mf.loadLevel, 'onMouseClick', level=self.game.mapLoader.getMap(
-                self.spriteRenderer.getLevel()))
+            mf.loadLevel, 'onMouseClick',
+            path=self.game.mapLoader.getMap(levelName),
+            data=self.game.mapLoader.getMapData(levelName))
 
         self.add(background)
         self.add(success)

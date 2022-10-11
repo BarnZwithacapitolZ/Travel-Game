@@ -72,16 +72,19 @@ class Layer:
     def setLines(self, lines):
         self.lines = lines
 
-    def setLayerLines(self, layer1, layer2, layer3, removeDuplicates=False):
+    def setLayerLines(self, layer1, layer2, layer3, addData=False):
         lines = layer1.getLines() + layer2.getLines() + layer3.getLines()
-        nodes = None
+        nodes, transports = None, None
 
-        if removeDuplicates:
+        # Add node and transport paused images to the layer
+        if addData:
             nodes = self.spriteRenderer.getAllNodes(layer1, layer2, layer3)
             self.spriteRenderer.removeDuplicates(nodes, nodes, False)
+            transports = self.spriteRenderer.getAllTransports(
+                layer1, layer2, layer3)
 
         self.lines = lines
-        self.render(nodes)
+        self.render(nodes, transports)
 
     def setLayerTempLines(self, layer1, layer2, layer3):
         lines = (
@@ -227,13 +230,13 @@ class Layer:
             elif angle > 40 and angle < 140:
                 angleOffset = vec(10, offset)
 
-        # 90, 180
         else:
             angleOffset = vec(offset, offset)
 
         posx = ((fromNode.pos - fromNode.offset) + angleOffset + offxy) * scale
         posy = ((toNode.pos - toNode.offset) + angleOffset + offxy) * scale
 
+        # Add the line data to the lines data structure for blitting later.
         lines.append({
             "posx": posx,
             "posy": posy,
@@ -261,24 +264,30 @@ class Layer:
         else:
             self.backgroundColor = default
 
-    def render(self, nodes=None):
+    def render(self, nodes=None, transports=None):
         self.lineSurface.fill(self.backgroundColor)
 
+        # Add background components to the layer
         if len(self.components) > 0:
             for component in self.components:
                 component.draw(self.lineSurface)
 
+        # Draw all the lines to the layer with the line data provided
         if len(self.lines + self.tempLines) > 0:
             for line in self.lines + self.tempLines:
                 pygame.draw.line(
                     self.lineSurface, line["color"], line["posx"],
                     line["posy"], int(line["thickness"]))
 
+        # Draw the nodes to the layer if any nodes are provided
         if nodes is not None:
             for node in nodes:
-                # call the render function so there is an image to blit
-                node.draw()
-                self.lineSurface.blit(node.image, (node.rect))
+                node.drawPaused(self.lineSurface)
+
+        # Draw the transports to the layer if any transports are provided
+        if transports is not None:
+            for transport in transports:
+                transport.drawPaused(self.lineSurface)
 
     def draw(self):
         if len(self.lines + self.tempLines) > 0:
