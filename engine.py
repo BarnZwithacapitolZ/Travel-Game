@@ -453,7 +453,7 @@ class AudioLoader:
         return True
 
     def createModifiedAudio(self, key):
-        audio = AudioSegment.from_file(self.getMusic(key), 'mp3')
+        audio = AudioSegment.from_file(self.getMusic(key), format='mp3')
         fastAudio = AudioLoader.changeAudioSpeed(audio, self.speedUp)
         slowAudio = AudioLoader.changeAudioSpeed(audio, self.slowDown)
 
