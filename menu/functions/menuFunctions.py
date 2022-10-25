@@ -1,12 +1,14 @@
 
+from numpy import isin
 import pygame
 from config import config, dump
 from utils import vec
 import hudFunctions as hf
 import menu as MENU
+from menuComponents import Map, Region
 
 
-def openLevelSelect(obj, menu, event):
+def openLevelSelect(obj, menu, event, region=None):
     def callback(obj, menu, animation):
         obj.y = 0
 
@@ -19,7 +21,33 @@ def openLevelSelect(obj, menu, event):
         menu.game.spriteRenderer.setRendering(False)
 
         menu.close()
-        menu.levelSelect(True)
+
+        if region is None:
+            menu.regionSelect(True)
+
+        else:
+            menu.levelSelect(region, True)
+
+    menu.slideTransitionY(
+        (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
+        callback=callback, direction='down')
+    menu.loadingScreen()
+
+
+def openRegionSelect(obj, menu, event):
+    def callback(obj, menu, animation):
+        obj.y = 0
+
+        if obj.rect.y != 0:
+            return
+
+        obj.removeAnimation(animation)
+
+        menu.game.paused = True
+        menu.game.spriteRenderer.setRendering(False)
+
+        menu.close()
+        menu.regionSelect(True)
 
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
@@ -33,10 +61,12 @@ def openMainMenu(obj, menu, event):
     def callback(obj, menu, animation):
         obj.y = 0
 
-        if obj.rect.y == 0:
-            obj.removeAnimation(animation)
-            menu.close()
-            menu.main(True)
+        if obj.rect.y != 0:
+            return
+
+        obj.removeAnimation(animation)
+        menu.close()
+        menu.main(True)
 
     menu.slideTransitionY(
         (0, -config["graphics"]["displayHeight"]), 'first', speed=40,
@@ -90,7 +120,7 @@ def closeOptionsMenu(obj, menu, event):
 
 # load a specified map which has been clicked on
 def loadLevel(obj, menu, event, path, data):
-    # Wait until the animation has finished before loading the level
+    # Wait until the animation has finished before loading the level.
     if hasattr(menu, 'transitioning') and menu.getTransitioning():
         return
 
@@ -149,15 +179,24 @@ def unlockLevel(obj, menu, event, level):
         menu.game.audioLoader.playSound("uiSuccess", 0)
         config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
         level.getLevelData()["locked"]["isLocked"] = False
-        menu.game.mapLoader.saveMap(
-            level.getLevelData()["mapName"], level.getLevelData())
+
+        if isinstance(level, Map):
+            menu.game.mapLoader.saveMap(
+                level.getLevelData()["mapName"], level.getLevelData())
+            level.addEvent(
+                loadLevel, 'onMouseClick', path=level.getLevelPath(),
+                data=level.getLevelData())
+
+        elif isinstance(level, Region):
+            level.addEvent(
+                openLevelSelect, 'onMouseClick', region=level.getName())
+
+        # This saves the region onlock and updates the key total.
         dump(config)
 
         # if successful update menu
         menu.keyText.setText(str(config["player"]["keys"]))
-        level.addEvent(
-            loadLevel, 'onMouseClick', path=level.getLevelPath(),
-            data=level.getLevelData())
+
         level.removeEvent(unlockLevel, 'onMouseClick', level=level)
         level.dirty = True
         menu.keyText.dirty = True
@@ -236,12 +275,16 @@ def showLevelSelect(obj, menu, event):
         # Always close any open inputs
         menu.game.textHandler.setActive(False)
 
-        levelSelectType = menu.game.mainMenu.getPreviousLevelSelect()
+        levelSelectType = menu.game.mainMenu.getCurrentLevelSelect()
         if levelSelectType == MENU.MainMenu.LevelSelect.LEVELSELECT:
-            menu.game.mainMenu.levelSelect(True)
+            # Need to get the current region here
+            menu.game.mainMenu.levelSelect(
+                menu.game.regionLoader.getCurrentRegion(), True)
         elif (levelSelectType
                 == MENU.MainMenu.LevelSelect.CUSTOMLEVELSELECT):
             menu.game.mainMenu.customLevelSelect(True)
+        elif levelSelectType == MENU.MainMenu.LevelSelect.REGIONSELECT:
+            menu.game.mainMenu.regionSelect(True)
 
         menu.close()
 
@@ -326,7 +369,6 @@ def setMusicVolume(slider, amount):
 
 # Show the main menu of the option menu (for back buttons)
 def showMain(obj, menu, event):
-    print("this is called right?")
     menu.close()
     menu.main(False)
 

@@ -1180,7 +1180,13 @@ class EditorHud(GameHudLayout):
         y = self.load.y + self.padY
         maxWidth = self.boxWidth
         maps = []
-        for mapName, path in self.game.mapLoader.getMaps().items():
+
+        # In debug mode we want to show all maps for editing,
+        # otherwise only the custom maps.
+        mapDict = (
+            self.game.mapLoader.getMaps() if config["game"]["debug"]
+            else self.game.mapLoader.getCustomMaps())
+        for mapName, path in mapDict.items():
             m = Label(self, mapName, 25, WHITE, (textX, y), BLACK)
             m.addEvent(gf.hoverColor, 'onMouseOver', color=GREEN)
             m.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
@@ -1379,7 +1385,8 @@ class PreviewHud(GameHudLayout):
             self, str(self.spriteRenderer.getCompleted()), 25, WHITE,
             (config["graphics"]["displayWidth"] - 40, 14), BLACK)
 
-        # We create a temporary fast forward image to pass the check in sprite renderer
+        # The hud needs a fastfardward image so we can check if its clicked or
+        # not in the sprite renderer.
         self.fastForward = Image(
             self, None, (50, 50), (0, 0))
 

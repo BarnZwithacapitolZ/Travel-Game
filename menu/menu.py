@@ -1,3 +1,4 @@
+from tkinter.tix import MAIN
 import pygame
 from config import (
     config, BLACK, TRUEBLACK, WHITE, GREEN, CREAM, YELLOW, dump)
@@ -6,7 +7,7 @@ import menuFunctions as mf
 import transitionFunctions as tf
 from menuComponents import (
     Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
-    ControlLabel)
+    ControlLabel, Region)
 from clickManager import ControlClickManager
 from utils import vec, overrides
 from enum import Enum, auto
@@ -48,8 +49,14 @@ class Menu:
     def setOpen(self, hudOpen):
         self.open = hudOpen
 
-    def add(self, component):
-        self.components.append(component)
+    # Add a single, or multiple items to the menu interface.
+    def add(self, components):
+        if type(components) == list:
+            for component in components:
+                self.components.append(component)
+
+        else:
+            self.components.append(components)
 
     def remove(self, obj):
         if obj in self.components:
@@ -256,16 +263,20 @@ class MainMenu(Menu):
     class LevelSelect(Enum):
         LEVELSELECT = auto()
         CUSTOMLEVELSELECT = auto()
+        REGIONSELECT = auto()
 
     def __init__(self, game):
         super().__init__(game)
-        self.currentLevel = vec(
-            config["player"]["currentLevel"][0],
-            config["player"]["currentLevel"][1])
+
+        self.currentRegion = vec(
+            config["player"]["currentRegion"][0],
+            config["player"]["currentRegion"][1])
+        self.currentLevel = vec(0, 0)
         self.currentCustomLevel = vec(
             config["player"]["currentCustomLevel"][0],
             config["player"]["currentCustomLevel"][1])
-        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
+        self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
+        self.regions = list(self.game.regionLoader.getRegions().keys())
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.splashScreenMaps = list(
             self.game.mapLoader.getSplashScreenMaps().keys())
@@ -278,7 +289,7 @@ class MainMenu(Menu):
         self.customLevelSize = 2.2
 
         self.setLevelSize(self.builtInLevelSize)
-        self.spacing = 20
+        self.spacing = 30
 
         self.transitioning = False
 
@@ -296,20 +307,24 @@ class MainMenu(Menu):
         return self.levels
 
     def getCurrentLevel(self):
-        if self.levelSelectOpen:
+        if self.regionSelectOpen:
+            return self.currentRegion
+        elif self.levelSelectOpen:
             return self.currentLevel
-        elif self.customLevelSelect:
+        elif self.customLevelSelectOpen:
             return self.currentCustomLevel
+        return vec(0, 0)  # Default
 
-    def getPreviousLevelSelect(self):
-        return self.previousLevelSelect
+    def getCurrentLevelSelect(self):
+        return self.currentLevelSelect
 
     def getTransitioning(self):
         return self.transitioning
 
     # If either of the level selection screens are open
     def getLevelSelectOpen(self):
-        if self.levelSelectOpen or self.customLevelSelectOpen:
+        if (self.levelSelectOpen or self.customLevelSelectOpen
+                or self.regionSelectOpen):
             return True
         return False
 
@@ -338,6 +353,7 @@ class MainMenu(Menu):
         self.open = True
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
+        self.regionSelectOpen = False
         x = 100
 
         title = Label(
@@ -350,7 +366,7 @@ class MainMenu(Menu):
         options = Label(self, "Options", 50, BLACK, (x - 580, editor.y + 60))
         end = Label(self, "Quit", 50, BLACK, (x - 620, options.y + 60))
 
-        cont.addEvent(mf.openLevelSelect, 'onMouseClick')
+        cont.addEvent(mf.openRegionSelect, 'onMouseClick')
         editor.addEvent(mf.openMapEditor, 'onMouseClick')
         options.addEvent(mf.openOptionsMenu, 'onMouseClick')
         end.addEvent(mf.closeGame, 'onMouseClick')
@@ -384,9 +400,13 @@ class MainMenu(Menu):
                 direction='down')
 
     def saveCurrentLevel(self, currentLevel):
+        # We don't need to save default level select so we just return.
         if self.levelSelectOpen:
-            config["player"]["currentLevel"] = [currentLevel.x, currentLevel.y]
-        elif self.customLevelSelect:
+            return
+        elif self.regionSelectOpen:
+            config["player"]["currentRegion"] = [
+                currentLevel.x, currentLevel.y]
+        elif self.customLevelSelectOpen:
             config["player"]["currentCustomLevel"] = [
                 currentLevel.x, currentLevel.y]
         dump(config)
@@ -403,14 +423,17 @@ class MainMenu(Menu):
             return True
         return False
 
-    def createLevel(self, x, y, count, maps, offset=vec(0, 0)):
+    def createLevel(self, x, y, count, maps, offset=vec(0, 0), region=False):
         if x >= 0 and y >= 0 and x < len(maps[0]) and y < len(maps):
-            level = Map(
-                self, maps[y][x], count, (self.levelWidth, self.levelHeight), (
-                    (config["graphics"]["displayWidth"] - self.levelWidth) / 2
-                    + ((self.levelWidth + self.spacing) * x) - offset.x,
-                    (config["graphics"]["displayHeight"] - self.levelHeight)
-                    / 2 + ((self.levelHeight + self.spacing) * y) - offset.y))
+            pos = (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2
+                + ((self.levelWidth + self.spacing) * x) - offset.x,
+                (config["graphics"]["displayHeight"] - self.levelHeight) / 2
+                + ((self.levelHeight + self.spacing) * y) - offset.y)
+
+            selector = Region if region else Map
+            level = selector(
+                self, maps[y][x], (self.levelWidth, self.levelHeight), pos)
 
             self.add(level)
             self.levels[count] = level
@@ -484,82 +507,65 @@ class MainMenu(Menu):
                     callback=callback)
             self.setTransitioning(True)
 
+    def removeLevelClickable(self, level):
+        level.removeEvent(
+            mf.levelForward, 'onMouseClick', change=vec(1, 0))
+        level.removeEvent(
+            mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
+        level.removeEvent(
+            mf.levelUpward, 'onMouseClick', change=vec(0, -1))
+        level.removeEvent(
+            mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+
     def setLevelsClickable(self, currentLevel=vec(0, 0)):
         for index, level in self.levels.items():
             currentIndex = (
                 (currentLevel.y * self.getLevelSelectCols()) + currentLevel.x)
             if index == currentIndex:
-                level.removeEvent(
-                    mf.levelForward, 'onMouseClick', change=vec(1, 0))
-                level.removeEvent(
-                    mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
-                level.removeEvent(
-                    mf.levelUpward, 'onMouseClick', change=vec(0, -1))
-                level.removeEvent(
-                    mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+                self.removeLevelClickable(level)
 
                 # If the level is not locked we can load and play it!
                 if not level.getLevelData()["locked"]["isLocked"]:
-                    level.addEvent(
-                        mf.loadLevel, 'onMouseClick',
-                        path=level.getLevelPath(), data=level.getLevelData())
+                    if isinstance(level, Map):
+                        level.addEvent(
+                            mf.loadLevel, 'onMouseClick',
+                            path=level.getLevelPath(),
+                            data=level.getLevelData())
+
+                    elif isinstance(level, Region):
+                        # We have an instance of a region!
+                        level.addEvent(
+                            mf.openLevelSelect, 'onMouseClick',
+                            region=level.getName())
 
                 # Otherwise we need to check if the level can be unlocked
                 else:
                     level.addEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
                 if currentIndex < len(self.levels) - 1:
-                    self.levels[currentIndex + 1].removeEvent(
-                        mf.levelForward, 'onMouseClick', change=vec(1, 0))
-                    self.levels[currentIndex + 1].removeEvent(
-                        mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
-                    self.levels[currentIndex + 1].removeEvent(
-                        mf.levelUpward, 'onMouseClick', change=vec(0, -1))
-                    self.levels[currentIndex + 1].removeEvent(
-                        mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.removeLevelClickable(self.levels[currentIndex + 1])
                     self.levels[currentIndex + 1].addEvent(
                         mf.levelForward, 'onMouseClick', change=vec(1, 0))
 
                 if currentIndex < len(self.levels) - 4:
-                    self.levels[currentIndex + 4].removeEvent(
-                        mf.levelForward, 'onMouseClick', change=vec(1, 0))
-                    self.levels[currentIndex + 4].removeEvent(
-                        mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
-                    self.levels[currentIndex + 4].removeEvent(
-                        mf.levelUpward, 'onMouseClick', change=vec(0, -1))
-                    self.levels[currentIndex + 4].removeEvent(
-                        mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.removeLevelClickable(self.levels[currentIndex + 4])
                     self.levels[currentIndex + 4].addEvent(
                         mf.levelDownward, 'onMouseClick', change=vec(0, 1))
 
                 if currentIndex > 0:
-                    self.levels[currentIndex - 1].removeEvent(
-                        mf.levelForward, 'onMouseClick', change=vec(1, 0))
-                    self.levels[currentIndex - 1].removeEvent(
-                        mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
-                    self.levels[currentIndex - 1].removeEvent(
-                        mf.levelUpward, 'onMouseClick', change=vec(0, -1))
-                    self.levels[currentIndex - 1].removeEvent(
-                        mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.removeLevelClickable(self.levels[currentIndex - 1])
                     self.levels[currentIndex - 1].addEvent(
                         mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
                 if currentIndex - 3 > 0:
-                    self.levels[currentIndex - 4].removeEvent(
-                        mf.levelForward, 'onMouseClick', change=vec(1, 0))
-                    self.levels[currentIndex - 4].removeEvent(
-                        mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
-                    self.levels[currentIndex - 4].removeEvent(
-                        mf.levelUpward, 'onMouseClick', change=vec(0, -1))
-                    self.levels[currentIndex - 4].removeEvent(
-                        mf.levelDownward, 'onMouseClick', change=vec(0, 1))
+                    self.removeLevelClickable(self.levels[currentIndex - 4])
                     self.levels[currentIndex - 4].addEvent(
                         mf.levelUpward, 'onMouseClick', change=vec(0, -1))
 
-                # For non custom level select only
-                if (not hasattr(self, 'levelComplete')
-                        or not hasattr(self, 'levelCompleteText')):
-                    return
+                # Only default level selection page needs completion checking.
+                if (self.currentLevelSelect
+                        != MainMenu.LevelSelect.LEVELSELECT):
+                    continue
 
                 text = (
                     "Level Complete!"
@@ -576,11 +582,21 @@ class MainMenu(Menu):
 
             else:
                 # Remove click event
-                level.removeEvent(
-                    mf.loadLevel, 'onMouseClick',
-                    path=level.getLevelPath(), data=level.getLevelData())
+                if isinstance(level, Map):
+                    level.removeEvent(
+                        mf.loadLevel, 'onMouseClick',
+                        path=level.getLevelPath(), data=level.getLevelData())
+
+                else:
+                    # Remove region stuff here!
+                    level.removeEvent(
+                        mf.openLevelSelect, 'onMouseClick',
+                        region=level.getName())
+
                 level.removeEvent(mf.unlockLevel, 'onMouseClick', level=level)
 
+    # Split the list of maps into a 2d list with each sublist being
+    # the length of cols.
     def getArrangedMaps(self, maps, cols, arrangedMaps=None):
         arrangedMaps = [] if arrangedMaps is None else arrangedMaps
         for i in range(0, len(maps), cols):
@@ -590,16 +606,15 @@ class MainMenu(Menu):
     def getLevelSelectCols(self):
         if len(self.currentMaps) <= 0:
             return
-
         return len(self.currentMaps[0])
 
     def getLevelSelectRows(self):
         if len(self.currentMaps) <= 0:
             return
-
         return len(self.currentMaps)
 
-    def setLevelSelectMaps(self, maps, cols, currentLevel=vec(0, 0)):
+    def setLevelSelectMaps(
+            self, maps, cols, currentLevel=vec(0, 0), region=False):
         self.levels = {}
         split = (currentLevel.y * cols) + currentLevel.x
         before = maps[:int(split)]
@@ -626,12 +641,15 @@ class MainMenu(Menu):
             (self.levelHeight + self.spacing) * currentLevel.y)
         count = 0
 
+        # Add the maps before the currently selected map.
         for y, row in enumerate(mapsBefore):
             for x, _ in enumerate(row):
-                count = self.createLevel(x, y, count, mapsBefore, offset)
+                count = self.createLevel(
+                    x, y, count, mapsBefore, offset, region)
 
         offset = vec(0, 0)  # Reset offset
 
+        # Add the maps after and including the currently selected map.
         for y, row in enumerate(mapsAfter):
             if y > 0 and len(mapsAfter[-1]) < cols:
                 offset.x = (
@@ -639,18 +657,22 @@ class MainMenu(Menu):
                     * (cols - len(mapsAfter[0])))
 
             for x, _ in enumerate(row):
-                count = self.createLevel(x, y, count, mapsAfter, offset)
+                count = self.createLevel(
+                    x, y, count, mapsAfter, offset, region)
 
     def customLevelSelect(self, transition=False):
         self.open = True
-        self.levelSelectOpen = False
         self.customLevelSelectOpen = True
-        self.previousLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
+        self.levelSelectOpen = False
+        self.regionSelectOpen = False
+        self.currentLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
         self.backgroundColor = CREAM  # Change this?
         self.setLevelSize(self.customLevelSize)
+        self.spacing = 20
         cols = 4
         self.currentMaps = self.getArrangedMaps(self.customMaps, cols)
 
+        # Add the levels first this time so that the menu appears above them.
         self.setLevelSelectMaps(self.customMaps, cols, self.currentCustomLevel)
         self.setLevelsClickable(self.currentCustomLevel)
 
@@ -681,8 +703,11 @@ class MainMenu(Menu):
 
         mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
         mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
-        levelSelect.addEvent(mf.openLevelSelect, 'onMouseClick')
-        levelSelectText.addEvent(mf.openLevelSelect, 'onMouseClick')
+
+        region = self.game.regionLoader.getCurrentRegion()
+        levelSelect.addEvent(mf.openLevelSelect, 'onMouseClick', region=region)
+        levelSelectText.addEvent(
+            mf.openLevelSelect, 'onMouseClick', region=region)
 
         self.add(background)
         self.add(mainMenu)
@@ -694,31 +719,35 @@ class MainMenu(Menu):
             self.slideTransitionY(
                 (0, 0), 'second', callback=gf.defaultSlideCallback)
 
-    def levelSelect(self, transition=False):
+    def levelSelect(self, region, transition=False):
         self.open = True
-        self.customLevelSelectOpen = False
         self.levelSelectOpen = True
-        self.previousLevelSelect = MainMenu.LevelSelect.LEVELSELECT
+        self.customLevelSelectOpen = False
+        self.regionSelectOpen = False
+        self.currentLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.backgroundColor = BLACK
-        self.levels = {}
         self.setLevelSize(self.builtInLevelSize)
-        cols = len(self.builtInMaps)
-        self.currentMaps = self.getArrangedMaps(self.builtInMaps, cols)
+        self.spacing = 30
 
-        mainMenu = Image(
+        # Reset back to the start of the level select for the specific region.
+        self.currentLevel = vec(0, 0)
+
+        # Set current region so we can return to this specific level select.
+        self.game.regionLoader.setCurrentRegion(region)
+
+        maps = self.game.regionLoader.getRegionMaps(region)
+
+        cols = len(maps)
+        self.currentMaps = self.getArrangedMaps(maps, cols)
+
+        back = Image(
             self, "button", (25, 25), (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2
                 + self.spacing, 21))
-        mainMenuText = Label(
-            self, "Main Menu", 20, CREAM, (
+        backText = Label(
+            self, "Back", 20, CREAM, (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2
                 + self.spacing + 30, 27))
-        custom = Image(
-            self, "button", (25, 25), (
-                mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
-        customText = Label(
-            self, "Custom Levels", 20, CREAM, (
-                mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
 
         self.levelComplete = Image(
             self, "buttonRed", (25, 25), (
@@ -757,10 +786,8 @@ class MainMenu(Menu):
             self, "buttonArrow", (25, 25),
             (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
 
-        mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
-        mainMenu.addEvent(gf.hoverImage, 'onMouseOut', image="button")
-        custom.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
-        custom.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        back.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        back.addEvent(gf.hoverImage, 'onMouseOut', image="button")
         levelNext.addEvent(
             gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
         levelNext.addEvent(
@@ -770,16 +797,113 @@ class MainMenu(Menu):
         levelBack.addEvent(
             gf.hoverImage, 'onMouseOut', image="buttonArrow")
 
-        mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
-        mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
-        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
-        customText.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
-
+        back.addEvent(mf.openRegionSelect, 'onMouseClick')
+        backText.addEvent(mf.openRegionSelect, 'onMouseClick')
         levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
         self.add(self.levelComplete)
         self.add(self.levelCompleteText)
+        self.add(back)
+        self.add(backText)
+        self.add(key)
+        self.add(keyTextBackground)
+        self.add(self.keyText)
+        self.add(levelNext)
+        self.add(levelBack)
+
+        # Add the maps after eveything else in the menu has been loaded
+        self.setLevelSelectMaps(maps, cols, self.currentLevel)
+        self.setLevelsClickable(self.currentLevel)
+
+        if transition:
+            self.slideTransitionY(
+                (0, 0), 'second', callback=gf.defaultSlideCallback)
+
+    def regionSelect(self, transition=False):
+        self.open = True
+        self.regionSelectOpen = True
+        self.levelSelectOpen = False
+        self.customLevelSelectOpen = False
+        self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
+        self.backgroundColor = BLACK
+
+        # Exact level sizing
+        self.levelWidth = 350
+        self.levelHeight = 420
+        self.spacing = 50
+
+        cols = len(self.regions)
+        self.currentMaps = self.getArrangedMaps(self.regions, cols)
+
+        # Add the regions after eveything else in the menu has been loaded
+        self.setLevelSelectMaps(self.regions, cols, self.currentRegion, True)
+        self.setLevelsClickable(self.currentRegion)
+
+        mainMenu = Image(
+            self, "button", (25, 25), (
+                ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
+                + self.spacing, 21))
+        mainMenuText = Label(
+            self, "Main Menu", 20, CREAM, (
+                ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
+                + self.spacing + 30, 27))
+
+        custom = Image(
+            self, "button", (25, 25), (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
+        customText = Label(
+            self, "Custom Levels", 20, CREAM, (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
+
+        key = Image(
+            self, "keyCream", (25, 25), (config["graphics"]["displayWidth"] - (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
+                - self.spacing - 75, 21))
+        keyTextBackground = Rectangle(
+            self, CREAM, (40, 25), (config["graphics"]["displayWidth"] - (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
+                - self.spacing - 40, 21), shapeBorderRadius=[5, 5, 5, 5])
+
+        self.keyText = Label(
+            self, str(config["player"]["keys"]), 20, BLACK, (
+                config["graphics"]["displayWidth"]
+                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
+                - self.spacing - 20, 27))
+        self.keyText.setPos((
+            self.keyText.x - (self.keyText.getFontSize()[0] / 2),
+            self.keyText.y))
+
+        levelNext = Image(
+            self, "buttonArrow", (25, 25), (
+                config["graphics"]["displayWidth"]
+                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - self.spacing - 25, config["graphics"]["displayHeight"] - 42))
+        levelNext.flipImage(True, False)
+        levelBack = Image(
+            self, "buttonArrow", (25, 25),
+            (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
+
+        custom.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        custom.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        levelNext.addEvent(
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
+        levelNext.addEvent(
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
+        levelBack.addEvent(
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
+        levelBack.addEvent(
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
+
+        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
+        customText.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
+        mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
+        mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
+        levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
+        levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
+
         self.add(mainMenu)
         self.add(mainMenuText)
         self.add(custom)
@@ -789,10 +913,6 @@ class MainMenu(Menu):
         self.add(self.keyText)
         self.add(levelNext)
         self.add(levelBack)
-
-        # Add the maps after eveything else in the menu has been loaded
-        self.setLevelSelectMaps(self.builtInMaps, cols, self.currentLevel)
-        self.setLevelsClickable(self.currentLevel)
 
         if transition:
             self.slideTransitionY(

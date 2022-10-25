@@ -1212,79 +1212,77 @@ class MessageBox(Rectangle):
             # self.menu.components.remove(self)
 
 
-class Map(MenuComponent):
-    def __init__(self, menu, level, levelInt, size=tuple(), pos=tuple()):
-        super().__init__(menu, TRUEBLACK, size, pos)
-        self.levelName = level
-        self.levelInt = levelInt
+# A class for any selectable component in the level selection screens.
+# - i.e. a map or a region for different maps.
+class LevelSelect(MenuComponent, metaclass=abc.ABCMeta):
+    def __init__(
+            self, menu, name, borderColor, size=tuple(), pos=tuple()):
+        super().__init__(menu, borderColor, size, pos)
+        self.name = name
+        self.levelData = {}  # Default level data
+        self.scanlinesLockedOpacity = 65
 
-        # Path to level
-        self.level = menu.game.mapLoader.getMap(self.levelName)
-
-        # Level JSON data
-        self.levelData = menu.game.mapLoader.getMapData(self.levelName)
-
-    def getLevelPath(self):
-        return self.level
-
-    def getLevelInt(self):
-        return self.levelInt
+    def getName(self):
+        return self.name
 
     def getLevelData(self):
         return self.levelData
 
-    # draw scanlines if enabled
+    # Draw scanlines to the component if enabled.
     def drawScanlines(self):
-        if config["graphics"]["scanlines"]["enabled"]:
-            scanlines = pygame.Surface((
+        if not config["graphics"]["scanlines"]["enabled"]:
+            return
+
+        scanlines = pygame.Surface((
+            int(self.width * self.menu.renderer.getScale()),
+            int(self.height * self.menu.renderer.getScale())))
+
+        fillColor = (
+            TRUEBLACK if self.levelData["locked"]["isLocked"]
+            else SCANLINES)
+        scanlines.fill(fillColor)
+
+        self.menu.renderer.drawScanlines(scanlines)
+        alpha = (
+            self.scanlinesLockedOpacity if self.levelData["locked"]["isLocked"]
+            else config["graphics"]["scanlines"]["opacity"])
+        scanlines.set_alpha(alpha, pygame.RLEACCEL)
+
+        self.image.blit(scanlines, (0, 0))
+
+    # Show that the level is locked and the amount of keys to unlock it.
+    def drawLocked(self):
+        if not self.levelData["locked"]["isLocked"]:
+            return
+
+        locked = Image(self.menu, "locked", (100, 100), (
+            self.width / 2 - 50, self.height / 2 - 50))
+        key = Image(self.menu, "keyGreen", (30, 30), (
+            self.width / 2 - 80, self.height - 50))
+
+        # The amount required to unlock the level.
+        unlock = Label(
+            self.menu, str(self.levelData["locked"]["unlock"]), 20, RED,
+            (key.x + key.width + 10, key.y + (key.height / 2) - 8))
+        keyText = Label(self.menu, "to unlock", 20, GREEN, (
+            unlock.x + unlock.getFontSize()[0] + 5, unlock.y))
+
+        # Draw the components to the image.
+        locked.drawPaused(self.image)
+        key.drawPaused(self.image)
+        unlock.drawPaused(self.image)
+        keyText.drawPaused(self.image)
+
+        # draw the overlay when the scanlines aren't enabled
+        if not config["graphics"]["scanlines"]["enabled"]:
+            overlay = pygame.Surface((
                 int(self.width * self.menu.renderer.getScale()),
                 int(self.height * self.menu.renderer.getScale())))
+            overlay.fill(BLACK)
+            overlay.set_alpha(95)
+            self.image.blit(overlay, (0, 0))
 
-            fillColor = (
-                TRUEBLACK if self.levelData["locked"]["isLocked"]
-                else SCANLINES)
-            scanlines.fill(fillColor)
-
-            self.menu.renderer.drawScanlines(scanlines)
-            alpha = (
-                65 if self.levelData["locked"]["isLocked"]
-                else config["graphics"]["scanlines"]["opacity"])
-            scanlines.set_alpha(alpha, pygame.RLEACCEL)
-
-            self.image.blit(scanlines, (0, 0))
-
-    # show that the level is locked
-    def drawLocked(self):
-        if self.levelData["locked"]["isLocked"]:
-            locked = Image(self.menu, "locked", (100, 100), (
-                self.width / 2 - 50, self.height / 2 - 50))
-            key = Image(self.menu, "keyGreen", (30, 30), (
-                self.width / 2 - 80, self.height - 50))
-            unlock = Label(
-                self.menu, str(self.levelData["locked"]["unlock"]), 20, RED,
-                (key.x + key.width + 10, key.y + (key.height / 2) - 8))
-            keyText = Label(self.menu, "to unlock", 20, GREEN, (
-                unlock.x + unlock.getFontSize()[0] + 5, unlock.y))
-
-            locked.makeSurface()
-            key.makeSurface()
-            unlock.makeSurface()
-            keyText.makeSurface()
-            self.image.blit(locked.image, (locked.rect))
-            self.image.blit(key.image, (key.rect))
-            self.image.blit(unlock.image, (unlock.rect))
-            self.image.blit(keyText.image, (keyText.rect))
-
-            # draw the overlay when the scanlines aren't enabled
-            if not config["graphics"]["scanlines"]["enabled"]:
-                overlay = pygame.Surface((
-                    int(self.width * self.menu.renderer.getScale()),
-                    int(self.height * self.menu.renderer.getScale())))
-                overlay.fill(BLACK)
-                overlay.set_alpha(95)
-                self.image.blit(overlay, (0, 0))
-
-    # make rounded corners
+    # Make the corners of the component rounded.
     def roundedCorners(self):
         size = self.image.get_size()
         rectImage = pygame.Surface(size, pygame.SRCALPHA)
@@ -1297,6 +1295,26 @@ class Map(MenuComponent):
             self.image, self.color, (0, 0, *size),
             width=int(10 * self.menu.renderer.getScale()),
             border_radius=int(30 * self.menu.renderer.getScale()))
+
+    @overrides(MenuComponent)
+    def draw(self):
+        self.makeSurface()
+        # It is more efficient to render the final image.
+        self.menu.renderer.addSurface(self.finalImage, self.rect)
+
+
+class Map(LevelSelect):
+    def __init__(self, menu, name, size=tuple(), pos=tuple()):
+        super().__init__(menu, name, TRUEBLACK, size, pos)
+
+        # Path to level
+        self.level = menu.game.mapLoader.getMap(self.name)
+
+        # Level JSON data
+        self.levelData = menu.game.mapLoader.getMapData(self.name)
+
+    def getLevelPath(self):
+        return self.level
 
     def drawDifficulty(self):
         textColor = BLACK
@@ -1347,6 +1365,11 @@ class Map(MenuComponent):
             self.width * self.menu.renderer.getScale(),
             self.height * self.menu.renderer.getScale())).convert()
 
+        # The rect should be the size of the final, complete image
+        self.rect = self.finalImage.get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+
         # We get the level image of the map
         self.image = self.menu.game.spriteRenderer.createLevelSurface(
             self.level).convert_alpha()
@@ -1354,16 +1377,11 @@ class Map(MenuComponent):
         # We scale the level to the size of the map object
         self.image = pygame.transform.smoothscale(self.image, (int(
             self.width * self.menu.renderer.getScale()),
-            int(self.height * self.menu.renderer.getScale()))).convert_alpha()\
-
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+            int(self.height * self.menu.renderer.getScale()))).convert_alpha()
 
         # add labels
-        self.mapTitle = Label(self.menu, self.levelName, 30, GREEN, (30, 25))
-        self.mapTitle.makeSurface()
-        self.image.blit(self.mapTitle.image, (self.mapTitle.rect))
+        self.mapTitle = Label(self.menu, self.name, 30, GREEN, (30, 25))
+        self.mapTitle.drawPaused(self.image)
 
         self.drawDifficulty()
         self.drawScore()
@@ -1379,17 +1397,56 @@ class Map(MenuComponent):
         if self.dirty or self.image is None:
             self.__render()
 
+
+class Region(LevelSelect):
+    def __init__(self, menu, name, size=tuple(), pos=tuple()):
+        super().__init__(menu, name, TRUEBLACK, size, pos)
+
+        # Region JSON data
+        self.levelData = menu.game.regionLoader.getRegion(self.name)
+
+    def __render(self):
+        self.dirty = False
+        self.finalImage = pygame.Surface((
+            self.width * self.menu.renderer.getScale(),
+            self.height * self.menu.renderer.getScale())).convert()
+
+        # The rect should be the size of the final, complete image
+        self.rect = self.finalImage.get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+
+        self.image = Image(
+            self.menu, self.levelData["image"],
+            (self.width, self.height), (0, 0))
+        self.image.makeSurface()
+        self.image = self.image.image
+
+        # add labels
+        self.mapTitle = Label(self.menu, self.name, 30, GREEN, (30, 25))
+        self.mapTitle.drawPaused(self.image)
+
+        self.drawLocked()
+        self.drawScanlines()
+        self.roundedCorners()
+
+        self.finalImage.fill(self.menu.getBackgroundColor())
+        self.finalImage.blit(self.image, (0, 0))
+
     @overrides(MenuComponent)
-    def draw(self):
-        self.makeSurface()
-        self.menu.renderer.addSurface(self.finalImage, self.rect)
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
 
 
 class Image(MenuComponent):
-    def __init__(self, menu, imageName, size=tuple(), pos=tuple(), alpha=None):
+    def __init__(
+            self, menu, imageName, size=tuple(), pos=tuple(), alpha=None,
+            background=None):
         super().__init__(menu, None, size, pos)
         self.imageName = imageName
         self.alpha = alpha
+        self.background = background
         self.xbool = False
         self.ybool = False
         self.rot = 0
@@ -1415,21 +1472,34 @@ class Image(MenuComponent):
 
     def __render(self):
         self.dirty = False
-        self.image = self.menu.game.imageLoader.getImage(
+
+        self.image = pygame.Surface((
+            self.width * self.menu.renderer.getScale(),
+            self.height * self.menu.renderer.getScale())).convert()
+
+        # Has the actual image in it that goes above the background
+        self.foreground = self.menu.game.imageLoader.getImage(
             self.imageName, (self.width, self.height))
 
         if self.xbool or self.ybool:
-            self.image = ImageLoader.flipImage(
-                self.image, self.xbool, self.ybool)
+            self.foreground = ImageLoader.flipImage(
+                self.foreground, self.xbool, self.ybool)
         if self.rot > 0:
-            self.image = ImageLoader.rotateImage(self.image, self.rot)
+            self.image = ImageLoader.rotateImage(self.foreground, self.rot)
 
-        self.rect = self.image.get_rect()
+        self.rect = self.foreground.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
         if self.alpha is not None:
-            self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+            self.foreground.set_alpha(self.alpha, pygame.RLEACCEL)
+
+        if self.background is not None:
+            self.image.fill(self.background)
+            self.image.blit(self.foreground, (0, 0))
+
+        else:
+            self.image = self.foreground
 
         self.addComponents()
 
