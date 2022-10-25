@@ -283,7 +283,7 @@ class MainMenu(Menu):
         self.customLevelSize = 2.2
 
         self.setLevelSize(self.builtInLevelSize)
-        self.spacing = 20
+        self.spacing = 30
 
         self.transitioning = False
 
@@ -662,6 +662,7 @@ class MainMenu(Menu):
         self.currentLevelSelect = MainMenu.LevelSelect.CUSTOMLEVELSELECT
         self.backgroundColor = CREAM  # Change this?
         self.setLevelSize(self.customLevelSize)
+        self.spacing = 20
         cols = 4
         self.currentMaps = self.getArrangedMaps(self.customMaps, cols)
 
@@ -720,6 +721,7 @@ class MainMenu(Menu):
         self.currentLevelSelect = MainMenu.LevelSelect.LEVELSELECT
         self.backgroundColor = BLACK
         self.setLevelSize(self.builtInLevelSize)
+        self.spacing = 30
 
         # Reset back to the start of the level select for the specific region.
         self.currentLevel = vec(0, 0)
@@ -833,7 +835,10 @@ class MainMenu(Menu):
         self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
         self.backgroundColor = BLACK
 
-        # TODO: Need to set the level size here or smthn
+        # Exact level sizing
+        self.levelWidth = 350
+        self.levelHeight = 450
+        self.spacing = 50
 
         cols = len(self.regions)
         self.currentMaps = self.getArrangedMaps(self.regions, cols)
@@ -841,6 +846,28 @@ class MainMenu(Menu):
         # Add the regions after eveything else in the menu has been loaded
         self.setLevelSelectMaps(self.regions, cols, self.currentRegion, True)
         self.setLevelsClickable(self.currentRegion)
+
+        key = Image(
+            self, "keyCream", (25, 25), (config["graphics"]["displayWidth"] - (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - self.spacing - 75, 21))
+        keyTextBackground = Rectangle(
+            self, CREAM, (40, 25), (config["graphics"]["displayWidth"] - (
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - self.spacing - 40, 21), shapeBorderRadius=[5, 5, 5, 5])
+
+        self.keyText = Label(
+            self, str(config["player"]["keys"]), 20, BLACK, (
+                config["graphics"]["displayWidth"]
+                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - self.spacing - 20, 27))
+        self.keyText.setPos((
+            self.keyText.x - (self.keyText.getFontSize()[0] / 2),
+            self.keyText.y))
+
+        self.add(key)
+        self.add(keyTextBackground)
+        self.add(self.keyText)
 
         if transition:
             self.slideTransitionY(

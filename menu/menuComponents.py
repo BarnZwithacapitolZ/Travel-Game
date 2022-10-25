@@ -1365,6 +1365,11 @@ class Map(LevelSelect):
             self.width * self.menu.renderer.getScale(),
             self.height * self.menu.renderer.getScale())).convert()
 
+        # The rect should be the size of the final, complete image
+        self.rect = self.finalImage.get_rect()
+        self.rect.x = self.x * self.menu.renderer.getScale()
+        self.rect.y = self.y * self.menu.renderer.getScale()
+
         # We get the level image of the map
         self.image = self.menu.game.spriteRenderer.createLevelSurface(
             self.level).convert_alpha()
@@ -1372,11 +1377,7 @@ class Map(LevelSelect):
         # We scale the level to the size of the map object
         self.image = pygame.transform.smoothscale(self.image, (int(
             self.width * self.menu.renderer.getScale()),
-            int(self.height * self.menu.renderer.getScale()))).convert_alpha()\
-
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+            int(self.height * self.menu.renderer.getScale()))).convert_alpha()
 
         # add labels
         self.mapTitle = Label(self.menu, self.name, 30, GREEN, (30, 25))
@@ -1410,13 +1411,16 @@ class Region(LevelSelect):
             self.width * self.menu.renderer.getScale(),
             self.height * self.menu.renderer.getScale())).convert()
 
-        self.image = Image(self.menu, 'test', (self.width, self.height), (0, 0))
-        self.image.makeSurface()
-        self.image = self.image.image
-
-        self.rect = self.image.get_rect()
+        # The rect should be the size of the final, complete image
+        self.rect = self.finalImage.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
+
+        self.image = Image(
+            self.menu, self.levelData["image"],
+            (self.width, self.height), (0, 0))
+        self.image.makeSurface()
+        self.image = self.image.image
 
         # add labels
         self.mapTitle = Label(self.menu, self.name, 30, GREEN, (30, 25))
@@ -1436,10 +1440,13 @@ class Region(LevelSelect):
 
 
 class Image(MenuComponent):
-    def __init__(self, menu, imageName, size=tuple(), pos=tuple(), alpha=None):
+    def __init__(
+            self, menu, imageName, size=tuple(), pos=tuple(), alpha=None,
+            background=None):
         super().__init__(menu, None, size, pos)
         self.imageName = imageName
         self.alpha = alpha
+        self.background = background
         self.xbool = False
         self.ybool = False
         self.rot = 0
@@ -1465,21 +1472,34 @@ class Image(MenuComponent):
 
     def __render(self):
         self.dirty = False
-        self.image = self.menu.game.imageLoader.getImage(
+
+        self.image = pygame.Surface((
+            self.width * self.menu.renderer.getScale(),
+            self.height * self.menu.renderer.getScale())).convert()
+
+        # Has the actual image in it that goes above the background
+        self.foreground = self.menu.game.imageLoader.getImage(
             self.imageName, (self.width, self.height))
 
         if self.xbool or self.ybool:
-            self.image = ImageLoader.flipImage(
-                self.image, self.xbool, self.ybool)
+            self.foreground = ImageLoader.flipImage(
+                self.foreground, self.xbool, self.ybool)
         if self.rot > 0:
-            self.image = ImageLoader.rotateImage(self.image, self.rot)
+            self.image = ImageLoader.rotateImage(self.foreground, self.rot)
 
-        self.rect = self.image.get_rect()
+        self.rect = self.foreground.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()
         self.rect.y = self.y * self.menu.renderer.getScale()
 
         if self.alpha is not None:
-            self.image.set_alpha(self.alpha, pygame.RLEACCEL)
+            self.foreground.set_alpha(self.alpha, pygame.RLEACCEL)
+
+        if self.background is not None:
+            self.image.fill(self.background)
+            self.image.blit(self.foreground, (0, 0))
+
+        else:
+            self.image = self.foreground
 
         self.addComponents()
 

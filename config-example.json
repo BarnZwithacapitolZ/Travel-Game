@@ -340,9 +340,13 @@
             "image": "ui/LeftClickWhite.png",
             "alpha": true
         },
-        "test": {
-            "image": "testthing.jpg",
-            "alpha": true          
+        "UK": {
+            "image": "UK.png",
+            "alpha": true
+        },
+        "france": {
+            "image": "france.png",
+            "alpha": true
         }
     },
     "audio": {
@@ -543,9 +547,9 @@
     },
     "regions": {
         "United Kingdon": {
-            "image": "",
+            "image": "UK",
             "locked": {
-                "isLocked": false,
+                "isLocked": true,
                 "unlock": 0
             },
             "maps": [
@@ -553,10 +557,10 @@
             ]
         },
         "France": {
-            "image": "",
+            "image": "france",
             "locked": {
-                "isLocked": false,
-                "unlock": 10
+                "isLocked": true,
+                "unlock": 7
             },
             "maps": [
                 "Another test", "move test"

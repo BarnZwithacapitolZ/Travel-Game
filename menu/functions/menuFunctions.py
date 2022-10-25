@@ -1,9 +1,11 @@
 
+from numpy import isin
 import pygame
 from config import config, dump
 from utils import vec
 import hudFunctions as hf
 import menu as MENU
+from menuComponents import Map, Region
 
 
 def openLevelSelect(obj, menu, event, region=None):
@@ -177,15 +179,24 @@ def unlockLevel(obj, menu, event, level):
         menu.game.audioLoader.playSound("uiSuccess", 0)
         config["player"]["keys"] -= level.getLevelData()["locked"]["unlock"]
         level.getLevelData()["locked"]["isLocked"] = False
-        menu.game.mapLoader.saveMap(
-            level.getLevelData()["mapName"], level.getLevelData())
+
+        if isinstance(level, Map):
+            menu.game.mapLoader.saveMap(
+                level.getLevelData()["mapName"], level.getLevelData())
+            level.addEvent(
+                loadLevel, 'onMouseClick', path=level.getLevelPath(),
+                data=level.getLevelData())
+
+        elif isinstance(level, Region):
+            level.addEvent(
+                openLevelSelect, 'onMouseClick', region=level.getName())
+
+        # This saves the region onlock
         dump(config)
 
         # if successful update menu
         menu.keyText.setText(str(config["player"]["keys"]))
-        level.addEvent(
-            loadLevel, 'onMouseClick', path=level.getLevelPath(),
-            data=level.getLevelData())
+
         level.removeEvent(unlockLevel, 'onMouseClick', level=level)
         level.dirty = True
         menu.keyText.dirty = True
