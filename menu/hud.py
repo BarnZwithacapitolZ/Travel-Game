@@ -240,16 +240,13 @@ class GameHud(GameHudLayout):
             self.restart.setPos((self.pause.x, self.pause.y))
             self.pause.setPos((self.layers.x, self.layers.y))
 
-        self.add(self.fastForward)
-        self.add(self.pause)
-        self.add(self.slowDownMeter)
+        self.add([self.fastForward, self.pause, self.slowDownMeter])
 
         # Only want to add the lives counter if there is a set amount of lives
         if lives is not None:
             self.add(self.lives)
 
-        self.add(self.completed)
-        self.add(self.completedAmount)
+        self.add([self.completed, self.completedAmount])
 
         if transition:
             # set the up transition
@@ -445,9 +442,7 @@ class EditorHud(GameHudLayout):
         layers.addEvent(gf.hoverImage, 'onMouseOut', image="layersWhite")
         layers.addEvent(hf.changeEditorLayer, 'onMouseClick')
 
-        self.add(topbar)
-        self.add(layers)
-        self.add(self.currentLayer)
+        self.add([topbar, layers, self.currentLayer])
 
         fileSelect.addEvent(hf.toggleFileDropdown, 'onMouseClick')
         edit.addEvent(hf.toggleEditDropdown, 'onMouseClick')
@@ -694,13 +689,8 @@ class EditorHud(GameHudLayout):
         box.add(totalText)
         inputBox.add(upArrowBox)
         inputBox.add(downArrowBox)
-        self.add(box)
-        self.add(inputBox)
-        self.add(self.total)
-        self.add(upArrow)
-        self.add(downArrow)
-        self.add(confirm)
-        self.add(cancel)
+        self.add([
+            box, inputBox, self.total, upArrow, downArrow, confirm, cancel])
 
     def viewDropdown(self):
         self.open = True
@@ -1157,10 +1147,7 @@ class EditorHud(GameHudLayout):
                 delete.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
                 delete.addEvent(hf.toggleConfirmBox, 'onMouseClick')
 
-        self.add(box)
-        self.add(save)
-        self.add(saveAs)
-        self.add(delete)
+        self.add([box, save, saveAs, delete])
 
         # Add each of the labels
         labels = [new, self.load, close]
@@ -1228,11 +1215,7 @@ class EditorHud(GameHudLayout):
         save.addEvent(hf.saveMap, 'onMouseClick')
         cancel.addEvent(hf.toggleSaveBox, 'onMouseClick')
 
-        self.add(box)
-        self.add(self.inputBox)
-        self.add(mapName)
-        self.add(save)
-        self.add(cancel)
+        self.add([box, self.inputBox, mapName, save, cancel])
 
     def confirmBox(self):
         self.open = True
@@ -1253,9 +1236,7 @@ class EditorHud(GameHudLayout):
         cancel.addEvent(hf.toggleConfirmBox, 'onMouseClick')
 
         box.add(confirmText)
-        self.add(box)
-        self.add(confirm)
-        self.add(cancel)
+        self.add([box, confirm, cancel])
 
     def confirmExitBox(self, confirmCallBack):
         self.open = True
@@ -1278,9 +1259,7 @@ class EditorHud(GameHudLayout):
         cancel.addEvent(hf.toggleConfirmExitBox, 'onMouseClick')
 
         box.add(confirmText)
-        self.add(box)
-        self.add(confirm)
-        self.add(cancel)
+        self.add([box, confirm, cancel])
 
     def infoBox(self):
         self.open = True
@@ -1341,18 +1320,10 @@ class EditorHud(GameHudLayout):
         confirm.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         confirm.addEvent(hf.toggleInfoBox, 'onMouseClick')
 
-        box.add(addConnection)
-        box.add(leftClick)
-        box.add(layer)
-        box.add(layers)
-        box.add(preview)
-        box.add(rightClick)
-        box.add(checklist)
-        box.add(checklistButton)
-        box.add(test)
-        box.add(confirmBox)
-        self.add(box)
-        self.add(confirm)
+        box.add([
+            addConnection, leftClick, layer, layers, preview, rightClick,
+            checklist, checklistButton, test, confirmBox])
+        self.add([box, confirm])
 
 
 class PreviewHud(GameHudLayout):
@@ -1394,11 +1365,8 @@ class PreviewHud(GameHudLayout):
         stop.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         stop.addEvent(hf.stopMap, 'onMouseClick')
 
-        self.add(topbar)
-        self.add(stop)
-        self.add(self.slowDownMeter)
-        self.add(completed)
-        self.add(self.completedText)
+        self.add([
+            topbar, stop, self.slowDownMeter, completed, self.completedText])
 
     def setCompletedAmount(self):
         if hasattr(self, 'completedText'):

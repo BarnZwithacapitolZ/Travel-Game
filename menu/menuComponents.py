@@ -161,8 +161,13 @@ class MenuComponent:
     def setTimer(self, timer):
         self.timer = timer
 
-    def add(self, obj):
-        self.components.append(obj)
+    def add(self, objs):
+        if type(objs) == list:
+            for obj in objs:
+                self.components.append(obj)
+
+        else:
+            self.components.append(objs)
 
     def addEvent(self, function, event, **kwargs):
         self.events.append(

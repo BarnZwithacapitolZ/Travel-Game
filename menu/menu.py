@@ -709,11 +709,8 @@ class MainMenu(Menu):
         levelSelectText.addEvent(
             mf.openLevelSelect, 'onMouseClick', region=region)
 
-        self.add(background)
-        self.add(mainMenu)
-        self.add(mainMenuText)
-        self.add(levelSelect)
-        self.add(levelSelectText)
+        self.add([
+            background, mainMenu, mainMenuText, levelSelect, levelSelectText])
 
         if transition:
             self.slideTransitionY(
@@ -802,15 +799,9 @@ class MainMenu(Menu):
         levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
-        self.add(self.levelComplete)
-        self.add(self.levelCompleteText)
-        self.add(back)
-        self.add(backText)
-        self.add(key)
-        self.add(keyTextBackground)
-        self.add(self.keyText)
-        self.add(levelNext)
-        self.add(levelBack)
+        self.add([
+            self.levelComplete, self.levelCompleteText, back, backText, key,
+            keyTextBackground, self.keyText, levelNext, levelBack])
 
         # Add the maps after eveything else in the menu has been loaded
         self.setLevelSelectMaps(maps, cols, self.currentLevel)
@@ -904,15 +895,9 @@ class MainMenu(Menu):
         levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
-        self.add(mainMenu)
-        self.add(mainMenuText)
-        self.add(custom)
-        self.add(customText)
-        self.add(key)
-        self.add(keyTextBackground)
-        self.add(self.keyText)
-        self.add(levelNext)
-        self.add(levelBack)
+        self.add([
+            mainMenu, mainMenuText, custom, customText, key, keyTextBackground,
+            self.keyText, levelNext, levelBack])
 
         if transition:
             self.slideTransitionY(
@@ -975,13 +960,7 @@ class OptionMenu(Menu):
         close.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         close.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
-        # background.add(paused)
-        self.add(background)
-        self.add(paused)
-        self.add(options)
-        self.add(levelSelect)
-        self.add(mainMenu)
-        self.add(close)
+        self.add([background, paused, options, levelSelect, mainMenu, close])
 
         if transition:
             self.openTransition()
@@ -1027,12 +1006,7 @@ class OptionMenu(Menu):
         else:
             back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
 
-        self.add(background)
-        self.add(options)
-        self.add(graphics)
-        self.add(controls)
-        self.add(audio)
-        self.add(back)
+        self.add([background, options, graphics, controls, audio, back])
 
         if transition:
             self.openTransition()
@@ -1070,16 +1044,9 @@ class OptionMenu(Menu):
         reset.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 450, color=WHITE)
         reset.addEvent(mf.resetAudio, 'onMouseClick')
 
-        self.add(background)
-        self.add(audio)
-        self.add(master)
-        self.add(sound)
-        self.add(music)
-        self.add(self.masterVolume)
-        self.add(self.soundVolume)
-        self.add(self.musicVolume)
-        self.add(back)
-        self.add(reset)
+        self.add([
+            background, audio, master, sound, music, self.masterVolume,
+            self.soundVolume, self.musicVolume, back, reset])
 
     def checkForExistingControl(self, key, currentName):
         if hasattr(self, 'controlKeys'):
@@ -1250,13 +1217,8 @@ class OptionMenu(Menu):
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
-        self.add(background)
-        self.add(graphics)
-        self.add(fullscreen)
-        self.add(scanlines)
-        self.add(scaling)
-        self.add(vsync)
-        self.add(back)
+        self.add([
+            background, graphics, fullscreen, scanlines, scaling, vsync, back])
 
 
 class GameMenu(Menu):
@@ -1358,16 +1320,9 @@ class GameMenu(Menu):
             path=self.game.mapLoader.getMap(levelName),
             data=self.game.mapLoader.getMapData(levelName))
 
-        self.add(background)
-        self.add(failed)
-        self.add(scoreText)
-        self.add(self.score)
-        self.add(key)
-        self.add(keyTextBackground)
-        self.add(self.keyText)
-        self.add(self.keyTextDifference)
-        self.add(levelSelect)
-        self.add(retry)
+        self.add([
+            background, failed, scoreText, self.score, key, keyTextBackground,
+            self.keyText, self.keyTextDifference, levelSelect, retry])
 
         if transition:
             self.openTransition()
@@ -1440,18 +1395,12 @@ class GameMenu(Menu):
             path=self.game.mapLoader.getMap(levelName),
             data=self.game.mapLoader.getMapData(levelName))
 
-        self.add(background)
-        self.add(success)
-        self.add(scoreText)
-        self.add(self.score)
-        self.add(key)
-        self.add(keyTextBackground)
-        self.add(self.keyText)
-        self.add(self.keyTextDifference)
+        self.add([
+            background, success, scoreText, self.score, key, keyTextBackground,
+            self.keyText, self.keyTextDifference])
 
         if transition and self.keyDifference <= 0:
-            self.add(levelSelect)
-            self.add(retry)
+            self.add([levelSelect, retry])
 
         if transition:
             def callback(obj, menu, y):
@@ -1516,8 +1465,6 @@ class GameMenu(Menu):
         play.addEvent(gf.hoverColor, 'onMouseOut', color=WHITE)
         play.addEvent(mf.unpause, 'onMouseClick')
 
-        self.add(background)
-        self.add(total)
-        self.add(play)
+        self.add([background, total, play])
 
         self.game.audioLoader.playSound("swoopIn")
