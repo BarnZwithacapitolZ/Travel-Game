@@ -191,7 +191,7 @@ def unlockLevel(obj, menu, event, level):
             level.addEvent(
                 openLevelSelect, 'onMouseClick', region=level.getName())
 
-        # This saves the region onlock
+        # This saves the region onlock and updates the key total.
         dump(config)
 
         # if successful update menu
@@ -283,6 +283,8 @@ def showLevelSelect(obj, menu, event):
         elif (levelSelectType
                 == MENU.MainMenu.LevelSelect.CUSTOMLEVELSELECT):
             menu.game.mainMenu.customLevelSelect(True)
+        elif levelSelectType == MENU.MainMenu.LevelSelect.REGIONSELECT:
+            menu.game.mainMenu.regionSelect(True)
 
         menu.close()
 

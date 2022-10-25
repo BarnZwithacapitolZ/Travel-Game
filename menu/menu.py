@@ -49,8 +49,14 @@ class Menu:
     def setOpen(self, hudOpen):
         self.open = hudOpen
 
-    def add(self, component):
-        self.components.append(component)
+    # Add a single, or multiple items to the menu interface.
+    def add(self, components):
+        if type(components) == list:
+            for component in components:
+                self.components.append(component)
+
+        else:
+            self.components.append(components)
 
     def remove(self, obj):
         if obj in self.components:
@@ -269,7 +275,7 @@ class MainMenu(Menu):
         self.currentCustomLevel = vec(
             config["player"]["currentCustomLevel"][0],
             config["player"]["currentCustomLevel"][1])
-        self.currentLevelSelect = MainMenu.LevelSelect.LEVELSELECT
+        self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
         self.regions = list(self.game.regionLoader.getRegions().keys())
         self.builtInMaps = list(self.game.mapLoader.getBuiltInMaps().keys())
         self.splashScreenMaps = list(
@@ -734,20 +740,14 @@ class MainMenu(Menu):
         cols = len(maps)
         self.currentMaps = self.getArrangedMaps(maps, cols)
 
-        mainMenu = Image(
+        back = Image(
             self, "button", (25, 25), (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2
                 + self.spacing, 21))
-        mainMenuText = Label(
-            self, "Main Menu", 20, CREAM, (
+        backText = Label(
+            self, "Back", 20, CREAM, (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2
                 + self.spacing + 30, 27))
-        custom = Image(
-            self, "button", (25, 25), (
-                mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
-        customText = Label(
-            self, "Custom Levels", 20, CREAM, (
-                mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
 
         self.levelComplete = Image(
             self, "buttonRed", (25, 25), (
@@ -786,10 +786,8 @@ class MainMenu(Menu):
             self, "buttonArrow", (25, 25),
             (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
 
-        mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
-        mainMenu.addEvent(gf.hoverImage, 'onMouseOut', image="button")
-        custom.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
-        custom.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        back.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        back.addEvent(gf.hoverImage, 'onMouseOut', image="button")
         levelNext.addEvent(
             gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
         levelNext.addEvent(
@@ -799,20 +797,15 @@ class MainMenu(Menu):
         levelBack.addEvent(
             gf.hoverImage, 'onMouseOut', image="buttonArrow")
 
-        mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
-        mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
-        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
-        customText.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
-
+        back.addEvent(mf.openRegionSelect, 'onMouseClick')
+        backText.addEvent(mf.openRegionSelect, 'onMouseClick')
         levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
         self.add(self.levelComplete)
         self.add(self.levelCompleteText)
-        self.add(mainMenu)
-        self.add(mainMenuText)
-        self.add(custom)
-        self.add(customText)
+        self.add(back)
+        self.add(backText)
         self.add(key)
         self.add(keyTextBackground)
         self.add(self.keyText)
@@ -837,7 +830,7 @@ class MainMenu(Menu):
 
         # Exact level sizing
         self.levelWidth = 350
-        self.levelHeight = 450
+        self.levelHeight = 420
         self.spacing = 50
 
         cols = len(self.regions)
@@ -847,27 +840,79 @@ class MainMenu(Menu):
         self.setLevelSelectMaps(self.regions, cols, self.currentRegion, True)
         self.setLevelsClickable(self.currentRegion)
 
+        mainMenu = Image(
+            self, "button", (25, 25), (
+                ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
+                + self.spacing, 21))
+        mainMenuText = Label(
+            self, "Main Menu", 20, CREAM, (
+                ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
+                + self.spacing + 30, 27))
+
+        custom = Image(
+            self, "button", (25, 25), (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
+        customText = Label(
+            self, "Custom Levels", 20, CREAM, (
+                mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
+
         key = Image(
             self, "keyCream", (25, 25), (config["graphics"]["displayWidth"] - (
-                (config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 75, 21))
         keyTextBackground = Rectangle(
             self, CREAM, (40, 25), (config["graphics"]["displayWidth"] - (
-                (config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 40, 21), shapeBorderRadius=[5, 5, 5, 5])
 
         self.keyText = Label(
             self, str(config["player"]["keys"]), 20, BLACK, (
                 config["graphics"]["displayWidth"]
-                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 20, 27))
         self.keyText.setPos((
             self.keyText.x - (self.keyText.getFontSize()[0] / 2),
             self.keyText.y))
 
+        levelNext = Image(
+            self, "buttonArrow", (25, 25), (
+                config["graphics"]["displayWidth"]
+                - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2)
+                - self.spacing - 25, config["graphics"]["displayHeight"] - 42))
+        levelNext.flipImage(True, False)
+        levelBack = Image(
+            self, "buttonArrow", (25, 25),
+            (levelNext.x - 25 - 10, config["graphics"]["displayHeight"] - 42))
+
+        custom.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        custom.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOver', image="buttonSelected")
+        mainMenu.addEvent(gf.hoverImage, 'onMouseOut', image="button")
+        levelNext.addEvent(
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
+        levelNext.addEvent(
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
+        levelBack.addEvent(
+            gf.hoverImage, 'onMouseOver', image="buttonArrowSelected")
+        levelBack.addEvent(
+            gf.hoverImage, 'onMouseOut', image="buttonArrow")
+
+        custom.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
+        customText.addEvent(mf.showCustomLevelSelect, 'onMouseClick')
+        mainMenu.addEvent(mf.openMainMenu, 'onMouseClick')
+        mainMenuText.addEvent(mf.openMainMenu, 'onMouseClick')
+        levelNext.addEvent(mf.levelForward, 'onMouseClick', change=vec(1, 0))
+        levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
+
+        self.add(mainMenu)
+        self.add(mainMenuText)
+        self.add(custom)
+        self.add(customText)
         self.add(key)
         self.add(keyTextBackground)
         self.add(self.keyText)
+        self.add(levelNext)
+        self.add(levelBack)
 
         if transition:
             self.slideTransitionY(
