@@ -1,7 +1,10 @@
 import json
 import os
 import sys
+import shutil
 from pygame.locals import Color
+
+CONFIGFILENAME = 'config.json'
 
 
 def getFilePath():
@@ -12,12 +15,16 @@ def getFilePath():
 
 # dump config file to json for saving
 def dump(data):
-    with open('config.json', 'w') as f:
+    with open(CONFIGFILENAME, 'w') as f:
         json.dump(data, f)
 
 
+# If the file does not exist we need to copy it over
+if not os.path.exists(CONFIGFILENAME):
+    shutil.copyfile('config-example.json', CONFIGFILENAME)
+
 # Load the config from json
-with open('config.json') as f:
+with open(CONFIGFILENAME) as f:
     config = json.load(f)
 
 # constants
