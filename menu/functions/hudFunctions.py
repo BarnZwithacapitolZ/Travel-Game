@@ -109,7 +109,7 @@ def runMap(obj, menu, event):
 def deleteMap(obj, menu, event):
     if menu.mapEditor.getSaved() and menu.mapEditor.getDeletable():
         menu.mapEditor.deleteLevel()
-        closeMapEditor(obj, menu, event)
+        newMap(obj, menu, event)
 
 
 def changeEditorLayer(obj, menu, event, current=False):

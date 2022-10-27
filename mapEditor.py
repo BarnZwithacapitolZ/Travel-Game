@@ -261,15 +261,10 @@ class MapEditor(SpriteRenderer):
         self.levelData["deletable"] = True
         self.levelData["saved"] = True
 
-        # saveName = "map" + str(
-        #    len(self.game.mapLoader.getMaps()) + 1) + '.json'
         saveName = (
             "map_" +
             self.game.textHandler.getString().replace(" ", "_") + '.json')
         path = os.path.join(MAPSFOLDER, saveName)
-
-        with open(path, "w") as f:
-            json.dump(self.levelData, f)
 
         config["maps"]["custom"][self.game.textHandler.getString()] = saveName
         dump(config)
@@ -277,6 +272,7 @@ class MapEditor(SpriteRenderer):
         self.game.mapLoader.addMap(
             self.game.textHandler.getString(),
             path, self.game.mapLoader.getCustomMaps())
+        self.saveLevel()
         self.game.mainMenu.updateCustomMaps()
 
     # Remove a map, which has already been saved,

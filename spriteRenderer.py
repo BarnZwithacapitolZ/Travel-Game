@@ -1,5 +1,6 @@
 import pygame
 import random
+import copy
 from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
 from utils import vec
 from layer import Layer
@@ -68,7 +69,8 @@ class SpriteRenderer():
         self.connectionTypes = ["layer 4"]
 
     def setDefaultMap(self):
-        self.levelData = DEFAULTLEVELCONFIG
+        # We deepcopy to stop leveldata making changes to the imported dict.
+        self.levelData = copy.deepcopy(DEFAULTLEVELCONFIG)
 
     # Save function, for when the level has already
     # been created before (and is being edited)

@@ -1,4 +1,3 @@
-from tkinter.tix import MAIN
 import pygame
 from config import (
     config, BLACK, TRUEBLACK, WHITE, GREEN, CREAM, YELLOW, dump)
@@ -344,10 +343,15 @@ class MainMenu(Menu):
             + self.currentCustomLevel.x)
 
         if currentIndex >= len(self.customMaps):
-            currentIndex -= 1
+            # If we are past the last map, set index to the last map.
+            currentIndex = len(self.customMaps) - 1
             cy = int(currentIndex / 4)
             cx = (currentIndex % 4)
             self.currentCustomLevel = vec(cx, cy)
+
+            # We need to save to config so it stays after closing
+            config["player"]["currentCustomLevel"] = [cx, cy]
+            dump(config)
 
     def main(self, transition=False, reload=True):
         self.open = True
@@ -424,7 +428,7 @@ class MainMenu(Menu):
         return False
 
     def createLevel(self, x, y, count, maps, offset=vec(0, 0), region=False):
-        if x >= 0 and y >= 0 and x < len(maps[0]) and y < len(maps):
+        if x >= 0 and y >= 0:
             pos = (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2
                 + ((self.levelWidth + self.spacing) * x) - offset.x,
@@ -651,12 +655,14 @@ class MainMenu(Menu):
 
         # Add the maps after and including the currently selected map.
         for y, row in enumerate(mapsAfter):
+            # If we are on a new row, start adding maps from the left.
             if y > 0 and len(mapsAfter[-1]) < cols:
                 offset.x = (
                     (self.levelWidth + self.spacing)
                     * (cols - len(mapsAfter[0])))
 
             for x, _ in enumerate(row):
+                # print(x, y, count, mapsAfter, offset)
                 count = self.createLevel(
                     x, y, count, mapsAfter, offset, region)
 
@@ -817,7 +823,7 @@ class MainMenu(Menu):
         self.levelSelectOpen = False
         self.customLevelSelectOpen = False
         self.currentLevelSelect = MainMenu.LevelSelect.REGIONSELECT
-        self.backgroundColor = BLACK
+        self.backgroundColor = CREAM
 
         # Exact level sizing
         self.levelWidth = 350
@@ -827,16 +833,16 @@ class MainMenu(Menu):
         cols = len(self.regions)
         self.currentMaps = self.getArrangedMaps(self.regions, cols)
 
-        # Add the regions after eveything else in the menu has been loaded
-        self.setLevelSelectMaps(self.regions, cols, self.currentRegion, True)
-        self.setLevelsClickable(self.currentRegion)
+        lineBackdrop = Rectangle(
+            self, BLACK, (config["graphics"]["displayWidth"] + 20, 20),
+            (-10, (config["graphics"]["displayHeight"] / 2) - 10), 10, fill=GREEN)
 
         mainMenu = Image(
             self, "button", (25, 25), (
                 ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
                 + self.spacing, 21))
         mainMenuText = Label(
-            self, "Main Menu", 20, CREAM, (
+            self, "Main Menu", 20, BLACK, (
                 ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) - 100
                 + self.spacing + 30, 27))
 
@@ -844,20 +850,20 @@ class MainMenu(Menu):
             self, "button", (25, 25), (
                 mainMenuText.x + mainMenuText.getFontSize()[0] + 10, 21))
         customText = Label(
-            self, "Custom Levels", 20, CREAM, (
+            self, "Custom Levels", 20, BLACK, (
                 mainMenuText.x + mainMenuText.getFontSize()[0] + 40, 27))
 
         key = Image(
-            self, "keyCream", (25, 25), (config["graphics"]["displayWidth"] - (
+            self, "key", (25, 25), (config["graphics"]["displayWidth"] - (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 75, 21))
         keyTextBackground = Rectangle(
-            self, CREAM, (40, 25), (config["graphics"]["displayWidth"] - (
+            self, BLACK, (40, 25), (config["graphics"]["displayWidth"] - (
                 (config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 40, 21), shapeBorderRadius=[5, 5, 5, 5])
 
         self.keyText = Label(
-            self, str(config["player"]["keys"]), 20, BLACK, (
+            self, str(config["player"]["keys"]), 20, CREAM, (
                 config["graphics"]["displayWidth"]
                 - ((config["graphics"]["displayWidth"] - self.levelWidth) / 2) + 100
                 - self.spacing - 20, 27))
@@ -896,8 +902,12 @@ class MainMenu(Menu):
         levelBack.addEvent(mf.levelBackward, 'onMouseClick', change=vec(-1, 0))
 
         self.add([
-            mainMenu, mainMenuText, custom, customText, key, keyTextBackground,
-            self.keyText, levelNext, levelBack])
+            lineBackdrop, mainMenu, mainMenuText, custom, customText, key,
+            keyTextBackground, self.keyText, levelNext, levelBack])
+
+        # Add the regions after eveything else in the menu has been loaded
+        self.setLevelSelectMaps(self.regions, cols, self.currentRegion, True)
+        self.setLevelsClickable(self.currentRegion)
 
         if transition:
             self.slideTransitionY(
