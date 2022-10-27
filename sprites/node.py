@@ -281,7 +281,7 @@ class Node(Sprite):
 
     def __repr__(self):
         return (
-            f"Node(type={self.type}, subType={self.subType},"
+            f"Node(type={self.type}, subType={self.subType}, "
             f"number={self.number}, connectionType={self.connectionType})")
 
 

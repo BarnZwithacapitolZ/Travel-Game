@@ -236,13 +236,27 @@ class Person(Sprite):
         self.destination = possibleDestinations[destination]
 
     def setSpawn(self, spawns=[]):
-        possibleSpawns = []
-        for spawn in spawns:
-            if spawn.getSubType() in self.possibleSpawns:
-                possibleSpawns.append(spawn)
+        sequence = self.spriteRenderer.getLevelData()["options"]["setSpawn"]
 
-        spawn = random.randint(0, len(possibleSpawns) - 1)
-        self.spawn = possibleSpawns[spawn]
+        # Loop back around
+        if self.spriteRenderer.getSequence() >= len(sequence):
+            self.spriteRenderer.setSequence(0)
+
+        # for spawn in spawns:
+        #     if spawn.getSubType() in self.possibleSpawns:
+        #         possibleSpawns.append(spawn)
+
+        if len(sequence) > 0:
+            # If a sequence number doesn't match a spawn location set it to -1
+            sequence = [s.getNumber() if s.getNumber() == sequence[
+                self.spriteRenderer.getSequence()] else -1 for s in spawns]
+        # get the index of any nonegative sequence number, or randomly allocate
+        i = next((
+            i for i, x in enumerate(sequence) if x != -1),
+            random.randint(0, len(spawns) - 1))
+
+        self.spawn = spawns[i]
+        self.spriteRenderer.setSequence(self.spriteRenderer.getSequence() + 1)
 
     def setEntities(self, entities):
         self.entities = entities

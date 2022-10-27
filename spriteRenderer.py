@@ -59,6 +59,7 @@ class SpriteRenderer():
         self.setDefaultMap()
 
         self.totalPeople, self.completed, self.totalToComplete = 0, 0, 0
+        self.sequence = 0  # Keep track of the spawning order
         self.totalPeopleNone = False
         self.slowDownMeterAmount = 75
 
@@ -162,6 +163,9 @@ class SpriteRenderer():
     def setOffset(self, offset=tuple()):
         self.offset = vec(offset[0], offset[1])
 
+    def setSequence(self, sequence):
+        self.sequence = sequence
+
     def calculateOffset(self):
         scaleChange = self.fixedScale - 1.0
         offX = -((config["graphics"]["displayWidth"] / 2) * scaleChange)
@@ -237,6 +241,9 @@ class SpriteRenderer():
 
     def getSlowDownMeterAmount(self):
         return self.slowDownMeterAmount
+
+    def getSequence(self):
+        return self.sequence
 
     def getDebug(self):
         return self.debug
@@ -648,7 +655,8 @@ class SpriteRenderer():
 
         # Always spawn a person if there is no people left on the map,
         # to stop player having to wait
-        if self.timer > self.timeStep:
+        if (self.timer > self.timeStep
+                and not self.levelData["options"]["limitPeople"]):
             self.timer = 0
             self.gridLayer2.createPerson(self.allDestinations)
 

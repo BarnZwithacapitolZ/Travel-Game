@@ -158,8 +158,17 @@ DEFAULTLEVELCONFIG = {
         # (if it doesn't we don't need the timer to be shown for
         # each person since there is no limit as no lives)
         "lives": True,
-        "limitPeople": False,  # Limit the No. people who can spawn
-        "setSpawn": False  # Set the spawn to a specific node
+
+        # Nobody else can spawn whilst there is already a person on the map
+        "limitPeople": False,
+
+        # Set the spawn sequence to predetermined specific nodes
+        # If its empty we use random allocation
+        # If its not empty we loop through that sequence
+        #   i.e [45] - always spawn at 45
+        #   [45, 28] - spawn at 45, then 28, then 45, then 28 ...
+        # If a sequence number does not exist as a spawn location it is ignored
+        "setSpawn": []
     },
     "locked": {"isLocked": False, "unlock": 0},  # Amount to unlock
 
