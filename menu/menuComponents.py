@@ -6,7 +6,7 @@ import copy
 import os
 from config import (
     config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW, WHITE)
-from utils import vec, overrides
+from utils import vec, overrides, checkKeyExist
 from transitionFunctions import transitionMessageRight
 from engine import ImageLoader
 
@@ -1322,14 +1322,11 @@ class Map(LevelSelect):
         return self.level
 
     def drawDifficulty(self):
-        textColor = BLACK
-
         # can't use sprite renderer dark mode since it wont be different
         # for every map
-        if ("backgrounds" in self.levelData
-                and "darkMode" in self.levelData["backgrounds"]
-                and self.levelData["backgrounds"]["darkMode"]):
-            textColor = WHITE
+        textColor = (
+            WHITE if checkKeyExist(self.levelData, ['backgrounds', 'darkMode'])
+            else BLACK)
 
         difficultyText = Label(
             self.menu, "Difficulty", 15, textColor, (30, self.height - 60))
@@ -1346,12 +1343,9 @@ class Map(LevelSelect):
         if "score" not in self.levelData:
             return
 
-        textColor = BLACK
-
-        if ("backgrounds" in self.levelData
-                and "darkMode" in self.levelData["backgrounds"]
-                and self.levelData["backgrounds"]["darkMode"]):
-            textColor = WHITE
+        textColor = (
+            WHITE if checkKeyExist(self.levelData, ['backgrounds', 'darkMode'])
+            else BLACK)
 
         scoreText = Label(
             self.menu, "Score", 15, textColor, (140, self.height - 60))

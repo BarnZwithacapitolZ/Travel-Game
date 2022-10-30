@@ -2,7 +2,7 @@ import pygame
 import random
 import copy
 from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
-from utils import vec
+from utils import vec, checkKeyExist
 from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
@@ -85,10 +85,8 @@ class SpriteRenderer():
         # otherwise we close the hud
         self.hud.main(transition) if self.rendering else self.hud.close()
 
-        if self.rendering:
-            self.messageSystem.main()
-        else:
-            self.messageSystem.close()
+        (self.messageSystem.main() if self.rendering
+            else self.messageSystem.close())
 
         # Create the paused surface when first rendering
         self.createPausedSurface()
@@ -177,13 +175,9 @@ class SpriteRenderer():
         self.debug = debug
 
     def setDarkMode(self):
-        if ("backgrounds" in self.levelData and
-            "darkMode" in self.levelData["backgrounds"]
-                and self.levelData["backgrounds"]["darkMode"]):
-            self.darkMode = True
-
-        else:
-            self.darkMode = False
+        self.darkMode = (
+            True if checkKeyExist(self.levelData, ['backgrounds', 'darkMode'])
+            else False)
 
     def setTotalPeople(self, totalPeople):
         self.totalPeople = totalPeople
@@ -401,13 +395,9 @@ class SpriteRenderer():
             self.totalToComplete = self.levelData["total"]
 
         # Set the lives
-        if ("options" in self.levelData
-                and "lives" in self.levelData["options"]):
-            self.lives = (
-                DEFAULTLIVES if self.levelData["options"]["lives"] else None)
-
-        else:
-            self.lives = DEFAULTLIVES
+        self.lives = (
+            DEFAULTLIVES if checkKeyExist(self.levelData, ['options', 'lives'])
+            else None)
 
         self.meter = MeterController(
             self, self.allSprites, self.slowDownMeterAmount)
@@ -674,7 +664,7 @@ class SpriteRenderer():
 
     def showLayer(self, layer):
         if (not self.rendering
-                or "layer " + str(layer) not in self.connectionTypes):
+                or f"layer {str(layer)}" not in self.connectionTypes):
             return
 
         self.currentLayer = layer

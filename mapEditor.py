@@ -1,7 +1,6 @@
 import pygame
 import copy
 import os
-import json
 from pygame.locals import Color
 from gridManager import GridManager
 from node import NodeType
@@ -9,7 +8,7 @@ from hud import EditorHud
 from spriteRenderer import SpriteRenderer
 from clickManager import EditorClickManager
 from config import config, dump, MAPSFOLDER
-from utils import overrides
+from utils import overrides, checkKeyExist
 from layer import Layer
 
 
@@ -102,8 +101,7 @@ class MapEditor(SpriteRenderer):
         self.levelData["connections"][layer] = newConnections
 
     def translateNodes(self, nodeType, layer, oldMapPos, newMapPos):
-        if (nodeType not in self.levelData
-                or layer not in self.levelData[nodeType]):
+        if checkKeyExist(self.levelData, [nodeType, layer]) is None:
             return
 
         for key, node in list(enumerate(self.levelData[nodeType][layer])):
@@ -166,15 +164,15 @@ class MapEditor(SpriteRenderer):
                 backgroundColor[0], backgroundColor[1], backgroundColor[2]]
 
         # Make sure the background data exists and if not add it in
-        if ("backgrounds" in self.levelData
-                and "layer " + str(layer) in self.levelData['backgrounds']):
+        if checkKeyExist(
+                self.levelData, ['backgrounds', f'layer {str(layer)}']):
             self.levelData['backgrounds'][
-                "layer " + str(layer)] = backgroundColor
+                f"layer {str(layer)}"] = backgroundColor
             self.levelData['backgrounds']['darkMode'] = darkMode
 
         else:
             self.levelData['backgrounds'] = {
-                "layer " + str(layer): backgroundColor,
+                f"layer {str(layer)}": backgroundColor,
                 "darkMode": darkMode
             }
 

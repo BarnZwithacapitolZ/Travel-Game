@@ -5,7 +5,7 @@ import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
-from utils import overrides, vec
+from utils import overrides, vec, checkKeyExist
 from enum import Enum, auto
 from sprite import Sprite
 from entity import Particle, Outline
@@ -143,7 +143,7 @@ class Person(Sprite):
             for i in range(len(finalPlayerTypes)):
                 occurances = previousPeopleTypes.count(finalPlayerTypes[i])
                 weights[i] -= (occurances * 10)
-                indexes = [j for j, x in enumerate(weights) if j != i]
+                indexes = [j for j, _ in enumerate(weights) if j != i]
                 for k in indexes:
                     weights[k] += (occurances * 10) / (
                         len(finalPlayerTypes) - 1)
@@ -236,7 +236,9 @@ class Person(Sprite):
         self.destination = possibleDestinations[destination]
 
     def setSpawn(self, spawns=[]):
-        sequence = self.spriteRenderer.getLevelData()["options"]["setSpawn"]
+        sequence = checkKeyExist(
+            self.spriteRenderer.getLevelData(), ['options', 'setSpawn'])
+        sequence = [] if sequence is None else sequence
 
         # Loop back around
         if self.spriteRenderer.getSequence() >= len(sequence):

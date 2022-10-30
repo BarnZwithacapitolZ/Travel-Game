@@ -3,7 +3,7 @@ import pygame.gfxdraw
 import random
 import math
 from config import config, DEFAULTBACKGROUND
-from utils import vec
+from utils import vec, checkKeyExist
 from gridManager import GridManager
 from person import Person, Manager, Commuter
 
@@ -254,15 +254,10 @@ class Layer:
         self.createConnections()
 
     def loadBackgroundColor(self, default):
-        levelData = self.grid.getMap()
-
-        if ("backgrounds" in levelData
-                and self.connectionType in levelData["backgrounds"]):
-            self.backgroundColor = (
-                levelData["backgrounds"][self.connectionType])
-
-        else:
-            self.backgroundColor = default
+        self.backgroundColor = checkKeyExist(
+            self.grid.getMap(), ['backgrounds', self.connectionType])
+        self.backgroundColor = (
+            default if self.backgroundColor is None else self.backgroundColor)
 
     def render(self, nodes=None, transports=None):
         self.lineSurface.fill(self.backgroundColor)
