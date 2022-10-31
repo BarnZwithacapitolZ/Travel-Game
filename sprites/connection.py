@@ -1,7 +1,5 @@
-import pygame
-import pygame.gfxdraw
 from config import BLACK, YELLOW, LAYERCOLORS, TEMPLAYERCOLORS
-from utils import vec, getMousePos
+from utils import vec, getMousePos, getScale
 
 
 class Connection:
@@ -130,10 +128,7 @@ class Connection:
 
     def update(self):
         mx, my = getMousePos(self.game)
-
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
 
         buffer = 1
 

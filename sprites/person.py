@@ -5,7 +5,7 @@ import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
-from utils import overrides, vec, checkKeyExist, getMousePos
+from utils import overrides, vec, checkKeyExist, getMousePos, getScale
 from enum import Enum, auto
 from sprite import Sprite
 from entity import Particle, Decorators, StatusIndicator
@@ -78,6 +78,8 @@ class Person(Sprite):
         self.statusIndicator = StatusIndicator(self.groups, self)
         self.decorators = Decorators(
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
+        self.decorators.addDecorator('outline')
+        self.decorators.addDecorator('path')
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -366,9 +368,7 @@ class Person(Sprite):
         if self.spriteRenderer.getLives() is None:
             return
 
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
         thickness = 4
 
@@ -394,8 +394,7 @@ class Person(Sprite):
 
         rect = ((
             self.pos + vec(32, -35) + self.spriteRenderer.offset)
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+            * getScale(self.game, self.spriteRenderer))
 
         if surface is None:
             self.game.renderer.addSurface(self.fontImage, (rect))
@@ -407,9 +406,7 @@ class Person(Sprite):
         if self.spriteRenderer.getLives() is None:
             return
 
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
         length = 20
 
@@ -431,9 +428,7 @@ class Person(Sprite):
         if self.destination is None:
             return
 
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
         thickness = 4
 
@@ -476,8 +471,7 @@ class Person(Sprite):
         # do I need the fixed scale to change here?
         self.timerFont = pygame.font.Font(
             pygame.font.get_default_font(),
-            int(15 * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale()))
+            int(15 * getScale(self.game, self.spriteRenderer)))
 
     @overrides(Sprite)
     def makeSurface(self):

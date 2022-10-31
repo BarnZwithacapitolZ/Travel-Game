@@ -23,6 +23,7 @@ def checkKeyExist(dict, keys, i=0):
     return None
 
 
+# Get the current mouse position relative to the size of the scren
 def getMousePos(game):
     mx, my = pygame.mouse.get_pos()
     difference = game.renderer.getDifference()
@@ -30,3 +31,8 @@ def getMousePos(game):
     my -= difference[1]
 
     return mx, my
+
+
+# Get the games scale relative to the screen and map size
+def getScale(game, spriteRenderer):
+    return game.renderer.getScale() * spriteRenderer.getFixedScale()

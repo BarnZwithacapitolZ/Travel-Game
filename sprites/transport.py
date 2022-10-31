@@ -8,7 +8,7 @@ import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
 from entity import Decorators
-from utils import overrides, vec, getMousePos
+from utils import overrides, vec, getMousePos, getScale
 from enum import Enum
 from sprite import Sprite
 
@@ -60,6 +60,8 @@ class Transport(Sprite):
         # self.spriteRenderer.aboveEntities
         self.decorators = Decorators(
             self.groups, self, [self.clickManager])
+        self.decorators.addDecorator('outline')
+        self.decorators.addDecorator('path')
 
         self.imageName = "train"
         self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
@@ -354,8 +356,7 @@ class Transport(Sprite):
                 self.pos.y + self.personHolder.drawerOffset.y)
             self.personHolder.rect.topleft = (
                 (self.personHolder.drawerPos + self.spriteRenderer.offset)
-                * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+                * getScale(self.game, self.spriteRenderer))
 
         else:
             self.personHolder.pos.x = (
@@ -365,9 +366,7 @@ class Transport(Sprite):
 
     # Draw how long is left at each stop
     def drawTimer(self, surface):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
 
         # Arc Indicator

@@ -3,7 +3,7 @@ import pygame.gfxdraw
 import random
 import math
 from config import config, DEFAULTBACKGROUND
-from utils import vec, checkKeyExist
+from utils import vec, checkKeyExist, getScale
 from gridManager import GridManager
 from person import Person, Manager, Commuter
 
@@ -213,9 +213,7 @@ class Layer:
 
     # Word out the x and y of each connection and append it to the list
     def createLines(self, lines, color, fromNode, toNode, thickness, offset):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offxy = self.spriteRenderer.offset
 
         # change in direction
@@ -316,8 +314,7 @@ class Background:
         self.image = self.game.imageLoader.getImage(
             self.imageName, (self.width, self.height))
         self.rect = self.image.get_rect()
-        self.rect.x = self.x * self.game.renderer.getScale()
-        self.rect.y = self.y * self.game.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.game.renderer.getScale()
 
     def draw(self, surface):
         if self.dirty or self.image is None:

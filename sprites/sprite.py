@@ -1,6 +1,6 @@
 import pygame
 import abc
-from utils import overrides
+from utils import overrides, getScale
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -30,9 +30,7 @@ class Sprite(pygame.sprite.Sprite):
     def getTopLeft(self, target):
         return (
             (target.pos + self.spriteRenderer.offset)
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale()
-        )
+            * getScale(self.game, self.spriteRenderer))
 
     # Defines the priority of the rendering order, a sprite with a > priority
     # than another sprite will be drawn above that other sprite.

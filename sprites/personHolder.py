@@ -2,7 +2,7 @@ import pygame
 import math
 from config import BLACK, GREY, WHITE
 from transport import Transport
-from utils import overrides, vec, getMousePos
+from utils import overrides, vec, getMousePos, getScale
 from sprite import Sprite
 
 
@@ -229,11 +229,9 @@ class PersonHolder(Sprite):
 
         if not self.open:
             self.image = pygame.Surface((
-                    self.width * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale(), self.height
-                    * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale()
-                ), pygame.SRCALPHA).convert_alpha()
+                self.width * getScale(self.game, self.spriteRenderer),
+                self.height * getScale(self.game, self.spriteRenderer)
+            ), pygame.SRCALPHA).convert_alpha()
 
             self.rect = self.image.get_rect()
 
@@ -242,8 +240,7 @@ class PersonHolder(Sprite):
             # Do I need the fixed scale to change here?
             self.counterFont = pygame.font.Font(
                 pygame.font.get_default_font(), int(
-                    12 * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale()))
+                    12 * getScale(self.game, self.spriteRenderer)))
 
             pygame.draw.ellipse(self.image, self.color, (
                 0, 0, self.rect.width, self.rect.height))
@@ -258,29 +255,24 @@ class PersonHolder(Sprite):
             rect = ((vec(
                 self.width / 2 - (size[0] / 2),
                 self.height / 2 - (size[1] / 2)))
-                * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+                * getScale(self.game, self.spriteRenderer))
 
             self.image.blit(self.fontImage, rect)
 
         else:
             self.image = pygame.Surface((
-                    self.drawerWidth * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale(), self.drawerHeight
-                    * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale()
-                ), pygame.SRCALPHA).convert_alpha()
+                self.drawerWidth * getScale(self.game, self.spriteRenderer),
+                self.drawerHeight * getScale(self.game, self.spriteRenderer)
+            ), pygame.SRCALPHA).convert_alpha()
 
             self.rect = self.image.get_rect()
             self.rect.topleft = (
                 (self.drawerPos + self.spriteRenderer.offset)
-                * self.game.renderer.getScale()
-                * self.spriteRenderer.getFixedScale())
+                * getScale(self.game, self.spriteRenderer))
 
             pygame.draw.rect(self.image, self.color, (
                 0, 0, self.rect.width, self.rect.height), border_radius=int(
-                    10 * self.game.renderer.getScale()
-                    * self.spriteRenderer.getFixedScale()))
+                    10 * getScale(self.game, self.spriteRenderer)))
 
     @overrides(Sprite)
     def makeSurface(self):

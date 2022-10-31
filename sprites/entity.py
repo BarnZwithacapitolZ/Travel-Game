@@ -2,7 +2,7 @@ import pygame
 import math
 import abc
 from config import YELLOW
-from utils import overrides, vec
+from utils import overrides, vec, getScale
 from sprite import Sprite
 
 
@@ -34,8 +34,7 @@ class Particle(Sprite):
         self.size = (vec(
             self.target.width + (self.rad * 2),
             self.target.height + (self.rad * 2))
-            * self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+            * getScale(self.game, self.spriteRenderer))
 
         self.image = pygame.Surface((self.size)).convert()
         self.image.set_colorkey((0, 0, 0))  # Remove black border
@@ -95,13 +94,23 @@ class Decorators(Sprite):
         self.target = target
         self.clickManager = self.clickManagers[0]
         self.width, self.height = self.target.width, self.target.height
+        self.decorators = {}
 
         self.target.addEntity('decorators', self)
 
+    def addDecorator(self, decorator, options=[]):
+        if decorator not in self.decorators:
+            self.decorators[decorator] = options
+
+    def removeDecorator(self, decorator):
+        if decorator in self.decorators:
+            del self.decorators[decorator]
+
     def drawOutline(self, surface):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        if 'outline' not in self.decorators:
+            return
+
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
 
         offx = 0.01
@@ -115,15 +124,16 @@ class Decorators(Sprite):
 
             offx += 0.02
 
+    def drawTimer(self, surface):
+        pass
+
     # Visualize the path by drawing the connection between each node
     def drawPath(self, surface):
-        if len(self.target.path) <= 0:
+        if len(self.target.path) <= 0 or 'path' not in self.decorators:
             return
 
         start = self.target.path[0]
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
+        scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
         thickness = 3
 
