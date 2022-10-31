@@ -646,7 +646,8 @@ class SpriteRenderer():
         # Always spawn a person if there is no people left on the map,
         # to stop player having to wait
         if (self.timer > self.timeStep
-                and not self.levelData["options"]["limitPeople"]):
+                and not checkKeyExist(
+                    self.levelData, ['options', 'limitPeople'])):
             self.timer = 0
             self.gridLayer2.createPerson(self.allDestinations)
 
@@ -704,15 +705,17 @@ class SpriteRenderer():
     # Draw all the sprites in a layer, based on what layer the player
     # is currently on
     def renderLayer(self, layerInt, gridLayer, group):
-        if self.currentLayer == layerInt:
-            # First we draw the layer surface including the background
-            # color and lines.
-            gridLayer.draw()
+        if self.currentLayer != layerInt:
+            return
 
-            # Draw all sprites on top of the background and lines
-            # (including nodes).
-            for sprite in group:
-                sprite.draw()
+        # First we draw the layer surface including the background
+        # color and lines.
+        gridLayer.draw()
+
+        # Draw all sprites on top of the background and lines
+        # (including nodes).
+        for sprite in group:
+            sprite.draw()
 
     # Draw all sprites to the paused surface, based on what layer the player
     # is currently on

@@ -1,5 +1,4 @@
 import pygame
-import string
 import abc
 import math
 import copy
@@ -9,96 +8,6 @@ from config import (
 from utils import vec, overrides, checkKeyExist
 from transitionFunctions import transitionMessageRight
 from engine import ImageLoader
-
-
-class TextHandler:
-    def __init__(self):
-        self.active = False
-        self.lengthReached = False
-        self.pointer = self.previousPointer = 0
-        self.string = []
-
-        self.keys = list(string.ascii_letters) + list(string.digits)
-        self.keys.append(" ")
-        self.currentKey = None
-
-    def getActive(self):
-        return self.active
-
-    def getPressed(self):
-        return False if self.currentKey is None else True
-
-    def getCurrentKey(self):
-        return self.currentKey
-
-    def getLengthReached(self):
-        return self.lengthReached
-
-    def getPointer(self):
-        return self.pointer
-
-    def getPreviousPointer(self):
-        return self.previousPointer
-
-    def getString(self, pointer=False):
-        return (
-            ''.join(self.string[:self.pointer]) if pointer
-            else ''.join(self.string))
-
-    def setCurrentKey(self, currentKey):
-        self.currentKey = currentKey
-
-    def setString(self, string=[]):
-        self.string = string
-
-    def setLengthReached(self, lengthReached):
-        self.lengthReached = lengthReached
-
-    def setPointer(self, pointer):
-        if pointer > len(self.string) or pointer < 0:
-            return
-        self.previousPointer = self.pointer
-        self.pointer = pointer
-
-    def setPreviousPointer(self, previousPointer):
-        self.previousPointer = previousPointer
-
-    def removeLast(self):
-        if self.pointer > 0:
-            del self.string[self.pointer - 1]
-            self.setPointer(self.pointer - 1)
-
-    # When active clear the text so its ready for input
-    def setActive(self, active):
-        self.active = active
-
-        if self.active:
-            self.string = []
-            self.pointer = 0
-
-    def events(self, event):
-        self.setCurrentKey(event.key)
-
-        if self.active:
-            if event.key == pygame.K_BACKSPACE:
-                self.removeLast()
-            else:
-                if event.unicode in self.keys and not self.lengthReached:
-                    if self.pointer == len(self.string):
-                        self.string.append(event.unicode)
-
-                    else:
-                        b = self.string[:]
-                        insert = self.pointer
-                        b[insert:insert] = [event.unicode]
-                        self.string = b
-
-                    self.setPointer(self.pointer + 1)
-
-                if event.key == config["controls"]["left"]["current"]:
-                    self.setPointer(self.pointer - 1)
-                elif event.key == config["controls"]["right"]["current"]:
-                    self.setPointer(self.pointer + 1)
 
 
 class MenuComponent:
@@ -111,7 +20,6 @@ class MenuComponent:
         self.y = pos[1]
         self.size = size
 
-        self.pos = vec(self.x, self.y)
         self.offset = vec(0, 0)
 
         self.events = []
@@ -384,8 +292,7 @@ class Label(MenuComponent):
         self.height = height
 
         # Reset the x, y coordinates since these are set to 0 in get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.menu.renderer.getScale()
 
     @overrides(MenuComponent)
     def makeSurface(self):
@@ -423,8 +330,8 @@ class ControlKey(Label):
         self.rect = self.finalImage.get_rect()
 
         # Reset the x, y coordinates since these are set to 0 in get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = (self.y - 5) * self.menu.renderer.getScale()
+        self.rect.topleft = vec(
+            self.x, self.y - 5) * self.menu.renderer.getScale()
 
         # Add the border to the image
         if self.border:
@@ -512,10 +419,8 @@ class ControlLabel(Label):
         self.rect = self.finalImage.get_rect()
 
         # Reset the x, y coordinates since these are set to 0 in get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = (
-            (self.y - (key.getOffset().y / 2))
-            * self.menu.renderer.getScale())
+        self.rect.topleft = vec(self.x, self.y - (
+            key.getOffset().y / 2)) * self.menu.renderer.getScale()
 
         key.drawPaused(self.finalImage)
 
@@ -548,7 +453,7 @@ class InputBox(Label):
         self.background = background
         self.indicator = Rectangle(
             self.menu, self.color, (
-                3, self.getFontSize("hello world!")[1]), self.pos)
+                3, self.getFontSize("hello world!")[1]), vec(self.x, self.y))
 
     # TODO: a better way to do this without using the textHandler
     # (just setting the string directly)
@@ -748,7 +653,7 @@ class Shape(MenuComponent):
     def __render(self):
         self.dirty = False
 
-        pos, size = self.setRect()
+        _, size = self.setRect()
         self.setBorder()
 
         # Create the image for blitting onto other
@@ -866,9 +771,7 @@ class Meter(Rectangle):
             self, surface, color=None, rect=None, rectAmount=None,
             outline=None):
         rectAmount = self.rectAmount if rectAmount is None else rectAmount
-
-        self.rectAmount.x = self.rect.x
-        self.rectAmount.y = self.rect.y
+        self.rectAmount.topleft = self.rect.topleft
 
         super().drawShape(surface, color, rect, 0)
         super().drawShape(surface, self.innerColor, rectAmount, 0)
@@ -1158,11 +1061,10 @@ class MessageBox(Rectangle):
             (pos[1] + self.offset.y) + self.message.offset.y))
 
     def setRectPos(self):
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.menu.renderer.getScale()
         if hasattr(self.message, 'rect'):
-            self.message.rect.x = self.message.x * self.menu.renderer.getScale()
-            self.message.rect.y = self.message.y * self.menu.renderer.getScale()
+            self.message.rect.topleft = vec(
+                self.message.x, self.message.y) * self.menu.renderer.getScale()
 
     def addMessages(self):
         self.menu.add(self.message)
@@ -1366,8 +1268,7 @@ class Map(LevelSelect):
 
         # The rect should be the size of the final, complete image
         self.rect = self.finalImage.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.menu.renderer.getScale()
 
         # We get the level image of the map
         self.image = self.menu.game.spriteRenderer.createLevelSurface(
@@ -1412,8 +1313,7 @@ class Region(LevelSelect):
 
         # The rect should be the size of the final, complete image
         self.rect = self.finalImage.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.menu.renderer.getScale()
 
         self.image = Image(
             self.menu, self.levelData["image"],
@@ -1488,8 +1388,7 @@ class Image(MenuComponent):
                 self.foreground, self.rot)
 
         self.rect = self.foreground.get_rect()
-        self.rect.x = self.x * self.menu.renderer.getScale()
-        self.rect.y = self.y * self.menu.renderer.getScale()
+        self.rect.topleft = vec(self.x, self.y) * self.menu.renderer.getScale()
 
         if self.alpha is not None:
             self.foreground.set_alpha(self.alpha, pygame.RLEACCEL)

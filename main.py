@@ -12,7 +12,7 @@ from clickManager import ClickManager
 from engine import RegionLoader, Renderer, ImageLoader, MapLoader, AudioLoader
 from spriteRenderer import SpriteRenderer
 from menu import MainMenu, OptionMenu
-from menuComponents import TextHandler
+from textHandler import TextHandler
 from mapEditor import MapEditor
 
 

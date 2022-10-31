@@ -7,7 +7,7 @@ import node as NODE
 import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
-from sprites.entity import Outline
+from entity import Outline
 from utils import overrides, vec
 from enum import Enum
 from sprite import Sprite
@@ -55,8 +55,11 @@ class Transport(Sprite):
             self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
+        # TODO: figure out a way to show entities on the same layer they
+        # are added to??
+        # self.spriteRenderer.aboveEntities
         self.outline = Outline(
-            self.spriteRenderer.aboveEntities, self, [self.clickManager])
+            self.groups, self, [self.clickManager])
 
         self.imageName = "train"
         self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
