@@ -125,7 +125,33 @@ class Decorators(Sprite):
             offx += 0.02
 
     def drawTimer(self, surface):
-        pass
+        if (self.spriteRenderer.getLives() is None
+                or 'timer' not in self.decorators):
+            return
+
+        # Get the options or defaults
+        options = self.decorators['timer']
+        length = options['length'] if 'length' in options else 20
+        thickness = options['thickness'] if 'thickness' in options else 5
+
+        if self.target.timer <= 0 or self.target.timer > length:
+            return
+
+        scale = getScale(self.game, self.spriteRenderer)
+        offset = self.spriteRenderer.offset
+
+        offx = 0.01
+        step = self.target.timer / (length / 2) + 0.02
+        for _ in range(6):
+            pygame.draw.arc(
+                surface, YELLOW, (
+                    (self.target.pos.x - 4 + offset.x) * scale,
+                    (self.target.pos.y - 4 + offset.y) * scale,
+                    (self.width + 8) * scale, (self.height + 8) * scale),
+                math.pi / 2 + offx, math.pi / 2 + math.pi * step,
+                int(thickness * scale))
+
+            offx += 0.01
 
     # Visualize the path by drawing the connection between each node
     def drawPath(self, surface):
@@ -163,6 +189,10 @@ class Decorators(Sprite):
 
     @overrides(Sprite)
     def draw(self):
+        # TODO: probably want to do this in a conditional
+        # so its not always added?
+        self.game.renderer.addSurface(None, None, self.drawTimer)
+
         if self.clickManager.getTarget() == self.target:
             self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)

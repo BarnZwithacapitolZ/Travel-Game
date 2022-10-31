@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
@@ -80,6 +79,7 @@ class Person(Sprite):
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
         self.decorators.addDecorator('outline')
         self.decorators.addDecorator('path')
+        self.decorators.addDecorator('timer')
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -401,29 +401,6 @@ class Person(Sprite):
         else:
             surface.blit(self.fontImage, (rect))
 
-    # Draw how long is left at each stop
-    def drawTimer(self, surface):
-        if self.spriteRenderer.getLives() is None:
-            return
-
-        scale = getScale(self.game, self.spriteRenderer)
-        offset = self.spriteRenderer.offset
-        length = 20
-
-        # Arc Indicator
-        offx = 0.01
-        step = self.timer / (length / 2) + 0.02
-        for _ in range(6):
-            pygame.draw.arc(
-                surface, YELLOW, (
-                    (self.pos.x - 4 + offset.x) * scale,
-                    (self.pos.y - 4 + offset.y) * scale,
-                    (self.width + 8) * scale, (self.height + 8) * scale),
-                math.pi / 2 + offx, math.pi / 2 + math.pi * step,
-                int(4 * scale))
-
-            offx += 0.01
-
     def drawDestination(self, surface):
         if self.destination is None:
             return
@@ -481,11 +458,6 @@ class Person(Sprite):
     @overrides(Sprite)
     def drawPaused(self, surface):
         self.makeSurface()
-
-        # Want to draw the timer behind the transport
-        if self.timer <= 20:
-            self.drawTimer(surface)
-
         surface.blit(self.image, (self.rect))
 
     @overrides(Sprite)
@@ -502,7 +474,6 @@ class Person(Sprite):
             if not self.timerReached:
                 self.game.audioLoader.playSound("playerAlert", 1)
             self.timerReached = True
-            self.game.renderer.addSurface(None, None, self.drawTimer)
 
     @overrides(Sprite)
     def events(self):

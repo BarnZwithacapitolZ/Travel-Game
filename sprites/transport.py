@@ -1,11 +1,9 @@
-import pygame
 import random
 import decimal
-import math
 import personHolder
 import node as NODE
 import person as PERSON
-from config import HOVERGREY, YELLOW
+from config import HOVERGREY
 from pygame.locals import BLEND_MIN
 from entity import Decorators
 from utils import overrides, vec, getMousePos, getScale
@@ -62,6 +60,7 @@ class Transport(Sprite):
             self.groups, self, [self.clickManager])
         self.decorators.addDecorator('outline')
         self.decorators.addDecorator('path')
+        self.decorators.addDecorator('timer', {'length': self.timerLength})
 
         self.imageName = "train"
         self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
@@ -364,25 +363,6 @@ class Transport(Sprite):
             self.personHolder.pos.y = self.pos.y + self.personHolder.offset.y
             self.personHolder.rect.topleft = self.getTopLeft(self.personHolder)
 
-    # Draw how long is left at each stop
-    def drawTimer(self, surface):
-        scale = getScale(self.game, self.spriteRenderer)
-        offset = self.spriteRenderer.offset
-
-        # Arc Indicator
-        offx = 0.01
-        step = self.timer / (self.timerLength / 2) + 0.02
-        for _ in range(6):
-            pygame.draw.arc(
-                surface, YELLOW, (
-                    (self.pos.x - 4 + offset.x) * scale,
-                    (self.pos.y - 4 + offset.y) * scale,
-                    (self.width + 8) * scale, (self.height + 8) * scale),
-                math.pi / 2 + offx, math.pi / 2 + math.pi * step,
-                int(8 * scale))
-
-            offx += 0.01
-
     def __render(self):
         self.dirty = False
 
@@ -402,21 +382,12 @@ class Transport(Sprite):
     @overrides(Sprite)
     def drawPaused(self, surface):
         self.makeSurface()
-
-        # Want to draw the timer behind the transport
-        if self.timer > 0:
-            self.drawTimer(surface)
-
         surface.blit(self.image, (self.rect))
 
     @overrides(Sprite)
     def draw(self):
         self.makeSurface()
         self.game.renderer.addSurface(self.image, (self.rect))
-
-        if self.timer > 0:
-            # Draw the time indicator
-            self.drawTimer(self.game.renderer.gameDisplay)
 
     @overrides(Sprite)
     def events(self):
