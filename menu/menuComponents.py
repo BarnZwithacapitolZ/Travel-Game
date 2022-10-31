@@ -1484,7 +1484,8 @@ class Image(MenuComponent):
             self.foreground = ImageLoader.flipImage(
                 self.foreground, self.xbool, self.ybool)
         if self.rot > 0:
-            self.image = ImageLoader.rotateImage(self.foreground, self.rot)
+            self.foreground = ImageLoader.rotateImage(
+                self.foreground, self.rot)
 
         self.rect = self.foreground.get_rect()
         self.rect.x = self.x * self.menu.renderer.getScale()

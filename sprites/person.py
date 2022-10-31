@@ -8,7 +8,7 @@ from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
 from utils import overrides, vec, checkKeyExist
 from enum import Enum, auto
 from sprite import Sprite
-from entity import Particle, Outline
+from entity import Particle, Outline, StatusIndicator
 
 
 class Person(Sprite):
@@ -66,7 +66,6 @@ class Person(Sprite):
         self.vel = vec(0, 0)
 
         self.speed = 20
-        self.budget = 20
         self.path = []
 
         self.travellingOn = None
@@ -84,8 +83,6 @@ class Person(Sprite):
         self.timerReached = False
         self.rad = 5
         self.step = 15
-
-        self.entities = []
 
         # Switch to the layer that the player spawned on
         self.switchLayer(
@@ -180,17 +177,11 @@ class Person(Sprite):
     def getPossibleDestinations(self):
         return self.possibleDestinations
 
-    def getBudget(self):
-        return self.budget
-
     def getDestination(self):
         return self.destination
 
     def getTravellingOn(self):
         return self.travellingOn
-
-    def getEntities(self):
-        return self.entities
 
     def getActive(self):
         return self.active
@@ -260,9 +251,6 @@ class Person(Sprite):
         self.spawn = spawns[i]
         self.spriteRenderer.setSequence(self.spriteRenderer.getSequence() + 1)
 
-    def setEntities(self, entities):
-        self.entities = entities
-
     def setImageName(self):
         color = LAYERCOLORS[int(self.currentConnectionType[-1])]['name']
         newName = "person" + color.capitalize()
@@ -284,15 +272,14 @@ class Person(Sprite):
 
         self.statusIndicator.kill()
         self.outline.kill()
+        self.deleteEntities('statusIndicators')
+        self.deleteEntities('outlines')
 
         self.spriteRenderer.setTotalPeople(
             self.spriteRenderer.getTotalPeople() - 1)
 
         # Call the sprite kill methods that deleted the sprite from memory
         super().kill()
-
-    def addEntity(self, entity):
-        self.entities.append(entity)
 
     # Add a node to the persons path
     def addToPath(self, node):
@@ -415,7 +402,7 @@ class Person(Sprite):
         offset = self.spriteRenderer.offset
         thickness = 4
 
-        start = (self.pos - self.offset) + vec(7, -10)
+        start = (self.pos - self.offset) + vec(7, -12)
         middle = (self.pos + vec(30, -40))
         end = middle + vec(30, 0)
 
@@ -734,7 +721,6 @@ class Manager(Person):
         super().__init__(
             renderer, groups, spawnDestinations, Manager.getPossibleSpawns(),
             Manager.getPossibleDestinations(), clickManagers)
-        self.budget = 40
         # self.imageName = "manager"
 
     @staticmethod
@@ -755,7 +741,6 @@ class Commuter(Person):
         super().__init__(
             renderer, groups, spawnDestinations, Commuter.getPossibleSpawns(),
             Commuter.getPossibleDestinations(), clickManagers)
-        self.budget = 12
         # self.imageName = "person"
 
     @staticmethod
@@ -768,71 +753,3 @@ class Commuter(Person):
 
     # Office, home?
     # has a small budget so cant rly afford many taxis etc.
-
-
-class StatusIndicator(Sprite):
-    def __init__(self, groups, currentPerson):
-        super().__init__(currentPerson.spriteRenderer, groups, [])
-        self.currentPerson = currentPerson
-
-        self.width, self.height = 10, 10
-        self.offset = vec(-2.5, -10)
-        self.pos = self.currentPerson.pos + self.offset
-
-        if self.spriteRenderer.getDarkMode():
-            self.images = [
-                None, "walkingWhite", "waitingWhite", "boardingWhite",
-                "boardingWhite", None, "departingWhite", "flagWhite"]
-
-        else:
-            self.images = [
-                None, "walking", "waiting", "boarding", "boarding", None,
-                "departing", "flag"]
-        self.currentState = self.currentPerson.getStatusValue() - 1
-
-    def __render(self):
-        self.dirty = False
-
-        if self.images[self.currentState] is not None:
-            self.image = self.game.imageLoader.getImage(
-                self.images[self.currentState], (
-                    self.width * self.spriteRenderer.getFixedScale(),
-                    self.height * self.spriteRenderer.getFixedScale()))
-            self.rect = self.image.get_rect()
-
-        # If the image is none, we want to create a Rect so we can still move
-        # the status indicator, but set the image to the None attribute
-        else:
-            self.image = self.images[self.currentState]
-            self.rect = pygame.Rect(
-                0, 0,
-                self.width * self.spriteRenderer.getFixedScale(),
-                self.height * self.spriteRenderer.getFixedScale())
-
-        self.rect.topleft = self.getTopLeft(self)
-
-    # TODO: just add and remove the sprite from groups instead of setting the
-    # image to None.
-    @overrides(Sprite)
-    def makeSurface(self):
-        if self.dirty:
-            self.__render()
-        if self.image is None:
-            return False
-        return True
-
-    @overrides(Sprite)
-    def drawPaused(self, surface):
-        if self.makeSurface():
-            surface.blit(self.image, (self.rect))
-
-    @overrides(Sprite)
-    def draw(self):
-        if self.makeSurface():
-            self.game.renderer.addSurface(self.image, (self.rect))
-
-    @overrides(Sprite)
-    def update(self):
-        if (self.currentPerson.getStatusValue() - 1) != self.currentState:
-            self.dirty = True
-            self.currentState = self.currentPerson.getStatusValue() - 1

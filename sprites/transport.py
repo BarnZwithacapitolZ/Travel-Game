@@ -7,6 +7,7 @@ import node as NODE
 import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
+from sprites.entity import Outline
 from utils import overrides, vec
 from enum import Enum
 from sprite import Sprite
@@ -53,6 +54,9 @@ class Transport(Sprite):
         self.personHolder = personHolder.PersonHolder(
             self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
+
+        self.outline = Outline(
+            self.spriteRenderer.aboveEntities, self, [self.clickManager])
 
         self.imageName = "train"
         self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
@@ -407,23 +411,6 @@ class Transport(Sprite):
         pygame.draw.line(surface, YELLOW, startx, starty, int(
             thickness * scale))
 
-    def drawOutline(self, surface):
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-        offset = self.spriteRenderer.offset
-
-        offx = 0.01
-        for x in range(6):
-            pygame.draw.arc(
-                surface, YELLOW, (
-                    (self.pos.x - 2 + offset.x) * scale,
-                    (self.pos.y - 2 + offset.y) * scale,
-                    (self.width + 4) * scale, (self.height + 4) * scale),
-                math.pi / 2 + offx, math.pi / 2, int(4 * scale))
-
-            offx += 0.02
-
     def __render(self):
         self.dirty = False
 
@@ -461,7 +448,6 @@ class Transport(Sprite):
 
         if self.clickManager.getTransport() == self:
             self.drawPath(self.game.renderer.gameDisplay)
-            self.game.renderer.addSurface(None, None, self.drawOutline)
 
     @overrides(Sprite)
     def events(self):

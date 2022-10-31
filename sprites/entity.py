@@ -7,7 +7,7 @@ from sprite import Sprite
 
 
 class Particle(Sprite):
-    def __init__(self, groups, target, color=YELLOW):
+    def __init__(self, groups, target, color=YELLOW, infinite=False):
         super().__init__(target.spriteRenderer, groups, [])
         self.target = target
         self.color = color
@@ -15,7 +15,16 @@ class Particle(Sprite):
         self.rad = 0
         self.alpha = self.start
 
-        self.target.addEntity(self)
+        # Run endlessly
+        self.infinite = infinite
+
+        self.target.addEntity('particles', self)
+
+    def getInfinite(self):
+        return self.infinite
+
+    def setInfinite(self, infinite):
+        self.infinite = infinite
 
     def __render(self):
         self.dirty = False
@@ -51,13 +60,33 @@ class Particle(Sprite):
 
         if self.alpha < self.end:
             self.kill()
-            if len(self.target.getEntities()) < 3:
-                Particle(self.groups, self.target)
+            if len(self.target.getEntities('particles')) < 3 or self.infinite:
+                Particle(self.groups, self.target, infinite=self.infinite)
             else:
-                self.target.setEntities([])
+                self.target.deleteEntities('particles')
 
         # Since the particle is short-lived, this is ok.
         self.dirty = True
+
+
+class MouseClick(Sprite):
+    def __init__(self, groups, target, direction="left"):
+        super().__init__(target.spriteRenderer, groups, [])
+        self.target = target
+        self.direction = direction
+
+    def __render(self):
+        pass
+
+    @overrides(Sprite)
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    @overrides(Sprite)
+    def update(self):
+        # We want to animate the entity here
+        pass
 
 
 class Outline(Sprite):
@@ -65,8 +94,9 @@ class Outline(Sprite):
         super().__init__(target.spriteRenderer, groups, clickManagers)
         self.target = target
         self.clickManager = self.clickManagers[0]
-
         self.width, self.height = self.target.width, self.target.height
+
+        self.target.addEntity('outlines', self)
 
     def drawOutline(self, surface):
         scale = (
@@ -78,12 +108,12 @@ class Outline(Sprite):
         self.pos = self.target.pos
 
         offx = 0.01
-        for x in range(6):
+        for _ in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x + offset.x) * scale,
-                    (self.pos.y + offset.y) * scale,
-                    (self.width) * scale, (self.height) * scale),
+                    (self.pos.x - 2 + offset.x) * scale,
+                    (self.pos.y - 2 + offset.y) * scale,
+                    (self.width + 4) * scale, (self.height + 4) * scale),
                 math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
 
             offx += 0.02
@@ -95,5 +125,74 @@ class Outline(Sprite):
 
     @overrides(Sprite)
     def draw(self):
-        if self.clickManager.getPerson() == self.target:
+        if self.clickManager.getTarget() == self.target:
             self.game.renderer.addSurface(None, None, self.drawOutline)
+
+
+class StatusIndicator(Sprite):
+    def __init__(self, groups, target):
+        super().__init__(target.spriteRenderer, groups, [])
+        self.target = target
+        self.width, self.height = 10, 10
+        self.offset = vec(-2.5, -10)
+        self.pos = self.target.pos + self.offset
+
+        self.target.addEntity('statusIndicators', self)
+
+        if self.spriteRenderer.getDarkMode():
+            self.images = [
+                None, "walkingWhite", "waitingWhite", "boardingWhite",
+                "boardingWhite", None, "departingWhite", "flagWhite"]
+
+        else:
+            self.images = [
+                None, "walking", "waiting", "boarding", "boarding", None,
+                "departing", "flag"]
+        self.currentState = self.target.getStatusValue() - 1
+
+    def __render(self):
+        self.dirty = False
+
+        if self.images[self.currentState] is not None:
+            self.image = self.game.imageLoader.getImage(
+                self.images[self.currentState], (
+                    self.width * self.spriteRenderer.getFixedScale(),
+                    self.height * self.spriteRenderer.getFixedScale()))
+            self.rect = self.image.get_rect()
+
+        # If the image is none, we want to create a Rect so we can still move
+        # the status indicator, but set the image to the None attribute
+        else:
+            self.image = self.images[self.currentState]
+            self.rect = pygame.Rect(
+                0, 0,
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale())
+
+        self.rect.topleft = self.getTopLeft(self)
+
+    # TODO: just add and remove the sprite from groups instead of setting the
+    # image to None.
+    @overrides(Sprite)
+    def makeSurface(self):
+        if self.dirty:
+            self.__render()
+        if self.image is None:
+            return False
+        return True
+
+    @overrides(Sprite)
+    def drawPaused(self, surface):
+        if self.makeSurface():
+            surface.blit(self.image, (self.rect))
+
+    @overrides(Sprite)
+    def draw(self):
+        if self.makeSurface():
+            self.game.renderer.addSurface(self.image, (self.rect))
+
+    @overrides(Sprite)
+    def update(self):
+        if (self.target.getStatusValue() - 1) != self.currentState:
+            self.dirty = True
+            self.currentState = self.target.getStatusValue() - 1

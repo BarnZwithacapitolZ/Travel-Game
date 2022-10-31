@@ -196,6 +196,9 @@ class PersonClickManager(ClickManager):
     def getPerson(self):
         return self.person
 
+    # Alias that allows us to use it in entities
+    getTarget = getPerson
+
     # Return the current selected node
     def getNode(self):
         return self.node
@@ -345,6 +348,9 @@ class TransportClickManager(ClickManager):
 
     def getTransport(self):
         return self.transport
+
+    # Alias that allows us to use it in entities
+    getTarget = getTransport
 
     def getNode(self):
         return self.node

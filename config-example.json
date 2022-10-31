@@ -328,8 +328,16 @@
             "image": "ui/RightClick.png",
             "alpha": true
         },
+        "rightClick1": {
+            "image": "ui/RightClick1.png",
+            "alpha": true
+        },
         "leftClick": {
             "image": "ui/LeftClick.png",
+            "alpha": true
+        },
+        "leftClick1": {
+            "image": "ui/LeftClick1.png",
             "alpha": true
         },
         "rightClickWhite": {
@@ -341,11 +349,11 @@
             "alpha": true
         },
         "UK": {
-            "image": "UK.png",
+            "image": "game/regions/UK.png",
             "alpha": true
         },
         "france": {
-            "image": "france.png",
+            "image": "game/regions/france.png",
             "alpha": true
         }
     },

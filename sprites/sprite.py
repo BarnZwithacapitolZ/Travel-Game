@@ -16,6 +16,9 @@ class Sprite(pygame.sprite.Sprite):
         self.mouseOver = False
         self.dirty = True
 
+        # Any entities to be added to the sprite
+        self.entities = {}
+
     def getMouseOver(self):
         return self.mouseOver
 
@@ -47,6 +50,19 @@ class Sprite(pygame.sprite.Sprite):
         my -= difference[1]
 
         return mx, my
+
+    def getEntities(self, key):
+        if key not in self.entities:
+            return []
+        return self.entities[key]
+
+    def addEntity(self, key, entity):
+        self.entities.setdefault(key, []).append(entity)
+
+    def deleteEntities(self, key):
+        if key not in self.entities:
+            return
+        del self.entities[key]
 
     # Remove the sprite from all groups that contain it,
     # the sprite is no longer drawn.
