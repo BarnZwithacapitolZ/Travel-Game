@@ -21,3 +21,12 @@ def checkKeyExist(dict, keys, i=0):
             return dict[keys[i]]
         return checkKeyExist(dict[keys[i]], keys, i+1)
     return None
+
+
+def getMousePos(game):
+    mx, my = pygame.mouse.get_pos()
+    difference = game.renderer.getDifference()
+    mx -= difference[0]
+    my -= difference[1]
+
+    return mx, my

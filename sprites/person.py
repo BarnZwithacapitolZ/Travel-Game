@@ -5,7 +5,7 @@ import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
-from utils import overrides, vec, checkKeyExist
+from utils import overrides, vec, checkKeyExist, getMousePos
 from enum import Enum, auto
 from sprite import Sprite
 from entity import Particle, Decorators, StatusIndicator
@@ -76,7 +76,7 @@ class Person(Sprite):
         self.imageName = "personGrey"  # Default Name
 
         self.statusIndicator = StatusIndicator(self.groups, self)
-        self.outline = Decorators(
+        self.decorators = Decorators(
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
 
         self.timer = random.randint(70, 100)
@@ -271,7 +271,7 @@ class Person(Sprite):
             self.currentConnectionType).removePerson(self)
 
         self.statusIndicator.kill()
-        self.outline.kill()
+        self.decorators.kill()
         self.deleteEntities('statusIndicators')
         self.deleteEntities('decorators')
 
@@ -514,7 +514,7 @@ class Person(Sprite):
     def events(self):
         if self.game.mainMenu.getOpen():
             return
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # If the mouse is clicked, but not on a person,
         # unset the person from the clickmanager (no one clicked)

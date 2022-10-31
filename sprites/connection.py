@@ -1,7 +1,7 @@
 import pygame
 import pygame.gfxdraw
 from config import BLACK, YELLOW, LAYERCOLORS, TEMPLAYERCOLORS
-from utils import vec
+from utils import vec, getMousePos
 
 
 class Connection:
@@ -129,10 +129,7 @@ class Connection:
             self.updateConnections()
 
     def update(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = getMousePos(self.game)
 
         scale = (
             self.game.renderer.getScale()

@@ -5,7 +5,7 @@ import copy
 import os
 from config import (
     config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW, WHITE)
-from utils import vec, overrides, checkKeyExist
+from utils import vec, overrides, checkKeyExist, getMousePos
 from transitionFunctions import transitionMessageRight
 from engine import ImageLoader
 
@@ -528,10 +528,7 @@ class InputBox(Label):
                 and self.text != self.menu.game.textHandler.getString()):
             self.setText()
 
-        mx, my = pygame.mouse.get_pos()
-        difference = self.menu.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = getMousePos(self.menu)
         indicatorPos = 0
 
         if (self.rect.collidepoint((mx, my))
@@ -921,10 +918,7 @@ class Slider(Rectangle):
         if not hasattr(self, 'rect'):
             return
 
-        mx, my = pygame.mouse.get_pos()
-        difference = self.menu.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = getMousePos(self.menu)
 
         self.amount = (
             (self.handleX - self.x)

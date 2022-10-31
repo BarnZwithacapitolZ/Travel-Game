@@ -8,7 +8,7 @@ import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
 from entity import Decorators
-from utils import overrides, vec
+from utils import overrides, vec, getMousePos
 from enum import Enum
 from sprite import Sprite
 
@@ -58,7 +58,7 @@ class Transport(Sprite):
         # TODO: figure out a way to show entities on the same layer they
         # are added to??
         # self.spriteRenderer.aboveEntities
-        self.outline = Decorators(
+        self.decorators = Decorators(
             self.groups, self, [self.clickManager])
 
         self.imageName = "train"
@@ -423,7 +423,7 @@ class Transport(Sprite):
     def events(self):
         if self.game.mainMenu.getOpen():
             return
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # Click off event
         if (not self.rect.collidepoint((mx, my))

@@ -2,7 +2,7 @@ import pygame
 import math
 from config import BLACK, GREY, WHITE
 from transport import Transport
-from utils import overrides, vec
+from utils import overrides, vec, getMousePos
 from sprite import Sprite
 
 
@@ -289,7 +289,7 @@ class PersonHolder(Sprite):
 
     @overrides(Sprite)
     def events(self):
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # Need at least 2 people in the holder to handle events
         if len(self.people) <= 1:

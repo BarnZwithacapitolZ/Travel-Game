@@ -3,7 +3,7 @@ import clickManager as CLICKMANAGER
 import person as PERSON
 from pygame.locals import BLEND_MIN
 from config import HOVERGREY
-from utils import overrides, vec
+from utils import overrides, vec, getMousePos
 from enum import Enum
 from sprite import Sprite
 
@@ -215,7 +215,7 @@ class Node(Sprite):
     def events(self):
         if self.game.mainMenu.getOpen():
             return
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # click event; setting the node for the transport
         if (self.rect.collidepoint((mx, my))
@@ -299,7 +299,7 @@ class EditorNode(Node):
     def events(self):
         if self.game.mainMenu.getOpen():
             return
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # Cant click on a node in the top layer
         if (self.rect.collidepoint((mx, my))
@@ -442,7 +442,7 @@ class BelowIndicator(Sprite):
     def events(self):
         if self.game.mainMenu.getOpen():
             return
-        mx, my = self.getMousePos()
+        mx, my = getMousePos(self.game)
 
         # Click event; take the player to the layer below that is
         # being indicated.

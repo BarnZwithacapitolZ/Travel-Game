@@ -8,7 +8,7 @@ from menuComponents import (
     Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
     ControlLabel, Region)
 from clickManager import ControlClickManager
-from utils import vec, overrides
+from utils import vec, overrides, getMousePos
 from enum import Enum, auto
 import random
 import copy
@@ -106,10 +106,7 @@ class Menu:
                         function(component, self, function, **animation[1])
 
     def events(self, component):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
+        mx, my = getMousePos(self)
 
         # Check the component has been drawn (if called before next tick)
         if not hasattr(component, 'rect') or len(component.events) <= 0:

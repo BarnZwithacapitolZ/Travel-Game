@@ -42,15 +42,6 @@ class Sprite(pygame.sprite.Sprite):
 
         return 0
 
-    # Define the mouse position on the game display.
-    def getMousePos(self):
-        mx, my = pygame.mouse.get_pos()
-        difference = self.game.renderer.getDifference()
-        mx -= difference[0]
-        my -= difference[1]
-
-        return mx, my
-
     def getEntities(self, key):
         if key not in self.entities:
             return []
