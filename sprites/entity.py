@@ -89,14 +89,14 @@ class MouseClick(Sprite):
         pass
 
 
-class Outline(Sprite):
+class Decorators(Sprite):
     def __init__(self, groups, target, clickManagers=[]):
         super().__init__(target.spriteRenderer, groups, clickManagers)
         self.target = target
         self.clickManager = self.clickManagers[0]
         self.width, self.height = self.target.width, self.target.height
 
-        self.target.addEntity('outlines', self)
+        self.target.addEntity('decorators', self)
 
     def drawOutline(self, surface):
         scale = (
@@ -104,19 +104,47 @@ class Outline(Sprite):
             * self.spriteRenderer.getFixedScale())
         offset = self.spriteRenderer.offset
 
-        # Set the position of the outline to the position of the target.
-        self.pos = self.target.pos
-
         offx = 0.01
         for _ in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
-                    (self.pos.x - 2 + offset.x) * scale,
-                    (self.pos.y - 2 + offset.y) * scale,
+                    (self.target.pos.x - 2 + offset.x) * scale,
+                    (self.target.pos.y - 2 + offset.y) * scale,
                     (self.width + 4) * scale, (self.height + 4) * scale),
                 math.pi / 2 + offx, math.pi / 2, int(3.5 * scale))
 
             offx += 0.02
+
+    # Visualize the path by drawing the connection between each node
+    def drawPath(self, surface):
+        if len(self.target.path) <= 0:
+            return
+
+        start = self.target.path[0]
+        scale = (
+            self.game.renderer.getScale()
+            * self.spriteRenderer.getFixedScale())
+        offset = self.spriteRenderer.offset
+        thickness = 3
+
+        for previous, current in zip(self.target.path, self.target.path[1:]):
+            posx = (
+                ((previous.pos - previous.offset) + vec(10, 10) + offset)
+                * scale)
+            posy = (
+                ((current.pos - current.offset) + vec(10, 10) + offset)
+                * scale)
+
+            pygame.draw.line(surface, YELLOW, posx, posy, int(
+                thickness * scale))
+
+        # Connection from target to the first node in the path
+        startx = (
+            ((self.target.pos - self.target.offset) + vec(10, 10) + offset)
+            * scale)
+        starty = ((start.pos - start.offset) + vec(10, 10) + offset) * scale
+        pygame.draw.line(
+            surface, YELLOW, startx, starty, int(thickness * scale))
 
     @overrides(Sprite)
     @abc.abstractmethod
@@ -126,6 +154,7 @@ class Outline(Sprite):
     @overrides(Sprite)
     def draw(self):
         if self.clickManager.getTarget() == self.target:
+            self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
 

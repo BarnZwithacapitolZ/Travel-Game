@@ -8,7 +8,7 @@ from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
 from utils import overrides, vec, checkKeyExist
 from enum import Enum, auto
 from sprite import Sprite
-from entity import Particle, Outline, StatusIndicator
+from entity import Particle, Decorators, StatusIndicator
 
 
 class Person(Sprite):
@@ -76,7 +76,7 @@ class Person(Sprite):
         self.imageName = "personGrey"  # Default Name
 
         self.statusIndicator = StatusIndicator(self.groups, self)
-        self.outline = Outline(
+        self.outline = Decorators(
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
 
         self.timer = random.randint(70, 100)
@@ -273,7 +273,7 @@ class Person(Sprite):
         self.statusIndicator.kill()
         self.outline.kill()
         self.deleteEntities('statusIndicators')
-        self.deleteEntities('outlines')
+        self.deleteEntities('decorators')
 
         self.spriteRenderer.setTotalPeople(
             self.spriteRenderer.getTotalPeople() - 1)
@@ -362,36 +362,6 @@ class Person(Sprite):
         self.statusIndicator.rect.topleft = self.getTopLeft(
             self.statusIndicator)
 
-    # Visualize the players path by drawing the connection between each node
-    # in the path
-    def drawPath(self, surface):
-        if len(self.path) <= 0:
-            return
-
-        start = self.path[0]
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-        offset = self.spriteRenderer.offset
-        thickness = 3
-
-        for previous, current in zip(self.path, self.path[1:]):
-            posx = (((
-                previous.pos - previous.offset) + vec(10, 10) + offset)
-                * scale)
-            posy = (
-                ((current.pos - current.offset) + vec(10, 10) + offset)
-                * scale)
-
-            pygame.draw.line(
-                surface, YELLOW, posx, posy, int(thickness * scale))
-
-        # Connection from player to the first node in the path
-        startx = ((self.pos - self.offset) + vec(10, 10) + offset) * scale
-        starty = ((start.pos - start.offset) + vec(10, 10) + offset) * scale
-        pygame.draw.line(
-            surface, YELLOW, startx, starty, int(thickness * scale))
-
     def drawTimerOutline(self, surface):
         if self.spriteRenderer.getLives() is None:
             return
@@ -446,7 +416,7 @@ class Person(Sprite):
         # Arc Indicator
         offx = 0.01
         step = self.timer / (length / 2) + 0.02
-        for x in range(6):
+        for _ in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
                     (self.pos.x - 4 + offset.x) * scale,
@@ -533,10 +503,6 @@ class Person(Sprite):
             self.drawTimerTime()
             self.drawDestination(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawTimerOutline)
-
-        # Visualize the players path
-        if self.clickManager.getPerson() == self:
-            self.drawPath(self.game.renderer.gameDisplay)
 
         if self.timer <= 20:
             if not self.timerReached:

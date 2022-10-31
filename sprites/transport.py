@@ -7,7 +7,7 @@ import node as NODE
 import person as PERSON
 from config import HOVERGREY, YELLOW
 from pygame.locals import BLEND_MIN
-from entity import Outline
+from entity import Decorators
 from utils import overrides, vec
 from enum import Enum
 from sprite import Sprite
@@ -58,7 +58,7 @@ class Transport(Sprite):
         # TODO: figure out a way to show entities on the same layer they
         # are added to??
         # self.spriteRenderer.aboveEntities
-        self.outline = Outline(
+        self.outline = Decorators(
             self.groups, self, [self.clickManager])
 
         self.imageName = "train"
@@ -373,7 +373,7 @@ class Transport(Sprite):
         # Arc Indicator
         offx = 0.01
         step = self.timer / (self.timerLength / 2) + 0.02
-        for x in range(6):
+        for _ in range(6):
             pygame.draw.arc(
                 surface, YELLOW, (
                     (self.pos.x - 4 + offset.x) * scale,
@@ -383,36 +383,6 @@ class Transport(Sprite):
                 int(8 * scale))
 
             offx += 0.01
-
-    # Visualize the players path by drawing the connection between each node
-    # in the path
-    def drawPath(self, surface):
-        if len(self.path) <= 0:
-            return
-
-        start = self.path[0]
-        scale = (
-            self.game.renderer.getScale()
-            * self.spriteRenderer.getFixedScale())
-        offset = self.spriteRenderer.offset
-        thickness = 3
-
-        for previous, current in zip(self.path, self.path[1:]):
-            posx = (
-                ((previous.pos - previous.offset) + vec(10, 10) + offset)
-                * scale)
-            posy = (
-                ((current.pos - current.offset) + vec(10, 10) + offset)
-                * scale)
-
-            pygame.draw.line(surface, YELLOW, posx, posy, int(
-                thickness * scale))
-
-        # Connection from player to the first node in the path
-        startx = ((self.pos - self.offset) + vec(10, 10) + offset) * scale
-        starty = ((start.pos - start.offset) + vec(10, 10) + offset) * scale
-        pygame.draw.line(surface, YELLOW, startx, starty, int(
-            thickness * scale))
 
     def __render(self):
         self.dirty = False
@@ -448,9 +418,6 @@ class Transport(Sprite):
         if self.timer > 0:
             # Draw the time indicator
             self.drawTimer(self.game.renderer.gameDisplay)
-
-        if self.clickManager.getTransport() == self:
-            self.drawPath(self.game.renderer.gameDisplay)
 
     @overrides(Sprite)
     def events(self):
