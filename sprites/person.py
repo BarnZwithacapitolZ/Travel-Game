@@ -78,8 +78,10 @@ class Person(Sprite):
         self.decorators = Decorators(
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
         self.decorators.addDecorator('outline')
-        self.decorators.addDecorator('path')
+        self.decorators.addDecorator('path', {'path': self.path})
         self.decorators.addDecorator('timer')
+        self.decorators.addDecorator(
+            'destination', {'destination': self.destination})
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -317,7 +319,7 @@ class Person(Sprite):
         if self.path[0] in newPath and self.path[0] != self.currentNode:
             del newPath[0]
 
-        self.path = []
+        self.path.clear()
 
     def complete(self):
         self.game.audioLoader.playSound("playerSuccess", 1)
@@ -401,39 +403,6 @@ class Person(Sprite):
         else:
             surface.blit(self.fontImage, (rect))
 
-    def drawDestination(self, surface):
-        if self.destination is None:
-            return
-
-        scale = getScale(self.game, self.spriteRenderer)
-        offset = self.spriteRenderer.offset
-        thickness = 4
-
-        pos = (self.destination.pos - vec(self.rad, self.rad) + offset) * scale
-        size = vec(
-            self.destination.width + (self.rad * 2),
-            self.destination.height + (self.rad * 2)) * scale
-        rect = pygame.Rect(pos, size)
-
-        pygame.draw.lines(
-            surface, YELLOW, False, [
-                rect.topleft + (vec(0, 10) * scale), rect.topleft,
-                rect.topleft + (vec(10, 0) * scale)], int(thickness * scale))
-        pygame.draw.lines(
-            surface, YELLOW, False, [
-                rect.topright + (vec(-10, 0) * scale), rect.topright,
-                rect.topright + (vec(0, 10) * scale)], int(thickness * scale))
-        pygame.draw.lines(
-            surface, YELLOW, False, [
-                rect.bottomleft + (vec(0, -10) * scale), rect.bottomleft,
-                rect.bottomleft + (vec(10, 0) * scale)],
-            int(thickness * scale))
-        pygame.draw.lines(
-            surface, YELLOW, False, [
-                rect.bottomright + (vec(-10, 0) * scale), rect.bottomright,
-                rect.bottomright + (vec(0, -10) * scale)],
-            int(thickness * scale))
-
     def __render(self):
         self.dirty = False
 
@@ -467,13 +436,7 @@ class Person(Sprite):
 
         if self.mouseOver or self.clickManager.getPerson() == self:
             self.drawTimerTime()
-            self.drawDestination(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawTimerOutline)
-
-        if self.timer <= 20:
-            if not self.timerReached:
-                self.game.audioLoader.playSound("playerAlert", 1)
-            self.timerReached = True
 
     @overrides(Sprite)
     def events(self):
@@ -604,7 +567,13 @@ class Person(Sprite):
         if self.spriteRenderer.getLives() is not None:
             self.timer -= self.game.dt * self.spriteRenderer.getDt()
 
-        if self.timer <= 0:
+        if self.timer <= 20 and self.timer > 0:
+            # So that it is only called once
+            if not self.timerReached:
+                self.game.audioLoader.playSound("playerAlert", 1)
+            self.timerReached = True
+
+        elif self.timer <= 0:
             self.game.audioLoader.playSound("playerFailure", 1)
             self.spriteRenderer.removeLife()
             self.kill()

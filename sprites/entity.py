@@ -106,6 +106,10 @@ class Decorators(Sprite):
         if decorator in self.decorators:
             del self.decorators[decorator]
 
+    def getOption(self, key, attribute, default):
+        options = self.decorators[key]
+        return options[attribute] if attribute in options else default
+
     def drawOutline(self, surface):
         if 'outline' not in self.decorators:
             return
@@ -130,9 +134,8 @@ class Decorators(Sprite):
             return
 
         # Get the options or defaults
-        options = self.decorators['timer']
-        length = options['length'] if 'length' in options else 20
-        thickness = options['thickness'] if 'thickness' in options else 5
+        length = self.getOption('timer', 'length', 20)
+        thickness = self.getOption('timer', 'thickness', 5)
 
         if self.target.timer <= 0 or self.target.timer > length:
             return
@@ -155,15 +158,20 @@ class Decorators(Sprite):
 
     # Visualize the path by drawing the connection between each node
     def drawPath(self, surface):
-        if len(self.target.path) <= 0 or 'path' not in self.decorators:
+        if 'path' not in self.decorators:
             return
 
-        start = self.target.path[0]
+        path = self.getOption('path', 'path', [])
+
+        if len(path) <= 0:
+            return
+
+        start = path[0]
         scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
         thickness = 3
 
-        for previous, current in zip(self.target.path, self.target.path[1:]):
+        for previous, current in zip(path, path[1:]):
             posx = (
                 ((previous.pos - previous.offset) + vec(10, 10) + offset)
                 * scale)
@@ -182,6 +190,46 @@ class Decorators(Sprite):
         pygame.draw.line(
             surface, YELLOW, startx, starty, int(thickness * scale))
 
+    def drawDestination(self, surface):
+        if 'destination' not in self.decorators:
+            return
+
+        destination = self.getOption('destination', 'destination', None)
+
+        if destination is None:
+            return
+
+        scale = getScale(self.game, self.spriteRenderer)
+        offset = self.spriteRenderer.offset
+        thickness = 4
+
+        pos = ((
+            destination.pos - vec(self.target.rad, self.target.rad) + offset)
+            * scale)
+        size = vec(
+            destination.width + (self.target.rad * 2),
+            destination.height + (self.target.rad * 2)) * scale
+        rect = pygame.Rect(pos, size)
+
+        pygame.draw.lines(
+            surface, YELLOW, False, [
+                rect.topleft + (vec(0, 10) * scale), rect.topleft,
+                rect.topleft + (vec(10, 0) * scale)], int(thickness * scale))
+        pygame.draw.lines(
+            surface, YELLOW, False, [
+                rect.topright + (vec(-10, 0) * scale), rect.topright,
+                rect.topright + (vec(0, 10) * scale)], int(thickness * scale))
+        pygame.draw.lines(
+            surface, YELLOW, False, [
+                rect.bottomleft + (vec(0, -10) * scale), rect.bottomleft,
+                rect.bottomleft + (vec(10, 0) * scale)],
+            int(thickness * scale))
+        pygame.draw.lines(
+            surface, YELLOW, False, [
+                rect.bottomright + (vec(-10, 0) * scale), rect.bottomright,
+                rect.bottomright + (vec(0, -10) * scale)],
+            int(thickness * scale))
+
     @overrides(Sprite)
     @abc.abstractmethod
     def drawPaused(self, surface):
@@ -192,6 +240,10 @@ class Decorators(Sprite):
         # TODO: probably want to do this in a conditional
         # so its not always added?
         self.game.renderer.addSurface(None, None, self.drawTimer)
+
+        if (self.target.mouseOver
+                or self.clickManager.getTarget() == self.target):
+            self.drawDestination(self.game.renderer.gameDisplay)
 
         if self.clickManager.getTarget() == self.target:
             self.drawPath(self.game.renderer.gameDisplay)

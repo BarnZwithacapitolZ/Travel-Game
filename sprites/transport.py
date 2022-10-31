@@ -53,15 +53,6 @@ class Transport(Sprite):
             self.groups, self,
             self.spriteRenderer.getPersonHolderClickManager())
 
-        # TODO: figure out a way to show entities on the same layer they
-        # are added to??
-        # self.spriteRenderer.aboveEntities
-        self.decorators = Decorators(
-            self.groups, self, [self.clickManager])
-        self.decorators.addDecorator('outline')
-        self.decorators.addDecorator('path')
-        self.decorators.addDecorator('timer', {'length': self.timerLength})
-
         self.imageName = "train"
         self.stopType = [NODE.NodeType.METROSTATION, NODE.NodeType.DESTINATION]
         self.boardingType = PERSON.Person.Status.BOARDING
@@ -70,6 +61,15 @@ class Transport(Sprite):
 
         # store the first node in the path, before it might be removed
         self.firstPathNode = None
+
+        # TODO: figure out a way to show entities on the same layer they
+        # are added to??
+        # self.spriteRenderer.aboveEntities
+        self.decorators = Decorators(
+            self.groups, self, [self.clickManager])
+        self.decorators.addDecorator('outline')
+        self.decorators.addDecorator('path', {'path': self.path})
+        self.decorators.addDecorator('timer', {'length': self.timerLength})
 
     def getPeople(self):
         return self.people
@@ -254,7 +254,7 @@ class Transport(Sprite):
         if self.path[0] in newPath and self.path[0] != self.currentNode:
             del newPath[0]
 
-        self.path = []
+        self.path.clear()
 
     # Add a person to the transport
     def addPerson(self, person):
