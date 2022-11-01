@@ -95,6 +95,7 @@ class Decorators(Sprite):
         self.clickManager = self.clickManagers[0]
         self.width, self.height = self.target.width, self.target.height
         self.decorators = {}
+        self.angle = 0
 
         self.target.addEntity('decorators', self)
 
@@ -201,14 +202,15 @@ class Decorators(Sprite):
 
         scale = getScale(self.game, self.spriteRenderer)
         offset = self.spriteRenderer.offset
+        angle = 3 * math.sin(self.angle * 0.8) + 8
         thickness = 4
 
         pos = ((
-            destination.pos - vec(self.target.rad, self.target.rad) + offset)
+            destination.pos - vec(angle, angle) + offset)
             * scale)
         size = vec(
-            destination.width + (self.target.rad * 2),
-            destination.height + (self.target.rad * 2)) * scale
+            destination.width + (angle * 2),
+            destination.height + (angle * 2)) * scale
         rect = pygame.Rect(pos, size)
 
         pygame.draw.lines(
@@ -299,6 +301,9 @@ class Decorators(Sprite):
         if self.clickManager.getTarget() == self.target:
             self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
+
+    def update(self):
+        self.angle += 10 * self.game.dt * self.spriteRenderer.getDt()
 
 
 class StatusIndicator(Sprite):

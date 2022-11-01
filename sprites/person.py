@@ -75,7 +75,8 @@ class Person(Sprite):
 
         self.statusIndicator = StatusIndicator(self.groups, self)
         self.outline = Decorators(
-            self.spriteRenderer.aboveEntities, self, [self.clickManager])
+            (self.spriteRenderer.allSprites, self.spriteRenderer.aboveEntities),
+            self, [self.clickManager])
         self.outline.addDecorator('outline')
         self.outline.addDecorator(
             'destination', {'destination': self.destination})
@@ -88,8 +89,6 @@ class Person(Sprite):
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
-        self.rad = 5
-        self.step = 15
 
         # Switch to the layer that the player spawned on
         self.switchLayer(
@@ -497,11 +496,6 @@ class Person(Sprite):
             self.events()
 
         self.vel = vec(0, 0)
-        self.rad += self.step * self.game.dt * self.spriteRenderer.getDt()
-
-        # Increase the radius of the selector showing the destination
-        if self.rad > 10 and self.step > 0 or self.rad <= 5 and self.step < 0:
-            self.step = -self.step
 
         # Everything beyond here will NOT be called if the
         # spriteRenderer is paused
