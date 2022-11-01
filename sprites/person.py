@@ -73,10 +73,13 @@ class Person(Sprite):
 
         self.imageName = "personGrey"  # Default Name
 
+        self.timer = random.randint(70, 100)
+        self.timerReached = False
+
         self.statusIndicator = StatusIndicator(self.groups, self)
-        self.outline = Decorators(
-            (self.spriteRenderer.allSprites, self.spriteRenderer.aboveEntities),
-            self, [self.clickManager])
+        self.outline = Decorators((
+            self.spriteRenderer.allSprites,
+            self.spriteRenderer.aboveEntities), self, [self.clickManager])
         self.outline.addDecorator('outline')
         self.outline.addDecorator(
             'destination', {'destination': self.destination})
@@ -86,9 +89,6 @@ class Person(Sprite):
         self.decorators.addDecorator('timerOutline')
         self.decorators.addDecorator('timerTime')
         self.decorators.addDecorator('path', {'path': self.path})
-
-        self.timer = random.randint(70, 100)
-        self.timerReached = False
 
         # Switch to the layer that the player spawned on
         self.switchLayer(

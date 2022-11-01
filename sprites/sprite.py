@@ -16,6 +16,9 @@ class Sprite(pygame.sprite.Sprite):
         self.mouseOver = False
         self.dirty = True
 
+        # Keep track of how long the sprite has lived
+        self.timer = 0
+
         # Any entities to be added to the sprite
         self.entities = {}
 
