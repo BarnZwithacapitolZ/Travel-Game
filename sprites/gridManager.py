@@ -413,17 +413,17 @@ class GridManager:
                 connection = possibleConnections[
                     random.randint(0, len(possibleConnections) - 1)]
 
-                t = self.transportMappings[transport["type"]](
-                    self.spriteRenderer, self.groups, connection, running, [
-                        self.spriteRenderer.getTransportClickManager(),
-                        self.spriteRenderer.getPersonClickManager()])
-                self.transports.append(t)
+                moving = (
+                    transport["moving"] if "moving" in transport and running
+                    else running)
+                self.addTransport(
+                    connection, self.transportMappings[transport["type"]],
+                    running, moving)
 
     # Add a transport to the map within the map editor
-    def addTransport(
-            self, connectionType, connection, transport, running=True):
+    def addTransport(self, connection, transport, running=True, moving=True):
         t = transport(
-            self.spriteRenderer, self.groups, connection, running, [
+            self.spriteRenderer, self.groups, connection, running, moving, [
                 self.spriteRenderer.getTransportClickManager(),
                 self.spriteRenderer.getPersonClickManager()])
         self.transports.append(t)

@@ -555,7 +555,7 @@ class EditorClickManager(ClickManager):
         # Its not a regular node, we want to swap the nodes instead of adding
         if not Node.checkRegularNode(node):
             self.game.mapEditor.swapNode(
-                node.getType().value, nodeType, node.getConnectionType(), node)
+                nodeType, node.getConnectionType(), node)
 
         else:
             self.game.mapEditor.addNode(

@@ -299,7 +299,8 @@
         "layer 3": [
             {
                 "location": 153,
-                "type": "tram"
+                "type": "tram",
+                "moving": false
             }
         ]
     },

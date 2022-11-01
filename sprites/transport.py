@@ -21,7 +21,7 @@ class TransportType(Enum):
 class Transport(Sprite):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(spriteRenderer, groups, clickManagers)
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
@@ -42,7 +42,7 @@ class Transport(Sprite):
         self.running = running
 
         # Moving is false means the transport is stationary but has events
-        self.moving = self.running
+        self.moving = moving
         self.timerLength = 300
 
         self.clickManager = self.clickManagers[0]
@@ -532,9 +532,10 @@ class Transport(Sprite):
 class Taxi(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "taxi"
         self.stopType = NODE.NodeType.aslist()
         self.boardingType = PERSON.Person.Status.BOARDINGTAXI
@@ -752,9 +753,10 @@ class Taxi(Transport):
 class Bus(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "bus"
         self.stopType = [NODE.NodeType.BUSSTOP, NODE.NodeType.DESTINATION]
 
@@ -762,9 +764,10 @@ class Bus(Transport):
 class Tram(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "tram"
         self.stopType = [NODE.NodeType.TRAMSTOP, NODE.NodeType.DESTINATION]
 
@@ -772,6 +775,7 @@ class Tram(Transport):
 class Metro(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
