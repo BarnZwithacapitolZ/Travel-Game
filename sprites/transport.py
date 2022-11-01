@@ -38,7 +38,10 @@ class Transport(Sprite):
 
         self.type = TransportType.METRO
 
+        # Running is false means no events and the transport doesn't move
         self.running = running
+
+        # Moving is false means the transport is stationary but has events
         self.moving = self.running
         self.timerLength = 300
 
@@ -90,6 +93,12 @@ class Transport(Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+    def checkCanMove(self):
+        if self.moving or self.checkIsStopType(self.currentNode):
+            return
+
+        self.moving = True
 
     def checkTimerLenghtReached(self):
         self.moving = False
@@ -368,6 +377,7 @@ class Transport(Sprite):
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
+            self.clickManager.setNode(None)
             self.clickManager.setTransport(None)
 
         # Click event
@@ -392,6 +402,7 @@ class Transport(Sprite):
 
             # Set the transport to be moved
             self.game.audioLoader.playSound("uiStartSelect", 2)
+            self.clickManager.setNode(None)
             self.clickManager.setTransport(self)
             self.game.clickManager.setClicked(False)
 
@@ -539,6 +550,13 @@ class Taxi(Transport):
             # If they're waiting for the taxi
             if person.getStatus() == PERSON.Person.Status.FLAG:
                 person.setStatus(self.boardingType)
+
+    @overrides(Transport)
+    def checkCanMove(self):
+        if self.moving or self.hasStopped:
+            return
+
+        self.moving = True
 
     def checkPeopleBoarding(self):
         # Set people waiting for the transportation to departing

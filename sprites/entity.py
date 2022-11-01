@@ -69,13 +69,39 @@ class Particle(Sprite):
 
 
 class MouseClick(Sprite):
-    def __init__(self, groups, target, direction="left"):
+    def __init__(self, groups, target, clickManagers=[], direction="left"):
         super().__init__(target.spriteRenderer, groups, [])
         self.target = target
+        self.clickManager = clickManagers[0]
         self.direction = direction
+        self.width, self.height = 20, 20
+        self.offset = vec(
+            self.target.width / 2 + 5, -(self.target.height / 2) - 5)
+        self.pos = self.target.pos + self.offset
+
+        if self.direction == "left":
+            self.images = ["leftClick", "leftClick1"]
+
+        else:
+            self.images = ["rightClick", "rightClick1"]
+        self.currentState = 0
+
+        self.target.addEntity('mouseClick', self)
+
+        # Always show an infinite particle to make it clear where to click.
+        Particle((
+            self.spriteRenderer.allSprites,
+            self.spriteRenderer.belowEntities), self.target, infinite=True)
 
     def __render(self):
-        pass
+        self.dirty = False
+
+        self.image = self.game.imageLoader.getImage(
+            self.images[self.currentState], (
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale()))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
@@ -83,9 +109,32 @@ class MouseClick(Sprite):
             self.__render()
 
     @overrides(Sprite)
+    def events(self):
+        if (self.direction == "left"
+                and self.clickManager.getTarget() == self.target):
+            self.target.deleteEntities('mouseClick')
+            self.target.deleteEntities('particles')
+            MouseClick(
+                self.groups, self.target.destination,
+                [self.clickManager], "right")
+
+        # Since you can only right click on a node,
+        # we just want to check the target is the set node.
+        if (self.direction == "right"
+                and self.clickManager.getNode() == self.target):
+            self.target.deleteEntities('mouseClick')
+            self.target.deleteEntities('particles')
+
+    @overrides(Sprite)
     def update(self):
-        # We want to animate the entity here
-        pass
+        self.events()
+
+        self.timer += self.game.dt * self.spriteRenderer.getDt()
+
+        if self.timer > 0.5:
+            self.currentState += 1 if self.currentState == 0 else -1
+            self.timer = 0
+            self.dirty = True
 
 
 class Decorators(Sprite):
@@ -276,6 +325,7 @@ class Decorators(Sprite):
             pygame.font.get_default_font(),
             int(15 * getScale(self.game, self.spriteRenderer)))
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty:  # Don't check image since we don't have one
             self.__render()
@@ -302,6 +352,7 @@ class Decorators(Sprite):
             self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
+    @overrides(Sprite)
     def update(self):
         self.angle += 10 * self.game.dt * self.spriteRenderer.getDt()
 

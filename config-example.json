@@ -550,7 +550,8 @@
             "size1": "map_size1.json",
             "size2": "map_size2.json",
             "size3": "map_size3.json",
-            "size4": "map_size4.json"
+            "size4": "map_size4.json",
+            "test": "map_test.json"
         }
     },
     "regions": {

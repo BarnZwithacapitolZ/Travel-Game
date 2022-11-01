@@ -335,10 +335,6 @@ class PersonClickManager(ClickManager):
 
         self.personClicked = False
 
-        # after the click is managed, clear the player and the node to
-        # allow for another click management
-        self.node = None
-
 
 class TransportClickManager(ClickManager):
     def __init__(self, game):
@@ -384,6 +380,7 @@ class TransportClickManager(ClickManager):
 
         if len(path) > 0:
             self.game.audioLoader.playSound("uiFinishSelect", 2)
+            self.transport.checkCanMove()
 
         else:
             self.game.audioLoader.playSound("uiError", 0)
@@ -393,9 +390,6 @@ class TransportClickManager(ClickManager):
 
         for node in path:
             self.transport.addToPath(node)
-
-        # self.transport = None
-        self.node = None
 
 
 class EditorClickManager(ClickManager):

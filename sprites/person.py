@@ -6,7 +6,7 @@ from config import HOVERGREY, LAYERCOLORS
 from utils import overrides, vec, checkKeyExist, getMousePos
 from enum import Enum, auto
 from sprite import Sprite
-from entity import Particle, Decorators, StatusIndicator
+from entity import Particle, Decorators, StatusIndicator, MouseClick
 
 
 class Person(Sprite):
@@ -157,6 +157,9 @@ class Person(Sprite):
         Particle((
             self.spriteRenderer.allSprites,
             self.spriteRenderer.belowEntities), self)
+        # MouseClick((
+        #     self.spriteRenderer.allSprites,
+        #     self.spriteRenderer.aboveEntities), self, [self.clickManager])
 
         self.game.audioLoader.playSound("playerSpawn", 1)
 
@@ -392,6 +395,7 @@ class Person(Sprite):
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
+            self.clickManager.setNode(None)
             self.clickManager.setPerson(None)
 
         # Click event
@@ -413,7 +417,9 @@ class Person(Sprite):
             if holder is not None and self not in holder.getPeople():
                 holder.closeHolder(True)
 
-            # Set the person to be moved
+            # Must clear the node before setting the
+            # person so that path remains clear
+            self.clickManager.setNode(None)
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
 

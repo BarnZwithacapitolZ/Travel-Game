@@ -5,7 +5,8 @@
         "unlock": 0
     },
     "options": {
-        "lives": true
+        "lives": true,
+        "setSpawn": [179]
     },
     "deletable": false,
     "saved": true,
