@@ -276,13 +276,10 @@ class Person(Sprite):
         self.spriteRenderer.getGridLayer(
             self.currentConnectionType).removePerson(self)
 
-        self.statusIndicator.kill()
-        self.decorators.kill()
-        self.deleteEntities('statusIndicators')
-        self.deleteEntities('decorators')
-
         self.spriteRenderer.setTotalPeople(
             self.spriteRenderer.getTotalPeople() - 1)
+
+        self.game.clickManager.resetMouseOver()
 
         # Call the sprite kill methods that deleted the sprite from memory
         super().kill()

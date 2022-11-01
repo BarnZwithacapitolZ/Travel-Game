@@ -51,12 +51,20 @@ class Sprite(pygame.sprite.Sprite):
     def deleteEntities(self, key):
         if key not in self.entities:
             return
+
+        for entity in self.entities[key]:
+            entity.kill()
         del self.entities[key]
+
+    def removeEntities(self):
+        for key in list(self.entities.keys()):
+            self.deleteEntities(key)
 
     # Remove the sprite from all groups that contain it,
     # the sprite is no longer drawn.
     @overrides(pygame.sprite.Sprite)
     def kill(self):
+        self.removeEntities()
         super().kill()
         del self
 
