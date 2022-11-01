@@ -371,23 +371,12 @@ class Transport(Sprite):
             self.height * self.spriteRenderer.getFixedScale()))
 
         self.rect = self.image.get_rect()
-
         self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
-
-    @overrides(Sprite)
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    @overrides(Sprite)
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
 
     @overrides(Sprite)
     def events(self):

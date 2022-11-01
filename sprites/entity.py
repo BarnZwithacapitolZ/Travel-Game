@@ -1,7 +1,7 @@
 import pygame
 import math
 import abc
-from config import YELLOW
+from config import YELLOW, WHITE, BLACK
 from utils import overrides, vec, getScale
 from sprite import Sprite
 
@@ -129,8 +129,8 @@ class Decorators(Sprite):
             offx += 0.02
 
     def drawTimer(self, surface):
-        if (self.spriteRenderer.getLives() is None
-                or 'timer' not in self.decorators):
+        if ('timer' not in self.decorators
+                or self.spriteRenderer.getLives() is None):
             return
 
         # Get the options or defaults
@@ -230,6 +230,54 @@ class Decorators(Sprite):
                 rect.bottomright + (vec(0, -10) * scale)],
             int(thickness * scale))
 
+    def drawTimerOutline(self, surface):
+        if ('timerOutline' not in self.decorators
+                or self.spriteRenderer.getLives() is None):
+            return
+
+        scale = getScale(self.game, self.spriteRenderer)
+        offset = self.spriteRenderer.offset
+
+        start = (self.target.pos - self.target.offset) + vec(7, -12)
+        middle = (self.target.pos + vec(30, -40))
+        end = middle + vec(30, 0)
+
+        pygame.draw.lines(
+            surface, YELLOW, False, [
+                (start + offset) * scale, (middle + offset) * scale,
+                (end + offset) * scale], int(4 * scale))
+
+    def drawTimerTime(self, surface=None):
+        if ('timerTime' not in self.decorators
+                or self.spriteRenderer.getLives() is None):
+            return
+
+        textColor = (
+            WHITE if self.spriteRenderer.getDarkMode() else BLACK)
+
+        fontImage = self.timerFont.render(
+            str(round(self.target.timer, 1)), True, textColor)
+
+        rect = ((
+            self.target.pos + vec(32, -35) + self.spriteRenderer.offset)
+            * getScale(self.game, self.spriteRenderer))
+
+        if surface is None:
+            self.game.renderer.addSurface(fontImage, (rect))
+        else:
+            surface.blit(fontImage, (rect))
+
+    def __render(self):
+        self.dirty = False
+        # do I need the fixed scale to change here?
+        self.timerFont = pygame.font.Font(
+            pygame.font.get_default_font(),
+            int(15 * getScale(self.game, self.spriteRenderer)))
+
+    def makeSurface(self):
+        if self.dirty:  # Don't check image since we don't have one
+            self.__render()
+
     @overrides(Sprite)
     @abc.abstractmethod
     def drawPaused(self, surface):
@@ -237,13 +285,16 @@ class Decorators(Sprite):
 
     @overrides(Sprite)
     def draw(self):
+        self.makeSurface()
         # TODO: probably want to do this in a conditional
         # so its not always added?
         self.game.renderer.addSurface(None, None, self.drawTimer)
 
         if (self.target.mouseOver
                 or self.clickManager.getTarget() == self.target):
+            self.drawTimerTime()
             self.drawDestination(self.game.renderer.gameDisplay)
+            self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
         if self.clickManager.getTarget() == self.target:
             self.drawPath(self.game.renderer.gameDisplay)

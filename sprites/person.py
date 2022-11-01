@@ -1,10 +1,9 @@
-import pygame
 import random
 import numpy
 from node import NodeType
 from pygame.locals import BLEND_MIN
-from config import YELLOW, BLACK, WHITE, HOVERGREY, LAYERCOLORS
-from utils import overrides, vec, checkKeyExist, getMousePos, getScale
+from config import HOVERGREY, LAYERCOLORS
+from utils import overrides, vec, checkKeyExist, getMousePos
 from enum import Enum, auto
 from sprite import Sprite
 from entity import Particle, Decorators, StatusIndicator
@@ -75,13 +74,17 @@ class Person(Sprite):
         self.imageName = "personGrey"  # Default Name
 
         self.statusIndicator = StatusIndicator(self.groups, self)
-        self.decorators = Decorators(
+        self.outline = Decorators(
             self.spriteRenderer.aboveEntities, self, [self.clickManager])
-        self.decorators.addDecorator('outline')
-        self.decorators.addDecorator('path', {'path': self.path})
-        self.decorators.addDecorator('timer')
-        self.decorators.addDecorator(
+        self.outline.addDecorator('outline')
+        self.outline.addDecorator(
             'destination', {'destination': self.destination})
+
+        self.decorators = Decorators(self.groups, self, [self.clickManager])
+        self.decorators.addDecorator('timer')
+        self.decorators.addDecorator('timerOutline')
+        self.decorators.addDecorator('timerTime')
+        self.decorators.addDecorator('path', {'path': self.path})
 
         self.timer = random.randint(70, 100)
         self.timerReached = False
@@ -366,43 +369,6 @@ class Person(Sprite):
         self.statusIndicator.rect.topleft = self.getTopLeft(
             self.statusIndicator)
 
-    def drawTimerOutline(self, surface):
-        if self.spriteRenderer.getLives() is None:
-            return
-
-        scale = getScale(self.game, self.spriteRenderer)
-        offset = self.spriteRenderer.offset
-        thickness = 4
-
-        start = (self.pos - self.offset) + vec(7, -12)
-        middle = (self.pos + vec(30, -40))
-        end = middle + vec(30, 0)
-
-        pygame.draw.lines(
-            surface, YELLOW, False, [
-                (start + offset) * scale, (middle + offset) * scale,
-                (end + offset) * scale],
-            int(thickness * scale))
-
-    def drawTimerTime(self, surface=None):
-        if self.spriteRenderer.getLives() is None:
-            return
-
-        textColor = (
-            WHITE if self.spriteRenderer.getDarkMode() else BLACK)
-
-        self.fontImage = self.timerFont.render(
-            str(round(self.timer, 1)), True, textColor)
-
-        rect = ((
-            self.pos + vec(32, -35) + self.spriteRenderer.offset)
-            * getScale(self.game, self.spriteRenderer))
-
-        if surface is None:
-            self.game.renderer.addSurface(self.fontImage, (rect))
-        else:
-            surface.blit(self.fontImage, (rect))
-
     def __render(self):
         self.dirty = False
 
@@ -411,32 +377,12 @@ class Person(Sprite):
             self.height * self.spriteRenderer.getFixedScale()))
 
         self.rect = self.image.get_rect()
-
         self.rect.topleft = self.getTopLeft(self)
-
-        # do I need the fixed scale to change here?
-        self.timerFont = pygame.font.Font(
-            pygame.font.get_default_font(),
-            int(15 * getScale(self.game, self.spriteRenderer)))
 
     @overrides(Sprite)
     def makeSurface(self):
         if self.dirty or self.image is None:
             self.__render()
-
-    @overrides(Sprite)
-    def drawPaused(self, surface):
-        self.makeSurface()
-        surface.blit(self.image, (self.rect))
-
-    @overrides(Sprite)
-    def draw(self):
-        self.makeSurface()
-        self.game.renderer.addSurface(self.image, (self.rect))
-
-        if self.mouseOver or self.clickManager.getPerson() == self:
-            self.drawTimerTime()
-            self.game.renderer.addSurface(None, None, self.drawTimerOutline)
 
     @overrides(Sprite)
     def events(self):
