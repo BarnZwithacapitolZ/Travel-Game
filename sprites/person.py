@@ -1,5 +1,6 @@
 import random
 import numpy
+import itertools
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import HOVERGREY, LAYERCOLORS
@@ -10,6 +11,8 @@ from entity import Particle, Decorators, StatusIndicator, MouseClick
 
 
 class Person(Sprite):
+    newid = itertools.count()
+
     # Players different status's
     class Status(Enum):
         UNASSIGNED = auto()
@@ -34,8 +37,9 @@ class Person(Sprite):
         super().__init__(spriteRenderer, groups, clickManagers)
         self.clickManager = self.clickManagers[0]
         self.transportClickManager = self.clickManagers[1]
-
         self.width, self.height = 20, 20
+
+        self.id = next(Person.newid)
 
         # List of possible destinations that the player can have
         # (different player types might have different

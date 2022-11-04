@@ -12,6 +12,11 @@ from menu import GameMenu
 from hud import GameHud, MessageHud, PreviewHud
 
 
+class TutorialManager():
+    def __init__(self):
+        pass
+
+
 class SpriteRenderer():
     # Loads all the sprites into groups and stuff
     def __init__(self, game):
@@ -35,6 +40,7 @@ class SpriteRenderer():
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
         self.personHolderClickManager = PersonHolderClickManager(self.game)
+        self.tutorialManager = TutorialManager()
 
         self.rendering = False
 

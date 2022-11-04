@@ -69,11 +69,14 @@ class Particle(Sprite):
 
 
 class MouseClick(Sprite):
-    def __init__(self, groups, target, clickManagers=[], direction="left"):
+    def __init__(
+            self, groups, target, clickManagers=[], direction="left",
+            next=None):
         super().__init__(target.spriteRenderer, groups, [])
         self.target = target
         self.clickManager = clickManagers[0]
         self.direction = direction
+        self.next = next
         self.width, self.height = 20, 20
         self.offset = vec(
             self.target.width / 2 + 5, -(self.target.height / 2) - 5)
@@ -92,6 +95,17 @@ class MouseClick(Sprite):
         Particle((
             self.spriteRenderer.allSprites,
             self.spriteRenderer.belowEntities), self.target, infinite=True)
+
+    def setNextClick(self):
+        # Remove the entity
+        self.target.deleteEntities('mouseClick')
+        self.target.deleteEntities('particles')
+
+        if self.next is None:
+            return
+
+        direction = "right" if self.direction == "left" else "left"
+        MouseClick(self.groups, self.next, [self.clickManager], direction)
 
     def __render(self):
         self.dirty = False
@@ -112,18 +126,13 @@ class MouseClick(Sprite):
     def events(self):
         if (self.direction == "left"
                 and self.clickManager.getTarget() == self.target):
-            self.target.deleteEntities('mouseClick')
-            self.target.deleteEntities('particles')
-            MouseClick(
-                self.groups, self.target.destination,
-                [self.clickManager], "right")
+            self.setNextClick()
 
         # Since you can only right click on a node,
         # we just want to check the target is the set node.
         if (self.direction == "right"
                 and self.clickManager.getNode() == self.target):
-            self.target.deleteEntities('mouseClick')
-            self.target.deleteEntities('particles')
+            self.setNextClick()
 
     @overrides(Sprite)
     def update(self):
@@ -179,8 +188,7 @@ class Decorators(Sprite):
             offx += 0.02
 
     def drawTimer(self, surface):
-        if ('timer' not in self.decorators
-                or self.spriteRenderer.getLives() is None):
+        if ('timer' not in self.decorators):
             return
 
         # Get the options or defaults
