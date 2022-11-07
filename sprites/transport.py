@@ -1,6 +1,5 @@
 import random
 import decimal
-import itertools
 import personHolder
 import node as NODE
 import person as PERSON
@@ -20,7 +19,7 @@ class TransportType(Enum):
 
 
 class Transport(Sprite):
-    newid = itertools.count()
+    newid = 0
 
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
@@ -31,7 +30,8 @@ class Transport(Sprite):
         self.currentNode.addTransport(self)
         self.width, self.height = 30, 30
 
-        self.id = next(Transport.newid)
+        Transport.newid += 1
+        self.id = Transport.newid
 
         self.offset = vec(-5, -5)  # -5 is half the offset of the connector
         self.vel = vec(0, 0)
@@ -73,6 +73,9 @@ class Transport(Sprite):
         self.decorators.addDecorator('outline')
         self.decorators.addDecorator('path', {'path': self.path})
         self.decorators.addDecorator('timer', {'length': self.timerLength})
+
+    def getId(self):
+        return self.id
 
     def getPeople(self):
         return self.people

@@ -27,6 +27,12 @@
         },
         {
             "person_2": null
+        },
+        {
+            "transport_1": 112
+        },
+        {
+            "transport_1": 31
         }
     ],
     "locked": {
@@ -120,10 +126,6 @@
             {
                 "location": 58,
                 "type": "bus"
-            },
-            {
-                "location": 85,
-                "type": "bus"
             }
         ]
     },
@@ -143,10 +145,6 @@
         "layer 2": [
             {
                 "location": 67,
-                "type": "noWalkNode"
-            },
-            {
-                "location": 76,
                 "type": "noWalkNode"
             }
         ]

@@ -1,17 +1,16 @@
 import random
 import numpy
-import itertools
 from node import NodeType
 from pygame.locals import BLEND_MIN
 from config import HOVERGREY, LAYERCOLORS
 from utils import overrides, vec, checkKeyExist, getMousePos
 from enum import Enum, auto
 from sprite import Sprite
-from entity import Particle, Decorators, StatusIndicator, MouseClick
+from entity import Particle, Decorators, StatusIndicator
 
 
 class Person(Sprite):
-    newid = itertools.count()
+    newid = 0
 
     # Players different status's
     class Status(Enum):
@@ -39,7 +38,8 @@ class Person(Sprite):
         self.transportClickManager = self.clickManagers[1]
         self.width, self.height = 20, 20
 
-        self.id = next(Person.newid)
+        Person.newid += 1
+        self.id = Person.newid
 
         # List of possible destinations that the player can have
         # (different player types might have different
@@ -161,11 +161,10 @@ class Person(Sprite):
         Particle((
             self.spriteRenderer.allSprites,
             self.spriteRenderer.belowEntities), self)
-        # MouseClick((
-        #     self.spriteRenderer.allSprites,
-        #     self.spriteRenderer.aboveEntities), self, [self.clickManager])
-
         self.game.audioLoader.playSound("playerSpawn", 1)
+
+    def getId(self):
+        return self.id
 
     # Return the current status (Status) of the person
     def getStatus(self):

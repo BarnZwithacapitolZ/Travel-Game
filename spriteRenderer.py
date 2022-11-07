@@ -3,18 +3,15 @@ import random
 import copy
 from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
 from utils import vec, checkKeyExist
+from person import Person
+from transport import Transport
 from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
 from node import NodeType
-from meterController import MeterController
+from meterController import MeterController, TutorialManager
 from menu import GameMenu
 from hud import GameHud, MessageHud, PreviewHud
-
-
-class TutorialManager():
-    def __init__(self):
-        pass
 
 
 class SpriteRenderer():
@@ -40,7 +37,6 @@ class SpriteRenderer():
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
         self.personHolderClickManager = PersonHolderClickManager(self.game)
-        self.tutorialManager = TutorialManager()
 
         self.rendering = False
 
@@ -311,6 +307,7 @@ class SpriteRenderer():
         self.startingFixedScale = 0  # reset the scale back to default
         self.timer = 0
         self.totalPeople = 0
+        self.sequence = 0  # Reset the sequence to start over
         self.totalPeopleNone = False
         self.belowEntities.empty()
         self.aboveEntities.empty()
@@ -319,6 +316,10 @@ class SpriteRenderer():
         self.layer2.empty()
         self.layer3.empty()
         self.layer4.empty()
+
+        # Reset the local ID's on the person and the transport
+        Person.newid = 0
+        Transport.newid = 0
 
         # Reset the layers to show the top layer
         self.currentLayer = 4
@@ -407,6 +408,11 @@ class SpriteRenderer():
 
         self.meter = MeterController(
             self, self.allSprites, self.slowDownMeterAmount)
+
+        if 'tutorial' in self.levelData:
+            self.tutorialManager = TutorialManager(
+                self, self.allSprites, self.levelData['tutorial'])
+
         self.setDarkMode()
 
         # If there is more than one layer we want to be able
@@ -534,23 +540,35 @@ class SpriteRenderer():
             reverse=True)
         return nodes
 
+    def getNode(self, n):
+        allNodes = self.getAllNodes(self.gridLayer1, self.gridLayer2, self.gridLayer3)
+
+        for node in allNodes:
+            if node.getNumber() == n:
+                return node
+        return None
+
     # Return all the nodes from all layers in the spriterenderer
     def getAllNodes(self, layer1, layer2, layer3):
         layer1Nodes = layer1.getGrid().getNodes()
         layer2Nodes = layer2.getGrid().getNodes()
         layer3Nodes = layer3.getGrid().getNodes()
-        allNodes = layer3Nodes + layer2Nodes + layer1Nodes
-
-        return allNodes
+        return layer3Nodes + layer2Nodes + layer1Nodes
 
     # Return all the transports from all layers in the spriterenderer
     def getAllTransports(self, layer1, layer2, layer3):
         layer1Transports = layer1.getGrid().getTransports()
         layer2Transports = layer2.getGrid().getTransports()
         layer3Transports = layer3.getGrid().getTransports()
-        allTransports = layer1Transports + layer2Transports + layer3Transports
+        return layer1Transports + layer2Transports + layer3Transports
 
-        return allTransports
+    # Return all the current people on a given level
+    # Don't need to pass the layers as this will not be called in level select
+    def getAllPeople(self):
+        layer1People = self.gridLayer1.getPeople()
+        layer2People = self.gridLayer2.getPeople()
+        layer3People = self.gridLayer3.getPeople()
+        return layer1People + layer2People + layer3People
 
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(

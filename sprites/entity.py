@@ -70,10 +70,11 @@ class Particle(Sprite):
 
 class MouseClick(Sprite):
     def __init__(
-            self, groups, target, clickManagers=[], direction="left",
-            next=None):
+            self, groups, target, tutorialManager, clickManagers=[],
+            direction="left", next=None):
         super().__init__(target.spriteRenderer, groups, [])
         self.target = target
+        self.tutorialManager = tutorialManager
         self.clickManager = clickManagers[0]
         self.direction = direction
         self.next = next
@@ -89,6 +90,7 @@ class MouseClick(Sprite):
             self.images = ["rightClick", "rightClick1"]
         self.currentState = 0
 
+        self.target.deleteEntities('particles')  # Remove existing particles
         self.target.addEntity('mouseClick', self)
 
         # Always show an infinite particle to make it clear where to click.
@@ -102,10 +104,14 @@ class MouseClick(Sprite):
         self.target.deleteEntities('particles')
 
         if self.next is None:
+            self.tutorialManager.setSequence(
+                self.tutorialManager.getSequence() + 1)
             return
 
         direction = "right" if self.direction == "left" else "left"
-        MouseClick(self.groups, self.next, [self.clickManager], direction)
+        MouseClick(
+            self.groups, self.next, self.tutorialManager,
+            [self.clickManager], direction)
 
     def __render(self):
         self.dirty = False
@@ -137,6 +143,10 @@ class MouseClick(Sprite):
     @overrides(Sprite)
     def update(self):
         self.events()
+
+        # Move the position of the entity to the position of the target
+        self.pos = self.target.pos + self.offset
+        self.rect.topleft = self.getTopLeft(self)
 
         self.timer += self.game.dt * self.spriteRenderer.getDt()
 
