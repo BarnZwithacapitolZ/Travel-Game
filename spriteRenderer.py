@@ -9,7 +9,8 @@ from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
 from node import NodeType
-from meterController import MeterController, TutorialManager
+from meterController import MeterController
+from tutorialManager import TutorialManager
 from menu import GameMenu
 from hud import GameHud, MessageHud, PreviewHud
 
@@ -658,6 +659,8 @@ class SpriteRenderer():
         self.hud.update()
         self.messageSystem.update()
         self.menu.update()
+
+        # TODO: Update the managers here???????????????????
 
         # If the game is paused or the main main is open (splash screen)
         # then we don't want to allow interaction.

@@ -33,6 +33,9 @@
         },
         {
             "transport_1": 31
+        },
+        {
+            "person_2": null
         }
     ],
     "locked": {
@@ -45,9 +48,9 @@
     "height": 9,
     "difficulty": 1,
     "total": 3,
-    "score": 0,
+    "score": 3,
     "completion": {
-        "completed": false
+        "completed": true
     },
     "audio": "track1",
     "backgrounds": {
