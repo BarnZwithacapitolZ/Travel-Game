@@ -438,33 +438,34 @@ class SpriteRenderer():
             (20, 11): (4.5, 2.8),
             (22, 12): (5, 3)}
 
-        gridLayer4 = Layer(self, (), 4, level)
+        self.gridLayer4 = Layer(self, (), 4, level)
 
         # Set the board scale
-        gridLayer4.getGrid().setBoardScale()
+        self.gridLayer4.getGrid().setBoardScale()
 
         # Work out the spacing of the map for use in the other layers
-        levelData = gridLayer4.getGrid().getMap()
+        levelData = self.gridLayer4.getGrid().getMap()
         size = (levelData["width"], levelData["height"])
         spacing = spacings[size]
 
-        gridLayer3 = Layer(self, (), 3, level, spacing)
-        gridLayer2 = Layer(self, (), 2, level, spacing)
-        gridLayer1 = Layer(self, (), 1, level, spacing)
+        self.gridLayer3 = Layer(self, (), 3, level, spacing)
+        self.gridLayer2 = Layer(self, (), 2, level, spacing)
+        self.gridLayer1 = Layer(self, (), 1, level, spacing)
 
         # Grid ordering
-        gridLayer3.createGrid()
-        gridLayer1.createGrid()
-        gridLayer2.createGrid()
+        self.gridLayer3.createGrid()
+        self.gridLayer1.createGrid()
+        self.gridLayer2.createGrid()
 
-        gridLayer1.grid.loadTransport("layer 1", False)
-        gridLayer2.grid.loadTransport("layer 2", False)
-        gridLayer3.grid.loadTransport("layer 3", False)
+        self.gridLayer1.grid.loadTransport("layer 1", False)
+        self.gridLayer2.grid.loadTransport("layer 2", False)
+        self.gridLayer3.grid.loadTransport("layer 3", False)
 
         # Set the lines from all layers
-        gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
+        self.gridLayer4.setLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3, True)
 
-        return gridLayer4.getLineSurface()
+        return self.gridLayer4.getLineSurface()
 
     # Create a new surface when the game is paused with all the sprites
     # currently in the game, so these don't have to be drawn every frame
@@ -541,26 +542,25 @@ class SpriteRenderer():
             reverse=True)
         return nodes
 
-    def getNode(self, n):
-        allNodes = self.getAllNodes(self.gridLayer1, self.gridLayer2, self.gridLayer3)
-
+    def getNode(self, n, allNodes=None, returnNode=None):
+        allNodes = self.getAllNodes() if allNodes is None else allNodes
         for node in allNodes:
             if node.getNumber() == n:
                 return node
-        return None
+        return returnNode
 
     # Return all the nodes from all layers in the spriterenderer
-    def getAllNodes(self, layer1, layer2, layer3):
-        layer1Nodes = layer1.getGrid().getNodes()
-        layer2Nodes = layer2.getGrid().getNodes()
-        layer3Nodes = layer3.getGrid().getNodes()
+    def getAllNodes(self):
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
         return layer3Nodes + layer2Nodes + layer1Nodes
 
     # Return all the transports from all layers in the spriterenderer
-    def getAllTransports(self, layer1, layer2, layer3):
-        layer1Transports = layer1.getGrid().getTransports()
-        layer2Transports = layer2.getGrid().getTransports()
-        layer3Transports = layer3.getGrid().getTransports()
+    def getAllTransports(self):
+        layer1Transports = self.gridLayer1.getGrid().getTransports()
+        layer2Transports = self.gridLayer2.getGrid().getTransports()
+        layer3Transports = self.gridLayer3.getGrid().getTransports()
         return layer1Transports + layer2Transports + layer3Transports
 
     # Return all the current people on a given level
@@ -578,8 +578,7 @@ class SpriteRenderer():
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
         if allNodes is None:
-            allNodes = self.getAllNodes(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3)
+            allNodes = self.getAllNodes()
 
         # Put any node that is not a regular node at the front of the list,
         # so they are not removed and the regular node is
@@ -597,25 +596,16 @@ class SpriteRenderer():
     # if there is a node above the given node,
     # return the highest node, else return node
     def getTopNode(self, bottomNode):
-        allNodes = self.getAllNodes(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
-        allNodes = SpriteRenderer.sortNodes(allNodes)
-
-        for node in allNodes:
-            if node.getNumber() == bottomNode.getNumber():
-                return node
-
-        return bottomNode
+        return self.getNode(
+            bottomNode.getNumber(),
+            SpriteRenderer.sortNodes(self.getAllNodes()), bottomNode)
 
     # if there is an equivelant node on a different layer, return it,
     # else return none (no node)
     def getNodeFromDifferentLayer(self, currentNode, differentLayer):
         layer = self.getGridLayer(differentLayer)
-
-        for node in layer.getGrid().getNodes():
-            if node.getNumber() == currentNode.getNumber():
-                return node
-        return None
+        return self.getNode(
+            currentNode.getNumber(), layer.getGrid().getNodes())
 
     def checkKeyPress(self, key, pressed, spaceBar, speedUp):
         if (pygame.key.get_pressed()[key] == pressed
@@ -699,8 +689,7 @@ class SpriteRenderer():
         self.game.clickManager.resetMouseOver()
 
         # Redraw the nodes so that the mouse cant collide with them
-        for node in self.getAllNodes(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3):
+        for node in self.getAllNodes():
             node.dirty = True
 
         self.hud.updateLayerText()

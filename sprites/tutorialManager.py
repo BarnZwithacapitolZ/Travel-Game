@@ -34,6 +34,13 @@ class TutorialManager(Sprite):
             return False
         return True
 
+    def addMouseClick(self, target, clickManager, dest):
+        MouseClick((
+            self.spriteRenderer.allSprites, self.spriteRenderer.aboveEntities),
+            target, self, [clickManager], next=dest)
+        self.previousSequence = self.sequence
+        self.previousTarget = target
+
     def update(self):
         if (self.sequence == self.previousSequence
                 or self.sequence >= len(self.ordering)
@@ -45,27 +52,22 @@ class TutorialManager(Sprite):
             dest = self.spriteRenderer.getNode(currentSeq[1])
             pid = int(currentSeq[0].split('_')[1])
             for person in self.spriteRenderer.getAllPeople():
-                if person.getId() == pid:
-                    MouseClick((
-                        self.spriteRenderer.allSprites,
-                        self.spriteRenderer.aboveEntities), person, self,
-                        [self.spriteRenderer.getPersonClickManager()],
-                        next=dest)
-                    self.previousSequence = self.sequence
-                    self.previousTarget = person
-                    break
+                if person.getId() != pid:
+                    continue
+
+                self.addMouseClick(
+                    person, self.spriteRenderer.getPersonClickManager(), dest)
+                break
 
         elif currentSeq[0].split('_')[0] == 'transport':
             # Do transport stuff here
             dest = self.spriteRenderer.getNode(currentSeq[1])
             tid = int(currentSeq[0].split('_')[1])
-            for transport in self.spriteRenderer.getAllTransports(self.spriteRenderer.gridLayer1, self.spriteRenderer.gridLayer2, self.spriteRenderer.gridLayer3):
-                if transport.getId() == tid:
-                    MouseClick((
-                        self.spriteRenderer.allSprites,
-                        self.spriteRenderer.aboveEntities), transport, self,
-                        [self.spriteRenderer.getTransportClickManager()],
-                        next=dest)
-                    self.previousSequence = self.sequence
-                    self.previousTarget = transport
-                    break
+            for transport in self.spriteRenderer.getAllTransports():
+                if transport.getId() != tid:
+                    continue
+
+                self.addMouseClick(
+                    transport, self.spriteRenderer.getTransportClickManager(),
+                    dest)
+                break
