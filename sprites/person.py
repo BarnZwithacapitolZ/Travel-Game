@@ -240,8 +240,7 @@ class Person(Sprite):
 
     def setSpawn(self, spawns=[]):
         sequence = checkKeyExist(
-            self.spriteRenderer.getLevelData(), ['options', 'setSpawn'])
-        sequence = [] if sequence is None else sequence
+            self.spriteRenderer.getLevelData(), ['options', 'setSpawn'], [])
 
         # Loop back around
         if self.spriteRenderer.getSequence() >= len(sequence):

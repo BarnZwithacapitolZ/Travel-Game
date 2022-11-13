@@ -252,9 +252,7 @@ class Layer:
 
     def loadBackgroundColor(self, default):
         self.backgroundColor = checkKeyExist(
-            self.grid.getMap(), ['backgrounds', self.connectionType])
-        self.backgroundColor = (
-            default if self.backgroundColor is None else self.backgroundColor)
+            self.grid.getMap(), ['backgrounds', self.connectionType], default)
 
     def render(self, nodes=None, transports=None):
         self.lineSurface.fill(self.backgroundColor)

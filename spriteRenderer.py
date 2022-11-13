@@ -1,7 +1,9 @@
 import pygame
 import random
 import copy
-from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
+from config import (
+    config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG,
+    DEFAULTMAXSCORE)
 from utils import vec, checkKeyExist
 from person import Person
 from transport import Transport
@@ -49,7 +51,6 @@ class SpriteRenderer():
         self.timeStep = 25
 
         self.lives = DEFAULTLIVES
-        self.score, self.bestScore = 0, 0
 
         self.dt = 1  # Control the speed of whats on screen
         self.startDt = self.dt
@@ -126,21 +127,23 @@ class SpriteRenderer():
         if not hasattr(self, 'levelData'):
             return
 
-        self.score = self.lives if self.lives is not None else DEFAULTLIVES
-        previousScore = 0
+        score = self.lives if self.lives is not None else DEFAULTLIVES
+        maxScore = checkKeyExist(self.levelData, ["max"], DEFAULTMAXSCORE)
+        previousScore = checkKeyExist(self.levelData, ["score"], 0)
 
-        if "score" in self.levelData:
-            previousScore = self.levelData["score"]
-            self.bestScore = previousScore
+        # If the maxScore is 1, we 100% lives to get the point
+        score = (
+            0 if maxScore <= 1 and score < DEFAULTLIVES
+            else round(score * (maxScore / DEFAULTMAXSCORE)))
 
-        if self.score > previousScore:
-            self.levelData["score"] = self.score
+        if score > previousScore:
+            self.levelData["score"] = score
             self.saveLevel()
 
-        if self.score - previousScore > 0:
-            scoreDifference = self.score - previousScore
-        else:
-            scoreDifference = 0
+        # Work out how many new keys to add
+        scoreDifference = 0
+        if score - previousScore > 0:
+            scoreDifference = score - previousScore
 
         # Use this in the menu animation
         previousKeys = config["player"]["keys"]
@@ -260,12 +263,6 @@ class SpriteRenderer():
     def getAllDestination(self):
         if hasattr(self, 'allDestinations'):
             return self.allDestinations
-
-    def getScore(self):
-        return self.score
-
-    def getBestScore(self):
-        return self.bestScore
 
     def getPaused(self):
         return self.paused

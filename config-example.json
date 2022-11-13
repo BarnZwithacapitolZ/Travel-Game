@@ -457,6 +457,18 @@
                 "file": "ui/notification_simple-03.wav",
                 "volume": 0.7
             },
+            "success4": {
+                "file": "ui/notification_simple-04.wav",
+                "volume": 0.7
+            },
+            "success5": {
+                "file": "ui/notification_simple-05.wav",
+                "volume": 0.7
+            },
+            "success6": {
+                "file": "ui/notification_simple-06.wav",
+                "volume": 0.7
+            },
             "expand": {
                 "file": "ui/Expand.wav",
                 "volume": 1.0

@@ -1,4 +1,5 @@
 import pygame
+import math
 
 vec = pygame.math.Vector2
 
@@ -15,12 +16,12 @@ def overrides(interface_class):
 # Check if a key or nested keys exist in a dictionary
 # If they do exist, return the value associated with the key
 # Otherwise return None (couldn't find anything)
-def checkKeyExist(dict, keys, i=0):
+def checkKeyExist(dict, keys, defaultReturn=None, i=0):
     if keys[i] in dict:
         if i + 1 == len(keys):
             return dict[keys[i]]
-        return checkKeyExist(dict[keys[i]], keys, i+1)
-    return None
+        return checkKeyExist(dict[keys[i]], keys, defaultReturn, i+1)
+    return defaultReturn
 
 
 # Get the current mouse position relative to the size of the scren
