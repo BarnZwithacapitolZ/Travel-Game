@@ -4,7 +4,8 @@ import math
 import copy
 import os
 from config import (
-    config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW, WHITE)
+    config, FONTFOLDER, GREEN, BLACK, TRUEBLACK, SCANLINES, RED, YELLOW, WHITE,
+    DEFAULTMAXSCORE)
 from utils import vec, overrides, checkKeyExist, getMousePos
 from transitionFunctions import transitionMessageRight
 from engine import ImageLoader
@@ -1240,13 +1241,14 @@ class Map(LevelSelect):
         textColor = (
             WHITE if checkKeyExist(self.levelData, ['backgrounds', 'darkMode'])
             else BLACK)
+        maxScore = checkKeyExist(self.levelData, ["max"], DEFAULTMAXSCORE)
 
         scoreText = Label(
             self.menu, "Score", 15, textColor, (140, self.height - 60))
         scoreText.drawPaused(self.image)
 
         score = DifficultyMeter(
-            self.menu, YELLOW, textColor, 3, self.levelData["score"], 2,
+            self.menu, YELLOW, textColor, maxScore, self.levelData["score"], 2,
             (15, 15), (140, scoreText.y + (
                 scoreText.getFontSizeScaled()[1]
                 / self.menu.renderer.getScale() + 5)))

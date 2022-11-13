@@ -420,7 +420,8 @@ class Transport(Sprite):
                     self.spriteRenderer.getCurrentLayerString()
                     == self.currentNode.getConnectionType()
                     or self.spriteRenderer.getCurrentLayer() == 4)
-                and self.game.clickManager.isTop(self)):
+                and self.game.clickManager.isTop(self)
+                and self.canClick):
             self.mouseOver = True
             self.game.clickManager.setMouseOver(self)
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)

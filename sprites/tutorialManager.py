@@ -10,11 +10,23 @@ class TutorialManager(Sprite):
         self.sequence, self.previousSequence = 0, -1
         self.previousTarget = None
 
+        self.setClicks()
+
     def setSequence(self, sequence):
         self.sequence = sequence
 
+        if self.sequence >= len(self.ordering):
+            self.setClicks(True)
+
     def getSequence(self):
         return self.sequence
+
+    # We don't want to allow objects that aren't the subject to be moved
+    def setClicks(self, clicks=False):
+        for transport in self.spriteRenderer.getAllTransports():
+            transport.setCanClick(clicks)
+        for person in self.spriteRenderer.getAllPeople():
+            person.setCanClick(clicks)
 
     def checkWaitForPrevious(self):
         if (self.previousSequence < 0
@@ -26,15 +38,18 @@ class TutorialManager(Sprite):
         # If the previous sequence doesn't have a right click,
         # we don't have to wait for anything
         if previousSeq[1] is None:
+            self.previousTarget.setCanClick(False)
             return False
 
         dest = self.spriteRenderer.getNode(previousSeq[1])
         previousDest = self.previousTarget.getCurrentNode()
         if previousDest.getNumber() == dest.getNumber():
+            self.previousTarget.setCanClick(False)
             return False
         return True
 
     def addMouseClick(self, target, clickManager, dest):
+        target.setCanClick(True)
         MouseClick((
             self.spriteRenderer.allSprites, self.spriteRenderer.aboveEntities),
             target, self, [clickManager], next=dest)
