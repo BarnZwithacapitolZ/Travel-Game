@@ -69,7 +69,9 @@ class TutorialManager(Sprite):
 
         currentSeq = next(iter(self.ordering[self.sequence].items()))
         if currentSeq[0].split('_')[0] == "person":
-            dest = self.spriteRenderer.getNode(currentSeq[1])
+            subType = checkKeyExist(
+                self.ordering[self.sequence], ["subType"], None)
+            dest = self.spriteRenderer.getNode(currentSeq[1], subType=subType)
             pid = int(currentSeq[0].split('_')[1])
             found = False
             for person in self.spriteRenderer.getAllPeople():
@@ -77,13 +79,22 @@ class TutorialManager(Sprite):
                     continue
                 found = True
 
-                # Check if they need to be travelling on a transport or not
+                # Check if they need to be travelling on a transport,
+                # or at a specific node.
                 onTransport = checkKeyExist(
                     self.ordering[self.sequence], ["transport"], False)
-                if ((onTransport and person.getTravellingOn() is None)
-                        or (not onTransport and person.getTravellingOn()
-                            is not None)):
-                    continue
+                at = checkKeyExist(self.ordering[self.sequence], ["at"], None)
+                travellingOn = person.getTravellingOn()
+                if onTransport:
+                    if travellingOn is None or (
+                            at and travellingOn.getCurrentNode().getNumber()
+                            != at):
+                        continue
+
+                elif not onTransport:
+                    if travellingOn is not None or (
+                            at and person.getCurrentNode().getNumber() != at):
+                        continue
 
                 self.addMouseClick(
                     person, self.spriteRenderer.getPersonClickManager(), dest)

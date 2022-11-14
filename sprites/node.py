@@ -6,6 +6,7 @@ from config import HOVERGREY
 from utils import overrides, vec, getMousePos
 from enum import Enum
 from sprite import Sprite
+from entity import BelowIndicator
 
 
 class NodeType(Enum):
@@ -117,6 +118,9 @@ class Node(Sprite):
     def getAbove(self):
         return self.above
 
+    def getBelow(self):
+        return self.below
+
     def setType(self, nodeType):
         self.type = nodeType
 
@@ -138,24 +142,17 @@ class Node(Sprite):
         self.currentImage = image
         self.dirty = True
 
-    def addBelowNode(self, below):
-        # We only care about non regular nodes that are below or below.
-        if (self.type == NodeType.REGULAR
-                or below.getType() == NodeType.REGULAR):
-            return
-
-        self.below.append(below)
-
-    def addAboveNode(self, above):
+    def addAboveNode(self, nodeBelow):
         # We only care about non regular nodes that are above or below.
         if (self.type == NodeType.REGULAR
-                or above.getType() == NodeType.REGULAR):
+                or nodeBelow.getType() == NodeType.REGULAR):
             return
 
         indicator = BelowIndicator(
             (self.spriteRenderer.allSprites, self.spriteRenderer.layer4),
-            self, above)
+            self, nodeBelow)
         self.above.append(indicator)
+        nodeBelow.below.append(indicator)
 
     # Add a connection to the node
     def addConnection(self, connection):
@@ -409,65 +406,3 @@ class EditorNode(Node):
 
             if self.clickManager.getTempEndNode() is not None:
                 self.clickManager.removeTempEndNode()
-
-
-class BelowIndicator(Sprite):
-    def __init__(self, groups, currentNode, target):
-        super().__init__(currentNode.spriteRenderer, groups, [])
-        self.currentNode = currentNode
-        self.target = target
-
-        self.width, self.height = 11.5, 11.5
-        self.offset = vec(21, 19 + (
-            len(self.currentNode.getAbove()) * self.width))
-        self.pos = self.currentNode.pos + self.offset
-
-    def __render(self):
-        self.dirty = False
-
-        self.image = self.game.imageLoader.getImage(
-            self.target.getImages()[0], (
-                self.width * self.spriteRenderer.getFixedScale(),
-                self.height * self.spriteRenderer.getFixedScale()))
-        self.rect = self.image.get_rect()
-
-        self.rect.topleft = self.getTopLeft(self)
-
-    @overrides(Sprite)
-    def makeSurface(self):
-        if self.dirty or self.image is None:
-            self.__render()
-
-    @overrides(Sprite)
-    def events(self):
-        if self.game.mainMenu.getOpen():
-            return
-        mx, my = getMousePos(self.game)
-
-        # Click event; take the player to the layer below that is
-        # being indicated.
-        if (self.rect.collidepoint((mx, my))
-                and self.game.clickManager.getClicked()
-                and self.game.clickManager.getMouseOver() == self):
-            self.game.clickManager.setClicked(False)
-            self.spriteRenderer.showLayer(
-                int(self.target.getConnectionType()[-1]))
-
-        # Hover over event.
-        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
-                and self.game.clickManager.isTop(self)):
-            self.mouseOver = True
-            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
-            self.game.clickManager.setMouseOver(self)
-            self.dirty = False
-
-        # Hover out event.
-        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
-            self.mouseOver = False
-            self.game.clickManager.setMouseOver(None)
-            self.dirty = True
-
-    @overrides(Sprite)
-    def update(self):
-        if not self.dirty:
-            self.events()

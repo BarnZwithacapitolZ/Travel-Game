@@ -37,6 +37,7 @@ class SpriteRenderer():
         self.menu = GameMenu(self)
         self.messageSystem = MessageHud(self.game)
 
+        # Click managers for sprites
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
         self.personHolderClickManager = PersonHolderClickManager(self.game)
@@ -539,10 +540,13 @@ class SpriteRenderer():
             reverse=True)
         return nodes
 
-    def getNode(self, n, allNodes=None, returnNode=None):
+    def getNode(self, n, allNodes=None, returnNode=None, subType=None):
         allNodes = self.getAllNodes() if allNodes is None else allNodes
         for node in allNodes:
             if node.getNumber() == n:
+                # Check for specific node type and only return that type.
+                if subType is not None and node.getSubType().value != subType:
+                    continue
                 return node
         return returnNode
 
@@ -582,7 +586,6 @@ class SpriteRenderer():
                 seen[node.getNumber()] = node
             else:
                 if addIndicator:
-                    node.addBelowNode(seen[node.getNumber()])
                     seen[node.getNumber()].addAboveNode(node)
                 removeLayer.remove(node)
 
