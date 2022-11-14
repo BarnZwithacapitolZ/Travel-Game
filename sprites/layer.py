@@ -79,7 +79,7 @@ class Layer:
         # Add node and transport paused images to the layer
         if addData:
             nodes = self.spriteRenderer.getAllNodes()
-            self.spriteRenderer.removeDuplicates(nodes, nodes, False)
+            self.spriteRenderer.removeDuplicates(nodes, False)
             transports = self.spriteRenderer.getAllTransports()
 
         self.lines = lines

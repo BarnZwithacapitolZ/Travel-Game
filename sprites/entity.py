@@ -98,6 +98,10 @@ class MouseClick(Sprite):
             self.spriteRenderer.allSprites,
             self.spriteRenderer.belowEntities), self.target, infinite=True)
 
+        # We want to clear the target to allow for double clicks (on taxi)
+        if self.direction == "left":
+            self.clickManager.setTarget(None)
+
     def setNextClick(self):
         # Remove the entity
         self.target.deleteEntities('mouseClick')

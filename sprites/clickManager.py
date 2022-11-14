@@ -227,6 +227,8 @@ class PersonClickManager(ClickManager):
         self.person = person
         self.movePerson()
 
+    setTarget = setPerson
+
     @overrides(ClickManager)
     def getAdjacentNodes(self, n):
         adjNodes = []
@@ -358,6 +360,8 @@ class TransportClickManager(ClickManager):
     def setTransport(self, transport):
         self.transport = transport
         self.moveTransport()
+
+    setTarget = setTransport
 
     def pathFinding(self):
         A = self.transport.getCurrentNode()

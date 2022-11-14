@@ -412,10 +412,10 @@ class EditorNode(Node):
 
 
 class BelowIndicator(Sprite):
-    def __init__(self, groups, currentNode, indicatorFor):
+    def __init__(self, groups, currentNode, target):
         super().__init__(currentNode.spriteRenderer, groups, [])
         self.currentNode = currentNode
-        self.indicatorFor = indicatorFor
+        self.target = target
 
         self.width, self.height = 11.5, 11.5
         self.offset = vec(21, 19 + (
@@ -426,7 +426,7 @@ class BelowIndicator(Sprite):
         self.dirty = False
 
         self.image = self.game.imageLoader.getImage(
-            self.indicatorFor.getImages()[0], (
+            self.target.getImages()[0], (
                 self.width * self.spriteRenderer.getFixedScale(),
                 self.height * self.spriteRenderer.getFixedScale()))
         self.rect = self.image.get_rect()
@@ -451,7 +451,7 @@ class BelowIndicator(Sprite):
                 and self.game.clickManager.getMouseOver() == self):
             self.game.clickManager.setClicked(False)
             self.spriteRenderer.showLayer(
-                int(self.indicatorFor.getConnectionType()[-1]))
+                int(self.target.getConnectionType()[-1]))
 
         # Hover over event.
         elif (self.rect.collidepoint((mx, my)) and not self.mouseOver

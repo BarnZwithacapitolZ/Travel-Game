@@ -1,5 +1,6 @@
 from sprite import Sprite
 from entity import MouseClick
+from utils import checkKeyExist
 
 
 # TODO: SHOULD NOT BE A SPRITE!!!!!!!!!!
@@ -10,11 +11,12 @@ class TutorialManager(Sprite):
         self.sequence, self.previousSequence = 0, -1
         self.previousTarget = None
 
-        self.setClicks()
+        self.setClicks(False)
 
     def setSequence(self, sequence):
         self.sequence = sequence
 
+        # At the end of the sequence we always want to allow clicks
         if self.sequence >= len(self.ordering):
             self.setClicks(True)
 
@@ -22,7 +24,7 @@ class TutorialManager(Sprite):
         return self.sequence
 
     # We don't want to allow objects that aren't the subject to be moved
-    def setClicks(self, clicks=False):
+    def setClicks(self, clicks):
         for transport in self.spriteRenderer.getAllTransports():
             transport.setCanClick(clicks)
         for person in self.spriteRenderer.getAllPeople():
@@ -33,22 +35,25 @@ class TutorialManager(Sprite):
                 or self.previousSequence >= len(self.ordering)):
             return False
 
+        if (not checkKeyExist(
+                self.ordering[self.previousSequence], ["wait"], True)):
+            return False
+
         previousSeq = next(iter(self.ordering[self.previousSequence].items()))
 
         # If the previous sequence doesn't have a right click,
         # we don't have to wait for anything
         if previousSeq[1] is None:
-            self.previousTarget.setCanClick(False)
             return False
 
         dest = self.spriteRenderer.getNode(previousSeq[1])
         previousDest = self.previousTarget.getCurrentNode()
         if previousDest.getNumber() == dest.getNumber():
-            self.previousTarget.setCanClick(False)
             return False
         return True
 
     def addMouseClick(self, target, clickManager, dest):
+        self.setClicks(False)
         target.setCanClick(True)
         MouseClick((
             self.spriteRenderer.allSprites, self.spriteRenderer.aboveEntities),
@@ -63,18 +68,32 @@ class TutorialManager(Sprite):
             return
 
         currentSeq = next(iter(self.ordering[self.sequence].items()))
-        if currentSeq[0].split('_')[0] == 'person':
+        if currentSeq[0].split('_')[0] == "person":
             dest = self.spriteRenderer.getNode(currentSeq[1])
             pid = int(currentSeq[0].split('_')[1])
+            found = False
             for person in self.spriteRenderer.getAllPeople():
                 if person.getId() != pid:
+                    continue
+                found = True
+
+                # Check if they need to be travelling on a transport or not
+                onTransport = checkKeyExist(
+                    self.ordering[self.sequence], ["transport"], False)
+                if ((onTransport and person.getTravellingOn() is None)
+                        or (not onTransport and person.getTravellingOn()
+                            is not None)):
                     continue
 
                 self.addMouseClick(
                     person, self.spriteRenderer.getPersonClickManager(), dest)
-                break
+                return
 
-        elif currentSeq[0].split('_')[0] == 'transport':
+            # If the person doesn't exist yet, we set everything clickable
+            if not found:
+                self.setClicks(True)
+
+        elif currentSeq[0].split('_')[0] == "transport":
             # Do transport stuff here
             dest = self.spriteRenderer.getNode(currentSeq[1])
             tid = int(currentSeq[0].split('_')[1])
@@ -85,4 +104,4 @@ class TutorialManager(Sprite):
                 self.addMouseClick(
                     transport, self.spriteRenderer.getTransportClickManager(),
                     dest)
-                break
+                return

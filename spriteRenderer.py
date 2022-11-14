@@ -551,7 +551,10 @@ class SpriteRenderer():
         layer1Nodes = self.gridLayer1.getGrid().getNodes()
         layer2Nodes = self.gridLayer2.getGrid().getNodes()
         layer3Nodes = self.gridLayer3.getGrid().getNodes()
-        return layer3Nodes + layer2Nodes + layer1Nodes
+        allNodes = layer3Nodes + layer2Nodes + layer1Nodes
+
+        # Put any node that is not a regular node at the front of the list
+        return SpriteRenderer.sortNodes(allNodes)
 
     # Return all the transports from all layers in the spriterenderer
     def getAllTransports(self):
@@ -570,18 +573,11 @@ class SpriteRenderer():
 
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(
-            self, allNodes=None, removeLayer=None, addIndicator=True):
+            self, removeLayer=None, addIndicator=True):
         seen = {}
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
-        if allNodes is None:
-            allNodes = self.getAllNodes()
-
-        # Put any node that is not a regular node at the front of the list,
-        # so they are not removed and the regular node is
-        allNodes = SpriteRenderer.sortNodes(allNodes)
-
-        for node in allNodes:
+        for node in self.getAllNodes():
             if node.getNumber() not in seen:
                 seen[node.getNumber()] = node
             else:
@@ -594,8 +590,7 @@ class SpriteRenderer():
     # return the highest node, else return node
     def getTopNode(self, bottomNode):
         return self.getNode(
-            bottomNode.getNumber(),
-            SpriteRenderer.sortNodes(self.getAllNodes()), bottomNode)
+            bottomNode.getNumber(), self.getAllNodes(), bottomNode)
 
     # if there is an equivelant node on a different layer, return it,
     # else return none (no node)
