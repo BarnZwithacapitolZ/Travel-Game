@@ -1,0 +1,203 @@
+{
+    "mapName": "tutorial 2",
+    "options": {
+        "lives": false,
+        "limitPeople": true,
+        "setSpawn": [
+            24,
+            110
+        ]
+    },
+    "tutorial": [
+        {
+            "person_1": null
+        },
+        {
+            "person_1": null
+        },
+        {
+            "transport_2": 24
+        },
+        {
+            "transport_2": 69,
+            "wait": false
+        },
+        {
+            "person_1": null,
+            "transport": true
+        },
+        {
+            "person_1": null
+        },
+        {
+            "person_2": 65,
+            "transport": true,
+            "subType": "metro",
+            "at": 65
+        },
+        {
+            "person_2": null
+        }
+    ],
+    "locked": {
+        "isLocked": false,
+        "unlock": 0
+    },
+    "deletable": true,
+    "saved": true,
+    "width": 16,
+    "height": 9,
+    "difficulty": 1,
+    "max": 1,
+    "total": 3,
+    "score": 1,
+    "completion": {
+        "completed": true
+    },
+    "audio": "track6",
+    "backgrounds": {
+        "layer 1": [
+            246,
+            246,
+            238
+        ],
+        "layer 2": [
+            246,
+            246,
+            238
+        ],
+        "layer 3": [
+            246,
+            246,
+            238
+        ],
+        "layer 4": [
+            246,
+            246,
+            238
+        ]
+    },
+    "connections": {
+        "layer 2": [
+            [
+                24,
+                33
+            ],
+            [
+                33,
+                42
+            ],
+            [
+                42,
+                51
+            ],
+            [
+                51,
+                60
+            ],
+            [
+                60,
+                69
+            ],
+            [
+                65,
+                74
+            ],
+            [
+                74,
+                83
+            ],
+            [
+                83,
+                92
+            ],
+            [
+                92,
+                101
+            ],
+            [
+                101,
+                110
+            ]
+        ],
+        "layer 1": [
+            [
+                65,
+                66
+            ],
+            [
+                66,
+                67
+            ],
+            [
+                67,
+                68
+            ],
+            [
+                68,
+                69
+            ]
+        ]
+    },
+    "transport": {
+        "layer 2": [
+            {
+                "location": 60,
+                "type": "taxi",
+                "moving": false
+            },
+            {
+                "location": 110,
+                "type": "bus"
+            }
+        ],
+        "layer 1": [
+            {
+                "location": 67,
+                "type": "metro"
+            }
+        ]
+    },
+    "stops": {
+        "layer 1": [
+            {
+                "location": 69,
+                "type": "metro"
+            },
+            {
+                "location": 65,
+                "type": "metro"
+            }
+        ],
+        "layer 2": [
+            {
+                "location": 65,
+                "type": "bus"
+            }
+        ]
+    },
+    "destinations": {
+        "layer 2": [
+            {
+                "location": 24,
+                "type": "house"
+            },
+            {
+                "location": 110,
+                "type": "house"
+            }
+        ]
+    },
+    "specials": {
+        "layer 2": [
+            {
+                "location": 42,
+                "type": "noWalkNode"
+            },
+            {
+                "location": 92,
+                "type": "noWalkNode"
+            }
+        ]
+    }
+}

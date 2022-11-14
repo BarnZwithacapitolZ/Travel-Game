@@ -5,7 +5,10 @@
         "unlock": 0
     },
     "options": {
-        "lives": true
+        "lives": true,
+        "setSpawn": [
+            179
+        ]
     },
     "deletable": false,
     "saved": true,
@@ -13,7 +16,7 @@
     "height": 10,
     "completion": {
         "total": 10,
-        "completed": true,
+        "completed": false,
         "time": 0
     },
     "backgrounds": {
@@ -298,7 +301,8 @@
         "layer 3": [
             {
                 "location": 153,
-                "type": "tram"
+                "type": "tram",
+                "moving": false
             }
         ]
     },
@@ -364,5 +368,5 @@
             }
         ]
     },
-    "score": 3
+    "score": 0
 }

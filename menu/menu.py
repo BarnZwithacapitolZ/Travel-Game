@@ -1,6 +1,7 @@
 import pygame
 from config import (
-    config, BLACK, TRUEBLACK, WHITE, GREEN, CREAM, YELLOW, dump)
+    config, BLACK, TRUEBLACK, WHITE, GREEN, CREAM, YELLOW, dump,
+    DEFAULTMAXSCORE)
 import generalFunctions as gf
 import menuFunctions as mf
 import transitionFunctions as tf
@@ -8,7 +9,7 @@ from menuComponents import (
     Image, Label, InputBox, Rectangle, DifficultyMeter, Map, Slider,
     ControlLabel, Region)
 from clickManager import ControlClickManager
-from utils import vec, overrides, getMousePos
+from utils import vec, overrides, getMousePos, checkKeyExist
 from enum import Enum, auto
 import random
 import copy
@@ -659,7 +660,6 @@ class MainMenu(Menu):
                     * (cols - len(mapsAfter[0])))
 
             for x, _ in enumerate(row):
-                # print(x, y, count, mapsAfter, offset)
                 count = self.createLevel(
                     x, y, count, mapsAfter, offset, region)
 
@@ -1352,9 +1352,12 @@ class GameMenu(Menu):
         success = Label(
             self, "Level Compelte!", 45, WHITE, (((x + width) / 2 - 50), 100))
 
+        maxScore = checkKeyExist(
+            self.spriteRenderer.getLevelData(), ["max"], DEFAULTMAXSCORE)
+
         scoreText = Label(self, "Highest Score", 25, WHITE, (width - 87, 210))
         self.score = DifficultyMeter(
-            self, YELLOW, WHITE, 3, self.previousScore, 5, (40, 40),
+            self, YELLOW, WHITE, maxScore, self.previousScore, 5, (40, 40),
             (width - 50, scoreText.y + scoreText.getFontSize()[1] + 10),
             shapeBorderRadius=[5, 5, 5, 5])
         self.score.setPos((

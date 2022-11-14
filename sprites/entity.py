@@ -1,8 +1,10 @@
 import pygame
 import math
 import abc
-from config import YELLOW, WHITE, BLACK
-from utils import overrides, vec, getScale
+import person as PERSON
+from pygame.locals import BLEND_MIN
+from config import YELLOW, WHITE, BLACK, HOVERGREY
+from utils import overrides, vec, getScale, getMousePos
 from sprite import Sprite
 
 
@@ -69,13 +71,83 @@ class Particle(Sprite):
 
 
 class MouseClick(Sprite):
-    def __init__(self, groups, target, direction="left"):
+    def __init__(
+            self, groups, target, tutorialManager, clickManagers=[],
+            direction="left", next=None):
         super().__init__(target.spriteRenderer, groups, [])
         self.target = target
+        self.tutorialManager = tutorialManager
+        self.clickManager = clickManagers[0]
         self.direction = direction
+        self.next = next
+        self.width, self.height = 20, 20
+        self.offset = vec(
+            self.target.width / 2 + 5, -(self.target.height / 2) - 5)
+        self.pos = self.target.pos + self.offset
+
+        if self.direction == "left":
+            self.images = ["leftClick", "leftClick1"]
+
+        else:
+            self.images = ["rightClick", "rightClick1"]
+        self.currentState = 0
+
+        self.target.deleteEntities('particles')  # Remove existing particles
+        self.target.addEntity('mouseClick', self)
+
+        # Always show an infinite particle to make it clear where to click.
+        Particle((
+            self.spriteRenderer.allSprites,
+            self.spriteRenderer.belowEntities), self.target, infinite=True)
+
+        # We want to clear the target to allow for double clicks (on taxi)
+        if self.direction == "left" and isinstance(self.target, PERSON.Person):
+            self.clickManager.setTarget(None)
+
+    def setNextClick(self):
+        # Remove the entity
+        self.target.deleteEntities('mouseClick')
+        self.target.deleteEntities('particles')
+
+        if self.next is None:
+            self.tutorialManager.setSequence(
+                self.tutorialManager.getSequence() + 1)
+            return
+
+        direction = "right" if self.direction == "left" else "left"
+
+        # If the next (node) is on a layer below another node, 
+        # we want to show clicking on the indicator
+        if len(self.next.getBelow()) > 0:
+            for indicator in self.next.getBelow():
+                # We want to find the indicator for the current target.
+                if indicator.getTarget() != self.next:
+                    continue
+
+                # No need to click on indicator if we're already
+                # on the correct layer.
+                if (int(indicator.getTarget().getConnectionType()[-1])
+                        == self.spriteRenderer.getCurrentLayer()):
+                    continue
+
+                MouseClick(
+                    self.groups, indicator, self.tutorialManager,
+                    [self.clickManager], next=self.next)
+                return
+
+        MouseClick(
+            self.groups, self.next, self.tutorialManager,
+            [self.clickManager], direction)
 
     def __render(self):
-        pass
+        self.dirty = False
+
+        self.image = self.game.imageLoader.getImage(
+            self.images[self.currentState], (
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale()))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.getTopLeft(self)
 
     @overrides(Sprite)
     def makeSurface(self):
@@ -83,9 +155,35 @@ class MouseClick(Sprite):
             self.__render()
 
     @overrides(Sprite)
+    def events(self):
+        if (self.direction == "left" and (
+                self.clickManager.getTarget() == self.target
+                or (
+                    isinstance(self.target, BelowIndicator)
+                    and int(self.target.getTarget().getConnectionType()[-1])
+                    == self.spriteRenderer.getCurrentLayer()))):
+            self.setNextClick()
+
+        # Since you can only right click on a node,
+        # we just want to check the target is the set node.
+        if (self.direction == "right"
+                and self.clickManager.getNode() == self.target):
+            self.setNextClick()
+
+    @overrides(Sprite)
     def update(self):
-        # We want to animate the entity here
-        pass
+        self.events()
+
+        # Move the position of the entity to the position of the target
+        self.pos = self.target.pos + self.offset
+        self.rect.topleft = self.getTopLeft(self)
+
+        self.timer += self.game.dt * self.spriteRenderer.getDt()
+
+        if self.timer > 0.5:
+            self.currentState += 1 if self.currentState == 0 else -1
+            self.timer = 0
+            self.dirty = True
 
 
 class Decorators(Sprite):
@@ -130,8 +228,7 @@ class Decorators(Sprite):
             offx += 0.02
 
     def drawTimer(self, surface):
-        if ('timer' not in self.decorators
-                or self.spriteRenderer.getLives() is None):
+        if ('timer' not in self.decorators):
             return
 
         # Get the options or defaults
@@ -276,6 +373,7 @@ class Decorators(Sprite):
             pygame.font.get_default_font(),
             int(15 * getScale(self.game, self.spriteRenderer)))
 
+    @overrides(Sprite)
     def makeSurface(self):
         if self.dirty:  # Don't check image since we don't have one
             self.__render()
@@ -302,6 +400,7 @@ class Decorators(Sprite):
             self.drawPath(self.game.renderer.gameDisplay)
             self.game.renderer.addSurface(None, None, self.drawOutline)
 
+    @overrides(Sprite)
     def update(self):
         self.angle += 10 * self.game.dt * self.spriteRenderer.getDt()
 
@@ -373,3 +472,68 @@ class StatusIndicator(Sprite):
         if (self.target.getStatusValue() - 1) != self.currentState:
             self.dirty = True
             self.currentState = self.target.getStatusValue() - 1
+
+
+class BelowIndicator(Sprite):
+    def __init__(self, groups, currentNode, target):
+        super().__init__(currentNode.spriteRenderer, groups, [])
+        self.currentNode = currentNode
+        self.target = target
+
+        self.width, self.height = 11.5, 11.5
+        self.offset = vec(21, 19 + (
+            len(self.currentNode.getAbove()) * self.width))
+        self.pos = self.currentNode.pos + self.offset
+
+    def getTarget(self):
+        return self.target
+
+    def __render(self):
+        self.dirty = False
+
+        self.image = self.game.imageLoader.getImage(
+            self.target.getImages()[0], (
+                self.width * self.spriteRenderer.getFixedScale(),
+                self.height * self.spriteRenderer.getFixedScale()))
+        self.rect = self.image.get_rect()
+
+        self.rect.topleft = self.getTopLeft(self)
+
+    @overrides(Sprite)
+    def makeSurface(self):
+        if self.dirty or self.image is None:
+            self.__render()
+
+    @overrides(Sprite)
+    def events(self):
+        if self.game.mainMenu.getOpen():
+            return
+        mx, my = getMousePos(self.game)
+
+        # Click event; take the player to the layer below that is
+        # being indicated.
+        if (self.rect.collidepoint((mx, my))
+                and self.game.clickManager.getClicked()
+                and self.game.clickManager.getMouseOver() == self):
+            self.game.clickManager.setClicked(False)
+            self.spriteRenderer.showLayer(
+                int(self.target.getConnectionType()[-1]))
+
+        # Hover over event.
+        elif (self.rect.collidepoint((mx, my)) and not self.mouseOver
+                and self.game.clickManager.isTop(self)):
+            self.mouseOver = True
+            self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
+            self.game.clickManager.setMouseOver(self)
+            self.dirty = False
+
+        # Hover out event.
+        elif not self.rect.collidepoint((mx, my)) and self.mouseOver:
+            self.mouseOver = False
+            self.game.clickManager.setMouseOver(None)
+            self.dirty = True
+
+    @overrides(Sprite)
+    def update(self):
+        if not self.dirty:
+            self.events()

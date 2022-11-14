@@ -374,8 +374,7 @@ class MapEditor(SpriteRenderer):
         mappings = layer.getGrid().getTransportMappings()
 
         if key in mappings:
-            layer.getGrid().addTransport(  # False so the transports dont move
-                connectionType, connection, mappings[key], False)
+            layer.getGrid().addTransport(connection, mappings[key], False)
             self.levelData["transport"].setdefault(connectionType, []).append({
                 "location": connection.getFrom().getNumber(),
                 "type": str(key)
@@ -383,7 +382,7 @@ class MapEditor(SpriteRenderer):
 
         self.addChange()
 
-    def swapNode(self, oldNodeType, newNodeType, connectionType, node):
+    def swapNode(self, newNodeType, connectionType, node):
         self.deleteNode(connectionType, node, False, False)
         self.addNode(newNodeType, connectionType, node)
 

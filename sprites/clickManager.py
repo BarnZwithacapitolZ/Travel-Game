@@ -227,6 +227,8 @@ class PersonClickManager(ClickManager):
         self.person = person
         self.movePerson()
 
+    setTarget = setPerson
+
     @overrides(ClickManager)
     def getAdjacentNodes(self, n):
         adjNodes = []
@@ -335,10 +337,6 @@ class PersonClickManager(ClickManager):
 
         self.personClicked = False
 
-        # after the click is managed, clear the player and the node to
-        # allow for another click management
-        self.node = None
-
 
 class TransportClickManager(ClickManager):
     def __init__(self, game):
@@ -363,6 +361,8 @@ class TransportClickManager(ClickManager):
         self.transport = transport
         self.moveTransport()
 
+    setTarget = setTransport
+
     def pathFinding(self):
         A = self.transport.getCurrentNode()
         B = self.node
@@ -384,6 +384,7 @@ class TransportClickManager(ClickManager):
 
         if len(path) > 0:
             self.game.audioLoader.playSound("uiFinishSelect", 2)
+            self.transport.checkCanMove()
 
         else:
             self.game.audioLoader.playSound("uiError", 0)
@@ -393,9 +394,6 @@ class TransportClickManager(ClickManager):
 
         for node in path:
             self.transport.addToPath(node)
-
-        # self.transport = None
-        self.node = None
 
 
 class EditorClickManager(ClickManager):
@@ -561,7 +559,7 @@ class EditorClickManager(ClickManager):
         # Its not a regular node, we want to swap the nodes instead of adding
         if not Node.checkRegularNode(node):
             self.game.mapEditor.swapNode(
-                node.getType().value, nodeType, node.getConnectionType(), node)
+                nodeType, node.getConnectionType(), node)
 
         else:
             self.game.mapEditor.addNode(

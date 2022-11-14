@@ -19,14 +19,19 @@ class TransportType(Enum):
 
 
 class Transport(Sprite):
+    newid = 0
+
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(spriteRenderer, groups, clickManagers)
         self.currentConnection = currentConnection
         self.currentNode = self.currentConnection.getFrom()
         self.currentNode.addTransport(self)
         self.width, self.height = 30, 30
+
+        Transport.newid += 1
+        self.id = Transport.newid
 
         self.offset = vec(-5, -5)  # -5 is half the offset of the connector
         self.vel = vec(0, 0)
@@ -38,8 +43,11 @@ class Transport(Sprite):
 
         self.type = TransportType.METRO
 
+        # Running is false means no events and the transport doesn't move
         self.running = running
-        self.moving = self.running
+
+        # Moving is false means the transport is stationary but has events
+        self.moving = moving
         self.timerLength = 300
 
         self.clickManager = self.clickManagers[0]
@@ -66,6 +74,9 @@ class Transport(Sprite):
         self.decorators.addDecorator('path', {'path': self.path})
         self.decorators.addDecorator('timer', {'length': self.timerLength})
 
+    def getId(self):
+        return self.id
+
     def getPeople(self):
         return self.people
 
@@ -90,6 +101,12 @@ class Transport(Sprite):
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
         self.dirty = True
+
+    def checkCanMove(self):
+        if self.moving or self.checkIsStopType(self.currentNode):
+            return
+
+        self.moving = True
 
     def checkTimerLenghtReached(self):
         self.moving = False
@@ -368,6 +385,7 @@ class Transport(Sprite):
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
+            self.clickManager.setNode(None)
             self.clickManager.setTransport(None)
 
         # Click event
@@ -392,6 +410,7 @@ class Transport(Sprite):
 
             # Set the transport to be moved
             self.game.audioLoader.playSound("uiStartSelect", 2)
+            self.clickManager.setNode(None)
             self.clickManager.setTransport(self)
             self.game.clickManager.setClicked(False)
 
@@ -401,7 +420,8 @@ class Transport(Sprite):
                     self.spriteRenderer.getCurrentLayerString()
                     == self.currentNode.getConnectionType()
                     or self.spriteRenderer.getCurrentLayer() == 4)
-                and self.game.clickManager.isTop(self)):
+                and self.game.clickManager.isTop(self)
+                and self.canClick):
             self.mouseOver = True
             self.game.clickManager.setMouseOver(self)
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)
@@ -521,9 +541,10 @@ class Transport(Sprite):
 class Taxi(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "taxi"
         self.stopType = NODE.NodeType.aslist()
         self.boardingType = PERSON.Person.Status.BOARDINGTAXI
@@ -539,6 +560,13 @@ class Taxi(Transport):
             # If they're waiting for the taxi
             if person.getStatus() == PERSON.Person.Status.FLAG:
                 person.setStatus(self.boardingType)
+
+    @overrides(Transport)
+    def checkCanMove(self):
+        if self.moving or self.hasStopped:
+            return
+
+        self.moving = True
 
     def checkPeopleBoarding(self):
         # Set people waiting for the transportation to departing
@@ -734,9 +762,10 @@ class Taxi(Transport):
 class Bus(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "bus"
         self.stopType = [NODE.NodeType.BUSSTOP, NODE.NodeType.DESTINATION]
 
@@ -744,9 +773,10 @@ class Bus(Transport):
 class Tram(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)
         self.imageName = "tram"
         self.stopType = [NODE.NodeType.TRAMSTOP, NODE.NodeType.DESTINATION]
 
@@ -754,6 +784,7 @@ class Tram(Transport):
 class Metro(Transport):
     def __init__(
             self, spriteRenderer, groups, currentConnection, running,
-            clickManagers=[]):
+            moving, clickManagers=[]):
         super().__init__(
-            spriteRenderer, groups, currentConnection, running, clickManagers)
+            spriteRenderer, groups, currentConnection, running, moving,
+            clickManagers)

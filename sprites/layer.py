@@ -78,10 +78,9 @@ class Layer:
 
         # Add node and transport paused images to the layer
         if addData:
-            nodes = self.spriteRenderer.getAllNodes(layer1, layer2, layer3)
-            self.spriteRenderer.removeDuplicates(nodes, nodes, False)
-            transports = self.spriteRenderer.getAllTransports(
-                layer1, layer2, layer3)
+            nodes = self.spriteRenderer.getAllNodes()
+            self.spriteRenderer.removeDuplicates(nodes, False)
+            transports = self.spriteRenderer.getAllTransports()
 
         self.lines = lines
         self.render(nodes, transports)
@@ -253,9 +252,7 @@ class Layer:
 
     def loadBackgroundColor(self, default):
         self.backgroundColor = checkKeyExist(
-            self.grid.getMap(), ['backgrounds', self.connectionType])
-        self.backgroundColor = (
-            default if self.backgroundColor is None else self.backgroundColor)
+            self.grid.getMap(), ['backgrounds', self.connectionType], default)
 
     def render(self, nodes=None, transports=None):
         self.lineSurface.fill(self.backgroundColor)

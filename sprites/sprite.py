@@ -14,6 +14,7 @@ class Sprite(pygame.sprite.Sprite):
         self.clickManagers = clickManagers
 
         self.mouseOver = False
+        self.canClick = True
         self.dirty = True
 
         # Keep track of how long the sprite has lived
@@ -25,8 +26,14 @@ class Sprite(pygame.sprite.Sprite):
     def getMouseOver(self):
         return self.mouseOver
 
+    def getCanClick(self):
+        return self.canClick
+
     def setMouseOver(self, mouseOver):
         self.mouseOver = mouseOver
+
+    def setCanClick(self, canClick):
+        self.canClick = canClick
 
     # Calculate the topleft corner of a sprite based on the
     # spriteRenderers scale and offset.

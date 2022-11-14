@@ -10,6 +10,8 @@ from entity import Particle, Decorators, StatusIndicator
 
 
 class Person(Sprite):
+    newid = 0
+
     # Players different status's
     class Status(Enum):
         UNASSIGNED = auto()
@@ -34,8 +36,10 @@ class Person(Sprite):
         super().__init__(spriteRenderer, groups, clickManagers)
         self.clickManager = self.clickManagers[0]
         self.transportClickManager = self.clickManagers[1]
-
         self.width, self.height = 20, 20
+
+        Person.newid += 1
+        self.id = Person.newid
 
         # List of possible destinations that the player can have
         # (different player types might have different
@@ -157,8 +161,10 @@ class Person(Sprite):
         Particle((
             self.spriteRenderer.allSprites,
             self.spriteRenderer.belowEntities), self)
-
         self.game.audioLoader.playSound("playerSpawn", 1)
+
+    def getId(self):
+        return self.id
 
     # Return the current status (Status) of the person
     def getStatus(self):
@@ -234,8 +240,7 @@ class Person(Sprite):
 
     def setSpawn(self, spawns=[]):
         sequence = checkKeyExist(
-            self.spriteRenderer.getLevelData(), ['options', 'setSpawn'])
-        sequence = [] if sequence is None else sequence
+            self.spriteRenderer.getLevelData(), ['options', 'setSpawn'], [])
 
         # Loop back around
         if self.spriteRenderer.getSequence() >= len(sequence):
@@ -392,6 +397,7 @@ class Person(Sprite):
         if (not self.rect.collidepoint((mx, my))
                 and self.game.clickManager.getClicked()
                 and not self.spriteRenderer.getHud().getHudButtonHoverOver()):
+            self.clickManager.setNode(None)
             self.clickManager.setPerson(None)
 
         # Click event
@@ -413,7 +419,9 @@ class Person(Sprite):
             if holder is not None and self not in holder.getPeople():
                 holder.closeHolder(True)
 
-            # Set the person to be moved
+            # Must clear the node before setting the
+            # person so that path remains clear
+            self.clickManager.setNode(None)
             self.clickManager.setPerson(self)
             self.game.clickManager.setClicked(False)
 
@@ -471,7 +479,8 @@ class Person(Sprite):
                     self.spriteRenderer.getCurrentLayerString()
                     == self.currentNode.getConnectionType()
                     or self.spriteRenderer.getCurrentLayer() == 4)
-                and self.game.clickManager.isTop(self)):
+                and self.game.clickManager.isTop(self)
+                and self.canClick):
             self.mouseOver = True
             self.game.clickManager.setMouseOver(self)
             self.image.fill(HOVERGREY, special_flags=BLEND_MIN)

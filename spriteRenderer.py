@@ -1,13 +1,18 @@
 import pygame
 import random
 import copy
-from config import config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG
+from config import (
+    config, dump, DEFAULTLIVES, LAYERNAMES, DEFAULTLEVELCONFIG,
+    DEFAULTMAXSCORE)
 from utils import vec, checkKeyExist
+from person import Person
+from transport import Transport
 from layer import Layer
 from clickManager import (
     PersonClickManager, TransportClickManager, PersonHolderClickManager)
 from node import NodeType
 from meterController import MeterController
+from tutorialManager import TutorialManager
 from menu import GameMenu
 from hud import GameHud, MessageHud, PreviewHud
 
@@ -32,6 +37,7 @@ class SpriteRenderer():
         self.menu = GameMenu(self)
         self.messageSystem = MessageHud(self.game)
 
+        # Click managers for sprites
         self.personClickManager = PersonClickManager(self.game)
         self.transportClickManager = TransportClickManager(self.game)
         self.personHolderClickManager = PersonHolderClickManager(self.game)
@@ -46,7 +52,6 @@ class SpriteRenderer():
         self.timeStep = 25
 
         self.lives = DEFAULTLIVES
-        self.score, self.bestScore = 0, 0
 
         self.dt = 1  # Control the speed of whats on screen
         self.startDt = self.dt
@@ -123,21 +128,23 @@ class SpriteRenderer():
         if not hasattr(self, 'levelData'):
             return
 
-        self.score = self.lives if self.lives is not None else DEFAULTLIVES
-        previousScore = 0
+        score = self.lives if self.lives is not None else DEFAULTLIVES
+        maxScore = checkKeyExist(self.levelData, ["max"], DEFAULTMAXSCORE)
+        previousScore = checkKeyExist(self.levelData, ["score"], 0)
 
-        if "score" in self.levelData:
-            previousScore = self.levelData["score"]
-            self.bestScore = previousScore
+        # If the maxScore is 1, we 100% lives to get the point
+        score = (
+            0 if maxScore <= 1 and score < DEFAULTLIVES
+            else round(score * (maxScore / DEFAULTMAXSCORE)))
 
-        if self.score > previousScore:
-            self.levelData["score"] = self.score
+        if score > previousScore:
+            self.levelData["score"] = score
             self.saveLevel()
 
-        if self.score - previousScore > 0:
-            scoreDifference = self.score - previousScore
-        else:
-            scoreDifference = 0
+        # Work out how many new keys to add
+        scoreDifference = 0
+        if score - previousScore > 0:
+            scoreDifference = score - previousScore
 
         # Use this in the menu animation
         previousKeys = config["player"]["keys"]
@@ -258,12 +265,6 @@ class SpriteRenderer():
         if hasattr(self, 'allDestinations'):
             return self.allDestinations
 
-    def getScore(self):
-        return self.score
-
-    def getBestScore(self):
-        return self.bestScore
-
     def getPaused(self):
         return self.paused
 
@@ -305,6 +306,7 @@ class SpriteRenderer():
         self.startingFixedScale = 0  # reset the scale back to default
         self.timer = 0
         self.totalPeople = 0
+        self.sequence = 0  # Reset the sequence to start over
         self.totalPeopleNone = False
         self.belowEntities.empty()
         self.aboveEntities.empty()
@@ -313,6 +315,10 @@ class SpriteRenderer():
         self.layer2.empty()
         self.layer3.empty()
         self.layer4.empty()
+
+        # Reset the local ID's on the person and the transport
+        Person.newid = 0
+        Transport.newid = 0
 
         # Reset the layers to show the top layer
         self.currentLayer = 4
@@ -401,6 +407,11 @@ class SpriteRenderer():
 
         self.meter = MeterController(
             self, self.allSprites, self.slowDownMeterAmount)
+
+        if 'tutorial' in self.levelData:
+            self.tutorialManager = TutorialManager(
+                self, self.allSprites, self.levelData['tutorial'])
+
         self.setDarkMode()
 
         # If there is more than one layer we want to be able
@@ -425,33 +436,34 @@ class SpriteRenderer():
             (20, 11): (4.5, 2.8),
             (22, 12): (5, 3)}
 
-        gridLayer4 = Layer(self, (), 4, level)
+        self.gridLayer4 = Layer(self, (), 4, level)
 
         # Set the board scale
-        gridLayer4.getGrid().setBoardScale()
+        self.gridLayer4.getGrid().setBoardScale()
 
         # Work out the spacing of the map for use in the other layers
-        levelData = gridLayer4.getGrid().getMap()
+        levelData = self.gridLayer4.getGrid().getMap()
         size = (levelData["width"], levelData["height"])
         spacing = spacings[size]
 
-        gridLayer3 = Layer(self, (), 3, level, spacing)
-        gridLayer2 = Layer(self, (), 2, level, spacing)
-        gridLayer1 = Layer(self, (), 1, level, spacing)
+        self.gridLayer3 = Layer(self, (), 3, level, spacing)
+        self.gridLayer2 = Layer(self, (), 2, level, spacing)
+        self.gridLayer1 = Layer(self, (), 1, level, spacing)
 
         # Grid ordering
-        gridLayer3.createGrid()
-        gridLayer1.createGrid()
-        gridLayer2.createGrid()
+        self.gridLayer3.createGrid()
+        self.gridLayer1.createGrid()
+        self.gridLayer2.createGrid()
 
-        gridLayer1.grid.loadTransport("layer 1", False)
-        gridLayer2.grid.loadTransport("layer 2", False)
-        gridLayer3.grid.loadTransport("layer 3", False)
+        self.gridLayer1.grid.loadTransport("layer 1", False)
+        self.gridLayer2.grid.loadTransport("layer 2", False)
+        self.gridLayer3.grid.loadTransport("layer 3", False)
 
         # Set the lines from all layers
-        gridLayer4.setLayerLines(gridLayer1, gridLayer2, gridLayer3, True)
+        self.gridLayer4.setLayerLines(
+            self.gridLayer1, self.gridLayer2, self.gridLayer3, True)
 
-        return gridLayer4.getLineSurface()
+        return self.gridLayer4.getLineSurface()
 
     # Create a new surface when the game is paused with all the sprites
     # currently in the game, so these don't have to be drawn every frame
@@ -528,69 +540,67 @@ class SpriteRenderer():
             reverse=True)
         return nodes
 
+    def getNode(self, n, allNodes=None, returnNode=None, subType=None):
+        allNodes = self.getAllNodes() if allNodes is None else allNodes
+        for node in allNodes:
+            if node.getNumber() == n:
+                # Check for specific node type and only return that type.
+                if subType is not None and node.getSubType().value != subType:
+                    continue
+                return node
+        return returnNode
+
     # Return all the nodes from all layers in the spriterenderer
-    def getAllNodes(self, layer1, layer2, layer3):
-        layer1Nodes = layer1.getGrid().getNodes()
-        layer2Nodes = layer2.getGrid().getNodes()
-        layer3Nodes = layer3.getGrid().getNodes()
+    def getAllNodes(self):
+        layer1Nodes = self.gridLayer1.getGrid().getNodes()
+        layer2Nodes = self.gridLayer2.getGrid().getNodes()
+        layer3Nodes = self.gridLayer3.getGrid().getNodes()
         allNodes = layer3Nodes + layer2Nodes + layer1Nodes
 
-        return allNodes
+        # Put any node that is not a regular node at the front of the list
+        return SpriteRenderer.sortNodes(allNodes)
 
     # Return all the transports from all layers in the spriterenderer
-    def getAllTransports(self, layer1, layer2, layer3):
-        layer1Transports = layer1.getGrid().getTransports()
-        layer2Transports = layer2.getGrid().getTransports()
-        layer3Transports = layer3.getGrid().getTransports()
-        allTransports = layer1Transports + layer2Transports + layer3Transports
+    def getAllTransports(self):
+        layer1Transports = self.gridLayer1.getGrid().getTransports()
+        layer2Transports = self.gridLayer2.getGrid().getTransports()
+        layer3Transports = self.gridLayer3.getGrid().getTransports()
+        return layer1Transports + layer2Transports + layer3Transports
 
-        return allTransports
+    # Return all the current people on a given level
+    # Don't need to pass the layers as this will not be called in level select
+    def getAllPeople(self):
+        layer1People = self.gridLayer1.getPeople()
+        layer2People = self.gridLayer2.getPeople()
+        layer3People = self.gridLayer3.getPeople()
+        return layer1People + layer2People + layer3People
 
     # Remove duplicate nodes on layer 4 for layering
     def removeDuplicates(
-            self, allNodes=None, removeLayer=None, addIndicator=True):
+            self, removeLayer=None, addIndicator=True):
         seen = {}
         removeLayer = self.layer4 if removeLayer is None else removeLayer
 
-        if allNodes is None:
-            allNodes = self.getAllNodes(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3)
-
-        # Put any node that is not a regular node at the front of the list,
-        # so they are not removed and the regular node is
-        allNodes = SpriteRenderer.sortNodes(allNodes)
-
-        for node in allNodes:
+        for node in self.getAllNodes():
             if node.getNumber() not in seen:
                 seen[node.getNumber()] = node
             else:
                 if addIndicator:
-                    node.addBelowNode(seen[node.getNumber()])
                     seen[node.getNumber()].addAboveNode(node)
                 removeLayer.remove(node)
 
     # if there is a node above the given node,
     # return the highest node, else return node
     def getTopNode(self, bottomNode):
-        allNodes = self.getAllNodes(
-            self.gridLayer1, self.gridLayer2, self.gridLayer3)
-        allNodes = SpriteRenderer.sortNodes(allNodes)
-
-        for node in allNodes:
-            if node.getNumber() == bottomNode.getNumber():
-                return node
-
-        return bottomNode
+        return self.getNode(
+            bottomNode.getNumber(), self.getAllNodes(), bottomNode)
 
     # if there is an equivelant node on a different layer, return it,
     # else return none (no node)
     def getNodeFromDifferentLayer(self, currentNode, differentLayer):
         layer = self.getGridLayer(differentLayer)
-
-        for node in layer.getGrid().getNodes():
-            if node.getNumber() == currentNode.getNumber():
-                return node
-        return None
+        return self.getNode(
+            currentNode.getNumber(), layer.getGrid().getNodes())
 
     def checkKeyPress(self, key, pressed, spaceBar, speedUp):
         if (pygame.key.get_pressed()[key] == pressed
@@ -635,6 +645,8 @@ class SpriteRenderer():
         self.messageSystem.update()
         self.menu.update()
 
+        # TODO: Update the managers here???????????????????
+
         # If the game is paused or the main main is open (splash screen)
         # then we don't want to allow interaction.
         if self.paused or self.game.mainMenu.getOpen():
@@ -672,8 +684,7 @@ class SpriteRenderer():
         self.game.clickManager.resetMouseOver()
 
         # Redraw the nodes so that the mouse cant collide with them
-        for node in self.getAllNodes(
-                self.gridLayer1, self.gridLayer2, self.gridLayer3):
+        for node in self.getAllNodes():
             node.dirty = True
 
         self.hud.updateLayerText()

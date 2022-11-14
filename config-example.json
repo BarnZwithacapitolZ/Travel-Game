@@ -457,6 +457,18 @@
                 "file": "ui/notification_simple-03.wav",
                 "volume": 0.7
             },
+            "success4": {
+                "file": "ui/notification_simple-04.wav",
+                "volume": 0.7
+            },
+            "success5": {
+                "file": "ui/notification_simple-05.wav",
+                "volume": 0.7
+            },
+            "success6": {
+                "file": "ui/notification_simple-06.wav",
+                "volume": 0.7
+            },
             "expand": {
                 "file": "ui/Expand.wav",
                 "volume": 1.0
@@ -486,6 +498,10 @@
             "track5": {
                 "file": "track5.mp3",
                 "volume": 0.3
+            },
+            "track6": {
+                "file": "track6.mp3",
+                "volume": 0.5
             }
         }
     },
@@ -550,7 +566,9 @@
             "size1": "map_size1.json",
             "size2": "map_size2.json",
             "size3": "map_size3.json",
-            "size4": "map_size4.json"
+            "size4": "map_size4.json",
+            "tutorial 1": "map_tutorial_1.json",
+            "tutorial 2": "map_tutorial_2.json"
         }
     },
     "regions": {
