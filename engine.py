@@ -308,7 +308,7 @@ class AudioLoader:
         elif self.game.clickManager.getSpeedUp():
             self.speedUpMusic()
         else:
-            self.playMusic(self.currentTrack)
+            self.playMusic(self.currentTrack, disableFade=True)
 
     # Disable fade option allows us to disable fading between tracks
     def playMusic(self, key=None, loop=0, start=0.0, disableFade=False):
