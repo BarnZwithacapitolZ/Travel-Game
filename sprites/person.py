@@ -330,6 +330,15 @@ class Person(Sprite):
         self.spriteRenderer.addToCompleted()
         self.kill()
 
+    def reorderPeople(self, layer):
+        layerPeople = self.spriteRenderer.getGridLayer(layer).getPeople()
+        for person in layerPeople:
+            self.spriteRenderer.getSpriteLayer(4).add(person)
+            self.spriteRenderer.allSprites.add(person)
+
+            # Reset priority to represent the new order
+            person.priority = self.getPriority()
+
     # Switch the person and their status indicator from one
     # layer to a new layer
     def switchLayer(self, oldLayer, newLayer):
@@ -337,6 +346,17 @@ class Person(Sprite):
         self.addToLayer(newLayer)
         self.currentConnectionType = self.currentNode.connectionType
         self.setImageName()
+
+        # We reorder people on layer 4 by removing all of them then adding
+        # them back in the correct order
+        for sprite in self.spriteRenderer.getAllPeople():
+            self.spriteRenderer.getSpriteLayer(4).remove(sprite)
+            self.spriteRenderer.allSprites.remove(sprite)
+
+        # Rendering order for people
+        self.reorderPeople(1)
+        self.reorderPeople(2)
+        self.reorderPeople(3)
 
         if len(self.path) <= 0:
             self.currentNode.getPersonHolder().removePerson(self, True)
