@@ -150,7 +150,9 @@ class PersonHolder(Sprite):
             return
 
         # We want to close any existing open person holders
-        if self.clickManager.getPersonHolder() is not None:
+        # that isn't the current holder
+        if (self.clickManager.getPersonHolder() is not None
+                and self.clickManager.getPersonHolder() != self):
             self.clickManager.getPersonHolder().closeHolder()
 
         # Width and height of a person should always be the same,
@@ -194,6 +196,12 @@ class PersonHolder(Sprite):
             return
 
         for person in self.people:
+            # We want to click off any clicked person as they go into the
+            # holder to remove their outline decorator
+            if (self.spriteRenderer.getPersonClickManager().getPerson()
+                    == person):
+                self.spriteRenderer.getPersonClickManager().setPerson(None)
+
             # Remove the player sprite from the current layer and layer 4 so
             # it is no longer drawn.
             person.removeFromLayer()
