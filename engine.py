@@ -96,8 +96,10 @@ class Renderer:
     def getWindowHeight(self):
         return self.windowHeight
 
-    def setFullscreen(self):
-        self.setScale((self.monitorWidth, self.monitorHeight), True)
+    def setFullscreen(self, width=None, height=None):
+        width = self.monitorWidth if width is None else width
+        height = self.monitorHeight if height is None else height
+        self.setScale((width, height), True)
 
     def unsetFullscreen(self):
         self.setScale((
@@ -255,7 +257,7 @@ class AudioLoader:
         self.threads = []
 
         # Default audio
-        self.defaultTrack = "track1"
+        self.defaultTrack = "track3"
 
         # Load all the music and sounds and set their volumes.
         self.setChannels()

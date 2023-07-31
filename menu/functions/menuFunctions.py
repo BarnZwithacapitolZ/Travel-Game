@@ -1,5 +1,4 @@
 
-from numpy import isin
 import pygame
 from config import config, dump
 from utils import vec
@@ -336,6 +335,11 @@ def showGraphics(obj, menu, event):
     menu.graphics()
 
 
+def showResolution(obj, menu, event):
+    menu.close()
+    menu.resolution()
+
+
 def showAudio(obj, menu, event):
     menu.close()
     menu.audio()
@@ -401,6 +405,9 @@ def toggleFullscreen(obj, menu, event):
 
     config["graphics"]["fullscreen"] = menu.game.fullscreen
     dump(config)
+
+    # Reset graphics menu to show / hide the fullscreen option
+    showGraphics(obj, menu, event)
 
 
 # Toggle scanlines effect on and off in the graphics menu

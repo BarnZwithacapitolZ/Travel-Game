@@ -921,6 +921,12 @@ class OptionMenu(Menu):
         self.optionsOpen = False  # True = accessed through the main menu
         self.x = 100
 
+    # Get a new background set at (0, 0)
+    def getBackground(self):
+        return Rectangle(self, GREEN, (
+                config["graphics"]["displayWidth"],
+                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
+
     def setOptionsOpen(self, optionsOpen):
         self.optionsOpen = optionsOpen
 
@@ -936,13 +942,7 @@ class OptionMenu(Menu):
             self.spriteRenderer.createPausedSurface()
             self.mapEditor.createPausedSurface()
 
-        background = Rectangle(
-            self, GREEN, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
-
         paused = Label(self, "Paused", 70, WHITE, (self.x, 100))
-
         options = Label(self, "Options", 50,  WHITE, (self.x, 200))
         levelSelect = Label(self, "Level Selection", 50, WHITE, (self.x, 260))
         mainMenu = Label(self, "Main Menu", 50, WHITE, (self.x, 320))
@@ -967,7 +967,9 @@ class OptionMenu(Menu):
         close.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         close.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
-        self.add([background, paused, options, levelSelect, mainMenu, close])
+        self.add([
+            self.getBackground(), paused, options, levelSelect, mainMenu,
+            close])
 
         if transition:
             self.openTransition()
@@ -975,13 +977,7 @@ class OptionMenu(Menu):
     def options(self, transition=False):
         self.open = True
 
-        background = Rectangle(
-            self, GREEN, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
-
         options = Label(self, "Options", 70, WHITE, (self.x, 100))
-
         graphics = Label(self, "Graphics", 50, WHITE, (self.x, 200))
         controls = Label(self, "Controls", 50, WHITE, (self.x, 260))
         audio = Label(self, "Audio", 50, WHITE, (self.x, 320))
@@ -1013,18 +1009,14 @@ class OptionMenu(Menu):
         else:
             back.addEvent(mf.closeOptionsMenu, 'onMouseClick')
 
-        self.add([background, options, graphics, controls, audio, back])
+        self.add([
+            self.getBackground(), options, graphics, controls, audio, back])
 
         if transition:
             self.openTransition()
 
     def audio(self):
         self.open = True
-
-        background = Rectangle(
-            self, GREEN, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
 
         audio = Label(self, "Audio", 70, WHITE, (self.x, 100))
         master = Label(self, "Master Volume:", 50, WHITE, (self.x, 200))
@@ -1052,8 +1044,9 @@ class OptionMenu(Menu):
         reset.addEvent(mf.resetAudio, 'onMouseClick')
 
         self.add([
-            background, audio, master, sound, music, self.masterVolume,
-            self.soundVolume, self.musicVolume, back, reset])
+            self.getBackground(), audio, master, sound, music,
+            self.masterVolume, self.soundVolume, self.musicVolume, back,
+            reset])
 
     def checkForExistingControl(self, key, currentName):
         if hasattr(self, 'controlKeys'):
@@ -1089,13 +1082,7 @@ class OptionMenu(Menu):
         self.controlClickManager = ControlClickManager(self.game)
         self.controlKeys = {}
 
-        background = Rectangle(
-            self, GREEN, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
-
         controls = Label(self, "Controls", 70, WHITE, (self.x, 100))
-
         layer1 = ControlLabel(
             self, "Layer 1:", "layer1", 40, WHITE, (self.x, 200))
         layer2 = ControlLabel(
@@ -1163,26 +1150,18 @@ class OptionMenu(Menu):
         allControls = [
             layer1, layer2, layer3, layer4, pause, slowdown, fastforward]
 
-        self.add(background)
-        self.add(controls)
+        self.add([self.getBackground(), controls])
 
         for control in allControls:
             self.add(control)
             self.controlKeys[control.getKeyName()] = control
 
-        self.add(back)
-        self.add(reset)
+        self.add([back, reset])
 
     def graphics(self):
         self.open = True
 
-        background = Rectangle(
-            self, GREEN, (
-                config["graphics"]["displayWidth"],
-                config["graphics"]["displayHeight"]), (0, 0), alpha=150)
-
         graphics = Label(self, "Graphics", 70, WHITE, (self.x, 100))
-
         fullscreenText = "On" if self.game.fullscreen else "Off"
         scanlinesText = (
             "On" if config["graphics"]["scanlines"]["enabled"] else "Off")
@@ -1198,6 +1177,7 @@ class OptionMenu(Menu):
             self, "Scaling: " + scalingText, 50, WHITE, (self.x, 320))
         vsync = Label(
             self, "Vsync: " + vsyncText, 50, WHITE, (self.x + 500, 200))
+        resolution = Label(self, "Resolution", 50, WHITE, (self.x + 500, 260))
         back = Label(self, "Back", 30,  WHITE, (self.x, 440))
 
         fullscreen.addEvent(mf.toggleFullscreen, 'onMouseClick')
@@ -1220,12 +1200,49 @@ class OptionMenu(Menu):
             gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
         vsync.addEvent(gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
 
+        resolution.addEvent(mf.showResolution, 'onMouseClick')
+        resolution.addEvent(
+            gf.hoverOver, 'onMouseOver', x=self.x + 500 + 10, color=BLACK)
+        resolution.addEvent(
+            gf.hoverOut, 'onMouseOut', x=self.x + 500, color=WHITE)
+
         back.addEvent(mf.showOptions, 'onMouseClick')
         back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
         back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
 
         self.add([
-            background, graphics, fullscreen, scanlines, scaling, vsync, back])
+            self.getBackground(), graphics, fullscreen, scanlines, scaling,
+            vsync, back])
+
+        if self.game.fullscreen:
+            self.add(resolution)
+
+    def resolution(self):
+        self.open = True
+
+        modes = [
+            pygame.display.list_modes()[0], (2560, 1440), (1920, 1080),
+            (1280, 720), (640, 480)]
+        modes = list(dict.fromkeys(modes))  # Remove duplicates
+
+        resolution = Label(self, "Resolution", 70, WHITE, (self.x, 100))
+        back = Label(self, "Back", 30,  WHITE, (self.x, 440))
+
+        back.addEvent(mf.showGraphics, 'onMouseClick')
+        back.addEvent(gf.hoverOver, 'onMouseOver', x=self.x + 10, color=BLACK)
+        back.addEvent(gf.hoverOut, 'onMouseOut', x=self.x, color=WHITE)
+
+        self.add([self.getBackground(), resolution])
+
+        offx = 0
+        for i, mode in enumerate(modes):
+            m = Label(self, str(mode), 50, WHITE, (self.x + offx, 200 + (i * 60)))
+            self.add(m)
+
+            if i + 1 >= 3:
+                offx = 500
+
+        self.add(back)
 
 
 class GameMenu(Menu):
